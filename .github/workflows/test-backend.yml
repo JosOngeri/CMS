@@ -1,0 +1,100 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: kmaincms_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Setup test environment
+      working-directory: ./backend
+      run: |
+        echo "DB_HOST=localhost" >> .env.test
+        echo "DB_PORT=5432" >> .env.test
+        echo "DB_USER=testuser" >> .env.test
+        echo "DB_PASSWORD=testpass" >> .env.test
+        echo "DB_NAME=kmaincms_test" >> .env.test
+        echo "REDIS_HOST=localhost" >> .env.test
+        echo "REDIS_PORT=6379" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+    
+    - name: Run database migrations
+      working-directory: ./backend
+      run: |
+        # Run migrations if migration script exists
+        if [ -f "../database/migrations/migrate.sql" ]; then
+          PGPASSWORD=testpass psql -h localhost -U testuser -d kmaincms_test -f ../database/migrations/migrate.sql
+        fi
+    
+    - name: Run unit tests
+      working-directory: ./backend
+      run: npm test -- __tests__/unit/
+    
+    - name: Run integration tests
+      working-directory: ./backend
+      run: npm test -- tests/integration/
+    
+    - name: Run E2E tests
+      working-directory: ./backend
+      run: npm test -- tests/e2e/
+    
+    - name: Generate coverage report
+      working-directory: ./backend
+      run: npm run test:coverage
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./backend/coverage/lcov.info
+        flags: backend
+        name: backend-coverage
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-test-results
+        path: backend/coverage/

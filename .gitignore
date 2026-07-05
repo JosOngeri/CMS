@@ -1,0 +1,88 @@
+# CMS Specific Cleanup
+archive/
+infrastructure/
+.artifacts/
+.devin/
+.continue/
+.idea/
+.vscode/
+backups/
+logging/
+monitoring/
+app_logs/
+webapp_logs/
+cookies.txt
+All code files.txt
+*.zip
+*.tar.gz
+refactor_session.log
+package.json.bak
+package.json.deploy
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+backend/.env
+frontend/.env
+*.key
+*.pem
+*.cert
+*.crt
+credentials
+secrets
+secret-keys
+private-keys
+aws-access-key
+aws-secret-key
+api-keys
+api-keys.json
+auth-keys.json
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.cache/
+
+# IDE
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Uploads
+uploads/
+public/uploads/

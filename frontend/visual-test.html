@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMainCMS Visual Test Runner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .test-result.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-result.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-result.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .screenshot-preview {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        .progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 KMainCMS Visual Test Runner</h1>
+    
+    <div class="test-container">
+        <h2>Test Configuration</h2>
+        <div>
+            <label for="baseUrl">Base URL:</label>
+            <input type="text" id="baseUrl" value="http://localhost:5180" style="width: 300px; padding: 5px;">
+        </div>
+        <div style="margin-top: 10px;">
+            <label for="testSpeed">Test Speed (ms):</label>
+            <input type="number" id="testSpeed" value="1000" style="width: 100px; padding: 5px;">
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>Available Tests</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div id="testProgress">0/0 tests completed</div>
+        
+        <button class="test-button" onclick="runAllTests()">▶️ Run All Tests</button>
+        <button class="test-button" onclick="runTest('authentication')">🔐 Authentication Test</button>
+        <button class="test-button" onclick="runTest('navigation')">🧭 Navigation Test</button>
+        <button class="test-button" onclick="runTest('departments')">🏢 Departments Test</button>
+        <button class="test-button" onclick="runTest('gallery')">🖼️ Gallery Test</button>
+        <button class="test-button" onclick="runTest('responsive')">📱 Responsive Test</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+
+    <script>
+        const baseUrl = document.getElementById('baseUrl').value;
+        const testSpeed = parseInt(document.getElementById('testSpeed').value);
+        let testResults = [];
+        let completedTests = 0;
+        let totalTests = 0;
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function addTestResult(testName, status, message, screenshot = null) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${status}`;
+            
+            let html = `<strong>${testName}</strong>: ${message}`;
+            if (screenshot) {
+                html += `<br><img src="${screenshot}" class="screenshot-preview" alt="${testName} screenshot">`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+            resultsDiv.insertBefore(resultDiv, resultsDiv.firstChild);
+            
+            testResults.push({ testName, status, message, screenshot });
+            updateProgress();
+        }
+
+        function updateProgress() {
+            completedTests++;
+            const progress = (completedTests / totalTests) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('testProgress').textContent = `${completedTests}/${totalTests} tests completed`;
+        }
+
+        async function runTest(testName) {
+            const testButton = event?.target;
+            if (testButton) {
+                testButton.disabled = true;
+            }
+
+            totalTests = 1;
+            completedTests = 0;
+
+            try {
+                switch(testName) {
+                    case 'authentication':
+                        await testAuthentication();
+                        break;
+                    case 'navigation':
+                        await testNavigation();
+                        break;
+                    case 'departments':
+                        await testDepartments();
+                        break;
+                    case 'gallery':
+                        await testGallery();
+                        break;
+                    case 'responsive':
+                        await testResponsive();
+                        break;
+                }
+            } catch (error) {
+                addTestResult(testName, 'error', `Test failed: ${error.message}`);
+            }
+
+            if (testButton) {
+                testButton.disabled = false;
+            }
+        }
+
+        async function runAllTests() {
+            const buttons = document.querySelectorAll('.test-button');
+            buttons.forEach(btn => btn.disabled = true);
+
+            totalTests = 5;
+            completedTests = 0;
+
+            try {
+                await testAuthentication();
+                await sleep(testSpeed);
+                await testNavigation();
+                await sleep(testSpeed);
+                await testDepartments();
+                await sleep(testSpeed);
+                await testGallery();
+                await sleep(testSpeed);
+                await testResponsive();
+            } catch (error) {
+                addTestResult('All Tests', 'error', `Test suite failed: ${error.message}`);
+            }
+
+            buttons.forEach(btn => btn.disabled = false);
+        }
+
+        async function testAuthentication() {
+            addTestResult('Authentication', 'info', 'Starting authentication test...');
+            
+            // Open login page in new window
+            const loginWindow = window.open(`${baseUrl}/login`, 'loginTest', 'width=1200,height=800');
+            
+            if (!loginWindow) {
+                addTestResult('Authentication', 'error', 'Failed to open login window (popup blocked)');
+                return;
+            }
+
+            await sleep(testSpeed);
+
+            try {
+                // Check if login form is visible
+                const hasEmailField = loginWindow.document.querySelector('input[name="email"]');
+                const hasPasswordField = loginWindow.document.querySelector('input[name="password"]');
+                const hasSubmitButton = loginWindow.document.querySelector('button[type="submit"]');
+
+                if (hasEmailField && hasPasswordField && hasSubmitButton) {
+                    // Fill in credentials
+                    hasEmailField.value = 'admin@sda.org';
+                    hasPasswordField.value = 'admin123';
+                    
+                    // Submit form
+                    hasSubmitButton.click();
+                    
+                    await sleep(testSpeed * 2);
+                    
+                    // Check if redirected to dashboard
+                    if (loginWindow.location.href.includes('/dashboard')) {
+                        addTestResult('Authentication', 'success', '✅ Login successful and redirected to dashboard');
+                        
+                        // Take screenshot using html2canvas if available
+                        try {
+                            const canvas = await html2canvas(loginWindow.document.body);
+                            const screenshot = canvas.toDataURL();
+                            addTestResult('Authentication', 'success', '📸 Dashboard screenshot captured', screenshot);
+                        } catch (e) {
+                            addTestResult('Authentication', 'success', '📸 Dashboard loaded successfully (screenshot not available)');
+                        }
+                    } else {
+                        addTestResult('Authentication', 'error', '❌ Login failed or did not redirect to dashboard');
+                    }
+                } else {
+                    addTestResult('Authentication', 'error', '❌ Login form elements not found');
+                }
+            } catch (error) {
+                addTestResult('Authentication', 'error', `❌ Test execution error: ${error.message}`);
+            }
+
+            loginWindow.close();
+        }
+
+        async function testNavigation() {
+            addTestResult('Navigation', 'info', 'Starting navigation test...');
+            
+            const navWindow = window.open(`${baseUrl}/dashboard`, 'navTest', 'width=1200,height=800');
+            
+            if (!navWindow) {
+                addTestResult('Navigation', 'error', 'Failed to open navigation window (popup blocked)');
+                return;
+            }
+
+            await sleep(testSpeed * 2);
+
+            try {
+                const expectedItems = ['Dashboard', 'Members', 'Gallery', 'Departments', 'Documents', 'Payments', 'SMS', 'Announcements', 'Approvals', 'Settings'];
+                const foundItems = [];
+                const missingItems = [];
+
+                expectedItems.forEach(item => {
+                    const elements = navWindow.document.querySelectorAll('*');
+                    let found = false;
+                    elements.forEach(el => {
+                        if (el.textContent.includes(item)) {
+                            found = true;
+                        }
+                    });
+                    
+                    if (found) {
+                        foundItems.push(item);
+                    } else {
+                        missingItems.push(item);
+                    }
+                });
+
+                if (missingItems.length === 0) {
+                    addTestResult('Navigation', 'success', `✅ All ${expectedItems.length} navigation items found`);
+                } else {
+                    addTestResult('Navigation', 'error', `❌ Missing navigation items: ${missingItems.join(', ')}`);
+                }
+            } catch (error) {
+                addTestResult('Navigation', 'error', `❌ Test execution error: ${error.message}`);
+            }
+
+            navWindow.close();
+        }
+
+        async function testDepartments() {
+            addTestResult('Departments', 'info', 'Starting departments tab test...');
+            
+            const deptWindow = window.open(`${baseUrl}/dashboard/departments`, 'deptTest', 'width=1200,height=800');
+            
+            if (!deptWindow) {
+                addTestResult('Departments', 'error', 'Failed to open departments window (popup blocked)');
+                return;
+            }
+
+            await sleep(testSpeed * 2);
+
+            try {
+                const hasAllTab = deptWindow.document.body.textContent.includes('All Departments');
+                const hasMyTab = deptWindow.document.body.textContent.includes('My Departments');
+
+                if (hasAllTab && hasMyTab) {
+                    addTestResult('Departments', 'success', '✅ Both "All Departments" and "My Departments" tabs found');
+                } else {
+                    addTestResult('Departments', 'error', `❌ Missing tabs - All Departments: ${hasAllTab}, My Departments: ${hasMyTab}`);
+                }
+            } catch (error) {
+                addTestResult('Departments', 'error', `❌ Test execution error: ${error.message}`);
+            }
+
+            deptWindow.close();
+        }
+
+        async function testGallery() {
+            addTestResult('Gallery', 'info', 'Starting gallery upload test...');
+            
+            const galleryWindow = window.open(`${baseUrl}/dashboard/gallery`, 'galleryTest', 'width=1200,height=800');
+            
+            if (!galleryWindow) {
+                addTestResult('Gallery', 'error', 'Failed to open gallery window (popup blocked)');
+                return;
+            }
+
+            await sleep(testSpeed * 2);
+
+            try {
+                const hasUploadButton = galleryWindow.document.body.textContent.includes('Upload') || 
+                                       galleryWindow.document.body.textContent.includes('Request Upload');
+                
+                if (hasUploadButton) {
+                    addTestResult('Gallery', 'success', '✅ Upload functionality button found');
+                } else {
+                    addTestResult('Gallery', 'error', '❌ Upload button not found');
+                }
+            } catch (error) {
+                addTestResult('Gallery', 'error', `❌ Test execution error: ${error.message}`);
+            }
+
+            galleryWindow.close();
+        }
+
+        async function testResponsive() {
+            addTestResult('Responsive', 'info', 'Starting responsive design test...');
+            
+            const sizes = [
+                { width: 1920, height: 1080, name: 'Desktop' },
+                { width: 1366, height: 768, name: 'Laptop' },
+                { width: 768, height: 1024, name: 'Tablet' },
+                { width: 375, height: 667, name: 'Mobile' }
+            ];
+
+            const responsiveWindow = window.open(`${baseUrl}/dashboard`, 'responsiveTest', 'width=1200,height=800');
+            
+            if (!responsiveWindow) {
+                addTestResult('Responsive', 'error', 'Failed to open responsive test window (popup blocked)');
+                return;
+            }
+
+            await sleep(testSpeed * 2);
+
+            try {
+                for (const size of sizes) {
+                    responsiveWindow.resizeTo(size.width, size.height);
+                    await sleep(testSpeed / 2);
+                    addTestResult('Responsive', 'info', `📱 Tested ${size.name} (${size.width}x${size.height})`);
+                }
+                
+                addTestResult('Responsive', 'success', '✅ Responsive design test completed for all screen sizes');
+            } catch (error) {
+                addTestResult('Responsive', 'error', `❌ Test execution error: ${error.message}`);
+            }
+
+            responsiveWindow.close();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            addTestResult('Test Runner', 'info', '🚀 Visual Test Runner ready. Configure settings and run tests above.');
+        });
+    </script>
+</body>
+</html>

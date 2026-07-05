@@ -1,0 +1,45 @@
+{
+  "name": "kmaincms",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.5.1",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.0.0",
+    "hibp": "^15.2.1",
+    "jsonwebtoken": "^9.0.0",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "multer": "^2.2.0",
+    "node-cache": "^5.1.2",
+    "node-cron": "^3.0.3",
+    "passport": "^0.7.0",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.11.0",
+    "pino": "^9.0.0",
+    "pino-http": "^10.0.0",
+    "pino-pretty": "^11.0.0",
+    "pino-roll": "^2.0.0",
+    "redis": "^4.6.0",
+    "socket.io": "^4.7.2",
+    "speakeasy": "^2.0.0",
+    "telegram": "^2.26.22",
+    "uuid": "^14.0.0",
+    "xss": "^1.0.15"
+  }
+}
