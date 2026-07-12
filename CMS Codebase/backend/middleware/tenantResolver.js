@@ -29,6 +29,7 @@ function setCachedTenant(slug, data) {
     expiresAt: Date.now() + CACHE_TTL
   });
 }
+
 const tenantResolver = async (req, res, next) => {
   // Whitelisted admin tools that can use query parameter overrides
   const QUERY_OVERRIDE_WHITELIST = [
@@ -77,19 +78,14 @@ const tenantResolver = async (req, res, next) => {
     slug = req.params.tenant_slug;
   }
 
+  // Single-tenant deployment shortcut: use default church if configured
+  if (!slug && process.env.DEFAULT_CHURCH_SLUG) {
+    slug = process.env.DEFAULT_CHURCH_SLUG;
+  }
+
   if (!slug) {
     // For health checks or public routes that don't need tenancy
     if (req.path.includes('/health') || req.path === '/') return next();
-
-    // In dev, we might default to a specific church if none provided
-    if (process.env.NODE_ENV === 'development' && process.env.DEFAULT_CHURCH_SLUG) {
-      const devResult = await pool.query('SELECT id FROM churches WHERE slug = $1', [process.env.DEFAULT_CHURCH_SLUG]);
-      if (devResult.rows.length > 0) {
-        req.church_id = devResult.rows[0].id;
-        req.church_slug = process.env.DEFAULT_CHURCH_SLUG;
-        return next();
-      }
-    }
 
     // Fallback: If no slug, we can't isolate. Some public routes might allow this.
     return next();
