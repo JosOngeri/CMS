@@ -100,7 +100,30 @@ const tenantResolver = async (req, res, next) => {
       return next();
     }
 
-    const result = await pool.query('SELECT id, is_active FROM churches WHERE slug = $1', [slug]);
+    // Try direct slug match first
+    let result = await pool.query('SELECT id, is_active FROM churches WHERE slug = $1', [slug]);
+
+    // Fallback: try trimming or case-insensitive match
+    if (result.rows.length === 0) {
+      const fallbackResult = await pool.query(
+        'SELECT id, is_active FROM churches WHERE LOWER(TRIM(slug)) = LOWER(TRIM($1))',
+        [slug]
+      );
+      if (fallbackResult.rows.length > 0) {
+        result = fallbackResult;
+      }
+    }
+
+    // Last resort: use first active church for single-tenant deployments
+    if (result.rows.length === 0 && process.env.DEFAULT_CHURCH_SLUG) {
+      const defaultResult = await pool.query(
+        'SELECT id, is_active FROM churches WHERE is_active = true ORDER BY created_at LIMIT 1'
+      );
+      if (defaultResult.rows.length > 0) {
+        result = defaultResult;
+      }
+    }
+
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: 'Church tenant not found' });
     }
