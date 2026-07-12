@@ -1,8 +1,11 @@
 const { Pool } = require('pg');
 const logger = require('./logging');
 
+const dbHost = process.env.PGHOST || process.env.DB_HOST || 'localhost';
+const isLocalhost = dbHost === 'localhost' || dbHost === '127.0.0.1';
+
 const pool = new Pool({
-  host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+  host: dbHost,
   port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432', 10),
   database: process.env.PGDATABASE || process.env.DB_NAME || 'kmaincms',
   user: process.env.PGUSER || process.env.DB_USER || 'postgres',
@@ -10,7 +13,8 @@ const pool = new Pool({
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
-  ...(process.env.NODE_ENV === 'production' && {
+  // Only use SSL in production when connecting to a remote database
+  ...(process.env.NODE_ENV === 'production' && !isLocalhost && {
     ssl: { rejectUnauthorized: true, ca: process.env.DB_CA_CERT }
   }),
 });
