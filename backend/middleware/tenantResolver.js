@@ -87,7 +87,6 @@ const tenantResolver = async (req, res, next) => {
       if (devResult.rows.length > 0) {
         req.church_id = devResult.rows[0].id;
         req.church_slug = process.env.DEFAULT_CHURCH_SLUG;
-        await pool.query('SET LOCAL app.current_church_id = $1', [req.church_id]);
         return next();
       }
     }
@@ -102,7 +101,6 @@ const tenantResolver = async (req, res, next) => {
     if (cached) {
       req.church_id = cached.id;
       req.church_slug = slug;
-      await pool.query('SET LOCAL app.current_church_id = $1', [cached.id]);
       return next();
     }
 
@@ -122,9 +120,6 @@ const tenantResolver = async (req, res, next) => {
 
     req.church_id = churchId;
     req.church_slug = slug;
-
-    // Set the session variable for Postgres RLS
-    await pool.query('SET LOCAL app.current_church_id = $1', [churchId]);
 
     next();
   } catch (error) {
