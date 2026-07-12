@@ -56,7 +56,8 @@ const syncRoutes = require('./sync.routes');
 
 // Mount routes with appropriate middleware
 // Note: route modules apply their own auth (authenticateToken, identityGuard, etc.)
-router.use('/api/health', health);
+// The index router is mounted at /api in app.js, so use /health here for /api/health final path
+router.use('/health', health);
 router.use('/auth', authLimiter, authRoutes);
 router.use('/auth/reset-password', passwordResetLimiter, authRoutes);
 router.use('/churches', generalLimiter, churchRoutes);
