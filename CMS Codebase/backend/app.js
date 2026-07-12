@@ -175,6 +175,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1d'
 }));
 
+// Health check endpoint (mount before static files to avoid conflicts)
+app.use('/api/health', require('./routes/health'));
+
 // Static files for frontend build (Phase 7 - Single-Process Serving)
 if (!isDevelopment) {
   app.use(express.static(path.join(__dirname, '../frontend/dist'), {
