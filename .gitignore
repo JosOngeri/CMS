@@ -92,3 +92,8 @@ public/uploads/
 *.exe
 assets/releases/
 Documentation/Other Files/*.exe
+
+# Azure
+.azure/
+.github/workflows/azure-deploy.yml
+docs/AZURE_DEPLOYMENT.md
