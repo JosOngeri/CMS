@@ -86,3 +86,9 @@ temp/
 # Uploads
 uploads/
 public/uploads/
+
+# Large files
+*.apk
+*.exe
+assets/releases/
+Documentation/Other Files/*.exe
