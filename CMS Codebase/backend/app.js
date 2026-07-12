@@ -176,8 +176,18 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1d'
 }));
 
-// Health check endpoint (mount before static files to avoid conflicts)
+// Health check endpoint (no auth/CSRF needed)
 app.use('/api/health', require('./routes/health'));
+
+// CSRF Token Endpoint (GET, before CSRF middleware)
+app.get('/api/csrf-token', getCsrfToken);
+
+// CSRF protection for state-changing methods (before API routes)
+app.use(csrfTokenMiddleware);
+
+// API routes - consolidated via index router
+// Mounted before static files/SPA fallback so /api/* requests are handled correctly
+app.use('/api', require('./routes/index.routes'));
 
 // Static files for frontend build (Phase 7 - Single-Process Serving)
 if (!isDevelopment) {
@@ -192,27 +202,14 @@ if (!isDevelopment) {
 
   // SPA fallback - serve index.html for non-API routes
   app.get('*', (req, res) => {
-    if (!req.path.startsWith('/api')) {
-      const indexPath = path.join(__dirname, '../frontend/dist/index.html');
-      if (fs.existsSync(indexPath)) {
-        res.sendFile(indexPath);
-      } else {
-        res.status(503).json({ success: false, error: 'Frontend not built' });
-      }
+    const indexPath = path.join(__dirname, '../frontend/dist/index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
     } else {
-      res.status(404).json({ success: false, error: 'API endpoint not found' });
+      res.status(503).json({ success: false, error: 'Frontend not built' });
     }
   });
 }
-
-// CSRF protection for state-changing methods (before API routes)
-app.use(csrfTokenMiddleware);
-
-// CSRF Token Endpoint
-app.get('/api/csrf-token', getCsrfToken);
-
-// API routes - consolidated via index router
-app.use('/api', require('./routes/index.routes'));
 
 
 
