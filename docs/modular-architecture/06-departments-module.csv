@@ -1,0 +1,40 @@
+Section,Item,Details
+Module Overview,Code,DEPT
+Module Overview,Name,Departments Management
+Module Overview,Type,Functional Module
+Module Overview,Description,Department management role assignment and inter-department collaboration
+Database Tables,Table 1,departments - Department definitions
+Database Tables,Table 2,department_members - Member assignments
+Database Tables,Table 3,department_permissions - Permission grants
+Database Tables,Table 4,department_resources - Shared resources
+Database Tables,Table 5,department_activities - Activity feed
+Backend Files,Controller,department.controller.js
+Backend Files,Routes,department.routes.js
+Frontend Files,Pages,pages/departments/
+Frontend Files,Components,components/departments/
+Frontend Files,Context,contexts/DepartmentContext.jsx
+API Endpoints,GET /api/departments,List all departments
+API Endpoints,POST /api/departments,Create department
+API Endpoints,GET /api/departments/:id,Get department details
+API Endpoints,PUT /api/departments/:id,Update department
+API Endpoints,DELETE /api/departments/:id,Delete department
+API Endpoints,GET /api/departments/:id/members,List department members
+API Endpoints,POST /api/departments/:id/members,Add member to department
+API Endpoints,DELETE /api/departments/:id/members/:userId,Remove member
+API Endpoints,GET /api/departments/:id/permissions,Get department permissions
+API Endpoints,PUT /api/departments/:id/permissions,Update permissions
+API Endpoints,GET /api/departments/:id/activity,Get activity feed
+API Endpoints,POST /api/departments/:id/resources,Add shared resource
+API Endpoints,GET /api/my-departments,Get current user's departments
+Acceptance Criteria,AC-01,Departments can be created with heads and members
+Acceptance Criteria,AC-02,Members can be assigned roles within departments
+Acceptance Criteria,AC-03,Department permissions control access to resources
+Acceptance Criteria,AC-04,Activity feed tracks all department actions
+Acceptance Criteria,AC-05,Resources can be shared between departments
+Acceptance Criteria,AC-06,Department budgets are tracked separately
+Prompts,Objective 1 - Department CRUD,"Build department management with hierarchical structure heads and member assignment. Support department branding and customization."
+Prompts,Objective 2 - Member Management,"Implement department member management with role assignment and bulk operations."
+Prompts,Objective 3 - Permissions System,"Create granular permission system for department resources with inheritance and overrides."
+Prompts,Objective 4 - Activity Feed,"Build activity feed system tracking all department actions with filtering and search."
+Prompts,Objective 5 - Resource Sharing,"Implement resource sharing between departments with access control and tracking."
+Prompts,Objective 6 - Dashboard Widgets,"Create department-specific dashboard widgets showing activities stats and pending items."

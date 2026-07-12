@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMainCMS RBAC Permissions Matrix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 36px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+
+        .section-title {
+            font-size: 28px;
+            color: #333;
+            margin: 40px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .module-card {
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        .module-card h4 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+        }
+
+        .module-card ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .module-card li {
+            margin-bottom: 8px;
+        }
+
+        .module-card strong {
+            font-weight: 600;
+        }
+
+        /* Module Card Gradients */
+        .dashboard { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .members { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .departments { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .gallery { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .documents { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .treasury { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        .sms { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; }
+        .announcements { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; }
+        .approvals { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #333; }
+        .users { background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%); color: #333; }
+        .settings { background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); color: #333; }
+        .events { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .payments { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .reports { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .content { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+        .analytics { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; }
+        .security { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; }
+        .telegram { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; }
+        .mobile { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #333; }
+        .monitoring { background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%); color: #333; }
+        .seo { background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); color: #333; }
+        .accessibility { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .testing { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .documentation { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+        .role-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .role-header h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .role-header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .stat-card .icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 5px 0;
+        }
+
+        .stat-card .count {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-card .description {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .stat-super-admin { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+        .stat-pastor { background: linear-gradient(135deg, #4834d4 0%, #686de0 100%); }
+        .stat-first-elder { background: linear-gradient(135deg, #22a6b3 0%, #7ed6df 100%); }
+        .stat-dept-head { background: linear-gradient(135deg, #f0932b 0%, #fbc531 100%); }
+        .stat-member { background: linear-gradient(135deg, #6ab04c 0%, #badc58 100%); }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        th.center {
+            text-align: center;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .check {
+            color: #27ae60;
+            font-size: 18px;
+        }
+
+        .cross {
+            color: #e74c3c;
+            font-size: 18px;
+        }
+
+        .note-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .role-profiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .role-card {
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .role-card .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .role-card .icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+
+        .role-card h3 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .role-card .subtitle {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .role-card .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .role-card .badge .count {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .role-card .badge .description {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .role-card ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+
+        .role-card li {
+            margin-bottom: 8px;
+        }
+
+        .role-super-admin { background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); }
+        .role-pastor { background: linear-gradient(135deg, #4834d4 0%, #686de0 100%); }
+        .role-first-elder { background: linear-gradient(135deg, #22a6b3 0%, #7ed6df 100%); }
+        .role-dept-head { background: linear-gradient(135deg, #f0932b 0%, #fbc531 100%); }
+        .role-member { background: linear-gradient(135deg, #6ab04c 0%, #badc58 100%); }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 KMainCMS RBAC Permissions Matrix</h1>
+        <p class="subtitle">Complete overview of all modules, functions, and role permissions in the system</p>
+
+        <h2 class="section-title">📊 Module Overview</h2>
+        
+        <div class="module-grid">
+            <div class="module-card dashboard">
+                <h4>🏠 Dashboard</h4>
+                <ul>
+                    <li><strong>View</strong> - Access main dashboard overview and statistics</li>
+                </ul>
+            </div>
+
+            <div class="module-card members">
+                <h4>👥 Members Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View member directory and profiles</li>
+                    <li><strong>Create</strong> - Add new members to the system</li>
+                    <li><strong>Edit</strong> - Update member information and details</li>
+                    <li><strong>Delete</strong> - Remove members from the system</li>
+                    <li><strong>Export</strong> - Export member data to external formats</li>
+                </ul>
+            </div>
+
+            <div class="module-card departments">
+                <h4>🏢 Departments Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View department list and information</li>
+                    <li><strong>Create</strong> - Create new departments</li>
+                    <li><strong>Edit</strong> - Update department details</li>
+                    <li><strong>Delete</strong> - Remove departments</li>
+                    <li><strong>Manage</strong> - Full department management including assignments</li>
+                </ul>
+            </div>
+
+            <div class="module-card gallery">
+                <h4>🖼️ Gallery Management</h4>
+                <ul>
+                    <li><strong>View Public</strong> - View public church photos (all users)</li>
+                    <li><strong>View All</strong> - View all photos including pending (managers)</li>
+                    <li><strong>Request Upload</strong> - Submit photos for approval (all logged-in users)</li>
+                    <li><strong>Upload</strong> - Upload photos directly (approved) (managers)</li>
+                    <li><strong>Edit</strong> - Edit photo metadata and album details</li>
+                    <li><strong>Delete</strong> - Remove photos and albums</li>
+                    <li><strong>Approve</strong> - Approve/reject pending uploads (managers)</li>
+                    <li><strong>Manage</strong> - Full gallery management and organization</li>
+                </ul>
+            </div>
+
+            <div class="module-card documents">
+                <h4>📁 Documents Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View document library and files</li>
+                    <li><strong>Upload</strong> - Upload new documents</li>
+                    <li><strong>Edit</strong> - Update document metadata</li>
+                    <li><strong>Delete</strong> - Remove documents</li>
+                    <li><strong>Manage</strong> - Full document management and organization</li>
+                </ul>
+            </div>
+
+            <div class="module-card treasury">
+                <h4>💰 Treasury Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View financial overview and summaries</li>
+                    <li><strong>Manage</strong> - Full treasury management</li>
+                    <li><strong>Reports</strong> - Access financial reports and statements</li>
+                    <li><strong>Transactions</strong> - View and manage financial transactions</li>
+                    <li><strong>Budgets</strong> - Create and manage budgets</li>
+                </ul>
+            </div>
+
+            <div class="module-card sms">
+                <h4>📱 SMS Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View SMS history and logs</li>
+                    <li><strong>Send</strong> - Send SMS messages to individuals or groups</li>
+                    <li><strong>Manage</strong> - Full SMS management</li>
+                    <li><strong>Templates</strong> - Create and manage SMS templates</li>
+                    <li><strong>Campaigns</strong> - Create and manage SMS campaigns</li>
+                </ul>
+            </div>
+
+            <div class="module-card announcements">
+                <h4>📢 Announcements Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View announcements and notices</li>
+                    <li><strong>Create</strong> - Create new announcements</li>
+                    <li><strong>Edit</strong> - Update existing announcements</li>
+                    <li><strong>Delete</strong> - Remove announcements</li>
+                    <li><strong>Publish</strong> - Publish announcements to various channels</li>
+                </ul>
+            </div>
+
+            <div class="module-card approvals">
+                <h4>✅ Approvals Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View approval requests and status</li>
+                    <li><strong>Request</strong> - Submit items for approval</li>
+                    <li><strong>Approve</strong> - Approve submitted requests</li>
+                    <li><strong>Reject</strong> - Reject submitted requests</li>
+                    <li><strong>Manage</strong> - Full approval workflow management</li>
+                </ul>
+            </div>
+
+            <div class="module-card users">
+                <h4>🔐 Users Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View user accounts and profiles</li>
+                    <li><strong>Create</strong> - Create new user accounts</li>
+                    <li><strong>Edit</strong> - Update user information</li>
+                    <li><strong>Delete</strong> - Remove user accounts</li>
+                    <li><strong>Manage Roles</strong> - Assign and manage user roles</li>
+                </ul>
+            </div>
+
+            <div class="module-card settings">
+                <h4>⚙️ Settings Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View system settings</li>
+                    <li><strong>Edit</strong> - Update system settings</li>
+                    <li><strong>Manage</strong> - Full settings management</li>
+                </ul>
+            </div>
+
+            <div class="module-card events">
+                <h4>📅 Events Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View events and calendar</li>
+                    <li><strong>Create</strong> - Create new events</li>
+                    <li><strong>Edit</strong> - Update event details</li>
+                    <li><strong>Delete</strong> - Remove events</li>
+                    <li><strong>Manage</strong> - Full event management</li>
+                </ul>
+            </div>
+
+            <div class="module-card payments">
+                <h4>💳 Payments Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View payment history and transactions</li>
+                    <li><strong>Process</strong> - Process payments and transactions</li>
+                    <li><strong>Refund</strong> - Process refunds</li>
+                    <li><strong>Manage</strong> - Full payment management</li>
+                </ul>
+            </div>
+
+            <div class="module-card reports">
+                <h4>📊 Reports Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View available reports</li>
+                    <li><strong>Generate</strong> - Generate custom reports</li>
+                    <li><strong>Export</strong> - Export reports to various formats</li>
+                </ul>
+            </div>
+
+            <div class="module-card content">
+                <h4>📝 Content Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View content and pages</li>
+                    <li><strong>Create</strong> - Create new content</li>
+                    <li><strong>Edit</strong> - Update existing content</li>
+                    <li><strong>Delete</strong> - Remove content</li>
+                    <li><strong>Publish</strong> - Publish content to live site</li>
+                </ul>
+            </div>
+
+            <div class="module-card analytics">
+                <h4>📈 Analytics</h4>
+                <ul>
+                    <li><strong>View</strong> - View basic analytics and statistics</li>
+                    <li><strong>Advanced</strong> - Access advanced analytics and insights</li>
+                </ul>
+            </div>
+
+            <div class="module-card security">
+                <h4>🔒 Security Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View security logs and settings</li>
+                    <li><strong>Manage</strong> - Manage security settings</li>
+                    <li><strong>Audit</strong> - Access security audit logs</li>
+                </ul>
+            </div>
+
+            <div class="module-card telegram">
+                <h4>📱 Telegram Integration</h4>
+                <ul>
+                    <li><strong>View</strong> - View Telegram integration status</li>
+                    <li><strong>Manage</strong> - Manage Telegram bot and settings</li>
+                    <li><strong>Broadcast</strong> - Send broadcast messages via Telegram</li>
+                </ul>
+            </div>
+
+            <div class="module-card mobile">
+                <h4>📲 Mobile App Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View mobile app status</li>
+                    <li><strong>Manage</strong> - Manage mobile app settings and content</li>
+                </ul>
+            </div>
+
+            <div class="module-card monitoring">
+                <h4>🖥️ System Monitoring</h4>
+                <ul>
+                    <li><strong>View</strong> - View system metrics and performance</li>
+                    <li><strong>Manage</strong> - Manage monitoring settings and alerts</li>
+                </ul>
+            </div>
+
+            <div class="module-card seo">
+                <h4>🔍 SEO Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View SEO settings and metadata</li>
+                    <li><strong>Manage</strong> - Manage SEO configuration</li>
+                </ul>
+            </div>
+
+            <div class="module-card accessibility">
+                <h4>♿ Accessibility Management</h4>
+                <ul>
+                    <li><strong>View</strong> - View accessibility settings</li>
+                    <li><strong>Manage</strong> - Manage accessibility features</li>
+                </ul>
+            </div>
+
+            <div class="module-card testing">
+                <h4>🧪 Testing Tools</h4>
+                <ul>
+                    <li><strong>View</strong> - View testing tools</li>
+                    <li><strong>Execute</strong> - Run tests and diagnostics</li>
+                </ul>
+            </div>
+
+            <div class="module-card documentation">
+                <h4>📚 Documentation</h4>
+                <ul>
+                    <li><strong>View</strong> - View system documentation</li>
+                    <li><strong>Edit</strong> - Update documentation</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2 class="section-title">🎭 Role Permissions Matrix</h2>
+
+        <div class="role-header">
+            <h2>🎭 Role-Based Access Control</h2>
+            <p>Complete permission matrix for all user roles</p>
+        </div>
+
+        <h3 style="margin: 30px 0 20px 0; color: #333;">📊 Quick Overview</h3>
+
+        <div class="stats-grid">
+            <div class="stat-card stat-super-admin">
+                <div class="icon">👑</div>
+                <h3>Super Admin</h3>
+                <div class="count">50+</div>
+                <div class="description">All Permissions</div>
+            </div>
+
+            <div class="stat-card stat-pastor">
+                <div class="icon">⛪</div>
+                <h3>Pastor</h3>
+                <div class="count">26</div>
+                <div class="description">Ministry Oversight</div>
+            </div>
+
+            <div class="stat-card stat-first-elder">
+                <div class="icon">👨‍⚖️</div>
+                <h3>First Elder</h3>
+                <div class="count">18</div>
+                <div class="description">Administrative</div>
+            </div>
+
+            <div class="stat-card stat-dept-head">
+                <div class="icon">👔</div>
+                <h3>Department Head</h3>
+                <div class="count">17</div>
+                <div class="description">Department Mgmt</div>
+            </div>
+
+            <div class="stat-card stat-member">
+                <div class="icon">👤</div>
+                <h3>Member</h3>
+                <div class="count">7</div>
+                <div class="description">Basic Access</div>
+            </div>
+        </div>
+
+        <h3 style="margin: 30px 0 20px 0; color: #333;">📋 Complete Permission Matrix</h3>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Function</th>
+                        <th class="center">👑<br>Super Admin</th>
+                        <th class="center">⛪<br>Pastor</th>
+                        <th class="center">👨‍⚖️<br>First Elder</th>
+                        <th class="center">👔<br>Dept. Head</th>
+                        <th class="center">👤<br>Member</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>🏠 Dashboard</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>👥 Members</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Export</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🏢 Departments</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🖼️ Gallery</strong></td>
+                        <td>View Public</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>View All</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Request Upload</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Upload</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Approve</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📁 Documents</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Upload</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>💰 Treasury</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Reports</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Transactions</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Budgets</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📱 SMS</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Send</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Templates</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Campaigns</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📢 Announcements</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Publish</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>✅ Approvals</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Request</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Approve</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Reject</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔐 Users</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage Roles</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>⚙️ Settings</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📅 Events</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>💳 Payments</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Process</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Refund</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📊 Reports</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Generate</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Export</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📝 Content</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Create</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Delete</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Publish</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📈 Analytics</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Advanced</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔒 Security</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Audit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📱 Telegram</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Broadcast</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📲 Mobile</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🖥️ Monitoring</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔍 SEO</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>♿ Accessibility</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Manage</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🧪 Testing</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Execute</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📚 Documentation</strong></td>
+                        <td>View</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>Edit</td>
+                        <td class="center"><span class="check">✅</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                        <td class="center"><span class="cross">❌</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="section-title">🎯 Role Profiles</h2>
+
+        <div class="role-profiles">
+            <div class="role-card role-super-admin">
+                <div class="header">
+                    <div class="icon">👑</div>
+                    <div>
+                        <h3>Super Admin</h3>
+                        <div class="subtitle">System Administrator</div>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="count">50+ Permissions</div>
+                    <div class="description">Complete system access</div>
+                </div>
+                <ul>
+                    <li>✓ User management & role assignment</li>
+                    <li>✓ System settings & configuration</li>
+                    <li>✓ Full treasury & financial control</li>
+                    <li>✓ Advanced security & monitoring</li>
+                    <li>✓ Complete content management</li>
+                    <li>✓ Full gallery management & approval</li>
+                </ul>
+            </div>
+
+            <div class="role-card role-pastor">
+                <div class="header">
+                    <div class="icon">⛪</div>
+                    <div>
+                        <h3>Pastor</h3>
+                        <div class="subtitle">Spiritual Leader</div>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="count">26 Permissions</div>
+                    <div class="description">Ministry oversight</div>
+                </div>
+                <ul>
+                    <li>✓ Member management & editing</li>
+                    <li>✓ Department oversight</li>
+                    <li>✓ Treasury management & reports</li>
+                    <li>✓ Content publishing</li>
+                    <li>✓ SMS communications</li>
+                    <li>✓ Gallery approval & management</li>
+                </ul>
+            </div>
+
+            <div class="role-card role-first-elder">
+                <div class="header">
+                    <div class="icon">👨‍⚖️</div>
+                    <div>
+                        <h3>First Elder</h3>
+                        <div class="subtitle">Church Administrator</div>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="count">18 Permissions</div>
+                    <div class="description">Administrative functions</div>
+                </div>
+                <ul>
+                    <li>✓ Department management</li>
+                    <li>✓ Basic treasury reports</li>
+                    <li>✓ Approval workflows</li>
+                    <li>✓ Announcement creation</li>
+                    <li>✓ Settings access</li>
+                </ul>
+            </div>
+
+            <div class="role-card role-dept-head">
+                <div class="header">
+                    <div class="icon">👔</div>
+                    <div>
+                        <h3>Department Head</h3>
+                        <div class="subtitle">Team Leader</div>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="count">17 Permissions</div>
+                    <div class="description">Department-specific</div>
+                </div>
+                <ul>
+                    <li>✓ Department editing</li>
+                    <li>✓ Content creation</li>
+                    <li>✓ Gallery & document uploads</li>
+                    <li>✓ SMS sending</li>
+                    <li>✓ Event creation</li>
+                </ul>
+            </div>
+
+            <div class="role-card role-member">
+                <div class="header">
+                    <div class="icon">👤</div>
+                    <div>
+                        <h3>Member</h3>
+                        <div class="subtitle">Church Member</div>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="count">7 Permissions</div>
+                    <div class="description">Basic access</div>
+                </div>
+                <ul>
+                    <li>✓ Dashboard access</li>
+                    <li>✓ View announcements</li>
+                    <li>✓ View events</li>
+                    <li>✓ Browse gallery</li>
+                    <li>✓ Request photo uploads</li>
+                    <li>✓ Access documents</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>KMainCMS RBAC Permissions Matrix • Generated 2026-06-18</p>
+            <p>For complete permission details, refer to the system documentation</p>
+        </div>
+    </div>
+</body>
+</html>

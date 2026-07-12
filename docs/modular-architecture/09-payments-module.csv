@@ -1,0 +1,39 @@
+Section,Item,Details
+Module Overview,Code,PAYMENT
+Module Overview,Name,Payments (M-Pesa/KopoKopo)
+Module Overview,Type,Functional Module
+Module Overview,Description,Online payment processing for tithes offerings and donations
+Database Tables,Table 1,payments - Payment records
+Database Tables,Table 2,payment_transactions - Transaction log
+Database Tables,Table 3,mpesa_settings - M-Pesa config
+Database Tables,Table 4,payment_categories - Categories
+Database Tables,Table 5,payment_links - Shareable links
+Database Tables,Table 6,refunds - Refund records
+Backend Files,Controller,payment.controller.js
+Backend Files,Routes,payment.routes.js
+Backend Files,Service,kopokopo.js
+Backend Files,Helpers,paymentNotifications.js
+Frontend Files,Pages,pages/payments/
+Frontend Files,Components,components/payments/
+Frontend Files,Context,contexts/PaymentContext.jsx
+API Endpoints,POST /api/payments/initiate,Initiate STK push payment
+API Endpoints,POST /api/payments/link,Generate payment link
+API Endpoints,GET /api/payments/qrcode,Generate QR code
+API Endpoints,GET /api/payments/:id/status,Check payment status
+API Endpoints,GET /api/payments/history,Get payment history
+API Endpoints,GET /api/payments/all,Get all payments (admin)
+API Endpoints,POST /api/payments/webhook,Payment webhook
+API Endpoints,GET /api/payments/analytics,Payment analytics
+API Endpoints,POST /api/payments/:id/refund,Process refund
+Acceptance Criteria,AC-01,STK push payments work correctly
+Acceptance Criteria,AC-02,Payment status is tracked in real-time
+Acceptance Criteria,AC-03,Payment links can be shared
+Acceptance Criteria,AC-04,QR codes can be generated for payments
+Acceptance Criteria,AC-05,Failed payments are handled gracefully
+Acceptance Criteria,AC-06,Refunds can be processed when needed
+Prompts,Objective 1 - STK Push,"Implement M-Pesa STK push integration with KopoKopo. Handle initiation callback and status polling."
+Prompts,Objective 2 - Payment Links,"Create shareable payment links for specific amounts and categories with expiry handling."
+Prompts,Objective 3 - QR Code Payments,"Generate QR codes for quick mobile payments with embedded payment details."
+Prompts,Objective 4 - Webhook Handling,"Implement secure webhook endpoint for payment notifications with signature verification."
+Prompts,Objective 5 - Analytics Dashboard,"Build payment analytics with trends category breakdown and forecasting."
+Prompts,Objective 6 - Refund System,"Create refund workflow with approval treasury integration and notification."

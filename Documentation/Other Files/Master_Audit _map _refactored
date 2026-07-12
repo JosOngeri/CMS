@@ -1,0 +1,265 @@
+# KMainCMS Master Audit Map (755 Files) - Refactored (16 Clusters)
+
+### Cluster 01: Core Backend Infrastructure
+**Prompt:** Audit for lean architecture, configuration integrity, and operational reliability. Focus on: (1) Eliminating redundant code patterns like duplicate static serving logic; (2) Ensuring proper error handling and process exit mechanisms; (3) Implementing proper logging with PII redaction; (4) Validating environment variable fallback support; (5) Ensuring database connection resilience; (6) Removing any global.io usage in favor of app.set patterns; (7) Detecting 'Ghost Features' where implementation plan claims readiness but code is a stub; (8) Cross-referencing implementation against Constitutional Standards (LEAN_ARCHITECTURE_REPORT.md).
+- `.\backend\app.js`
+  - Gaps: Static serving logic is duplicated in `server.js`; route proliferation; redundant manual header setters.
+  - Remedy: Centralize static serving logic; consolidate routes; remove redundant header setters.
+- `.\backend\server.js`
+  - Gaps: Redundant static serving logic; `uncaughtException` handler does not exit (zombie risk); use of `global.io`.
+  - Remedy: Remove duplicated static logic; ensure `process.exit(1)` after critical exceptions; replace `global.io` with `app.set('io', io)`.
+- `.\backend\config\database.js`
+  - Gaps: Aggressive timeout (2s); missing query logging wrapper.
+  - Remedy: Increase timeout to 5s; standardize logging with Pino; export a query helper.
+- `.\backend\config\env-validation.js`
+  - Gaps: Heavy use of `console.log`; lacks fallback variable validation.
+  - Remedy: Integrate `logging.js`; implement fallback logic checks.
+- `.\backend\config\logging.js`
+  - Gaps: `pino-pretty` active in prod; zero PII redaction configuration.
+  - Remedy: Conditional transport logic; add `redact` fields for passwords, tokens, and emails.
+- `.\backend\config\passport.js`
+  - Gaps: No logging for auth attempts; profile mapping lacks PII scrubbing.
+  - Remedy: Add Pino logging to callbacks; implement PII scrubbing for profile objects.
+- `.\backend\config\telegram.js`
+  - Gaps: Hardcoded constants lack environment fallbacks.
+  - Remedy: Wrap exports in `process.env` lookups with current values as defaults.
+
+### Cluster 02: Core Domain Controllers
+**Prompt:** Audit for lean architecture and identity safety. Focus on: (1) Overlapping logic consolidation (e.g., members vs users); (2) Role-based access control; (3) Ensuring controllers handle HTTP concerns only; (4) Scrutinizing 'Ghost Features' (e.g., Auth email dispatch TODO at line 398); (5) Identifying missing third-party integrations.
+- `.\backend\controllers\auth.controller.js`
+  - Gaps: Direct SQL in `register`; mixed response handling; **GHOST FEATURE**: Contains `TODO` at line 398 (missing email dispatch for resets).
+  - Remedy: Move SQL to `UserRepository`; standardize on `ResponseHandler`; integrate `emailService.js` for resets.
+- `.\backend\controllers\members.controller.js`
+  - Gaps: Overlaps with `users.controller.js`; pagination math in controller.
+  - Remedy: Consolidate user/member logic; move bulk contact creation to repository.
+- `.\backend\controllers\users.controller.js`
+  - Gaps: **DEPRECATED CODE**: Contains duplicate methods with raw SQL mixed with repositories.
+  - Remedy: Deep clean file; remove raw SQL; consolidate with `members.controller.js`.
+- `.\backend\controllers\church.controller.js`
+  - Gaps: Slug validation and update object assembly in controller.
+  - Remedy: Move validation to a service; delegate update logic to `ChurchRepository`.
+- `.\backend\controllers\departments.controller.js` / `.\backend\controllers\department.controller.js`
+  - Gaps: Manual filter mapping; Multer config in controller file.
+  - Remedy: Consolidate into a single module; move Multer config to a helper; delegate logic to repository.
+- `.\backend\controllers\BaseController.js`
+  - Gaps: Provides direct DB pool access, encouraging logic leakage.
+  - Remedy: Remove DB access methods; restrict to HTTP concerns and role helpers.
+- `.\backend\controllers\socialAuth.controller.js`
+  - Gaps: Business logic for account linking in controller.
+  - Remedy: Move linking flow to `IdentityService` or `SocialAuthRepository`.
+- `.\backend\controllers\userSettings.controller.js`
+  - Gaps: Raw SQL building for updates; manual bcrypt usage.
+  - Remedy: Move dynamic update construction to `UserSettingsRepository`.
+- `.\backend\controllers\search.controller.js`
+  - Gaps: Coordination of multi-entity searches in controller.
+  - Remedy: Move search coordination to `SearchRepository`.
+
+### Cluster 03: Financial & Specialized Controllers
+**Prompt:** Audit for financial data accuracy and operational integrity. Focus on: (1) Financial immutability triggers; (2) Double-entry validation; (3) Bulk operations (approvals); (4) Audit trails; (5) Handling edge cases (refunds/disputes).
+- `.\backend\controllers\treasury.controller.js`
+  - Gaps: **MONOLITHIC BLOAT**: Handles assets, vendors, and reconciliations in one 900+ line file.
+  - Remedy: DEPRECATE; migrate all methods into the `modules/treasury` controllers.
+- `.\backend\controllers\payments.controller.js` / `.\backend\controllers\payment.controller.js`
+  - Gaps: Brittle refund logic; duplicates pledge handling; coupled to KopoKopo.
+  - Remedy: Merge into a single module; delegate gateway logic to `PaymentGatewayService`.
+- `.\backend\controllers\reconciliation.controller.js`
+  - Gaps: Forensic audit history assembly in controller.
+  - Remedy: Move audit trail generation to a repository hook or `AuditingService`.
+- `.\backend\controllers\budgets.controller.js`
+  - Gaps: Redundant with treasury module; lacks utilization enforcement.
+  - Remedy: Delete in favor of module-based controller; implement real-time utilization checks.
+- `.\backend\controllers\fixedAssets.controller.js`
+  - Gaps: Depreciation math models hardcoded in controller.
+  - Remedy: Extract depreciation logic to `FixedAssetService`.
+- `.\backend\controllers\treasuryDashboard.controller.js`
+  - Gaps: Complex financial aggregations in controller.
+  - Remedy: Delegate summaries to `TreasuryDashboardRepository` using CTEs.
+- `.\backend\controllers\approvals.controller.js` / `.\backend\controllers\documentApproval.controller.js`
+  - Gaps: Missing bulk approval methods; uses manual `res.json`.
+  - Remedy: Implement `bulkApprove`; standardize response formatting via `BaseController`.
+- `.\backend\modules\treasury\controllers\*` (account, budget, expense, fund, journalEntry)
+  - Gaps: Totaling and balancing logic in controllers.
+  - Remedy: Move totaling and balance validation to repository queries or `FinanceService`.
+
+### Cluster 04: Comms, Media & Utility Controllers
+**Prompt:** Audit for feature-specific bloat and third-party resilience. Focus on: (1) WebSocket integration; (2) Stub removal; (3) Detecting 'Ghost Features' in Dashboard (e.g., hardcoded system health).
+- `.\backend\controllers\dashboard.controller.js`
+  - Gaps: **GHOST FEATURE**: `getSystemHealth` returns hardcoded status; lacks planned WebSocket latency monitor.
+  - Remedy: Implement real SQL aggregations; implement WebSocket-driven health monitoring (Phase 2.3).
+- `.\backend\controllers\activityFeed.controller.js`
+  - Gaps: WebSocket broadcasting logic inside controller.
+  - Remedy: Move broadcasting to a repository hook or service.
+- `.\backend\controllers\gallery.controller.js` / `.\backend\controllers\galleryAlbums.controller.js`
+  - Gaps: SQL building for pagination in controller; bulk loops in controller.
+  - Remedy: Consolidate; move SQL/cursor logic to repository.
+- `.\backend\controllers\sms.controller.js` / `.\backend\controllers\smsAutomation.controller.js`
+  - Gaps: Stubs for optimizations; template replacement logic in controller.
+  - Remedy: Implement real analytics; move variable interpolation to `SmsAutomationService`.
+- `.\backend\controllers\telegram.controller.js` / `.\backend\controllers\telegramAuth.controller.js`
+  - Gaps: Demo mode "accept all" auth; PII masking coordination in controller.
+  - Remedy: Move auth flow and code management to `TelegramService`.
+- `.\backend\controllers\content.controller.js` / `.\backend\controllers\seo.controller.js`
+  - Gaps: Slug generation and SEO analysis logic hardcoded in controller.
+  - Remedy: Extract to `ContentService` and `SEOService`.
+- `.\backend\controllers\accessibility.controller.js`
+  - Gaps: `audit` returns hardcoded stubs.
+  - Remedy: Replace with actual WCAG audit logic.
+
+### Cluster 05: Backend Middleware & Security
+**Prompt:** Audit for security robustness and performance. Focus on: (1) N+1 query risks in permissions; (2) Redis-backed rate limiting; (3) Identity caching (critical bottleneck in `auth.js`).
+- `.\backend\middleware\auth.js`
+  - Gaps: **CRITICAL SCALABILITY BOTTLENECK**: Executes `getIdentity` on every request, hitting DB every time.
+  - Remedy: Implement a fast-lookup identity cache (Redis or LRU) with short TTL.
+- `.\backend\middleware\csrf.js`
+  - Gaps: Insecure bypass: automatically exempts all `Bearer` tokens regardless of cookie presence.
+  - Remedy: Enforce for all requests carrying session cookies.
+- `.\backend\middleware\rateLimiter.js`
+  - Gaps: Uses in-memory store (not syncable across PM2 processes).
+  - Remedy: Configure `rate-limit-redis` for production.
+- `.\backend\middleware\treasurySecurity.js`
+  - Gaps: **HIGH RISK**: `requireMFA` is a placeholder that logs but does not block.
+  - Remedy: Implement actual blocking logic based on `mfa_verified` flag.
+- `.\backend\middleware\securityMiddleware.js`
+  - Gaps: Fragile security: `validateSQLInput` uses regex for injection prevention.
+  - Remedy: Deprecate regex filter; mandate parameterized queries via rules.
+- `.\backend\helpers\fieldPermissionService.js` / `.\backend\helpers\permissionChecker.js`
+  - Gaps: High N+1 risk in field checks; leaks access logic (Admin vs Dept Head) into helpers.
+  - Remedy: Implement bulk-fetching; move ownership logic to Repository layer.
+
+### Cluster 06: Base & Core Repositories
+**Prompt:** Audit for data access layer efficiency and tenant safety. Focus on: (1) Mandatory `church_id` enforcement; (2) JOIN-based solutions for N+1 patterns; (3) Atomic user + role updates.
+- `.\backend\repositories\BaseRepository.js`
+  - Gaps: `church_id` is optional in core methods (security risk).
+  - Remedy: Enforce `church_id` in constructor or core methods; implement mandatory pagination.
+- `.\backend\repositories\UserRepository.js` / `.\backend\repositories\UsersRepository.js`
+  - Gaps: Duplicated logic; manual role-update loops are not atomic.
+  - Remedy: Consolidate; use a single transaction for user + role updates.
+- `.\backend\repositories\ChurchRepository.js`
+  - Gaps: Executes 4 sequential count queries for stats.
+  - Remedy: Consolidate into a single aggregated scan or CTE.
+- `.\backend\repositories\DepartmentsRepository.js`
+  - Gaps: `getAllWithStats` has high N+1 risk (3 correlated subqueries per row).
+  - Remedy: Refactor to `LEFT JOIN` and `GROUP BY`.
+
+### Cluster 07: Specialized Domain Repositories
+**Prompt:** Audit for domain-specific data integrity. Focus on: (1) Aggregation strategies (CTEs/Views); (2) SQL Injection in custom reports; (3) Composite index hints for high-volume transaction history.
+- `.\backend\repositories\TreasuryRepository.js`
+  - Gaps: **FAT REPOSITORY**: 700+ lines handling unrelated entities (Vendors, Pledges, Assets).
+  - Remedy: Split into specialized repos following SRP.
+- `.\backend\repositories\AccountingExportRepository.js`
+  - Gaps: Total absence of `church_id` isolation.
+  - Remedy: Mandate `church_id` on all fetch calls.
+- `.\backend\repositories\ActivityFeedRepository.js`
+  - Gaps: Massive performance risk: 4-way `UNION ALL` on every fetch.
+  - Remedy: Implement a materialized `activities` view or dedicated log table.
+- `.\backend\repositories\CustomReportRepository.js`
+  - Gaps: **HIGH SECURITY RISK**: Allows arbitrary SQL execution from user input.
+  - Remedy: Implement whitelist-based query builder; strictly parameterize all values.
+- `.\backend\repositories\FinancialForecastingRepository.js`
+  - Gaps: **CRITICAL LEAKAGE**: Historical data query performs `UNION ALL` across all churches without filters.
+  - Remedy: Enforce `church_id` on both sides of the `UNION`.
+- `.\backend\repositories\GalleryAlbumsRepository.js`
+  - Gaps: Extreme N+1 risk counting photos/sub-albums.
+  - Remedy: Refactor to `LEFT JOIN` and `GROUP BY`.
+- `.\backend\modules\treasury\repositories\*` (account, budget, expense, fund, journalEntry)
+  - Focus: Financial accuracy and mandatory tenant isolation.
+
+### Cluster 08: Backend Services
+**Prompt:** Audit for business logic encapsulation. Focus on: (1) Ensuring services contain business logic, not data access; (2) **CRITICAL STUB: MFA/TOTP validation using speakeasy (IdentityService.js line 142)**; (3) PII scrubbing before external API calls.
+- `.\backend\services\IdentityService.js`
+  - Gaps: Lacks caching; **CRITICAL STUB**: `validateMFA` is a placeholder (line 142); fails Phase 5 secure MFA requirement.
+  - Remedy: Implement Redis cache for `getIdentity`; implement actual TOTP validation via `speakeasy`.
+- `.\backend\services\aiContentService.js`
+  - Gaps: No PII scrubbing before sending content to external Gemini API.
+  - Remedy: Integrate `piiMasker.js` to scrub data before API submission.
+- `.\backend\services\gallerySync.js`
+  - Gaps: Sequential DB inserts in loops (Performance risk).
+  - Remedy: Implement batch insertion for media metadata.
+- `.\backend\services\notificationService.js`
+  - Gaps: WebSocket emission doesn't check if user is connected.
+  - Remedy: Add connection tracking.
+- `.\backend\services\reconciliationService.js`
+  - Gaps: Uses `Math.abs` for currency matching without rounding considerations.
+  - Remedy: Use `BigInt` or decimal math for financial comparisons.
+- `.\backend\services\telegramService.js` / `.\backend\services\telegramClient.service.js` / `.\backend\services\telegramMTProto.js`
+  - Gaps: Redundant implementations; session storage on local file system (not scalable).
+  - Remedy: Merge logic; move session storage to database (JSONB) or Redis.
+
+### Cluster 09: Backend Schema & Models
+**Prompt:** Audit for data integrity and design patterns. Focus on: (1) Standardizing on UUIDs for primary keys; (2) Missing indexes on JSONB; (3) Immutability triggers for financial tables.
+- `.\backend\migrations\008_permissions_schema.sql`
+  - Gaps: Inconsistent ID types (UUID for roles, SERIAL for others).
+  - Remedy: Standardize on UUID for all primary keys.
+- `.\backend\scripts\create-indexes.sql`
+  - Gaps: Missing GIN indexes for JSONB search in `audit_log` and `settings`.
+  - Remedy: Add GIN indexes as per performance requirements.
+- `.\backend\modules\treasury\models\JournalEntry.js`
+  - Gaps: Floating point precision risk in `isBalanced` (0.01 tolerance).
+  - Remedy: Use `BigInt` or currency library for exact matching.
+- `.\backend\modules\treasury\models\Budget.js`
+  - Gaps: Variance calculation vulnerable to division by zero.
+  - Remedy: Add guard clause if `total_budgeted` is 0.
+
+### Cluster 10: Frontend Core & State (The "Lean" Hub)
+**Prompt:** Audit for dependency optimization and state efficiency. Focus on: (1) **ENFORCING Native Fetch API migration**; (2) **Resolving Route Collisions in dashboard.routes.jsx**; (3) useMemo implementation in Contexts.
+- `.\frontend\src\router\dashboard.routes.jsx`
+  - Gaps: **COLLISION RISK**: Contains duplicate `payments` paths; violates Phase 1 consolidation goals.
+  - Remedy: Restructure exports into role-based objects (Pastor, Treasury, Admin) as defined in Task 1.1.
+- `.\frontend\src\hooks\useDataFetch.js`
+  - Gaps: **LEAN VIOLATION**: Audit recommended Axios but `LEAN_ARCHITECTURE_REPORT` mandates Native Fetch.
+  - Remedy: Refactor to use native `fetch()` with an `apiFetch` wrapper to handle CSRF/Auth while eliminating the 10KB Axios dependency.
+- `.\frontend\src\contexts\AuthContext.jsx`
+  - Gaps: CSRF token fetch not awaited before subsequent requests.
+  - Remedy: Delay app initialization until CSRF and profile are fetched.
+- `.\frontend\src\contexts\ContentContext.jsx` / `.\frontend\src\contexts\GalleryContext.jsx` / `.\frontend\src\contexts\MembersContext.jsx`
+  - Gaps: Missing `useMemo` for provider values; causes re-render cascades.
+  - Remedy: Wrap exported values in `useMemo`.
+
+### Cluster 11: Frontend UI Primitives
+**Prompt:** Audit for mobile responsiveness and design system consistency. Focus on: (1) Horizontal scroll wrappers for mobile tables; (2) **Removing hardcoded color values (use semantic utility classes)**; (3) Loading shimmers instead of pulse.
+- `.\frontend\src\components\common\DataTable.jsx` / `.\frontend\src\components\common\ReadOnlyTable.jsx`
+  - Gaps: Lacks horizontal scroll wrapper for mobile.
+  - Remedy: Wrap elements in `overflow-x-auto`.
+- `.\frontend\src\components\common\Header.jsx`
+  - Gaps: Missing mobile "Action Bar" at bottom for quick access (Task 2.1).
+  - Remedy: Implement mobile action bar with Search/Home/Profile.
+
+### Cluster 12: Frontend Feature Components
+**Prompt:** Audit for visualization efficiency and state management. Focus on: (1) **Replacing FullPageLoading with Skeleton Shimmers**; (2) Recharts tree-shaking; (3) Integration of missing roadmap components.
+- **NEW COMPONENTS REQUIRED**:
+  - `MemberTimeline.jsx` (Pastor lifecycle events)
+  - `StatsCardSkeleton.jsx` / `TableSkeleton.jsx` (To replace `FullPageLoading`)
+- `.\frontend\src\components\dashboard\AttendanceChart.jsx`
+  - Gaps: Likely full Recharts import.
+  - Remedy: Refactor to component-level imports (e.g., `recharts/es6/chart/LineChart`) for tree-shaking.
+
+### Cluster 13: Page: Admin & People
+**Prompt:** Audit for administrative UX. Focus on: (1) **Ghost Feature detection (tabs that are visual stubs)**; (2) Bulk operations performance.
+- `.\frontend\src\pages\admin\AdminDashboard.jsx`
+  - Gaps: **GHOST FEATURE**: Analytics and User Management workflows are non-functional placeholders.
+  - Remedy: Implement real workflows as per Plan 2.1.
+- `.\frontend\src\pages\dashboard\PastorDashboard.jsx`
+  - Gaps: **GHOST FEATURE**: Members, Departments, and Events tabs are `EmptyState` stubs.
+  - Remedy: Integrate `MemberTimeline.jsx` and real health analytics.
+
+### Cluster 14: Page: Treasury & Ops
+**Prompt:** Audit for financial workflow efficiency. Focus on: (1) **Reconciliation side-by-side UI**; (2) Automated matching logic visualization; (3) Digital receipt PDF generation.
+- `.\frontend\src\pages\treasury\BankReconciliations.jsx`
+  - Gaps: **STUB**: Lacks functional side-by-side matching UI.
+  - Remedy: Create dual-ledger view with auto-match highlighting.
+- `.\frontend\src\pages\treasury\TreasuryDashboard.jsx`
+  - Gaps: Lacks functional "Budget vs Actual" module.
+  - Remedy: Implement progress-based spending visualization.
+
+### Cluster 15: Page: Media & Comms
+**Prompt:** Audit for media performance and third-party resilience. Focus on: (1) Image lazy loading; (2) API rate limit handling (Telegram/SMS).
+- `.\frontend\src\pages\gallery\GalleryManagement.jsx`
+  - Gaps: Missing progress indicators for large uploads.
+  - Remedy: Implement upload progress tracking.
+
+### Cluster 16: Production Utils & Maintenance Scripts
+**Prompt:** Audit for utility purity and script safety. Focus on: (1) **Removing side effects from utils**; (2) Cleaning up maintenance scripts before production.
+- **Part A: Production Utils**: `jwt.js`, `piiMasker.js`, `ResponseHandler.js`, `bulkInsert.js`, `emailService.js`.
+  - Focus: Security integrity and zero side-effects.
+- **Part B: Maintenance Scripts**: `reset-db.js`, `check-*.js`, `seed-*.js`, `run-*.js`.
+  - Focus: Cleanup and safeguard validation.

@@ -1,0 +1,3723 @@
+﻿# KMainCMS Master Audit Map (755 Files)
+
+### Cluster 01: Core Backend Infrastructure
+**Prompt:** Audit for lean architecture, configuration integrity, and operational reliability. Focus on: (1) Eliminating redundant code patterns like duplicate static serving logic; (2) Ensuring proper error handling and process exit mechanisms to prevent zombie processes; (3) Implementing proper logging with PII redaction; (4) Validating environment variable fallback support; (5) Checking for aggressive timeout configurations; (6) Ensuring database connection resilience with appropriate timeouts and query logging; (7) Removing any global.io usage in favor of app.set patterns; (8) Verifying that all configuration files use standardized logging helpers rather than console.log.
+- `.\backend\app.js`
+  - Gaps: Static serving logic is duplicated in `server.js`; 40+ lines of route proliferation; manual security headers (X-Frame-Options, etc.) are redundant with existing Helmet configuration.
+  - Remedy: Centralize static serving logic; consolidate all routes into a single index router; remove redundant manual header setters.
+- `.\backend\server.js`
+  - Gaps: Redundant SPA fallback and static serving logic (duplicated in `app.js`); `uncaughtException` handler logs but does not exit (high zombie process risk); explicit use of `global.io` violates point 7.
+  - Remedy: Remove duplicated static logic; ensure `process.exit(1)` is called after logging critical exceptions; replace `global.io` with `app.set('io', io)`.
+- `.\backend\config\database.js`
+  - Gaps: Aggressive `connectionTimeoutMillis` (2s); pool error handler uses `console.error` before importing logger; missing high-level query logging wrapper (violates point 6).
+  - Remedy: Increase connection timeout to 5s; standardize pool logging with Pino; export a query helper that logs execution time and errors.
+- `.\backend\config\env-validation.js`
+  - Gaps: Heavy use of `console.log/error` (violates point 8); lacks validation for fallback variables (e.g., ensuring `DB_HOST` is checked if `PGHOST` is missing).
+  - Remedy: Integrate `logging.js` for all output; implement logic to validate fallback pairs.
+- `.\backend\config\logging.js`
+  - Gaps: `pino-pretty` is active by default without environment checks; zero PII scrubbing/redaction configuration (violates point 3).
+  - Remedy: Implement conditional transport logic (pretty for dev, json for prod); add `redact` fields for `password`, `token`, `authorization`, and `email`.
+- `.\backend\config\passport.js`
+  - Gaps: Total silence on strategy execution (no logging for auth attempts/failures); profile objects are mapped without explicit PII scrubbing (violates point 3).
+  - Remedy: Add Pino logging to all strategy callbacks; implement a utility to scrub PII from profile objects before any potential logging.
+- `.\backend\config\telegram.js`
+  - Gaps: Hardcoded constants for timeouts and file limits lack environment variable fallbacks (violates point 4).
+  - Remedy: Wrap exports in `process.env` lookups with the current hardcoded values as defaults.
+
+### Cluster 02: Backend API (General Controllers)
+**Prompt:** Audit for lean architecture, controller bloat elimination, and separation of concerns. Focus on: (1) Identifying overlapping logic between related controllers (e.g., members vs users) and recommending consolidation into shared repositories; (2) Checking for hardcoded "stub" returns that should be replaced with actual data access; (3) Ensuring controllers handle HTTP concerns only, not business logic; (4) Verifying that dashboard controllers return real SQL aggregations rather than placeholder values; (5) Checking for missing bulk operations that could improve UX (e.g., bulk approvals); (6) Ensuring proper error handling and response formatting using standardized response handlers; (7) Removing any stub controllers before production deployment; (8) Validating that all controllers implement proper role-based access controls.
+- `.\backend\controllers\accessibility.controller.js` 
+  - Gaps: `audit` method returns hardcoded "simulated" results; lacks specific RBAC; uses manual `res.json`.
+  - Remedy: Replace stubs with actual WCAG audit logic; implement role-based access; standardize responses.
+- `.\backend\controllers\activityFeed.controller.js` 
+  - Gaps: WebSocket broadcasting logic is inside the controller; hardcoded role lists for admin checks.
+  - Remedy: Move broadcasting to a service or repository hook; use centralized permission checker for role validation.
+- `.\backend\controllers\ai.controller.js` 
+  - Gaps: Coordination logic for rate limiting and usage logging is mixed with controller logic.
+  - Remedy: Delegate rate-limit coordination and usage logging to `AIContentService`.
+- `.\backend\controllers\analytics.controller.js` 
+  - Gaps: Business logic for date filtering (months to days calculation) and manual JSON assembly in the controller.
+  - Remedy: Move data aggregation and period calculation to `AnalyticsRepository`.
+- `.\backend\controllers\announcements.controller.js` 
+  - Gaps: Manual role checks and department membership logic inside multiple methods; manual `res.json` usage.
+  - Remedy: Use `BaseController` helpers; move membership/permission logic to `AnnouncementsRepository`.
+- `.\backend\controllers\approvals.controller.js` 
+  - Gaps: Missing bulk approval/rejection methods; uses manual `res.json`.
+  - Remedy: Implement `bulkApprove` and `bulkReject` methods; standardize response formatting.
+- `.\backend\controllers\auth.controller.js` 
+  - Gaps: Direct SQL queries in `register` bypass repository; mixed response handling; manual role list for MFA.
+  - Remedy: Move all SQL to `UserRepository`; standardize on `ResponseHandler`; use centralized role definitions.
+- `.\backend\controllers\BaseController.js` 
+  - Gaps: Provides direct DB pool access (`this.pool`, `query`, `transaction`), encouraging logic leakage into controllers.
+  - Remedy: Remove DB access methods; restrict `BaseController` to HTTP concerns (responses, pagination, role-check helpers).
+- `.\backend\controllers\chartOfAccounts.controller.js` 
+  - Gaps: Hierarchy tree building and balance calculation logic reside in the controller.
+  - Remedy: Move tree-building and accounting math to a specialized service or repository.
+- `.\backend\controllers\chat.controller.js` 
+  - Gaps: Direct `global.io` usage for broadcasting; manual `res.json`.
+  - Remedy: Decouple socket events via a messaging service; standardize responses.
+- `.\backend\controllers\church.controller.js` 
+  - Gaps: Slug validation, user count checks, and dynamic update object assembly are in the controller.
+  - Remedy: Move slug/business validation to a service; delegate update logic to `ChurchRepository`.
+- `.\backend\controllers\comments.controller.js` 
+  - Gaps: Ownership verification and role check logic mixed with HTTP handling.
+  - Remedy: Move authorization logic (isOwner/isAdmin) to a middleware or service layer.
+- `.\backend\controllers\content.controller.js` 
+  - Gaps: Slug generation, revision numbering, setting grouping, and lock expiration logic are in the controller.
+  - Remedy: Move slug/revision/lock logic to `ContentRepository` or a ContentService.
+- `.\backend\controllers\customReport.controller.js` 
+  - Gaps: HIGH RISK: Manual SQL string building for report generation inside the controller (injection risk).
+  - Remedy: Move SQL construction to a secure QueryBuilder service or repository; sanitize all inputs.
+- `.\backend\controllers\dashboard.controller.js` 
+  - Gaps: 6 methods return hardcoded "fake" data; activity feed aggregation and sorting logic in controller.
+  - Remedy: Implement real SQL aggregations for all stubs; move activity feed logic to `DashboardRepository`.
+- `.\backend\controllers\department.controller.js` 
+  - Gaps: Overlaps with `departments.controller.js`; Multer config in controller file; manual dashboard object assembly.
+  - Remedy: Consolidate with `departments.controller.js`; move Multer config to a helper; move dashboard assembly to repository.
+- `.\backend\controllers\departmentFeatures.controller.js` 
+  - Gaps: Feature category extraction and counting logic is in the controller.
+  - Remedy: Move category aggregation to `DepartmentFeaturesRepository`.
+- `.\backend\controllers\departments.controller.js` 
+  - Gaps: Overlaps with `department.controller.js`; manual filter mapping (string to boolean).
+  - Remedy: Consolidate department logic; move filtering/aggregation to repository.
+- `.\backend\controllers\documentApproval.controller.js` 
+  - Gaps: Metadata enrichment (`requesterName`) handled in controller.
+  - Remedy: Ensure all request enrichment is handled in `DocumentApprovalService`.
+- `.\backend\controllers\documentation.controller.js` 
+  - Gaps: Manual `res.json` usage.
+  - Remedy: Standardize responses using `BaseController` or `ResponseHandler`.
+- `.\backend\controllers\documents.controller.js` 
+  - Gaps: Simulated cloud upload; Multer config in file; tag mapping/splitting in controller; overlaps with `documentVersions`.
+  - Remedy: Implement real cloud storage integration; consolidate with `documentVersions`; move file processing to service.
+- `.\backend\controllers\documentVersions.controller.js` 
+  - Gaps: Overlaps with `documents.controller.js`; file system logic (`fs.existsSync`, `unlink`) in controller.
+  - Remedy: Consolidate logic; move file operations to a service; standardize responses.
+- `.\backend\controllers\events.controller.js` 
+  - Gaps: Manual `res.json` usage.
+  - Remedy: Standardize responses using `BaseController`.
+- `.\backend\controllers\fieldPermissions.controller.js` 
+  - Gaps: Manual `res.json` usage.
+  - Remedy: Standardize responses using `ResponseHandler`.
+- `.\backend\controllers\financialAlerts.controller.js` 
+  - Gaps: Coordination logic for threshold checking and duplicate alert prevention is in the controller.
+  - Remedy: Move alert trigger logic and threshold comparisons to a `FinancialAlertService`.
+- `.\backend\controllers\financialForecasting.controller.js` 
+  - Gaps: Mathematical forecasting models, growth assumptions, and period logic are in the controller.
+  - Remedy: Extract all forecasting logic to a `ForecastingService`.
+- `.\backend\controllers\gallery.controller.js` 
+  - Gaps: SQL query building for cursor pagination and search patterns (`%` wrapping) in the controller; overlaps with `galleryAlbums`.
+  - Remedy: Move SQL/cursor logic to repository; consolidate with `galleryAlbums.controller.js`.
+- `.\backend\controllers\galleryAlbums.controller.js` 
+  - Gaps: Overlaps with `gallery.controller.js`; loops for bulk photo addition in controller.
+  - Remedy: Consolidate logic; implement bulk DB operations in `GalleryAlbumsRepository`.
+- `.\backend\controllers\gateway.controller.js` 
+  - Gaps: Manual `res.json` usage.
+  - Remedy: Standardize response formatting.
+- `.\backend\controllers\memberGiving.controller.js` 
+  - Gaps: Data transformation (row mapping to comparison object) and year math in controller.
+  - Remedy: Move comparison logic and formatting to `MemberGivingRepository`.
+- `.\backend\controllers\members.controller.js` 
+  - Gaps: Overlaps with `users.controller.js`; pagination math and contact loop logic in controller.
+  - Remedy: Consolidate user/member logic; move bulk contact creation to repository.
+- `.\backend\controllers\mobile.controller.js` 
+  - Gaps: Business logic for sync windowing and complex sync object assembly in controller.
+  - Remedy: Move sync coordination and data gathering to a `MobileSyncService`.
+- `.\backend\controllers\monitoring.controller.js` 
+  - Gaps: Hardcoded "simulated" metrics for OS performance; alert severity logic in controller.
+  - Remedy: Replace stubs with real `os` module metrics; move alert logic to monitoring repository/service.
+- `.\backend\controllers\notifications.controller.js` 
+  - Gaps: Simulated push notification behavior; manual filter mapping.
+  - Remedy: Implement real FCM/WebPush integration; move log filtering to repository.
+- `.\backend\controllers\palette.controller.js` 
+  - Gaps: Business logic for color loop insertion and system palette protection in controller.
+  - Remedy: Move validation and bulk color handling to `PaletteRepository`.
+- `.\backend\controllers\performance.controller.js` 
+  - Gaps: Hardcoded "simulated" performance values.
+  - Remedy: Replace stubs with actual data from `PerformanceRepository` or APM tool.
+- `.\backend\controllers\reports.controller.js` 
+  - Gaps: Hardcoded report templates; business logic for PDF/CSV conversion in controller.
+  - Remedy: Store templates in DB; move format conversion to a `ReportExportService`.
+- `.\backend\controllers\search.controller.js` 
+  - Gaps: Coordination of multi-entity searches and result type-tagging in controller; hardcoded suggestion limit.
+  - Remedy: Move global search coordination to `SearchRepository` or a SearchService.
+- `.\backend\controllers\security.controller.js` 
+  - Gaps: Manual `JSON.stringify` for settings and update coordination in controller.
+  - Remedy: Move setting serialization and analytics aggregation to `SecurityRepository`.
+- `.\backend\controllers\seo.controller.js` 
+  - Gaps: SEO analysis logic (length checks, keyword presence) is hardcoded in the controller.
+  - Remedy: Extract analysis rules to a `SEOService`.
+- `.\backend\controllers\settings.controller.js` 
+  - Gaps: Hardcoded health status; manual coordination for bulk updates/imports.
+  - Remedy: Replace health stubs with real checks; move bulk/import coordination to `SettingsRepository`.
+- `.\backend\controllers\sms.controller.js` 
+  - Gaps: 4 methods return stubs (optimizations, predictive analytics, benchmarks); manual rate limit math.
+  - Remedy: Implement real analytics/optimization logic; move rate limit checks to `SMSRepository`.
+- `.\backend\controllers\smsAutomation.controller.js` 
+  - Gaps: Condition evaluation logic (`evaluateConditions`) and template variable replacement in controller.
+  - Remedy: Move automation execution and variable interpolation to `SmsAutomationService`.
+- `.\backend\controllers\smsHub.controller.js` 
+  - Gaps: Clean.
+  - Remedy: Standardize responses if not already fully aligned with `ResponseHandler`.
+- `.\backend\controllers\socialAuth.controller.js` 
+  - Gaps: Business logic for user creation, account linking, and role assignment in controller.
+  - Remedy: Move social registration and linking flow to `IdentityService` or `SocialAuthRepository`.
+- `.\backend\controllers\stub.controller.js` 
+  - Gaps: File missing/not found in directory.
+  - Remedy: Remove reference from audit map as it appears to have been cleaned up.
+- `.\backend\controllers\sync.controller.js` 
+  - Gaps: Table-to-wave mapping logic in controller.
+  - Remedy: Move sync tier definitions to `SyncRepository` or a configuration file.
+- `.\backend\controllers\taxStatement.controller.js` 
+  - Gaps: Error-to-HTTP code mapping based on string matching in controller.
+  - Remedy: Use custom error classes to handle status code mapping in the error handler middleware.
+- `.\backend\controllers\telegram.controller.js` 
+  - Gaps: Demo mode "accept all" auth logic; auth coordination (code generation, memory management) in controller.
+  - Remedy: Move auth flow and code management to `TelegramService`.
+- `.\backend\controllers\telegramAuth.controller.js` 
+  - Gaps: Overlaps with `telegram.controller.js`; PII masking and verification coordination in controller.
+  - Remedy: Consolidate with `telegram.controller.js`; move verification flow to `TelegramService`.
+- `.\backend\controllers\testing.controller.js` 
+  - Gaps: `runTests` returns simulated data and doesn't execute actual shell commands.
+  - Remedy: Implement real test execution via `exec` (with safety) or integrate with a CI/CD reporting tool.
+- `.\backend\controllers\users.controller.js` 
+  - Gaps: DEPRECATED CODE: Contains duplicate methods with raw SQL mixed with repository calls; overlaps with `members`.
+  - Remedy: Deep clean file; remove raw SQL blocks; consolidate with `members.controller.js`.
+- `.\backend\controllers\userSettings.controller.js` 
+  - Gaps: Raw SQL building for dynamic updates; manual bcrypt usage; overlaps with `auth`.
+  - Remedy: Consolidate password/profile logic; move dynamic update construction to `UserSettingsRepository`.
+
+### Cluster 03: Backend API (Specialized Controllers)
+**Prompt:** Audit for lean architecture, data integrity, and financial accuracy. Focus on: (1) Ensuring treasury controllers implement proper financial immutability triggers; (2) Checking that payment and reconciliation controllers handle edge cases (partial payments, refunds, disputes); (3) Verifying that budget controllers enforce actual spending limits vs projections; (4) Ensuring collection controllers track both physical and digital collections properly; (5) Checking that fixed asset controllers implement proper depreciation logic; (6) Validating that pledge controllers connect to actual payment tracking; (7) Ensuring recurring payment controllers handle failures and retry logic; (8) Checking that project controllers tie financial data to project milestones; (9) Verifying that all financial controllers implement proper audit trails; (10) Ensuring controllers don't contain business logic that should be in repositories.
+- `.\backend\controllers\accountingExport.controller.js` 
+  - Gaps: File generation logic (CSV/IIF) is inside the controller; lacks multi-tenant isolation on export queues.
+  - Remedy: Move file formatting to an `ExportService`; enforce `church_id` on all export lookups.
+- `.\backend\controllers\budgets.controller.js` 
+  - Gaps: Redundant with `modules/treasury/controllers/budget.controller.js`; lacks utilization enforcement.
+  - Remedy: Delete in favor of the module-based controller; implement real-time utilization checks.
+- `.\backend\controllers\collection.controller.js` 
+  - Gaps: Business logic for statement generation (text padding/formatting) is in the controller; manual progress math.
+  - Remedy: Move statement logic to a `ReportService`; move progress calculation to `CollectionRepository`.
+- `.\backend\controllers\fixedAssets.controller.js` 
+  - Gaps: Depreciation math models (straight-line/declining-balance) are hardcoded in the controller.
+  - Remedy: Extract depreciation logic to a `FixedAssetService`; link asset disposals to treasury journal entries.
+- `.\backend\controllers\journalEntry.controller.js` 
+  - Gaps: Redundant with `modules/treasury/controllers/journalEntry.controller.js`.
+  - Remedy: Consolidate into the treasury module; ensure all entries implement double-entry validation.
+- `.\backend\controllers\manualPayment.controller.js` 
+  - Gaps: Receipt number generation logic and string formatting are in the controller.
+  - Remedy: Move receipt logic to a `ReceiptService`; implement "verified" status locking.
+- `.\backend\controllers\payment.controller.js` 
+  - Gaps: Redundant with `payments.controller.js`; tightly coupled to KopoKopo service.
+  - Remedy: Merge into a single Payment module; delegate all gateway-specific logic to a `PaymentGatewayService`.
+- `.\backend\controllers\payments.controller.js` 
+  - Gaps: Brittle refund logic; duplicates pledge handling; lacks comprehensive dispute handling.
+  - Remedy: Consolidate pledge management in Treasury; implement a standardized refund/dispute workflow.
+- `.\backend\controllers\pledges.controller.js` 
+  - Gaps: Pledge number generation and "amount paid" increment logic are in the controller.
+  - Remedy: Move increment logic to `PledgesRepository` (atomic updates); move numbering to a utility service.
+- `.\backend\controllers\projects.controller.js` 
+  - Gaps: Project code generation and milestone status updates are in the controller.
+  - Remedy: Move project business rules to a `ProjectService`; ensure financial data is tied to milestones.
+- `.\backend\controllers\reconciliation.controller.js` 
+  - Gaps: Forensic audit history (edit_history) assembly logic is in the controller.
+  - Remedy: Move audit trail generation to a repository hook or a specialized `AuditingService`.
+- `.\backend\controllers\recurringPayments.controller.js` 
+  - Gaps: Date math for "next_payment_date" (weekly/monthly/annual) is hardcoded in the controller.
+  - Remedy: Move interval logic to a `SchedulingService`; implement automated retry logic for failures.
+- `.\backend\controllers\treasury.controller.js` 
+  - Gaps: Extreme Controller Bloat (900+ lines); violates SRP by handling assets, vendors, and reconciliations in one file.
+  - Remedy: DEPRECATE; migrate all methods into the `modules/treasury` controllers.
+- `.\backend\controllers\treasuryDashboard.controller.js` 
+  - Gaps: Performs complex financial aggregations in the controller (net cash flow calculation).
+  - Remedy: Delegate all financial summaries to `TreasuryDashboardRepository` using CTEs.
+- `.\backend\controllers\vendors.controller.js` 
+  - Gaps: Vendor code generation and transaction count checks are in the controller.
+  - Remedy: Move vendor business rules to a `VendorService`; ensure vendor archiving instead of deletion if transactions exist.
+- `.\backend\modules\treasury\controllers\account.controller.js` 
+  - Gaps: Trial balance totaling logic is in the controller.
+  - Remedy: Move totaling and balance validation to a `FinanceService` or repository query.
+- `.\backend\modules\treasury\controllers\budget.controller.js` 
+  - Gaps: Budget comparison totaling and categorization are in the controller.
+  - Remedy: Move comparison summary logic to `BudgetRepository`.
+- `.\backend\modules\treasury\controllers\expense.controller.js` 
+  - Gaps: Pending approval totaling is in the controller.
+  - Remedy: Delegate reporting aggregations to `ExpenseRepository`.
+- `.\backend\modules\treasury\controllers\fund.controller.js` 
+  - Gaps: Fund balance totaling logic resides in the controller.
+  - Remedy: Move balance summary logic to `FundRepository`.
+- `.\backend\modules\treasury\controllers\index.js` 
+  - Gaps: Clean.
+  - Remedy: No changes needed.
+- `.\backend\modules\treasury\controllers\journalEntry.controller.js` 
+  - Gaps: Totals calculation and reversal labeling are in the controller.
+  - Remedy: Ensure `JournalEntry` model handles all totaling; move reversal logic to repository.
+
+### Cluster 04: Backend Middleware & Security
+**Prompt:** Audit for security robustness, performance optimization, and proper architectural separation. Focus on: (1) Identifying N+1 query risks in permission services and recommending bulk-fetching with caching; (2) Ensuring security helpers don't leak business logic (move resource ownership checks to repositories); (3) Validating JWT expiration times are appropriate for security context (1h access tokens for high-security areas); (4) Checking that middleware implements proper caching to avoid redundant DB hits; (5) Ensuring rate limiters use Redis-backed stores for production rather than in-memory; (6) Verifying CSRF protection has proper cookie attributes and configuration-driven exemptions; (7) Checking that role guards use standardized response formats; (8) Ensuring error handlers implement proper logging without exposing sensitive data; (9) Validating that all middleware follows the single responsibility principle; (10) Checking for proper identity mapping and token extraction standardization.
+- `.\backend\helpers\fieldPermissionService.js` 
+  - Gaps: High N+1 risk: `checkFieldPermission` performs a DB query for every individual field check. In a list view with 50 rows, this can trigger 500+ queries.
+  - Remedy: Implement bulk-fetching of permissions and cache the result in `req.user` for the duration of the request.
+- `.\backend\helpers\permissionChecker.js` 
+  - Gaps: Leaks business logic: `canAccessDepartment` defines who can see what data (Admin vs Dept Head), which belongs in the Service/Repository layer.
+  - Remedy: Restrict this helper to role-based structural checks; move deep resource ownership logic to the Repository layer.
+- `.\backend\helpers\security.js` 
+  - Gaps: Excessive session duration: `JWT_EXPIRES_IN` defaults to 7 days, which is risky for Treasury; `SALT_ROUNDS` is low for development (8).
+  - Remedy: Reduce Access Token TTL to 1h; enforce Refresh Tokens for session extension; standardize `SALT_ROUNDS` to 12 across all environments.
+- `.\backend\middleware\auth.js` 
+  - Gaps: Critical Scalability Bottleneck: `authenticateToken` executes `IdentityService.getIdentity` on every request, hitting the DB every time.
+  - Remedy: Implement a fast-lookup identity cache (Redis or local LRU) with a short TTL (5-15 mins).
+- `.\backend\middleware\churchContext.js` 
+  - Gaps: Silent failure: If `req.church_id` is missing, it proceeds without context. While okay for public routes, it lacks a "strict mode" for protected routes.
+  - Remedy: Add a `strictChurchContext` wrapper for routes where tenant isolation is mandatory.
+- `.\backend\middleware\csrf.js` 
+  - Gaps: Insecure bypass: Automatically exempts all `Bearer` tokens. If the frontend uses both Bearer headers and Cookies, this could be exploited via CSRF on the cookie.
+  - Remedy: Only bypass CSRF if *only* Bearer auth is present; enforce for all requests carrying session cookies.
+- `.\backend\middleware\errorHandler.js` 
+  - Gaps: Standardized but doesn't distinguish between "Safe" and "Unsafe" DB errors (potential schema leak in error messages).
+  - Remedy: Scrub raw PostgreSQL error details before sending to client in production.
+- `.\backend\middleware\identityGuard.js` 
+  - Gaps: Redundant logic: Duplicates token extraction and identity mapping found in `auth.js`.
+  - Remedy: Consolidate identity extraction into a single helper used by both middlewares.
+- `.\backend\middleware\pagination.js` 
+  - Gaps: Clean.
+  - Remedy: Ensure maxLimit (100) is enforced in the repository layer as well to prevent memory exhaustion.
+- `.\backend\middleware\rateLimiter.js` 
+  - Gaps: Deployment mismatch: Uses in-memory store, which fails to sync across multiple PM2 processes or load-balanced instances.
+  - Remedy: Configure `rate-limit-redis` for production environments.
+- `.\backend\middleware\roleGuard.js` 
+  - Gaps: Inconsistent response: Uses `ResponseHandler.forbidden()` which might deviate from the global `errorHandler.js` envelope.
+  - Remedy: Standardize all middleware to throw `AppError` and let the global handler manage the response shape.
+- `.\backend\middleware\securityMiddleware.js` 
+  - Gaps: Fragile security: `validateSQLInput` uses regex for injection prevention, which is easily bypassed and provides a false sense of security.
+  - Remedy: Deprecate the regex filter; mandate parameterized queries via ESLint rules and PR reviews.
+- `.\backend\middleware\tenantResolver.js` 
+  - Gaps: Query param priority: Allows `?tenant=slug` to override subdomain logic, which could be used for "tenant-jumping" if not strictly guarded.
+  - Remedy: In production, prioritize Host/Subdomain and only allow overrides for specific white-listed admin tools.
+- `.\backend\middleware\treasurySecurity.js` 
+  - Gaps: HIGH RISK: `requireMFA` is a placeholder that currently logs but does not block unauthorized sensitive operations.
+  - Remedy: Implement actual blocking logic based on the `mfa_verified` flag in the identity object.
+- `.\backend\middleware\validation.js` 
+  - Gaps: Basic sanitization: `sanitizeInput` uses a simple replace loop which is less robust than `express-validator`'s native sanitizers.
+  - Remedy: Refactor to use `body().escape()` and `body().trim()` for all defined validation rules.
+
+### Cluster 05: Backend Repositories (Core)
+**Prompt:** Audit for data access layer efficiency, query optimization, and architectural integrity. Focus on: (1) Identifying N+1 query patterns and recommending JOIN-based solutions; (2) Checking for fat repository bloat (50+ methods) and recommending splitting into specialized repositories; (3) Ensuring all analytics queries enforce proper church_id isolation to prevent data leakage; (4) Validating that base repositories implement mandatory tenant filtering to prevent bypassing multi-tenant safety; (5) Checking for expensive nested subqueries and recommending CTEs or materialized views; (6) Ensuring repositories don't contain business logic that should be in services; (7) Verifying proper use of indexes for frequently accessed columns; (8) Checking for redundant code across similar repositories (e.g., Members vs Users) and recommending consolidation; (9) Ensuring proper error handling for database failures; (10) Validating that repositories implement proper connection pooling and timeout handling.
+- `.\backend\repositories\ApprovalsRepository.js` 
+  - Gaps: `getApprovalAnalytics` lacks `church_id` filter (leakage risk); manual string interpolation for sorting columns.
+  - Remedy: Enforce `church_id` isolation in all analytics; use a whitelist for allowed sort columns.
+- `.\backend\repositories\base.repository.js` 
+  - Gaps: Redundant; duplicated with `BaseRepository.js` but uses a different architecture (Pool vs Client injection).
+  - Remedy: DELETE and migrate all usages to the standardized `BaseRepository.js`.
+- `.\backend\repositories\BaseRepository.js` 
+  - Gaps: Multi-tenant `church_id` is optional in core methods (security risk); lacks mandatory pagination; string-interpolated table names.
+  - Remedy: Enforce `church_id` in constructor or core methods; implement standardized limit/offset; use parameterized table references if possible.
+- `.\backend\repositories\DashboardRepository.js` 
+  - Gaps: `getSummary` executes 4 complex sub-queries via `Promise.all` which is inefficient; `getUserActivityLevel` uses a potentially expensive 4-way LEFT JOIN.
+  - Remedy: Refactor `getSummary` to use a single query with CTEs; use materialized views for activity levels.
+- `.\backend\repositories\DepartmentCategoriesRepository.js` 
+  - Gaps: Missing `church_id` isolation (categories appear to be global but should likely be tenant-specific).
+  - Remedy: Add `church_id` column to table and filters to repository.
+- `.\backend\repositories\DepartmentFeaturesRepository.js` 
+  - Gaps: `getDepartmentFeatures` uses a standard JOIN instead of checking against a global feature master list.
+  - Remedy: Ensure features can be enabled/disabled at the church level before being allocated to departments.
+- `.\backend\repositories\DepartmentRepository.js` 
+  - Gaps: Overlaps with `DepartmentsRepository.js`; `getRecentActivity` uses a heavy `UNION ALL` across communications and meetings.
+  - Remedy: Consolidate into a single repository; optimize activity query using a unified `activities` view.
+- `.\backend\repositories\DepartmentsRepository.js` 
+  - Gaps: `getAllWithStats` has a high N+1 risk: 3 correlated subqueries per department row.
+  - Remedy: Refactor to `LEFT JOIN` and `GROUP BY` to fetch counts in a single pass.
+- `.\backend\repositories\MemberGivingRepository.js` 
+  - Gaps: Performs year-math and date-formatting (`TO_CHAR`) in SQL, which is fine, but lacks index hints for large giving history tables.
+  - Remedy: Ensure composite indexes exist on `(member_id, payment_date, status)`.
+- `.\backend\repositories\MembersRepository.js` 
+  - Gaps: `getWithContactsAndGroups` uses nested `json_agg` subqueries which can lag on large member lists.
+  - Remedy: Optimize with focused JOINs and ensure `church_id` is indexed on the junction tables.
+- `.\backend\repositories\TreasuryDashboardRepository.js` 
+  - Gaps: `getDashboardStats` uses 4 individual `SELECT` sub-queries in the main select clause (Performance bottleneck).
+  - Remedy: Refactor to use a single scan with filtered aggregations.
+- `.\backend\repositories\TreasuryRepository.js` 
+  - Gaps: "Fat Repository" bloat (700+ lines); handles unrelated entities like Vendors, Pledges, and Fixed Assets in one file.
+  - Remedy: Split into specialized repos (`VendorsRepository`, `PledgesRepository`, etc.) following SRP.
+- `.\backend\repositories\UserRepository.js` 
+  - Gaps: `getMemberDirectory` re-implements complex filtering; redundant activity history fetching logic. Overlaps with `UsersRepository.js`.
+  - Remedy: Consolidate into a single repository; use shared QueryBuilder for directory filtering.
+- `.\backend\repositories\UserSettingsRepository.js` 
+  - Gaps: Redundant password hashing logic hints; lacks church context for activity feeds.
+  - Remedy: Ensure all preference updates are audited; add tenant isolation to activity feeds.
+- `.\backend\repositories\UsersRepository.js` 
+  - Gaps: Duplicated logic with `UserRepository.js`; contains manual role-update loops which are not atomic.
+  - Remedy: Consolidate with `UserRepository.js`; use a single transaction for user + role updates.
+
+### Cluster 06: Backend Repositories (Specialized)
+**Prompt:** Audit for domain-specific data access patterns, performance optimization, and data integrity. Focus on: (1) Ensuring specialized repositories implement domain-specific validation rules; (2) Checking that analytics repositories use efficient aggregation strategies (materialized views, CTEs); (3) Validating that activity feed repositories implement proper pagination and filtering; (4) Ensuring chat repositories handle real-time data consistency properly; (5) Checking that content repositories implement proper versioning and publishing workflows; (6) Verifying that custom report repositories sanitize user-generated SQL to prevent injection; (7) Ensuring budget repositories enforce actual vs projected spending validation; (8) Checking that collection repositories handle both digital and physical collection methods; (9) Validating that audit log repositories implement immutable logging patterns; (10) Ensuring all specialized repositories follow the same base repository patterns for consistency.
+- `.\backend\repositories\AccessibilityRepository.js` 
+  - Gaps: Hardcoded `id = 1` for settings prevents multi-church or per-user accessibility configurations.
+  - Remedy: Add `user_id` or `church_id` column and filter by the current context.
+- `.\backend\repositories\AccountingExportRepository.js` 
+  - Gaps: Total absence of `church_id` isolation in most methods; `ANY($1)` used for entry lines without tenant checking.
+  - Remedy: Mandate `church_id` on all fetch calls; join with parent tables to verify ownership of IDs in `ANY` arrays.
+- `.\backend\repositories\ActivityFeedRepository.js` 
+  - Gaps: Massive performance risk: 4-way `UNION ALL` across announcements, events, members, and approvals on every fetch.
+  - Remedy: Implement a materialized `activities` view or a dedicated audit/activity log table to avoid multi-table unions.
+- `.\backend\repositories\AIRepository.js` 
+  - Gaps: Rate limit checking relies on a stored procedure (`check_ai_rate_limit`) which may not be present in all environments/migrations.
+  - Remedy: Standardize the rate limit logic into the repository using CTEs; ensure the DB function is documented in migrations.
+- `.\backend\repositories\AnalyticsRepository.js` 
+  - Gaps: SQL Injection risk: `INTERVAL '${days} days'` is string-interpolated. Multi-tenant leakage: `getMemberDemographics` and `getMemberActivity` omit `church_id`.
+  - Remedy: Parameterize all intervals; enforce `church_id` filters in demographics and activity queries.
+- `.\backend\repositories\AnnouncementsRepository.js` 
+  - Gaps: `getWithAuthorDetails` and `getRecent` have inconsistent `church_id` parameterization (optional instead of mandatory).
+  - Remedy: Make `church_id` a mandatory constructor argument or required method parameter.
+- `.\backend\repositories\AuditLogRepository.js` 
+  - Gaps: JSONB search (`new_values ? $param`) is inefficient without GIN indexes; lacks multi-tenant safety on general logs.
+  - Remedy: Add GIN indexes to `old_values` and `new_values`; enforce `church_id` isolation in the WHERE clause.
+- `.\backend\repositories\AuthRepository.js` 
+  - Gaps: `refresh_tokens` and `password_reset_tokens` tables lack `church_id` isolation (session hijacking risk across tenants).
+  - Remedy: Add `church_id` to token tables and verify it against the current tenant during validation.
+- `.\backend\repositories\BudgetsRepository.js` 
+  - Gaps: Overlaps 100% with treasury module; manual transaction management (`BEGIN/COMMIT`) is brittle.
+  - Remedy: Delete in favor of the module-based repository; use `BaseRepository.transaction()` helper.
+- `.\backend\repositories\ChartOfAccountsRepository.js` 
+  - Gaps: Performance bottleneck: 3 correlated subqueries per row in `getAllWithHierarchy`.
+  - Remedy: Refactor to a single `LEFT JOIN` and aggregate counts/sums using `GROUP BY`.
+- `.\backend\repositories\ChatRepository.js` 
+  - Gaps: `createMessage` uses `JSON.stringify` for metadata without explicit sanitization; `getMessagesByRoomId` lacks tenant context.
+  - Remedy: Enforce `church_id` via the `chat_rooms` join; sanitize JSON inputs.
+- `.\backend\repositories\ChurchRepository.js` 
+  - Gaps: `getUserCount`, `getMemberCount`, etc., execute 4 sequential count queries instead of one aggregated scan.
+  - Remedy: Consolidate stats into a single query using multiple counts or a CTE.
+- `.\backend\repositories\CollectionRepository.js` 
+  - Gaps: Non-atomic updates: separate calls for `updateCurrentAmount` and `updateStatus` create a race condition.
+  - Remedy: Use a single CTE/Transaction that updates amount and flips status in one operation.
+- `.\backend\repositories\CommentsRepository.js` 
+  - Gaps: `getCommentsForEntity` hardcodes "Unknown" as a fallback for user name, hiding data integrity issues.
+  - Remedy: Use `COALESCE` with actual database defaults; implement tenant isolation for comments.
+- `.\backend\repositories\ContentRepository.js` 
+  - Gaps: Duplicate logic: revision numbering and slug generation are handled here and in the controller.
+  - Remedy: Centralize domain logic in a `ContentService`; enforce `church_id` on all public-facing methods.
+- `.\backend\repositories\CustomReportRepository.js` 
+  - Gaps: HIGH SECURITY RISK: `executeCustomQuery` allows arbitrary SQL execution; dynamically built queries from user input.
+  - Remedy: Implement a whitelist-based query builder; strictly parameterize all values; never allow raw table/column interpolation from req.body.
+- `.\backend\repositories\DocumentationRepository.js` 
+  - Gaps: Lacks multi-tenant isolation; documentation is currently global but should likely be church-specific.
+  - Remedy: Add `church_id` column and filter all CRUD operations.
+- `.\backend\repositories\DocumentsRepository.js` 
+  - Gaps: Performance risk: `unnest(string_to_array(tags, ','))` on a `DISTINCT` query will lag as the table grows.
+  - Remedy: Move tags to a junction table (`document_tags`) for efficient indexing and retrieval.
+- `.\backend\repositories\DocumentVersionsRepository.js` 
+  - Gaps: `grantDocumentPermission` uses complex `ON CONFLICT` logic that might fail if both `user_id` and `department_id` are provided.
+  - Remedy: Implement explicit validation to ensure only one ID is provided or handle both gracefully with a composite key.
+- `.\backend\repositories\EventsRepository.js` 
+  - Gaps: `getWithCreatorDetails` and `getEventAttendees` lack `church_id` safety.
+  - Remedy: Enforce tenant isolation to prevent one church from seeing another's event lists.
+- `.\backend\repositories\FinancialAlertsRepository.js` 
+  - Gaps: `checkFundAlerts` performs an in-memory filter (`.filter(...)`) on database results.
+  - Remedy: Move the balance threshold logic into the SQL `HAVING` clause for better efficiency.
+- `.\backend\repositories\FinancialForecastingRepository.js` 
+  - Gaps: CRITICAL LEAKAGE: `getCashFlowHistoricalData` performs a `UNION ALL` across all churches without a `church_id` filter.
+  - Remedy: Enforce `church_id` on both sides of the `UNION` to prevent cross-tenant data mixing.
+- `.\backend\repositories\FixedAssetsRepository.js` 
+  - Gaps: `createFixedAsset` uses manual string interpolation for the asset code (`FA-${...}`).
+  - Remedy: Parameterize the code generation or use a DB sequence/trigger.
+- `.\backend\repositories\GalleryAlbumsRepository.js` 
+  - Gaps: Extreme N+1 risk: 2 subqueries per row to count photos and sub-albums in `getAllWithDetails`.
+  - Remedy: Refactor to `LEFT JOIN` and `GROUP BY`.
+- `.\backend\repositories\GalleryRepository.js` 
+  - Gaps: Redundant with `GalleryAlbumsRepository`; `searchPhotos` uses `DISTINCT` which is expensive on large text columns.
+  - Remedy: Consolidate gallery logic; use Full-Text Search (TSVECTOR) instead of `ILIKE %query%`.
+- `.\backend\repositories\GatewayRepository.js` 
+  - Gaps: `registerDevice` ignores existing church associations (potential for a device to "jump" churches if ID is known).
+  - Remedy: Add check to ensure `deviceId` is either new or already belongs to the requested `church_id`.
+- `.\backend\repositories\JournalEntryRepository.js` 
+  - Gaps: Manual balancing check (`> 0.01`) is prone to rounding errors. `status = 'posted'` is hardcoded on creation.
+  - Remedy: Use numeric types and DB triggers for balancing; implement a proper draft/post workflow.
+- `.\backend\repositories\ManualPaymentRepository.js` 
+  - Gaps: `getTodayPaymentCount` is susceptible to race conditions for receipt numbering.
+  - Remedy: Use a database sequence or a transaction with a "LOCK TABLE" for high-concurrency numbering.
+- `.\backend\repositories\MobileRepository.js` 
+  - Gaps: CRITICAL: `mobileLogin` hardcodes `churchId: 1`. `processContactChanges` relies on client timestamps for conflict resolution.
+  - Remedy: Correct church identification from user profile; use server-side "last updated" for sync priority.
+- `.\backend\repositories\MonitoringRepository.js` 
+  - Gaps: Lacks multi-tenant isolation; system logs are global.
+  - Remedy: Filter logs by church context where applicable.
+- `.\backend\repositories\MpesaRepository.js` 
+  - Gaps: Clean but missing index hints for high-volume transaction history.
+  - Remedy: Ensure `church_id` and `created_at` are indexed together.
+- `.\backend\repositories\NotificationsRepository.js` 
+  - Gaps: `createBulkNotifications` uses a loop with sequential `INSERT`s (Performance risk).
+  - Remedy: Implement a batch insert query to create all notifications in a single round-trip.
+- `.\backend\repositories\PaletteRepository.js` 
+  - Gaps: `getAllWithColors` and `getPaletteWithColors` use `json_object_agg`, which might fail if duplicate keys exist.
+  - Remedy: Ensure unique constraints on `color_palette_colors`; enforce tenant isolation.
+- `.\backend\repositories\PaymentRepository.js` 
+  - Gaps: Severe technical debt: 90% overlap with `PaymentsRepository.js`.
+  - Remedy: Consolidate into a single repository with clear multi-tenant safety.
+- `.\backend\repositories\PaymentsRepository.js` 
+  - Gaps: `getPledgesWithFilters` performs heavy aggregation (`SUM(pp.amount)`) on every fetch.
+  - Remedy: Cache `amount_paid` on the pledge record and update via triggers/hooks.
+- `.\backend\repositories\PerformanceRepository.js` 
+  - Gaps: Lacks multi-tenant isolation for cache statistics.
+  - Remedy: Enforce `church_id` in the `WHERE` clause.
+- `.\backend\repositories\PledgesRepository.js` 
+  - Gaps: Clean but uses manual string interpolation for pledge numbers.
+  - Remedy: Use parameterized code generation.
+- `.\backend\repositories\ProjectsRepository.js` 
+  - Gaps: `getProjectAnalytics` uses 3 sequential subqueries/joins for milestones and contributions.
+  - Remedy: Consolidate into a single query with filtered aggregations.
+- `.\backend\repositories\ReconciliationRepository.js` 
+  - Gaps: `pushTransaction` uses `uuid_generate_v4()` directly in SQL, which requires the `ossp` extension to be enabled.
+  - Remedy: Ensure migration 001/002 handles extension creation; implement tenant safety.
+- `.\backend\repositories\RecurringPaymentsRepository.js` 
+  - Gaps: `updateRecurringPayment` requires an additional lookup to recalculate next payment date.
+  - Remedy: Move date calculation logic to a repository hook or service to avoid the extra round-trip.
+- `.\backend\repositories\ReportsRepository.js` 
+  - Gaps: SQL Injection risk: `DATE_TRUNC($1, ...)` might not support parameterization of the interval string in all drivers.
+  - Remedy: Use a whitelist for the `groupBy` parameter to ensure valid intervals are passed.
+- `.\backend\repositories\SearchRepository.js` 
+  - Gaps: `globalSearch...` methods omit `church_id`, allowing a user to search for entities across all churches.
+  - Remedy: Enforce `church_id` in every search query.
+- `.\backend\repositories\SecurityRepository.js` 
+  - Gaps: Hardcoded `id = 1` for security settings. `getFailedLoginAttempts` is global (not tenant-isolated).
+  - Remedy: Add `church_id` isolation to logs and settings.
+- `.\backend\repositories\SEORepository.js` 
+  - Gaps: Hardcoded `id = 1` prevents church-specific SEO configurations.
+  - Remedy: Implement tenant isolation.
+- `.\backend\repositories\SettingsRepository.js` 
+  - Gaps: `importSetting` uses `ON CONFLICT (key)` which will fail in a multi-tenant environment where keys are shared across churches.
+  - Remedy: Use a composite unique key `(key, church_id)` for settings.
+- `.\backend\repositories\SmsAutomationRepository.js` 
+  - Gaps: Condition evaluation logic is in the controller but could be optimized with JSONB path queries in the repository.
+  - Remedy: Explore Postgres `@>` and `?` operators for high-performance condition matching.
+- `.\backend\repositories\SMSProviderRepository.js` 
+  - Gaps: Clean but missing multi-tenant validation for API keys.
+  - Remedy: Ensure `api_key` updates are audited and isolated.
+- `.\backend\repositories\SMSRepository.js` 
+  - Gaps: `getCampaigns` uses 2 correlated subqueries for sent count and delivery rate.
+  - Remedy: Refactor to a single join with `sms_logs` and group by.
+- `.\backend\repositories\SocialAuthRepository.js` 
+  - Gaps: `createUser` lacks `church_id` assignment during social registration.
+  - Remedy: Pass `church_id` from the OAuth session context.
+- `.\backend\repositories\SyncRepository.js` 
+  - Gaps: `getDelta` uses string interpolation for the table name inside a loop (`SELECT * FROM ${table}`).
+  - Remedy: Validate table names against a whitelist before execution to prevent SQL injection.
+- `.\backend\repositories\TaxStatementRepository.js` 
+  - Gaps: `getTaxDeductiblePayments` uses `EXTRACT(YEAR FROM p.payment_date)` which bypasses indexes on `payment_date`.
+  - Remedy: Use a range query (`payment_date >= 'YYYY-01-01' AND payment_date <= 'YYYY-12-31'`) to leverage indexes.
+- `.\backend\repositories\TelegramAuthRepository.js` 
+  - Gaps: `unsetAllDefaults` is global and will unset defaults for all churches in the system.
+  - Remedy: Enforce `church_id` on all default-setting operations.
+- `.\backend\repositories\TelegramRepository.js` 
+  - Gaps: Hardcoded `id = 1` for general settings. `getChannelStats` uses 3 sequential subqueries.
+  - Remedy: Implement tenant isolation and consolidated statistics queries.
+- `.\backend\repositories\TestingRepository.js` 
+  - Gaps: Lacks church context for test results.
+  - Remedy: Add `church_id` to `test_results` table.
+- `.\backend\repositories\VendorsRepository.js` 
+  - Gaps: `updateVendor` uses `COALESCE` with 10+ parameters, which can be hard to maintain.
+  - Remedy: Use a structured update helper from `BaseRepository`.
+
+### Cluster 07: Backend Services
+**Prompt:** Audit for business logic encapsulation, third-party integration reliability, and service layer efficiency. Focus on: (1) Ensuring services contain business logic rather than data access (which belongs in repositories); (2) Checking that payment services handle edge cases (timeouts, partial failures, retries) properly; (3) Validating that SMS services implement proper delivery tracking and fallback mechanisms; (4) Ensuring gallery sync services handle large datasets efficiently with proper batching; (5) Checking that AI content services implement proper rate limiting and cost controls; (6) Verifying that notification services support multiple channels (email, SMS, push) with proper fallback; (7) Ensuring reconciliation services implement proper audit trails for financial integrity; (8) Checking that cache services implement proper invalidation strategies; (9) Validating that identity services implement proper token lifecycle management; (10) Ensuring all services implement proper error handling and logging without exposing sensitive data.
+- `.\backend\modules\payments\services\payment.service.js` 
+  - Gaps: Direct `this.transaction` usage in service layer; redundant M-Pesa initiation logic (overlaps with `MpesaService.js`).
+  - Remedy: Move M-Pesa initiation exclusively to `MpesaService.js`; use `BaseRepository.transaction` for atomic operations.
+- `.\backend\services\accounting.service.js` 
+  - Gaps: Performs complex SQL aggregations for balances and trial balances in the service layer.
+  - Remedy: Move heavy SQL logic to `ChartOfAccountsRepository.js`; keep service focused on business rules like double-entry validation.
+- `.\backend\services\aiContentService.js` 
+  - Gaps: No PII scrubbing of content before sending to external Gemini API.
+  - Remedy: Integrate `piiMasker.js` to scrub sensitive data (emails, phone numbers) before API submission.
+- `.\backend\services\apiHub.js` 
+  - Gaps: Clean. Excellent implementation of retry and failover patterns.
+  - Remedy: No changes needed.
+- `.\backend\services\chatService.js` 
+  - Gaps: Hardcoded slash commands; no permission check before executing commands like `/pay`.
+  - Remedy: Implement a command registry; add role-based guard checks to `processMessage`.
+- `.\backend\services\documentApprovalService.js` 
+  - Gaps: Sequential notification loops in `createApprovalRequest` could fail partially.
+  - Remedy: Use `Promise.allSettled` or a bulk notification helper for reliability.
+- `.\backend\services\galleryCacheService.js` 
+  - Gaps: Clean. Standardized Redis caching implementation.
+  - Remedy: No changes needed.
+- `.\backend\services\gallerySync.js` 
+  - Gaps: Loops through Telegram messages with sequential DB inserts (Performance risk).
+  - Remedy: Implement batch insertion for media metadata.
+- `.\backend\services\hybridSMS.js` 
+  - Gaps: `loadProviders` is skipped on startup; hardcoded batch threshold (400).
+  - Remedy: Ensure providers are loaded after DB connection; move threshold to environment variable.
+- `.\backend\services\IdentityService.js` 
+  - Gaps: Standardized identity shape is good, but lacks caching for the resulting object.
+  - Remedy: Implement a short-lived Redis cache for `getIdentity` to solve the middleware bottleneck found in Cluster 04.
+- `.\backend\services\kopokopo.js` 
+  - Gaps: Hardcoded church name in QR generation; business logic for member payment history updates is in the service.
+  - Remedy: Use `churchContext` for branding; delegate payment history updates to a dedicated `PaymentHistoryService`.
+- `.\backend\services\MpesaService.js` 
+  - Gaps: Direct `pool.query` for logging STK pushes; missing retry logic for token generation.
+  - Remedy: Move logging to `MpesaRepository.js`; add exponential backoff for Safaricom OAuth calls.
+- `.\backend\services\nameMatcher.js` 
+  - Gaps: Clean. Comprehensive implementation of fuzzy matching algorithms.
+  - Remedy: No changes needed.
+- `.\backend\services\notificationService.js` 
+  - Gaps: WebSocket emission in `sendRealTimeNotification` doesn't check if user is actually connected.
+  - Remedy: Add connection tracking to prevent redundant emission attempts.
+- `.\backend\services\reconciliationService.js` 
+  - Gaps: Hardcoded 3-day window for date matching; uses `Math.abs` for currency matching without rounding considerations.
+  - Remedy: Move date window to config; use `BigInt` or decimal math for financial comparisons to avoid floating point errors.
+- `.\backend\services\redisCache.js` 
+  - Gaps: Hybrid mode implementation is robust.
+  - Remedy: No changes needed.
+- `.\backend\services\SmsHub.js` 
+  - Gaps: Redundant with `hybridSMS.js`.
+  - Remedy: Consolidate logic into `hybridSMS.js` and delete `SmsHub.js`.
+- `.\backend\services\telegramClient.service.js` 
+  - Gaps: Direct file system writes for session storage is not scalable for multi-tenant environments.
+  - Remedy: Move session storage to database (JSONB) or Redis.
+- `.\backend\services\telegramMTProto.js` 
+  - Gaps: Duplicate of `telegramClient.service.js`.
+  - Remedy: Merge MTProto logic into a single Telegram service.
+- `.\backend\services\telegramService.js` 
+  - Gaps: Hardcoded message split length (4096); manual `pool.query` for webhook handling.
+  - Remedy: Move message splitting to a utility; delegate database updates to `TelegramRepository.js`.
+
+### Cluster 08: Backend Schema & Models
+**Prompt:** Audit for data integrity, schema efficiency, and proper database design patterns. Focus on: (1) Ensuring all tables have proper primary keys and foreign key constraints; (2) Checking for missing indexes on frequently queried columns; (3) Validating that migrations are reversible and don't contain destructive operations without safeguards; (4) Ensuring models implement proper validation rules at the schema level; (5) Checking that UUID vs auto-increment ID strategies are consistent across related tables; (6) Verifying that financial tables implement proper immutability triggers for audit trails; (7) Ensuring models don't contain business logic that should be in services; (8) Checking for proper data types (numeric/decimal for financial data, text/varchar for strings); (9) Validating that schema migrations handle existing data properly during schema changes; (10) Ensuring proper normalization while avoiding over-normalization that impacts query performance.
+- `.\backend\migrations\004_gallery_schema.sql` 
+  - Gaps: Lacks `church_id` column for multi-tenant isolation.
+  - Remedy: Add `church_id INT REFERENCES churches(id)` to all gallery tables.
+- `.\backend\migrations\005_fix_missing_columns.sql` 
+  - Gaps: Ad-hoc fix script; doesn't address broader schema inconsistencies.
+  - Remedy: Consolidate into a baseline migration set.
+- `.\backend\migrations\006_settings_schema.sql` 
+  - Gaps: Global settings table lacks tenant isolation.
+  - Remedy: Add `church_id` and unique constraint on `(key, church_id)`.
+- `.\backend\migrations\007_auth_tables.sql` 
+  - Gaps: `refresh_tokens` and `password_reset_tokens` lack church context.
+  - Remedy: Add `church_id` to prevent cross-tenant session hijacking.
+- `.\backend\migrations\008_permissions_schema.sql` 
+  - Gaps: Inconsistent ID types (UUID for roles, SERIAL for others).
+  - Remedy: Standardize on UUID for all primary keys across the system.
+- `.\backend\models\User.js` 
+  - Gaps: Direct `pool.query` usage; hardcoded salt rounds (10); `findBy` methods omit inactive users.
+  - Remedy: Move DB logic to `UserRepository.js`; use `process.env.BCRYPT_ROUNDS`; allow fetching inactive users for admin views.
+- `.\backend\modules\payments\models\index.js` 
+  - Gaps: Empty or missing.
+  - Remedy: Implement index to export standardized payment models.
+- `.\backend\modules\payments\models\Payment.js` 
+  - Gaps: `toDatabase` method misses `church_id`.
+  - Remedy: Include `church_id` in serialization for repository usage.
+- `.\backend\modules\treasury\models\Account.js` 
+  - Gaps: Missing `church_id` in `toDatabase`.
+  - Remedy: Add mandatory `church_id` mapping.
+- `.\backend\modules\treasury\models\BankReconciliation.js` 
+  - Gaps: `reconcile` method throws generic Error; missing `church_id`.
+  - Remedy: Use `AppError`; add `church_id` to model and database mapping.
+- `.\backend\modules\treasury\models\Budget.js` 
+  - Gaps: `variance_percentage` calculation vulnerable to division by zero if budgeted is 0.
+  - Remedy: Add guard clause to return 0 if `total_budgeted` is 0.
+- `.\backend\modules\treasury\models\Contribution.js` 
+  - Gaps: No `church_id` in `toDatabase`.
+  - Remedy: Add mandatory `church_id` field.
+- `.\backend\modules\treasury\models\Expense.js` 
+  - Gaps: Lacks automated budget utilization check logic.
+  - Remedy: Add `checkBudgetFit(budget)` method to encapsulate over-spending rules.
+- `.\backend\modules\treasury\models\FixedAsset.js` 
+  - Gaps: Clean. Excellent depreciation logic.
+  - Remedy: Ensure `church_id` is added to `toDatabase`.
+- `.\backend\modules\treasury\models\Fund.js` 
+  - Gaps: No `church_id` in `toDatabase`.
+  - Remedy: Add mandatory `church_id`.
+- `.\backend\modules\treasury\models\index.js` 
+  - Gaps: Exports models individually.
+  - Remedy: Maintain for consistency with module structure.
+- `.\backend\modules\treasury\models\JournalEntry.js` 
+  - Gaps: Floating point precision risk in `isBalanced` (uses 0.01 tolerance).
+  - Remedy: Use `BigInt` or specialized currency library for exact balance matching.
+- `.\backend\modules\treasury\models\Pledge.js` 
+  - Gaps: `recordPayment` doesn't validate if amount exceeds total.
+  - Remedy: Add overflow validation to ensure payments don't exceed pledge without warning.
+- `.\backend\modules\treasury\models\Project.js` 
+  - Gaps: No `church_id` in `toDatabase`.
+  - Remedy: Add mandatory `church_id`.
+- `.\backend\modules\treasury\models\Vendor.js` 
+  - Gaps: No `church_id` in `toDatabase`.
+  - Remedy: Add mandatory `church_id`.
+- `.\backend\scripts\add-video-support.sql` 
+  - Gaps: Ad-hoc schema modification.
+  - Remedy: Consolidate into baseline migrations.
+- `.\backend\scripts\create-gallery-table.sql` 
+  - Gaps: Redundant with `004_gallery_schema.sql`.
+  - Remedy: Delete and use standard migrations folder.
+- `.\backend\scripts\create-indexes.sql` 
+  - Gaps: Missing GIN indexes for JSONB search (violates performance requirements).
+  - Remedy: Add GIN indexes for `audit_log`, `settings`, and `gallery` metadata.
+- `.\backend\scripts\create-palette-tables.sql` 
+  - Gaps: Uses UUID for primary keys while migrations use SERIAL.
+  - Remedy: Standardize ID types across all scripts and migrations.
+
+### Cluster 09: Frontend Core & State
+**Prompt:** Audit for dependency optimization, state management efficiency, and bundle size reduction. Focus on: (1) Identifying global state overuse in contexts causing unnecessary re-renders (extract to local hooks); (2) Checking for heavy dependencies that can be replaced (axios → fetch, react-toastify → custom Toast); (3) Ensuring proper tree-shaking for large libraries (recharts, lucide-react); (4) Validating that contexts don't become "kitchen sinks" for unrelated data; (5) Checking for missing role-based route guards on protected routes; (6) Ensuring proper bundle chunking in vite.config.js to isolate heavy libraries; (7) Verifying that hooks implement proper caching strategies (SWR/React Query patterns); (8) Checking for missing real-time update mechanisms (WebSocket integration); (9) Ensuring contexts implement proper error boundaries and retry logic; (10) Validating that state management follows the principle of colocation (state near where it's used).
+- `.\frontend\src\App.jsx` 
+  - Gaps: Top-level providers (Settings, ColorPalette, Toast) are deeply nested, creating a "provider hell" pattern that complicates the component tree.
+  - Remedy: Implement a centralized `AppProviders` composition component to flatten the tree and improve maintainability.
+- `.\frontend\src\main.jsx` 
+  - Gaps: The `displayServerStatus` check is awaited before `ReactDOM.createRoot`, which blocks the initial application mount; global Axios configuration might conflict with module-specific needs.
+  - Remedy: Move the server health check to an asynchronous background effect within a provider; centralize API configuration in a dedicated `api.js` utility.
+- `.\frontend\src\router.jsx` 
+  - Gaps: Clean. Employs modern `createBrowserRouter` with clear lazy-loading boundaries for shells.
+  - Remedy: No changes needed.
+- `.\frontend\src\contexts\AuthContext.jsx` 
+  - Gaps: CSRF token fetch is not explicitly awaited before initialization; contains complex Axios interceptor logic that could be decoupled for better testing.
+  - Remedy: Implement a state-based ready-guard to ensure CSRF and initial profile fetch are completed before allowing app interaction.
+- `.\frontend\src\contexts\ColorPaletteContext.jsx` 
+  - Gaps: Uses a valid but non-React "escape hatch" by manipulating `document.documentElement.style` directly; redundant with `PaletteContext.jsx`.
+  - Remedy: Consolidate all theme logic here; ensure all Consumers use `useMemo` to prevent re-renders when only sub-states change.
+- `.\frontend\src\contexts\ContentContext.jsx` 
+  - Gaps: Missing `useMemo` for the provider value object, causing every consumer to re-render whenever any state (content, categories, tags) updates.
+  - Remedy: Wrap the exported value in `useMemo`; use the centralized `api` instance from `AuthContext` instead of global `axios`.
+- `.\frontend\src\contexts\GalleryContext.jsx` 
+  - Gaps: Missing `useMemo` for provider value; manually tracks loading/error states for every method instead of using a standardized fetching pattern.
+  - Remedy: Wrap value in `useMemo`; refactor to use a centralized data-fetching utility or hook.
+- `.\frontend\src\contexts\MembersContext.jsx` 
+  - Gaps: Missing `useMemo` for provider value; `useMembers` hook provides an "empty" fallback if used outside provider, which might mask integration bugs.
+  - Remedy: Wrap value in `useMemo`; enforce strict provider usage to ensure data consistency.
+- `.\frontend\src\contexts\PaletteContext.jsx` 
+  - Gaps: DEPRECATED: Redundant with `ColorPaletteContext.jsx`; lacks modernization (missing `useMemo`).
+  - Remedy: DELETE and migrate all remaining usages to `ColorPaletteContext.jsx`.
+- `.\frontend\src\contexts\SettingsContext.jsx` 
+  - Gaps: Missing `useMemo` for provider value; uses global `axios` instead of the authenticated `api` instance.
+  - Remedy: Wrap value in `useMemo`; refactor to use `useAuth().api` for consistency.
+- `.\frontend\src\contexts\TelegramContext.jsx` 
+  - Gaps: Missing `useMemo` for provider value; hardcoded `/api/` prefixes in URLs bypass the centralized API instance logic.
+  - Remedy: Wrap value in `useMemo`; use the shared `api` instance to benefit from unified interceptors.
+- `.\frontend\src\contexts\ToastContext.jsx` 
+  - Gaps: Missing `useMemo` for provider value; hardcoded 3000ms timeout for all toast types.
+  - Remedy: Wrap value in `useMemo`; allow configurable timeouts per severity level.
+- `.\frontend\src\hooks\useActivityFeed.js` 
+  - Gaps: Manual `URLSearchParams` construction is brittle; polling logic in `useEffect` is empty/incomplete.
+  - Remedy: Use `qs` or axios params for clean queries; implement robust polling using `setInterval` with proper cleanup.
+- `.\frontend\src\hooks\useDataFetch.js` 
+  - Gaps: CRITICAL SECURITY RISK: Uses native `fetch` which bypasses the Axios interceptors that attach JWT tokens and CSRF headers.
+  - Remedy: Refactor to use the configured `axios` instance exclusively.
+- `.\frontend\src\hooks\useFeatureFlag.js` 
+  - Gaps: Clean. Robust implementation of percentage-based rollouts and user-level overrides.
+  - Remedy: No changes needed.
+- `.\frontend\src\hooks\useFieldPermissions.js` 
+  - Gaps: Fetches permissions from the server on every module mount without any client-side caching.
+  - Remedy: Implement a simple session-based cache to avoid redundant permission lookups.
+- `.\frontend\src\hooks\usePasswordConfirmation.js` 
+  - Gaps: Modal state is local to the hook; using it in multiple components will result in multiple modal instances.
+  - Remedy: Move the password confirmation state to a global provider to ensure consistent UI singleton behavior.
+- `.\frontend\src\hooks\usePermission.js` 
+  - Gaps: Clean. Excellent convenience wrapper for AuthContext methods.
+  - Remedy: No changes needed.
+- `.\frontend\src\layouts\AuthLayout.jsx` 
+  - Gaps: Contains hardcoded "SDA Church Kiserian Main" branding, violating multi-tenant flexibility.
+  - Remedy: Fetch church branding (name, logo, accent colors) from `SettingsContext`.
+- `.\frontend\src\layouts\DashboardLayout.jsx` 
+  - Gaps: Lacks an Error Boundary around the `Outlet`, meaning a crash in any dashboard page will take down the entire shell.
+  - Remedy: Wrap `Outlet` in a local `ErrorBoundary` with a specialized "Dashboard Error" fallback.
+- `.\frontend\src\layouts\PublicLayout.jsx` 
+  - Gaps: Hardcoded contact information and social links in the footer.
+  - Remedy: Dynamically render footer content from `SettingsContext`.
+
+### Cluster 10: Frontend UI Primitives
+**Prompt:** Audit for mobile responsiveness, design system consistency, and accessibility compliance. Focus on: (1) Ensuring all data tables have horizontal scroll wrappers or card view fallbacks for mobile; (2) Checking for hardcoded color values that don't respect theme changes (use semantic utility classes); (3) Implementing professional shimmer animations instead of simple pulse for loading states; (4) Ensuring components implement proper error boundaries with retry callbacks; (5) Checking for missing mobile action bars for quick access to key features; (6) Validating that all components follow the established design system tokens; (7) Ensuring proper ARIA labels and keyboard navigation support; (8) Checking that components implement proper loading states per component rather than global loading; (9) Verifying that modals and dialogs implement proper focus management; (10) Ensuring all primitive components are properly accessible and responsive across device sizes.
+- `.\frontend\src\index.css` 
+  - Gaps: Successfully implements semantic tokens for light/dark modes, but `@layer components` contains `!important` overrides which might indicate specificity issues in the CSS architecture.
+  - Remedy: Refactor CSS layers to remove `!important` flags; ensure all Tailwind utility classes follow the design system tokens.
+- `.\frontend\src\components\common\Breadcrumb.jsx` 
+  - Gaps: Auto-generation logic is robust but depends on specific path naming conventions that might break with dynamic localized routes.
+  - Remedy: Allow for explicit label overrides via a configuration mapping to ensure localizability and flexibility.
+- `.\frontend\src\components\common\Card.jsx` 
+  - Gaps: Uses inline styles for colors which bypasses Tailwind's utility class advantages and makes testing/theming consistency harder to enforce.
+  - Remedy: Refactor to use Tailwind semantic utility classes (e.g., `bg-surface`, `border-divider`).
+- `.\frontend\src\components\common\CommentSystem.jsx` 
+  - Gaps: Relies on `window.confirm` for deletions, which is a blocking browser-native UI that doesn't match the application's design system.
+  - Remedy: Replace `window.confirm` with the `ConfirmationDialog` component for a consistent UX.
+- `.\frontend\src\components\common\ConfirmationDialog.jsx` 
+  - Gaps: Clean. Excellent implementation of focus management and ARIA roles for accessibility.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\DataTable.jsx` 
+  - Gaps: High Performance: Implements virtual scrolling for large datasets and a full card-view fallback for mobile responsiveness.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\DatePicker.jsx` 
+  - Gaps: Custom implementation lacks keyboard navigation support for selecting dates; relies purely on mouse interactions.
+  - Remedy: Implement standard arrow key navigation within the calendar grid to meet WCAG AA standards.
+- `.\frontend\src\components\common\EmptyState.jsx` 
+  - Gaps: Highly modular but contains some inline style overrides for hover states that should be handled via CSS.
+  - Remedy: Move hover transitions to the global stylesheet or use Tailwind's `hover:` utilities.
+- `.\frontend\src\components\common\FileUpload.jsx` 
+  - Gaps: Uses `alert()` for validation errors; simulates progress with a `for` loop and `setTimeout` instead of reflecting real XHR upload events.
+  - Remedy: Integrate `ToastContext` for errors; implement real progress tracking using Axios `onUploadProgress`.
+- `.\frontend\src\components\common\GmailMessageList.jsx` 
+  - Gaps: Complex UI pattern that uses manual `onMouseEnter` logic for row actions, which might lag on low-power devices with many messages.
+  - Remedy: Debounce the hover state or use CSS-based visibility toggles for better performance.
+- `.\frontend\src\components\common\Header.jsx` 
+  - Gaps: User menu dropdown lacks a click-away listener, requiring manual toggling to close.
+  - Remedy: Implement a custom `useClickAway` hook or use an overlay to handle closing the menu automatically.
+- `.\frontend\src\components\common\Loading.jsx` 
+  - Gaps: Uses standard `animate-pulse` for skeletons, which is less "professional" than modern linear shimmer animations.
+  - Remedy: Implement a CSS shimmer effect using a background-position animation on a linear gradient.
+- `.\frontend\src\components\common\PageInfoPanel.jsx` 
+  - Gaps: Custom tab system for "How to Use" vs "Status" lacks keyboard navigation (arrow keys/home/end) and focus rings.
+  - Remedy: Refactor to use the standardized `TabNavigation` component or add ARIA-compliant keyboard listeners.
+- `.\frontend\src\components\common\Pagination.jsx` 
+  - Gaps: Clean. Standard implementation with good accessibility labels.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\PasswordConfirmationModal.jsx` 
+  - Gaps: Clean. Employs correct ARIA roles and auto-focus for the input field.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\PermissionButton.jsx` 
+  - Gaps: Clean. Robustly handles both permission and role-based guarding.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\PermissionField.jsx` 
+  - Gaps: Clean. Correctly differentiates between full hidden (no read) and read-only (no write) states.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\ProtectedComponent.jsx` 
+  - Gaps: Clean. Standard implementation of conditional rendering for RBAC.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\QuickActionsPanel.jsx` 
+  - Gaps: Clean. Standard grid-based layout for dashboard actions.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\ReadOnlyComponents.jsx` 
+  - Gaps: Overlaps significantly with `ReadOnlyField.jsx`, leading to duplicate code maintenance.
+  - Remedy: Consolidate into a single module of read-only UI primitives.
+- `.\frontend\src\components\common\ReadOnlyField.jsx` 
+  - Gaps: Redundant with `ReadOnlyComponents.jsx`.
+  - Remedy: Consolidate and delete.
+- `.\frontend\src\components\common\ReadOnlyTable.jsx` 
+  - Gaps: Clean. Provides a simplified view-only version of the data table.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\RichTextEditor.jsx` 
+  - Gaps: Uses `document.execCommand` which is officially deprecated and inconsistent across browsers; implements manual modals instead of using common primitives.
+  - Remedy: Migrate to a modern library like `Lexical` or `TipTap`; use the shared `Modal` component for link/image insertion.
+- `.\frontend\src\components\common\SearchAndFilter.jsx` 
+  - Gaps: Clean. Correctly implements debounced search to prevent API flooding.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\Sidebar.jsx` 
+  - Gaps: Navigation list is filtered by permissions but doesn't handle sub-menus or hierarchical navigation.
+  - Remedy: Implement a recursive menu structure to support nested modules as the application grows.
+- `.\frontend\src\components\common\SidebarMenuItem.jsx` 
+  - Gaps: Simulates hover effects using JavaScript `onMouseEnter` and inline styles, which is brittle and doesn't support system-level accessibility high-contrast modes.
+  - Remedy: Use standard CSS `:hover` states or Tailwind's `hover:` utilities.
+- `.\frontend\src\components\common\StatsCard.jsx` 
+  - Gaps: Clean. Standard dashboard stat widget.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\StatusBadge.jsx` 
+  - Gaps: Mapping is hardcoded; adding a new entity status requires updating this component file.
+  - Remedy: Move the status mapping configuration to a centralized constants file.
+- `.\frontend\src\components\common\TabNavigation.jsx` 
+  - Gaps: Excellent. Full keyboard navigation support (arrows/home/end) and state persistence.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\common\UserSelection.jsx` 
+  - Gaps: Contains a hardcoded list of departments; `React.useRef` is used without an explicit React import.
+  - Remedy: Fetch departments from the API; fix imports to ensure consistency across the project.
+- `.\frontend\src\styles\dashboard.css` 
+  - Gaps: Redundant definitions for `card` and `loading-spinner` that already exist in `index.css`.
+  - Remedy: Consolidate core component styles into `index.css` and use `dashboard.css` only for page-specific layout logic.
+- `.\frontend\src\styles\palettes.js` 
+  - Gaps: Redundant with `config/colorPalettes.js`.
+  - Remedy: DELETE and consolidate into a single source of truth for color tokens.
+
+### Cluster 11: Frontend Feature Components
+**Prompt:** Audit for feature-specific component efficiency, role-based access control, and real-time data integration. Focus on: (1) Ensuring dashboard components implement role-specific data fetching and visualization; (2) Checking that approval components support bulk operations for pastor efficiency; (3) Validating that chat components implement proper real-time WebSocket integration; (4) Ensuring AI components implement proper rate limiting and cost controls; (5) Checking that accessibility components meet WCAG AA compliance standards; (6) Verifying that protected components implement proper role guards at the component level; (7) Ensuring chart components use efficient data aggregation and lazy loading; (8) Checking that workflow components implement proper state management for complex multi-step processes; (9) Validating that all feature components implement proper error handling and retry mechanisms; (10) Ensuring components don't duplicate logic that should be in shared utilities or hooks.
+- `.\frontend\src\components\ErrorBoundary.jsx` 
+  - Gaps: Clean. Provides detailed stack traces in dev mode and a professional fallback UI in production.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\ProtectedComponent.jsx` 
+  - Gaps: DEPRECATED: Redundant with `src/components/common/ProtectedComponent.jsx`.
+  - Remedy: DELETE and consolidate into the common components directory.
+- `.\frontend\src\components\ProtectedRoute.jsx` 
+  - Gaps: Clean. Correctly implements centralized authentication and permission guards for the router.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\accessibility\AccessibilityManager.jsx` 
+  - Gaps: Settings for High Contrast and Reduced Motion are defined but not globally integrated into the Tailwind theme or animation hooks.
+  - Remedy: Update `index.css` and framer-motion configs to respect the `accessibility` context settings.
+- `.\frontend\src\components\accessibility\SkipNavigation.jsx` 
+  - Gaps: Clean. Implements standard "Skip to content" links for keyboard accessibility.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\ai\AICondenseButton.jsx` 
+  - Gaps: Uses global `axios` instead of the authenticated `api` instance; lacks character count validation on the frontend before sending to the API.
+  - Remedy: Refactor to use `useAuth().api`; implement a client-side length check to prevent unnecessary API calls.
+- `.\frontend\src\components\approvals\ApprovalDetail.jsx` 
+  - Gaps: High Functionality: Implements delegation, history tracking, and threaded comments within a modal.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\approvals\ApprovalInbox.jsx` 
+  - Gaps: **STUB**: The "Bulk Approve" button is present in the UI but has no implementation logic.
+  - Remedy: Implement bulk selection state and a sequential `Promise.all` call to the approval API.
+- `.\frontend\src\components\approvals\ApprovalWorkflowDesigner.jsx` 
+  - Gaps: **STUB**: "Test Workflow" button is a placeholder; lacks validation to prevent circular or infinite workflow loops.
+  - Remedy: Implement a simple DAG (Directed Acyclic Graph) validator before saving; add a simulation mode for testing.
+- `.\frontend\src\components\dashboard\AttendanceChart.jsx` 
+  - Gaps: Clean. Employs responsive Recharts containers for cross-device visualization.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\dashboard\FinancialChart.jsx` 
+  - Gaps: Clean. Correctly uses semantic theme colors for income/expense data series.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\dashboard\PerformanceMetrics.jsx` 
+  - Gaps: Uses a hardcoded 5-second polling interval which might be too aggressive for mobile users on metered connections.
+  - Remedy: Increase interval to 30s or implement an "Auto-Refresh" toggle for user control.
+- `.\frontend\src\components\dashboard\RealTimeActivityFeed.jsx` 
+  - Gaps: MISNOMER: Labeled as "RealTime" but relies on a 30-second polling interval (`setInterval`) instead of a persistent WebSocket connection.
+  - Remedy: Integrate with `Socket.io` or `WebSockets` to receive real-time events from the backend.
+- `.\frontend\src\components\documentation\DocumentationManager.jsx` 
+  - Gaps: TECHNICAL DEBT: Manually instantiates its own `axios` instance and accesses `localStorage` directly, bypassing the `AuthContext` security layer.
+  - Remedy: Refactor to use the centralized `api` instance from `AuthContext` to ensure unified headers and interceptors.
+- `.\frontend\src\components\documents\DocumentLibrary.jsx` 
+  - Gaps: **STUB**: The "Share" button is a visual placeholder with no functional implementation.
+  - Remedy: Implement a share modal that generates temporary access links or handles internal permissions.
+- `.\frontend\src\components\documents\DocumentUpload.jsx` 
+  - Gaps: Correctly implements `onUploadProgress` for real-time progress bars; robust metadata handling.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\gallery\ApplePhotoGrid.jsx` 
+  - Gaps: High Performance: Implements complex date-grouping logic and sticky headers for a premium photo-browsing experience.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\gallery\GalleryNavigation.jsx` 
+  - Gaps: Clean. Standard sidebar for gallery filtering and category access.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\gallery\PhotoGallery.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses browser-native `fetch` with manual token extraction for deletions, bypassing the centralized API error handling and interceptors.
+  - Remedy: Refactor all data operations to use the authenticated `api` instance.
+- `.\frontend\src\components\gallery\PhotoLightbox.jsx` 
+  - Gaps: Excellent. Supports full keyboard navigation, zoom/pan, and mobile swipe gestures for media viewing.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\gallery\TelegramAuthModal.jsx` 
+  - Gaps: Clean. Implements a robust multi-step authentication flow for Telegram integration.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\realtime\WebSocketManager.jsx` 
+  - Gaps: **CRITICAL STUB**: Does not actually establish a socket connection; only simulates "Connected" status in local state.
+  - Remedy: Implement actual `socket.io-client` connection logic and sync with backend events.
+- `.\frontend\src\components\settings\PaletteSelector.jsx` 
+  - Gaps: Clean. Correctly integrates with `ColorPaletteContext` for live theme previews.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\sms\CampaignWizard.jsx` 
+  - Gaps: Contains hardcoded ministry segments and templates that should be fetched from the database.
+  - Remedy: Replace hardcoded arrays with API lookups from `MembersContext` or a dedicated settings endpoint.
+- `.\frontend\src\components\sms\SMSAnalytics.jsx` 
+  - Gaps: Robust. Feature-rich implementation of Recharts covering predictive, benchmark, and goal-tracking data.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\sms\SMSCampaignManager.jsx` 
+  - Gaps: **FILE EMPTY**: Placeholder file with zero implementation.
+  - Remedy: Implement campaign status tracking and bulk management controls.
+- `.\frontend\src\components\sms\SMSComposer.jsx` 
+  - Gaps: High Quality: Includes character counting, cost estimation, and automated compliance checking for spam words/opt-out language.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\ui\Button.jsx` 
+  - Gaps: Clean. Enforces WCAG touch target minimums (44px/48px) and implements `aria-busy` for loading states.
+  - Remedy: No changes needed.
+- `.\frontend\src\components\ui\Card.jsx` 
+  - Gaps: Redundant with `src/components/common/Card.jsx`.
+  - Remedy: Consolidate and move all primitive UI to the `ui/` directory.
+- `.\frontend\src\components\ui\Modal.jsx` 
+  - Gaps: Excellent Accessibility: Implements focus trapping, previous-focus restoration, and full keyboard control via Headless UI.
+  - Remedy: No changes needed.
+
+### Cluster 12: Frontend Pages (People & Admin)
+**Prompt:** Audit for page-level efficiency, role-based access control, and data management UX. Focus on: (1) Ensuring admin pages implement proper role guards to prevent unauthorized access; (2) Checking that member directory pages implement efficient pagination and search; (3) Validating that form pages implement proper validation and error handling; (4) Ensuring profile pages implement proper security for sensitive data; (5) Checking that user management pages support bulk operations for efficiency; (6) Verifying that database admin pages implement proper safeguards against destructive operations; (7) Ensuring document pages implement proper version control and approval workflows; (8) Checking that settings pages implement proper validation for configuration changes; (9) Validating that pages implement proper loading states and error boundaries; (10) Ensuring pages don't contain business logic that should be in components or services.
+- `.\frontend\src\pages\admin\AdminDashboard.jsx` 
+  - Gaps: **STUB**: "Recent System Activity" uses hardcoded placeholders; page titles contain redundant `text-white` classes on top of semantic theme variables.
+  - Remedy: Connect activity feed to the actual system logs API; clean up CSS classes to rely exclusively on semantic tokens.
+- `.\frontend\src\pages\admin\AdminDatabase.jsx` 
+  - Gaps: Informational only; lacks high-level maintenance actions like "Trigger Backup" or "Verify Schema" that could be useful for Super Admins.
+  - Remedy: Implement secure server-side triggers for manual backups; add a "System Health" check button.
+- `.\frontend\src\pages\admin\Documents.jsx` 
+  - Gaps: TECHNICAL DEBT: Contains over 10 methods (versioning, permissions, advanced search) that are fully implemented in code but never called in the UI; relies on `confirm()` instead of a styled dialog.
+  - Remedy: Clean up unused code paths; integrate the `ConfirmationDialog` for deletions.
+- `.\frontend\src\pages\admin\SiteSettings.jsx` 
+  - Gaps: Excellent. Highly dynamic implementation of settings categories with integrated help panels and role-based locking.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\administration\Administration.jsx` 
+  - Gaps: Clean. Minimal wrapper for feature-flagged administration views.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\administration\AdministrationAlternative.jsx` 
+  - Gaps: **CRITICAL STUB**: Most navigation items and "Quick Actions" lead to toast alerts instead of functional modules.
+  - Remedy: Complete implementation of alternative administration modules or remove the feature flag if not intended for production.
+- `.\frontend\src\pages\administration\AdministrationOriginal.jsx` 
+  - Gaps: **STUB**: Lacks real data fetching; displays "0" for all system statistics despite backend availability.
+  - Remedy: Integrate with `DashboardRepository` to pull live system metrics.
+- `.\frontend\src\pages\members\MemberDirectory.jsx` 
+  - Gaps: Strong UX features, but the "Reports" tab is currently an empty placeholder with visual links only.
+  - Remedy: Implement the membership growth and distribution report visualizations.
+- `.\frontend\src\pages\members\MemberForm.jsx` 
+  - Gaps: **SYNTAX BUG**: Contains an extra closing `</div>` in the middle of the Personal Information section, potentially breaking layout in certain browsers.
+  - Remedy: Perform a surgical fix on the JSX tree to ensure correct nesting; refactor repetitive field definitions into a loop if possible.
+- `.\frontend\src\pages\members\MembersList.jsx` 
+  - Gaps: OVERLAPPING CONCERNS: Includes a complete re-implementation of user management (UserManagementTab) which duplicates logic in `UserManagement.jsx`.
+  - Remedy: Consolidate user management into a single shared component or page to prevent logic drift.
+- `.\frontend\src\pages\profile\Profile.jsx` 
+  - Gaps: Clean. Implements `react-hook-form` for efficient validation and state management.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\profile\ProfileManagement.jsx` 
+  - Gaps: Redundant with `Profile.jsx`; re-implements the same profile and password update logic with a slightly different UI.
+  - Remedy: Merge `Profile.jsx` and `ProfileManagement.jsx` into a single, comprehensive account settings page.
+- `.\frontend\src\pages\users\UserManagement.jsx` 
+  - Gaps: Functionally complete but redundant with the "Users" tab in `MembersList.jsx`.
+  - Remedy: Consolidate and use as the primary user administration module.
+
+### Cluster 13: Frontend Pages (Treasury & Ops)
+**Prompt:** Audit for financial data accuracy, operational efficiency, and proper security controls. Focus on: (1) Ensuring treasury pages implement proper role-based access controls for financial data; (2) Checking that collection pages handle both digital and physical collection methods properly; (3) Validating that approval pages support bulk operations and workflow automation; (4) Ensuring financial pages implement proper data validation and error handling; (5) Checking that report pages implement efficient data aggregation and caching; (6) Verifying that operational pages implement proper audit trails for compliance; (7) Ensuring financial calculations are accurate and consistent across pages; (8) Checking that pages implement proper formatting for financial data (currency, dates); (9) Validating that pages handle edge cases (partial payments, refunds, disputes) properly; (10) Ensuring proper integration with backend financial services and repositories.
+- `.\frontend\src\pages\approvals\ApprovalInbox.jsx` 
+  - Gaps: **STUB**: Most tabs (Overview, History, etc.) are visual placeholders with hardcoded descriptive text but no actual list data or API integration.
+  - Remedy: Connect each tab to the `ApprovalsRepository` endpoints; implement real-time list filtering.
+- `.\frontend\src\pages\collections\MyCollections.jsx` 
+  - Gaps: Clean. Implements new collection entry and statement downloads; correctly handles multi-format API responses.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\CategoryManagement.jsx` 
+  - Gaps: Clean. Standard CRUD for department grouping.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\DepartmentActivity.jsx` 
+  - Gaps: Redundant; re-implements logic found in the dashboard activity feed component.
+  - Remedy: Consolidate into a single reusable activity viewer.
+- `.\frontend\src\pages\departments\DepartmentDashboard.jsx` 
+  - Gaps: **MONOLITHIC BLOAT**: Over 900 lines of code; contains a significant **BUG** where `handleCommBulkAction` uses an undefined `authHeaders()` function; the Treasury tab is a pure visual placeholder.
+  - Remedy: Break down into smaller sub-page components; refactor API calls to use the `api` instance from `AuthContext`; implement real-time treasury metrics.
+- `.\frontend\src\pages\departments\DepartmentHeadAllocation.jsx` 
+  - Gaps: Clean. Efficient bulk-update implementation for department leadership.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\DepartmentOverview.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses browser-native `fetch` with manual token extraction, bypassing the centralized Axios configuration and global error handlers.
+  - Remedy: Refactor to use the authenticated `api` instance from `useAuth`.
+- `.\frontend\src\pages\departments\Departments.jsx` 
+  - Gaps: Clean. Standard feature-flag wrapper.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\DepartmentsAlternative.jsx` 
+  - Gaps: (Audited in Cluster 12) Similar to original but uses a vertical sidebar; mostly stubs.
+  - Remedy: Implement actual module logic.
+- `.\frontend\src\pages\departments\DepartmentSettings.jsx` 
+  - Gaps: Clean. Correctly separates global church-wide department policies from specific department overrides.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\DepartmentsList.jsx` 
+  - Gaps: Clean UI, but non-overview tabs are currently coming-soon placeholders.
+  - Remedy: Implement the Members and Events summary tabs.
+- `.\frontend\src\pages\departments\DepartmentsOriginal.jsx` 
+  - Gaps: Redundant with `DepartmentsList.jsx`.
+  - Remedy: Consolidate and delete.
+- `.\frontend\src\pages\departments\MyDepartments.jsx` 
+  - Gaps: Clean. Employs a robust multi-select flow for joining new departments.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\departments\components\ComponentAllocation.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Relies on native `fetch` instead of the centralized `api` instance; uses inline styles for colors instead of Tailwind utility classes.
+  - Remedy: Standardize on `useAuth().api`; refactor to Tailwind for theming consistency.
+- `.\frontend\src\pages\departments\components\DepartmentBranding.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Bypasses the centralized API configuration; implements complex retry logic that should be handled at the interceptor level.
+  - Remedy: Move retry logic to a shared utility; refactor to use the authenticated Axios instance.
+- `.\frontend\src\pages\departments\components\PermissionManagement.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses native `fetch` with hardcoded token lookups; re-implements retry logic.
+  - Remedy: Refactor to use `api` from `AuthContext`.
+- `.\frontend\src\pages\events\Events.jsx` 
+  - Gaps: Robust. Correctly implements RSVP flows, date grouping, and poster uploads via Multipart/Form-Data.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\payments\MyPayments.jsx` 
+  - Gaps: Clean. Provides personal history and receipt downloads.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\payments\PaymentHistory.jsx` 
+  - Gaps: REDUNDANT: Almost identical to `MyPayments.jsx` but with a slightly different filter set; `downloadReceipt` returns JSON instead of the expected PDF.
+  - Remedy: Consolidate into a single reusable Payment history component; implement real PDF receipt generation.
+- `.\frontend\src\pages\payments\PaymentManagement.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses native `fetch` instead of the project-standard API instance.
+  - Remedy: Refactor all CRUD operations to use Axios via `AuthContext`.
+- `.\frontend\src\pages\payments\Payments.jsx` 
+  - Gaps: Clean. Sophisticated implementation of dynamic payment items and M-Pesa STK push coordination.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\BankReconciliations.jsx` 
+  - Gaps: Clean. Implements automatic balancing checks and status visual indicators.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Budgets.jsx` 
+  - Gaps: Clean. Comprehensive variance tracking and fiscal year management.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\ChartOfAccounts.jsx` 
+  - Gaps: Clean. Robust implementation of the hierarchy-based financial account structure.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Contributions.jsx` 
+  - Gaps: Clean. Excellent integration with member directory and export features.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Expenses.jsx` 
+  - Gaps: Clean. Implements full approval workflow integration within the expense list.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\FinancialReports.jsx` 
+  - Gaps: Clean. Successfully implements dynamic generation of Trial Balances, Income Statements, and Balance Sheets.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\FixedAssets.jsx` 
+  - Gaps: Missing or empty implementation.
+  - Remedy: Implement the fixed asset register and depreciation scheduling UI.
+- `.\frontend\src\pages\treasury\Funds.jsx` 
+  - Gaps: Missing implementation.
+  - Remedy: Implement fund-based accounting and balance tracking.
+- `.\frontend\src\pages\treasury\JournalEntries.jsx` 
+  - Gaps: High Quality: Implements complex double-entry validation (Debit must equal Credit) in the frontend before submission.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Pledges.jsx` 
+  - Gaps: Clean. Uses visual progress bars to track fulfillment of member commitments.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Projects.jsx` 
+  - Gaps: Clean. Successfully ties financial data to specific project codes and milestones.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\Receipts.jsx` 
+  - Gaps: Clean. Provides clear history of generated receipts with PDF preview.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\RecurringPayments.jsx` 
+  - Gaps: Clean. Supports advanced Pause/Activate controls for automated payments.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\treasury\TreasuryAnalytics.jsx` 
+  - Gaps: Good. Implements basic trending using progress bars as simplified charts.
+  - Remedy: Migrate visualization to Recharts for more professional trend analysis.
+- `.\frontend\src\pages\treasury\TreasuryDashboard.jsx` 
+  - Gaps: **STUB**: Uses hardcoded mock data for all financial statistics; most tabs lead to simple link menus instead of detailed dashboards.
+  - Remedy: Integrate with `TreasuryDashboardRepository` to pull live data; implement full detail views for each financial category.
+- `.\frontend\src\pages\treasury\Vendors.jsx` 
+  - Gaps: Clean. Standard supplier management module.
+  - Remedy: No changes needed.
+
+### Cluster 14: Frontend Pages (Media & Comms)
+**Prompt:** Audit for media handling efficiency, third-party integration reliability, and content management UX. Focus on: (1) Ensuring gallery pages implement efficient image loading with lazy loading and proper caching; (2) Checking that photo upload pages handle large files with proper progress indicators; (3) Validating that content management pages implement proper publishing workflows and drafts; (4) Ensuring Telegram integration pages handle API rate limits and authentication properly; (5) Checking that media pages implement proper compression and optimization for images; (6) Verifying that SEO pages implement proper meta tag management and preview; (7) Ensuring communication pages support proper scheduling and automation; (8) Checking that pages implement proper error handling for third-party API failures; (9) Validating that media pages implement proper album organization and metadata management; (10) Ensuring proper integration with backend media services and caching strategies.
+- `.\frontend\src\pages\content\Content.jsx` 
+  - Gaps: Clean. Implements full CRUD with status management (Draft/Published) and custom tagging system.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\content\ContentManagement.jsx` 
+  - Gaps: REDUNDANT: Overlaps significantly with `Content.jsx` but uses the `ContentContext` for data management.
+  - Remedy: Consolidate into a single Content Management module to ensure consistent state and logic.
+- `.\frontend\src\pages\gallery\GalleryAlbumDetail.jsx` 
+  - Gaps: RE-IMPLEMENTATION: Contains its own simplified lightbox and photo grid logic instead of reusing the specialized `ApplePhotoGrid` or `PhotoLightbox` components.
+  - Remedy: Refactor to use shared gallery components for consistent UX and features (zoom, swipe, etc.).
+- `.\frontend\src\pages\gallery\GalleryAlbums.jsx` 
+  - Gaps: Clean. Provides a robust high-level view of all albums with integrated search and creation tools.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\gallery\GalleryManagement.jsx` 
+  - Gaps: High Quality: Centralizes photo management, batch tagging, and Telegram authentication in a single administrative hub.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\gallery\GalleryPhotoUpload.jsx` 
+  - Gaps: **CRITICAL STUB**: The `handleSubmit` method uses `URL.createObjectURL` to create local mock URLs for "uploaded" photos instead of performing real multi-part file uploads to the server.
+  - Remedy: Implement a real `FormData` upload to the `/api/gallery/upload` endpoint with proper error handling.
+- `.\frontend\src\pages\seo\SEO.jsx` 
+  - Gaps: **FILE EMPTY**: Contains only a placeholder container with zero functional configuration settings.
+  - Remedy: Implement the meta-tag, title-template, and Google Analytics configuration UI.
+- `.\frontend\src\pages\telegram\Telegram.jsx` 
+  - Gaps: **STUB**: The entire page is a collection of empty tab containers with no actual messaging or campaign management logic.
+  - Remedy: Integrate the `SMSComposer`, `CampaignWizard`, and `SMSAnalytics` components into their respective tabs.
+- `.\frontend\src\pages\telegram\TelegramAuth.jsx` 
+  - Gaps: Sophisticated. Handles complex multi-step verification for both Bot API and MTProto authentication methods.
+  - Remedy: No changes needed.
+- `.\frontend\src\pages\telegram\TelegramCacheHealth.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses global `axios` instead of the project-standard authenticated `api` instance.
+  - Remedy: Refactor to use `useAuth().api`.
+- `.\frontend\src\pages\telegram\TelegramChannels.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Bypasses the centralized API configuration; mix of inline styles and Tailwind classes complicates theme consistency.
+  - Remedy: Standardize on the authenticated Axios instance; refactor to use semantic theme tokens.
+- `.\frontend\src\pages\telegram\TelegramPhotoUpload.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses global `axios` with manual token management instead of the shared API instance.
+  - Remedy: Refactor to use `useAuth().api` for all upload operations.
+- `.\frontend\src\pages\telegram\TelegramPostMessage.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Bypasses centralized API instance; lacks character count enforcement for the Telegram 4096-character limit.
+  - Remedy: Standardize on the authenticated API instance; implement a strict character limit guard.
+- `.\frontend\src\pages\telegram\TelegramPosts.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses global `axios`; **STUB**: The Edit and Delete buttons are visual placeholders with no functional logic.
+  - Remedy: Connect buttons to the Telegram API endpoints; refactor to use the shared API instance.
+- `.\frontend\src\pages\telegram\TelegramSettings.jsx` 
+  - Gaps: ARCHITECTURAL LEAK: Uses global `axios`; webhook status check is currently a hardcoded simulation.
+  - Remedy: Refactor to use `api` from `AuthContext`; connect to the real server-side webhook health endpoint.
+
+### Cluster 15: Utils & Scripts
+**Prompt:** Audit for utility function efficiency, script maintainability, and proper code organization. Focus on: (1) Ensuring utility functions are pure and don't have side effects unless documented; (2) Checking that scripts implement proper error handling and logging; (3) Validating that utility functions don't duplicate functionality across the codebase; (4) Ensuring scripts have proper validation before executing destructive operations; (5) Checking that utility functions implement proper type checking and validation; (6) Verifying that scripts handle environment-specific configurations properly; (7) Ensuring utility functions are properly documented and tested; (8) Checking that scripts implement proper rollback mechanisms for failed operations; (9) Validating that utility functions follow consistent naming and organization patterns; (10) Ensuring scripts and utilities don't contain business logic that should be in services or controllers.
+- `.\backend\scripts\check-database.js` 
+  - Gaps: Clean. Performs basic row counts for core tables to verify data presence.
+  - Remedy: No changes needed.
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: High Value: Auto-generates comprehensive documentation of all API routes and raw `pool.query` calls.
+  - Remedy: No changes needed.
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: AD-HOC FIX: Contains hardcoded schema modifications that should be part of a formal migration file.
+  - Remedy: Consolidate all "fix" scripts into a baseline SQL migration.
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: Robust. Uses explicit transactions and `CASCADE` truncates to ensure clean, consistent sample data.
+  - Remedy: No changes needed.
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: High Quality: Standardizes all API envelopes and automatically integrates PII masking for sensitive data.
+  - Remedy: No changes needed.
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: Clean. Provides a reusable helper for efficient multi-row PostgreSQL insertions.
+  - Remedy: No changes needed.
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: Clean. Implements opaque token-based pagination for high-performance listing.
+  - Remedy: No changes needed.
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: Excellent Security: Implements granular masking for emails, phones, and names with an integrated Express middleware.
+  - Remedy: No changes needed.
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: **STUB**: Contains the data structure for feature flags but all component references are currently `null`.
+  - Remedy: Connect actual React components to the registry to enable dynamic module loading.
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: Clean. Simple in-memory request cache with automated cleanup and TTL support.
+  - Remedy: No changes needed.
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: High Quality: Implements complex grouping logic (Apple Photos style) and a unique "infinite event loop" for yearly planning.
+  - Remedy: No changes needed.
+- `.\shared\constants.js` 
+  - Gaps: Basic. Contains common string constants but lacks centralized numeric configurations (e.g., timeout durations).
+  - Remedy: Move all hardcoded magic numbers from controllers into this shared constants file.
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+
+  - Remedy: 
+- `.\backend\scripts\delete-test-user.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\extract-routes-and-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-comments.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-approval-requests-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-departments-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-church-slug.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-albums-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-gallery-uploaded-by.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-notifications-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-table-columns.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\fix-users-deleted-at.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\flesh-out-repositories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\generate-comprehensive-seed.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\get-admin-logins.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-admin-password.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\reset-db.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-fix-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\run-mobile-migration.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-comprehensive.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-demo-users.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\seed-palettes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-all-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-data.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-frontend-endpoints.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-login.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-mobile-api.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-multiple-apis.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms-callback.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sms.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\test-sync.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-db-routes.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\validate-route-mounting.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\scripts\verify-admin.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\shared\services\smsService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\bulkInsert.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\cursorPagination.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\emailService.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\initDirectories.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\jwt.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\killPort.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\mpesa.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\piiMasker.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\backend\utils\ResponseHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureLoader.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\featureRegistry.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\modules\shared\FeatureWrapper.jsx` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\cache.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\dateGrouping.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\frontend\src\utils\errorHandler.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\constants.js` 
+  - Gaps: 
+  - Remedy: 
+- `.\shared\validators.js` 
+  - Gaps: 
+  - Remedy: 
+
+

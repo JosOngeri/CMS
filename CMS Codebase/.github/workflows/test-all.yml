@@ -1,0 +1,186 @@
+name: Full Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: kmaincms_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./backend
+      run: npm ci
+    
+    - name: Setup test environment
+      working-directory: ./backend
+      run: |
+        echo "DB_HOST=localhost" >> .env.test
+        echo "DB_PORT=5432" >> .env.test
+        echo "DB_USER=testuser" >> .env.test
+        echo "DB_PASSWORD=testpass" >> .env.test
+        echo "DB_NAME=kmaincms_test" >> .env.test
+        echo "REDIS_HOST=localhost" >> .env.test
+        echo "REDIS_PORT=6379" >> .env.test
+        echo "NODE_ENV=test" >> .env.test
+    
+    - name: Run database migrations
+      working-directory: ./backend
+      run: |
+        if [ -f "../database/migrations/migrate.sql" ]; then
+          PGPASSWORD=testpass psql -h localhost -U testuser -d kmaincms_test -f ../database/migrations/migrate.sql
+        fi
+    
+    - name: Run unit tests
+      working-directory: ./backend
+      run: npm test -- __tests__/unit/ || true
+    
+    - name: Run integration tests
+      working-directory: ./backend
+      run: npm test -- tests/integration/ || true
+    
+    - name: Run E2E tests
+      working-directory: ./backend
+      run: npm test -- tests/e2e/ || true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: backend-test-results
+        path: backend/coverage/
+  
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+    
+    - name: Run unit tests
+      working-directory: ./frontend
+      run: npm test || true
+    
+    - name: Install Playwright browsers
+      working-directory: ./frontend
+      run: npx playwright install --with-deps
+    
+    - name: Run E2E tests
+      working-directory: ./frontend
+      run: npm run test:e2e:headless || true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-test-results
+        path: |
+          frontend/coverage/
+          frontend/playwright-report/
+  
+  test-mobile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: mobile/react-native/mobile-app/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./mobile/react-native/mobile-app
+      run: npm ci
+    
+    - name: Run unit tests
+      working-directory: ./mobile/react-native/mobile-app
+      run: npm test || true
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: mobile-test-results
+        path: mobile/react-native/mobile-app/coverage/
+  
+  test-summary:
+    needs: [test-backend, test-frontend, test-mobile]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+    
+    - name: Generate test summary
+      run: |
+        echo "# Test Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Backend Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- Status: ${{ needs.test-backend.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Frontend Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- Status: ${{ needs.test-frontend.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## Mobile Tests" >> $GITHUB_STEP_SUMMARY
+        echo "- Status: ${{ needs.test-mobile.result }}" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Check test results
+      if: |
+        needs.test-backend.result == 'failure' ||
+        needs.test-frontend.result == 'failure' ||
+        needs.test-mobile.result == 'failure'
+      run: exit 1

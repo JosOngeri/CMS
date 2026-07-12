@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "project": "KMainCMS",
+  "description": "Phase 4 Repository Layer Refactoring - Replace raw pool.query calls with repository methods",
+  "source_mapping": "plans/COMPLETE_QUERY_REPLACEMENT_LIST.md",
+  "phases": [
+    {
+      "id": "phase-4-auth",
+      "name": "Auth Controller Refactoring",
+      "description": "Refactor backend/controllers/auth.controller.js to use AuthRepository and UserRepository",
+      "enabled": true,
+      "steps": [
+        {
+          "id": "auth-001",
+          "action": "replace",
+          "target": "backend/controllers/auth.controller.js",
+          "description": "Replace refresh token lookup with AuthRepository.findValidRefreshToken",
+          "risk_score": 2.0,
+          "auto_apply": true
+        },
+        {
+          "id": "auth-002",
+          "action": "replace",
+          "target": "backend/controllers/auth.controller.js",
+          "description": "Replace role lookup with AuthRepository.getUserRoles",
+          "risk_score": 2.0,
+          "auto_apply": true
+        },
+        {
+          "id": "auth-003",
+          "action": "replace",
+          "target": "backend/controllers/auth.controller.js",
+          "description": "Replace refresh token invalidation with AuthRepository.invalidateRefreshToken",
+          "risk_score": 2.0,
+          "auto_apply": true
+        }
+      ]
+    },
+    {
+      "id": "phase-4-payment",
+      "name": "Payment Controller Refactoring",
+      "description": "Refactor backend/controllers/payment.controller.js to use PaymentRepository",
+      "enabled": true,
+      "steps": [
+        {
+          "id": "payment-001",
+          "action": "replace",
+          "target": "backend/controllers/payment.controller.js",
+          "description": "Replace payment status update with PaymentRepository.updatePaymentStatus",
+          "risk_score": 3.0,
+          "auto_apply": true
+        }
+      ]
+    }
+  ]
+}

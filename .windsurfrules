@@ -1,0 +1,96 @@
+# Kiserian Main SDA Church Website - Modular Architecture Rules
+
+## Module Isolation
+- Modules access only their own database tables
+- Cross-module communication via documented APIs only
+- No direct SQL joins across module tables
+- API format: {success, data/error, message}
+
+## Code Organization
+- Backend: controllers/{module}.controller.js, routes/{module}.routes.js
+- Frontend: contexts/{Module}Context.jsx, pages/{module}/, components/{module}/
+
+## Dependency Rules
+- AUTH ← ALL, SETTINGS → ALL
+- TELEGRAM → CONTENT, GALLERY
+- DEPT → TREASURY, CONTENT, DOC, SMS, APPROVAL
+- TREASURY → APPROVAL, PAYMENT, SMS
+- PAYMENT, SMS, DOC, GALLERY → APPROVAL → NOTIF
+- No circular dependencies
+
+## Testing
+- Unit tests: __tests__/{module}.test.js
+- Integration: __tests__/integration/{module}.test.js
+- E2E: __tests__/e2e/{workflow}.test.js
+
+## Code Review Checklist
+- No direct cross-module table access
+- All inter-module communication uses APIs
+- New endpoints documented
+- Tests cover changes
+- No circular dependencies
+
+## Chat Log Updates
+- Update chat logs in C:\Users\josia\Downloads\Documents\Windsurf chat logs at end of each sprint
+- Separate logs by project name
+
+## Documentation Completeness Verification
+- **CRITICAL**: Before marking any todo list, plan, or documentation as "complete", MUST verify by reading the actual files referenced
+- Todo lists and implementation plans must be validated against the actual codebase
+- Never mark a task as complete in documentation without:
+  1. Reading the actual file(s) created/modified
+  2. Verifying the implementation matches the specification
+  3. Running tests if applicable
+  4. Confirming no placeholder or incomplete code
+- For documentation files (plans, todo lists, specs):
+  - All referenced files must exist and be readable
+  - All paths must be valid absolute paths
+  - All dependencies must be verified to exist
+  - No "TODO" or placeholder comments in final deliverables
+- When creating or updating documentation:
+  - Use the `read` tool to verify referenced files exist before writing about them
+  - If a file doesn't exist yet, mark it as "to be created" not "complete"
+  - Always verify the current state of the codebase before making claims about it
+
+## Automated Continuation Rule
+- **CRITICAL**: When completing any phase or major task, MUST create a recommendation for the next phase
+- After creating a recommendation, automatically continue with implementing that recommendation
+- This ensures automated continuation of the project to completion
+- Recommendations should be written to the session log and include:
+  1. Summary of what was completed
+  2. Next phase/task to implement
+  3. Specific steps for implementation
+  4. Verification criteria
+- This rule applies to all upgrade plan phases and major milestones
+
+## Session Continuation Rule
+- **CRITICAL**: If a session concludes and the user does not interact within 3 minutes, automatically continue with any further upgrades deemed necessary for the project
+- This ensures project momentum is maintained during idle periods
+- Before continuing, verify the current state of the codebase and session log
+- Document the continuation decision in the session log with:
+  1. Reason for continuation (3-minute inactivity threshold)
+  2. Next upgrade/task to implement
+  3. Expected outcome
+- This rule applies to all upgrade plan phases and project improvements
+
+## Session Conclusion Rule
+- **CRITICAL**: When finishing a session, always conclude with three suggestions for the next commands
+- These suggestions should be:
+  1. Relevant to the current project state
+  2. Actionable and specific
+  3. Prioritized by importance or logical next steps
+- Format each suggestion as a clear command or action the user can take
+- This ensures users have clear guidance on how to proceed after the session ends
+
+## User Proficiency Context
+- **IMPORTANT**: This user is a vibecoder with basic coding logic knowledge
+- Avoid overly technical jargon and complex explanations
+- Provide clear, step-by-step guidance for all tasks
+- Explain the "why" behind decisions in simple terms
+- When suggesting commands, include brief explanations of what they do
+- Assume the user may need help with:
+  - Understanding error messages
+  - Navigating the codebase structure
+  - Running tests and builds
+  - Understanding architectural decisions
+- Be patient and provide educational context alongside implementation

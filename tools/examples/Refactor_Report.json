@@ -1,0 +1,117 @@
+{
+  "plan": {
+    "steps": [
+      {
+        "id": "step_0001",
+        "action": "replace",
+        "target": "backend/controllers/auth.controller.js",
+        "original_sql": "SELECT rt.user_id, rt.expires_at FROM refresh_tokens rt WHERE rt.token = $1 AND rt.expires_at > NOW() AND rt.used = false",
+        "replacement_call": "await AuthRepository.findValidRefreshToken(refreshToken)",
+        "repository": "AuthRepository",
+        "function": "refreshToken",
+        "source_line": 133,
+        "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -133,1 +133,1 @@\n-const refreshTokenResult = await pool.query('SELECT rt.user_id, rt.expires_at FROM refresh_tokens rt WHERE rt.token = $1 AND rt.expires_at > NOW() AND rt.used = false', [refreshToken]);\n+const refreshTokenResult = await AuthRepository.findValidRefreshToken(refreshToken);\n",
+        "risk_score": 2.0,
+        "affected_files": ["backend/controllers/auth.controller.js"],
+        "confidence": 1.0,
+        "blast_radius_estimate": "single occurrence"
+      },
+      {
+        "id": "step_0002",
+        "action": "replace",
+        "target": "backend/controllers/auth.controller.js",
+        "original_sql": "SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = $1",
+        "replacement_call": "await AuthRepository.getUserRoles(userId)",
+        "repository": "AuthRepository",
+        "function": "refreshToken",
+        "source_line": 146,
+        "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -146,1 +146,1 @@\n-const rolesResult = await pool.query('SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = $1', [userId]);\n+const roles = await AuthRepository.getUserRoles(userId);\n",
+        "risk_score": 2.0,
+        "affected_files": ["backend/controllers/auth.controller.js"],
+        "confidence": 1.0,
+        "blast_radius_estimate": "single occurrence"
+      },
+      {
+        "id": "step_0003",
+        "action": "replace",
+        "target": "backend/controllers/auth.controller.js",
+        "original_sql": "UPDATE refresh_tokens SET used = true WHERE token = $1",
+        "replacement_call": "await AuthRepository.invalidateRefreshToken(refreshToken)",
+        "repository": "AuthRepository",
+        "function": "refreshToken",
+        "source_line": 160,
+        "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -160,1 +160,1 @@\n-await pool.query('UPDATE refresh_tokens SET used = true WHERE token = $1', [refreshToken]);\n+await AuthRepository.invalidateRefreshToken(refreshToken);\n",
+        "risk_score": 2.0,
+        "affected_files": ["backend/controllers/auth.controller.js"],
+        "confidence": 1.0,
+        "blast_radius_estimate": "single occurrence"
+      }
+    ],
+    "metadata": {
+      "manifest_version": "1.0",
+      "project": "KMainCMS",
+      "total_mappings": 663,
+      "total_steps": 3,
+      "high_confidence_steps": 3,
+      "medium_confidence_steps": 0,
+      "low_confidence_steps": 0
+    },
+    "created_at": "2026-06-22T12:00:00Z"
+  },
+  "results": [
+    {
+      "step_id": "step_0001",
+      "status": "success",
+      "pre_hash": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+      "post_hash": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+      "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -133,1 +133,1 @@\n-const refreshTokenResult = await pool.query('SELECT rt.user_id, rt.expires_at FROM refresh_tokens rt WHERE rt.token = $1 AND rt.expires_at > NOW() AND rt.used = false', [refreshToken]);\n+const refreshTokenResult = await AuthRepository.findValidRefreshToken(refreshToken);\n",
+      "test_results": {
+        "syntax_check": true,
+        "formatter": true,
+        "unit_tests": true
+      },
+      "commit_hash": "7d4c9e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d",
+      "error_message": null,
+      "timestamp": "2026-06-22T12:00:10Z"
+    },
+    {
+      "step_id": "step_0002",
+      "status": "success",
+      "pre_hash": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3",
+      "post_hash": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+      "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -146,1 +146,1 @@\n-const rolesResult = await pool.query('SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = $1', [userId]);\n+const roles = await AuthRepository.getUserRoles(userId);\n",
+      "test_results": {
+        "syntax_check": true,
+        "formatter": true,
+        "unit_tests": true
+      },
+      "commit_hash": "8e5d0f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e",
+      "error_message": null,
+      "timestamp": "2026-06-22T12:00:25Z"
+    },
+    {
+      "step_id": "step_0003",
+      "status": "success",
+      "pre_hash": "c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+      "post_hash": "d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5",
+      "diff": "--- backend/controllers/auth.controller.js\n+++ backend/controllers/auth.controller.js\n@@ -160,1 +160,1 @@\n-await pool.query('UPDATE refresh_tokens SET used = true WHERE token = $1', [refreshToken]);\n+await AuthRepository.invalidateRefreshToken(refreshToken);\n",
+      "test_results": {
+        "syntax_check": true,
+        "formatter": true,
+        "unit_tests": true
+      },
+      "commit_hash": "9f6e1a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f",
+      "error_message": null,
+      "timestamp": "2026-06-22T12:00:40Z"
+    }
+  ],
+  "pre_run_snapshot": "D:/Kiserian Main SDA Communications Department/KMainCMS/pre_refactor_snapshot_KMainCMS_20260622_120000.tar.gz",
+  "final_status": "success",
+  "total_steps": 3,
+  "successful_steps": 3,
+  "failed_steps": 0,
+  "skipped_steps": 0,
+  "started_at": "2026-06-22T12:00:00Z",
+  "completed_at": "2026-06-22T12:00:45Z",
+  "incident_report": null
+}

@@ -1,0 +1,36 @@
+name: Mobile Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-mobile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: mobile/react-native/mobile-app/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: ./mobile/react-native/mobile-app
+      run: npm ci
+    
+    - name: Run unit tests
+      working-directory: ./mobile/react-native/mobile-app
+      run: npm test
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: mobile-test-results
+        path: mobile/react-native/mobile-app/coverage/

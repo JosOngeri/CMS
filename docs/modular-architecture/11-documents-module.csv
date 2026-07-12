@@ -1,0 +1,36 @@
+Section,Item,Details
+Module Overview,Code,DOC
+Module Overview,Name,Documents Management
+Module Overview,Type,Functional Module
+Module Overview,Description,Document management for policies forms and church documents
+Database Tables,Table 1,documents - Document records
+Database Tables,Table 2,document_categories - Categories
+Database Tables,Table 3,document_versions - Version history
+Database Tables,Table 4,document_permissions - Access control
+Backend Files,Controller,documents.controller.js
+Backend Files,Routes,documents.routes.js
+Backend Files,Helpers,documentStorage.js
+Frontend Files,Pages,pages/documents/
+Frontend Files,Components,components/documents/
+Frontend Files,Context,contexts/DocumentContext.jsx
+API Endpoints,GET /api/documents,List all documents
+API Endpoints,GET /api/documents/:slug,Get by slug (public)
+API Endpoints,GET /api/documents/:id,Get by ID
+API Endpoints,POST /api/documents,Create document
+API Endpoints,PUT /api/documents/:id,Update document
+API Endpoints,DELETE /api/documents/:id,Delete document
+API Endpoints,POST /api/documents/:id/publish,Publish/unpublish
+API Endpoints,GET /api/document-categories,List categories
+API Endpoints,POST /api/document-categories,Create category
+Acceptance Criteria,AC-01,Documents can be uploaded and stored
+Acceptance Criteria,AC-02,Version history is maintained
+Acceptance Criteria,AC-03,Permissions control document access
+Acceptance Criteria,AC-04,Documents can be published publicly
+Acceptance Criteria,AC-05,Search works across all documents
+Acceptance Criteria,AC-06,Download tracking is implemented
+Prompts,Objective 1 - Document Storage,"Implement document upload with cloud storage integration file type validation and virus scanning."
+Prompts,Objective 2 - Version Control,"Build version control system with automatic versioning rollback and change tracking."
+Prompts,Objective 3 - Access Control,"Create document permissions with department-based access public/private settings and audit trails."
+Prompts,Objective 4 - Search & Discovery,"Implement full-text search with faceted filtering and document preview."
+Prompts,Objective 5 - Workflow Integration,"Integrate with approvals for document publishing workflow."
+Prompts,Objective 6 - Public Access,"Build public document portal with categories featured documents and download tracking."

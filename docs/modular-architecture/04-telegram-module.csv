@@ -1,0 +1,38 @@
+Section,Item,Details
+Module Overview,Code,TELEGRAM
+Module Overview,Name,Telegram Channel Integration
+Module Overview,Type,Core Module
+Module Overview,Description,Integration with Telegram Bot API for church announcements and notifications
+Database Tables,Table 1,telegram_channels - Channel configurations
+Database Tables,Table 2,telegram_channel_posts - Channel posts/messages
+Database Tables,Table 3,telegram_channel_media - Media attachments
+Database Tables,Table 4,telegram_settings - Bot configuration
+Backend Files,Controller,telegram.controller.js
+Backend Files,Routes,telegram.routes.js
+Backend Files,Service,telegramService.js
+Backend Files,Config,telegram.js
+Frontend Files,Pages,pages/telegram/
+Frontend Files,Components,components/telegram/
+Frontend Files,Context,contexts/TelegramContext.jsx
+API Endpoints,GET /api/telegram/channels,List all channels
+API Endpoints,POST /api/telegram/channels,Create new channel
+API Endpoints,PUT /api/telegram/channels/:id,Update channel settings
+API Endpoints,DELETE /api/telegram/channels/:id,Delete channel
+API Endpoints,POST /api/telegram/channels/:id/post,Post message to channel
+API Endpoints,GET /api/telegram/posts,Get channel posts with pagination
+API Endpoints,POST /api/telegram/upload-photo,Upload photo to Telegram
+API Endpoints,GET /api/telegram/settings,Get Telegram configuration
+API Endpoints,POST /api/telegram/settings,Update Telegram configuration
+API Endpoints,POST /api/telegram/webhook,Handle Telegram webhooks
+Acceptance Criteria,AC-01,Bot can connect to Telegram API and receive messages
+Acceptance Criteria,AC-02,Messages can be posted to configured channels
+Acceptance Criteria,AC-03,Photos can be uploaded and cached
+Acceptance Criteria,AC-04,Gallery module can fetch photos from Telegram
+Acceptance Criteria,AC-05,Channel posts auto-sync to announcements
+Acceptance Criteria,AC-06,Webhook handles updates correctly
+Prompts,Objective 1 - Bot Configuration,"Set up Telegram bot token management and channel configuration. Create CRUD operations for channel management and connection testing."
+Prompts,Objective 2 - Message Posting,"Build message posting system with text formatting support for markdown and HTML. Handle large messages with pagination."
+Prompts,Objective 3 - Photo Upload & Cache,"Implement photo upload to Telegram with local caching. Store file references and handle fileReference expiration."
+Prompts,Objective 4 - Gallery Integration,"Expose API endpoints for gallery module to fetch photos from Telegram channels. Support filtering by album date and tags."
+Prompts,Objective 5 - Content Sync,"Create sync mechanism to automatically convert Telegram posts to church announcements. Handle media attachments and link formatting."
+Prompts,Objective 6 - Webhook Handling,"Implement webhook endpoint for real-time updates from Telegram. Handle message edits deletions and new posts."

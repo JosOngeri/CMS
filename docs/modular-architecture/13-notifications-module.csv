@@ -1,0 +1,32 @@
+Section,Item,Details
+Module Overview,Code,NOTIF
+Module Overview,Name,Notifications System
+Module Overview,Type,Functional Module
+Module Overview,Description,In-app and push notification system
+Database Tables,Table 1,notifications - Notification records
+Database Tables,Table 2,notification_templates - Templates
+Database Tables,Table 3,notification_preferences - User prefs
+Database Tables,Table 4,notification_logs - Delivery log
+Backend Files,Routes,notifications.routes.js
+Backend Files,Helpers,notify.js
+Frontend Files,Components,components/notifications/
+Frontend Files,Context,contexts/NotificationContext.jsx
+API Endpoints,GET /api/notifications,Get user notifications
+API Endpoints,GET /api/notifications/unread-count,Get unread count
+API Endpoints,PATCH /api/notifications/:id/read,Mark as read
+API Endpoints,PATCH /api/notifications/read-all,Mark all read
+API Endpoints,DELETE /api/notifications/:id,Delete notification
+API Endpoints,GET /api/notification-preferences,Get preferences
+API Endpoints,PUT /api/notification-preferences,Update preferences
+Acceptance Criteria,AC-01,Notifications are created for events
+Acceptance Criteria,AC-02,Unread count is accurate in real-time
+Acceptance Criteria,AC-03,Notifications can be marked as read
+Acceptance Criteria,AC-04,Preferences control notification types
+Acceptance Criteria,AC-05,Push notifications work on mobile
+Acceptance Criteria,AC-06,Notifications link to relevant content
+Prompts,Objective 1 - Notification Engine,"Build notification engine with multiple channels in-app email and push with priority levels."
+Prompts,Objective 2 - Real-time Updates,"Implement WebSocket or SSE for real-time notification delivery and unread count updates."
+Prompts,Objective 3 - Templates,"Create notification templates with variable substitution for consistent messaging."
+Prompts,Objective 4 - Preferences,"Build user preference system for controlling notification types and delivery channels."
+Prompts,Objective 5 - Push Notifications,"Integrate with push notification services for mobile and browser push."
+Prompts,Objective 6 - Notification UI,"Build notification UI components dropdown panel badge and notification center."

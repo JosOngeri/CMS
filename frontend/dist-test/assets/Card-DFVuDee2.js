@@ -1,0 +1,2 @@
+import"./rolldown-runtime-QTnfLwEv.js";import{In as e,Sn as t}from"./vendor-react-HL57umf5.js";import{i as n}from"./index-CXgMhO1y.js";e();var r=t(),i=({children:e,className:t=``})=>{let{colors:i}=n();return(0,r.jsx)(`div`,{className:`rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow duration-300 ${t}`,style:{backgroundColor:i.surface,borderColor:i.border,borderWidth:`1px`,borderStyle:`solid`,color:i.text},children:e})};export{i as t};
+//# sourceMappingURL=Card-DFVuDee2.js.map

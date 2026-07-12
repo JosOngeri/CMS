@@ -1,0 +1,40 @@
+Section,Item,Details
+Module Overview,Code,GALLERY
+Module Overview,Name,Photo Gallery Management
+Module Overview,Type,Functional Module
+Module Overview,Description,Photo gallery management with Telegram integration for storage
+Database Tables,Table 1,gallery_albums - Photo albums
+Database Tables,Table 2,gallery_photos - Individual photos
+Database Tables,Table 3,gallery_tags - Photo tags
+Database Tables,Table 4,gallery_comments - Photo comments
+Database Tables,Table 5,telegram_photos_cache - Telegram cache
+Backend Files,Controller,gallery.controller.js
+Backend Files,Routes,gallery.routes.js
+Backend Files,Helpers,galleryCache.js
+Frontend Files,Pages,pages/gallery/
+Frontend Files,Components,components/gallery/
+Frontend Files,Context,contexts/GalleryContext.jsx
+API Endpoints,GET /api/gallery/albums,List all albums
+API Endpoints,POST /api/gallery/albums,Create new album
+API Endpoints,GET /api/gallery/albums/:id,Get album details
+API Endpoints,PUT /api/gallery/albums/:id,Update album
+API Endpoints,DELETE /api/gallery/albums/:id,Delete album
+API Endpoints,GET /api/gallery/photos,List photos (paginated)
+API Endpoints,GET /api/gallery/photos/public,Get public photos
+API Endpoints,POST /api/gallery/photos,Upload photo
+API Endpoints,DELETE /api/gallery/photos/:id,Delete photo
+API Endpoints,GET /api/gallery/photos/:id/comments,Get photo comments
+API Endpoints,POST /api/gallery/photos/:id/comments,Add comment
+API Endpoints,GET /api/gallery/tags,List all tags
+Acceptance Criteria,AC-01,Albums can be created and organized
+Acceptance Criteria,AC-02,Photos can be uploaded or fetched from Telegram
+Acceptance Criteria,AC-03,Photo cache handles expired references
+Acceptance Criteria,AC-04,Gallery displays correctly with lazy loading
+Acceptance Criteria,AC-05,Photos can be tagged and filtered
+Acceptance Criteria,AC-06,Comments can be added to photos
+Prompts,Objective 1 - Album Management,"Build album CRUD with cover photos ordering and privacy settings. Support nested albums if needed."
+Prompts,Objective 2 - Telegram Integration,"Implement Telegram photo fetching with caching and automatic refresh for expired references."
+Prompts,Objective 3 - Photo Upload,"Create photo upload system with thumbnail generation optimization and metadata extraction."
+Prompts,Objective 4 - Gallery Display,"Build responsive gallery with masonry layout lazy loading and lightbox viewer."
+Prompts,Objective 5 - Tagging System,"Implement photo tagging with auto-suggestions tag-based filtering and tag management."
+Prompts,Objective 6 - Cache Management,"Create intelligent cache system that refreshes Telegram file references before expiration."

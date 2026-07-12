@@ -1,0 +1,64 @@
+# refactor_config.yaml
+# Production configuration for refactor_runner.py
+
+# Execution mode
+dry_run: true
+
+# Confidence filtering
+confidence_threshold: 0.9
+
+# Approval gating
+approval_batch_size: 5
+risk_threshold: 20.0
+approval_token_path: .approval_token
+
+# Git operations
+push_remote: false
+
+# Retention policy for snapshots
+retention_days: 30
+
+# Security
+allow_run_script: false
+
+# Syntax checks per file type
+syntax_check:
+  javascript:
+    - npx
+    - eslint
+    - --no-eslintrc
+    - --parser-options=ecmaVersion:2020
+  python:
+    - python
+    - -m
+    - py_compile
+  sql:
+    - echo
+    - "SQL syntax check not implemented"
+
+# Formatters per file type
+formatter:
+  javascript:
+    - npx
+    - prettier
+    - --check
+  python:
+    - black
+    - --check
+  sql:
+    - echo
+    - "SQL formatter not implemented"
+
+# Targeted test commands per file type
+# Use {module} placeholder for stem of the affected file.
+test_commands:
+  javascript:
+    - npm
+    - test
+    - --
+    - --grep
+    - "{module}"
+  python:
+    - pytest
+    - -k
+    - "{module}"

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200">
+  <!-- Left page -->
+  <path d="M150 20 L60 40 L60 180 L150 160 Z"
+        fill="#2e7d32"/>
+  <!-- Right page -->
+  <path d="M150 20 L240 40 L240 180 L150 160 Z"
+        fill="#388e3c"/>
+  <!-- Center gap (cross shape) -->
+  <rect x="145" y="20" width="10" height="140" fill="white"/>
+  <rect x="120" y="80" width="60" height="10" fill="white"/>
+</svg>

@@ -1,0 +1,39 @@
+Section,Item,Details
+Module Overview,Code,AUTH
+Module Overview,Name,Authentication & Security
+Module Overview,Type,Core Module
+Module Overview,Description,Handles user authentication session management and security controls
+Database Tables,Table 1,users - User accounts and profile data
+Database Tables,Table 2,roles - Role definitions and permissions
+Database Tables,Table 3,user_roles - User-role assignments
+Database Tables,Table 4,login_attempts - Failed login tracking
+Database Tables,Table 5,password_reset_tokens - Password reset tokens
+Database Tables,Table 6,refresh_tokens - Session refresh tokens
+Backend Files,Controller,auth.controller.js
+Backend Files,Routes,auth.routes.js
+Backend Files,Middleware,auth.js
+Backend Files,Helpers,security.js
+Frontend Files,Login Page,auth/Login.jsx
+Frontend Files,Context,contexts/AuthContext.jsx
+API Endpoints,POST /api/auth/register,Register new user account
+API Endpoints,POST /api/auth/login,User login with credentials
+API Endpoints,POST /api/auth/logout,Logout and invalidate session
+API Endpoints,POST /api/auth/refresh,Refresh access token
+API Endpoints,POST /api/auth/forgot-password,Request password reset
+API Endpoints,POST /api/auth/reset-password,Reset password with token
+API Endpoints,GET /api/auth/me,Get current user profile
+API Endpoints,PUT /api/auth/profile,Update user profile
+API Endpoints,PUT /api/auth/password,Change password
+API Endpoints,POST /api/auth/verify-email,Verify email address
+Acceptance Criteria,AC-01,Users can register with valid email and password
+Acceptance Criteria,AC-02,Users can login with email/password or social auth
+Acceptance Criteria,AC-03,Sessions expire after configured timeout
+Acceptance Criteria,AC-04,Password reset flow works end-to-end
+Acceptance Criteria,AC-05,Login attempts are rate-limited
+Acceptance Criteria,AC-06,Role-based access control enforced
+Prompts,Objective 1 - JWT Implementation,"Implement secure JWT token generation and validation. Create middleware for token verification and refresh mechanism. Ensure tokens expire appropriately and refresh tokens are rotated."
+Prompts,Objective 2 - Session Management,"Build complete session management system with Redis or database storage. Handle concurrent sessions multiple device login and session invalidation on logout."
+Prompts,Objective 3 - RBAC System,"Create role-based access control with hierarchical roles. Define permissions per role and enforce in middleware. Support custom roles and department-specific permissions."
+Prompts,Objective 4 - Social Auth,"Implement Google and Facebook OAuth integration. Handle account linking profile sync and social-only registration flows."
+Prompts,Objective 5 - Password Security,"Implement bcrypt password hashing password strength validation and breach detection. Add MFA support with TOTP."
+Prompts,Objective 6 - Audit Logging,"Add comprehensive audit logging for all auth events. Track login attempts password changes and role assignments with IP and user agent."

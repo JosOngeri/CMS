@@ -1,0 +1,41 @@
+Section,Item,Details
+Module Overview,Code,CONTENT
+Module Overview,Name,Website Content Management
+Module Overview,Type,Functional Module
+Module Overview,Description,Manage static pages announcements sermons and dynamic content
+Database Tables,Table 1,content_items - Content pages and posts
+Database Tables,Table 2,content_categories - Content categorization
+Database Tables,Table 3,website_settings - Site-wide settings
+Database Tables,Table 4,content_tags - Content tagging
+Database Tables,Table 5,content_revisions - Version history
+Database Tables,Table 6,announcements - Church announcements
+Backend Files,Controller 1,content.controller.js
+Backend Files,Controller 2,announcement.controller.js
+Backend Files,Routes 1,content.routes.js
+Backend Files,Routes 2,announcement.routes.js
+Frontend Files,Pages,pages/content/
+Frontend Files,Components,components/announcements/
+Frontend Files,Components,components/home/
+API Endpoints,GET /api/content,List all content items
+API Endpoints,POST /api/content,Create new content
+API Endpoints,GET /api/content/:slug,Get content by slug
+API Endpoints,PUT /api/content/:id,Update content
+API Endpoints,DELETE /api/content/:id,Delete content
+API Endpoints,POST /api/content/:id/publish,Publish content
+API Endpoints,GET /api/announcements,List announcements
+API Endpoints,POST /api/announcements,Create announcement
+API Endpoints,PUT /api/announcements/:id,Update announcement
+API Endpoints,DELETE /api/announcements/:id,Delete announcement
+API Endpoints,GET /api/website-settings,Get public website settings
+Acceptance Criteria,AC-01,Content can be created edited and published
+Acceptance Criteria,AC-02,Content has version history and rollback
+Acceptance Criteria,AC-03,Announcements auto-sync from Telegram
+Acceptance Criteria,AC-04,Content approval workflow works correctly
+Acceptance Criteria,AC-05,SEO metadata is properly managed
+Acceptance Criteria,AC-06,Content renders correctly on public site
+Prompts,Objective 1 - CMS Core,"Build content management system with CRUD operations versioning and publishing workflow. Support rich text editing and media embedding."
+Prompts,Objective 2 - Announcement System,"Create announcement management with scheduled publishing expiration and priority levels. Integrate with Telegram sync."
+Prompts,Objective 3 - Website Settings,"Implement website settings management including theme colors header/footer content and SEO settings."
+Prompts,Objective 4 - Content Categories,"Build content categorization system with hierarchical categories and filtering."
+Prompts,Objective 5 - Public API,"Create public API endpoints for website content with caching and optimization for public consumption."
+Prompts,Objective 6 - Rich Media,"Implement media upload and embedding for content items with gallery integration."

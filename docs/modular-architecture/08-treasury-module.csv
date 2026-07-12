@@ -1,0 +1,49 @@
+Section,Item,Details
+Module Overview,Code,TREASURY
+Module Overview,Name,Treasury & Finance
+Module Overview,Type,Functional Module
+Module Overview,Description,Complete church finance management including accounting budgeting and reporting
+Database Tables,Table 1,accounts - Chart of accounts
+Database Tables,Table 2,funds - Fund tracking
+Database Tables,Table 3,journal_entries - Accounting entries
+Database Tables,Table 4,expenses - Expense records
+Database Tables,Table 5,budgets - Budget definitions
+Database Tables,Table 6,bank_reconciliations - Bank recs
+Database Tables,Table 7,vendors - Vendor directory
+Database Tables,Table 8,projects - Project accounting
+Database Tables,Table 9,fixed_assets - Asset register
+Database Tables,Table 10,pledges - Member pledges
+Database Tables,Table 11,recurring_payments - Auto payments
+Backend Files,Controller,treasury.controller.js
+Backend Files,Routes,treasury.routes.js
+Backend Files,Helpers,finance.js
+Frontend Files,Pages,pages/treasury/
+Frontend Files,Components,components/treasury/
+Frontend Files,Context,contexts/TreasuryContext.jsx
+API Endpoints,GET /api/treasury/accounts,List accounts
+API Endpoints,POST /api/treasury/accounts,Create account
+API Endpoints,GET /api/treasury/funds,List funds
+API Endpoints,POST /api/treasury/funds,Create fund
+API Endpoints,GET /api/treasury/journal-entries,Get journal entries
+API Endpoints,POST /api/treasury/journal-entries,Create entry
+API Endpoints,GET /api/treasury/expenses,List expenses
+API Endpoints,POST /api/treasury/expenses,Create expense
+API Endpoints,POST /api/treasury/expenses/:id/approve,Approve expense
+API Endpoints,GET /api/treasury/budgets,List budgets
+API Endpoints,POST /api/treasury/budgets,Create budget
+API Endpoints,GET /api/treasury/reports/trial-balance,Trial balance report
+API Endpoints,GET /api/treasury/reports/income-statement,Income statement
+API Endpoints,GET /api/treasury/reports/balance-sheet,Balance sheet
+API Endpoints,GET /api/treasury/member-giving/:id,Member giving history
+Acceptance Criteria,AC-01,Double-entry accounting is enforced
+Acceptance Criteria,AC-02,Expenses require approval workflow
+Acceptance Criteria,AC-03,Budget vs actual tracking works correctly
+Acceptance Criteria,AC-04,Financial reports are accurate and timely
+Acceptance Criteria,AC-05,Member giving is tracked and reported
+Acceptance Criteria,AC-06,Bank reconciliation is supported
+Prompts,Objective 1 - Chart of Accounts,"Build chart of accounts with hierarchical structure account codes and fund tracking."
+Prompts,Objective 2 - Journal Entries,"Implement double-entry journal entry system with validation balancing and audit trail."
+Prompts,Objective 3 - Expense Management,"Create expense tracking with approval workflow receipt attachment and vendor management."
+Prompts,Objective 4 - Budgeting,"Build budget creation tracking and variance analysis with department-level budgets."
+Prompts,Objective 5 - Financial Reports,"Implement financial reporting including trial balance income statement balance sheet and custom reports."
+Prompts,Objective 6 - Member Giving,"Create member giving tracking with pledge management recurring gifts and tax statements."

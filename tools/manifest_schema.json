@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KMainCMS Refactoring Manifest Schema",
+  "type": "object",
+  "required": ["version", "project", "phases"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Manifest format version"
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name"
+    },
+    "description": {
+      "type": "string",
+      "description": "High-level description of the refactoring effort"
+    },
+    "source_mapping": {
+      "type": "string",
+      "description": "Path to the query mapping file that drives this manifest"
+    },
+    "phases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "steps"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique phase identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable phase name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this phase accomplishes"
+          },
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether this phase is enabled"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "action", "target"],
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique step identifier"
+                },
+                "action": {
+                  "type": "string",
+                  "enum": ["replace", "rename", "move", "delete", "wrap"],
+                  "description": "Transformation action"
+                },
+                "target": {
+                  "type": "string",
+                  "description": "Target file or glob pattern"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "What this step does"
+                },
+                "risk_score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10,
+                  "description": "Risk score from 0 (safe) to 10 (dangerous)"
+                },
+                "auto_apply": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Whether this step is eligible for auto-apply"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,166 @@
+NAMING CONVENTIONS GUIDE
+==========================
+Date: June 21, 2025
+Project: KMainCMS
+
+CURRENT INCONSISTENCIES
+-----------------------
+
+1. Database Column Names
+   - Mix of snake_case and camelCase in queries
+   - Examples: first_name, last_name (snake_case) vs departmentId (camelCase in params)
+   
+2. Route Parameters
+   - Inconsistent: :id vs :departmentId vs :identifier
+   - department.routes.js uses :departmentId
+   - departments.routes.js uses :id and :identifier
+   
+3. Controller Methods
+   - Generally consistent (camelCase)
+   - Some controllers use different naming patterns
+   
+4. Response Keys
+   - Inconsistent: data vs results vs items vs announcements
+   - Should standardize on 'data' for successful responses
+   
+5. Query Parameters
+   - Mix of snake_case and camelCase: department_id vs departmentId
+   - Should standardize on snake_case for query params
+
+RECOMMENDED CONVENTIONS
+-----------------------
+
+1. Database Columns
+   - Use snake_case for all database column names
+   - Examples: first_name, last_name, department_id, created_at
+   
+2. Route Parameters
+   - Use camelCase for route parameters
+   - Examples: :departmentId, :userId, :announcementId
+   - Use :id for generic single resource identifiers
+   
+3. Controller Methods
+   - Use camelCase for all controller methods
+   - Prefix with action verb: get, create, update, delete
+   - Examples: getDepartment, createAnnouncement, updateUser
+   
+4. Response Format
+   - Success: { success: true, data: {...}, message: '...' }
+   - Error: { success: false, error: '...', details: [...] }
+   - Always use 'data' key for successful responses
+   
+5. Query Parameters
+   - Use snake_case for query parameters
+   - Examples: department_id, page, limit, sort_by
+   
+6. Variables (JavaScript)
+   - Use camelCase for all JavaScript variables
+   - Examples: userId, departmentId, isActive
+   
+7. Constants
+   - Use UPPER_SNAKE_CASE for constants
+   - Examples: ADMIN_ROLES, MAX_LIMIT, DEFAULT_PAGE_SIZE
+   
+8. File Names
+   - Controllers: camelCase with .controller.js suffix
+   - Routes: camelCase with .routes.js suffix
+   - Helpers: camelCase with .js suffix
+   - Examples: userController.js, department.routes.js, permissionChecker.js
+   
+9. Table Names
+   - Use snake_case for database table names
+   - Use plural form for table names
+   - Examples: users, departments, announcements, department_members
+
+MIGRATION CHECKLIST
+-------------------
+
+Phase 1: Documentation (CURRENT)
+- [x] Document current inconsistencies
+- [x] Define recommended conventions
+- [x] Create migration checklist
+
+Phase 2: Route Parameters
+- [ ] Standardize route parameters across all routes
+- [ ] Update :identifier to use consistent naming
+- [ ] Update middleware to handle new parameter names
+
+Phase 3: Response Keys
+- [ ] Standardize all response keys to use 'data'
+- [ ] Update controllers to use new response helpers
+- [ ] Update frontend to handle standardized responses
+
+Phase 4: Query Parameters
+- [ ] Standardize query parameters to snake_case
+- [ ] Update controllers to handle new parameter names
+- [ ] Update frontend to use new parameter names
+
+Phase 5: Database Queries
+- [ ] Ensure all column references use snake_case
+- [ ] Update any camelCase column references
+- [ ] Add database migration if needed
+
+IMPLEMENTATION PRIORITY
+-----------------------
+
+HIGH PRIORITY:
+1. Response keys - affects frontend integration
+2. Route parameters - affects API consistency
+3. Query parameters - affects API consistency
+
+MEDIUM PRIORITY:
+4. Controller method naming - internal consistency
+5. Variable naming - code readability
+
+LOW PRIORITY:
+6. Database column naming - requires migration
+7. Table naming - requires migration
+
+EXAMPLES OF CHANGES
+-------------------
+
+BEFORE:
+```javascript
+// Route
+router.get('/:identifier', controller.getById);
+
+// Controller
+const { identifier } = req.params;
+const query = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
+
+// Response
+res.json({ department: result.rows[0] });
+```
+
+AFTER:
+```javascript
+// Route
+router.get('/:id', controller.getById);
+
+// Controller
+const { id } = req.params;
+const query = 'SELECT * FROM departments WHERE slug = $1 OR id = $1';
+
+// Response
+res.json({ success: true, data: result.rows[0] });
+```
+
+BEFORE:
+```javascript
+// Query params
+const { departmentId, page, limit } = req.query;
+```
+
+AFTER:
+```javascript
+// Query params
+const { department_id, page, limit } = req.query;
+```
+
+NOTES
+-----
+- This is a gradual migration - do not attempt to change everything at once
+- Prioritize changes that affect API contracts
+- Test thoroughly after each change
+- Update API documentation as changes are made
+- Consider adding deprecation warnings for old parameter names

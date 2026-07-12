@@ -1,0 +1,373 @@
+version: '3.8'
+
+services:
+  # API Gateway - Routes requests to appropriate microservices
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - AUTH_SERVICE_URL=http://auth-service:5001
+      - CONTENT_SERVICE_URL=http://content-service:5002
+      - DEPARTMENTS_SERVICE_URL=http://departments-service:5003
+      - GALLERY_SERVICE_URL=http://gallery-service:5004
+      - TREASURY_SERVICE_URL=http://treasury-service:5005
+      - PAYMENTS_SERVICE_URL=http://payments-service:5006
+      - SMS_SERVICE_URL=http://sms-service:5007
+      - DOCUMENTS_SERVICE_URL=http://documents-service:5008
+      - APPROVALS_SERVICE_URL=http://approvals-service:5009
+      - NOTIFICATIONS_SERVICE_URL=http://notifications-service:5010
+      - SETTINGS_SERVICE_URL=http://settings-service:5011
+      - REPORTS_SERVICE_URL=http://reports-service:5012
+      - ANALYTICS_SERVICE_URL=http://analytics-service:5013
+      - SEARCH_SERVICE_URL=http://search-service:5014
+      - SECURITY_SERVICE_URL=http://security-service:5015
+      - MOBILE_SERVICE_URL=http://mobile-service:5016
+      - TELEGRAM_SERVICE_URL=http://telegram-service:5017
+    depends_on:
+      - auth-service
+      - content-service
+      - departments-service
+      - gallery-service
+      - treasury-service
+      - payments-service
+      - sms-service
+      - documents-service
+      - approvals-service
+      - notifications-service
+      - settings-service
+      - reports-service
+      - analytics-service
+      - search-service
+      - security-service
+      - mobile-service
+      - telegram-service
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # Database Service
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=kmaincms
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # AUTH Service (Authentication & Authorization)
+  auth-service:
+    build: ./services/auth-service
+    ports:
+      - "5001:5001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - JWT_SECRET=your-secret-key-change-in-production
+      - JWT_EXPIRES_IN=7d
+      - NODE_ENV=production
+      - PORT=5001
+      - SERVICE_NAME=auth-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # CONTENT Service (Website Content Management)
+  content-service:
+    build: ./services/content-service
+    ports:
+      - "5002:5002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5002
+      - SERVICE_NAME=content-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # DEPARTMENTS Service (Department Management)
+  departments-service:
+    build: ./services/departments-service
+    ports:
+      - "5003:5003"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5003
+      - SERVICE_NAME=departments-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # GALLERY Service (Photo Gallery)
+  gallery-service:
+    build: ./services/gallery-service
+    ports:
+      - "5004:5004"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5004
+      - SERVICE_NAME=gallery-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # TREASURY Service (Financial Management)
+  treasury-service:
+    build: ./services/treasury-service
+    ports:
+      - "5005:5005"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5005
+      - SERVICE_NAME=treasury-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # PAYMENTS Service (Payment Processing)
+  payments-service:
+    build: ./services/payments-service
+    ports:
+      - "5006:5006"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5006
+      - SERVICE_NAME=payments-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # SMS Service (SMS Messaging)
+  sms-service:
+    build: ./services/sms-service
+    ports:
+      - "5007:5007"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5007
+      - SERVICE_NAME=sms-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # DOCUMENTS Service (Document Management)
+  documents-service:
+    build: ./services/documents-service
+    ports:
+      - "5008:5008"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5008
+      - SERVICE_NAME=documents-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # APPROVALS Service (Approval Workflows)
+  approvals-service:
+    build: ./services/approvals-service
+    ports:
+      - "5009:5009"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5009
+      - SERVICE_NAME=approvals-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # NOTIFICATIONS Service (Notification System)
+  notifications-service:
+    build: ./services/notifications-service
+    ports:
+      - "5010:5010"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5010
+      - SERVICE_NAME=notifications-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # SETTINGS Service (System Settings)
+  settings-service:
+    build: ./services/settings-service
+    ports:
+      - "5011:5011"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5011
+      - SERVICE_NAME=settings-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # REPORTS Service (Advanced Reporting)
+  reports-service:
+    build: ./services/reports-service
+    ports:
+      - "5012:5012"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5012
+      - SERVICE_NAME=reports-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # ANALYTICS Service (Analytics Dashboard)
+  analytics-service:
+    build: ./services/analytics-service
+    ports:
+      - "5013:5013"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5013
+      - SERVICE_NAME=analytics-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # SEARCH Service (Advanced Search)
+  search-service:
+    build: ./services/search-service
+    ports:
+      - "5014:5014"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5014
+      - SERVICE_NAME=search-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # SECURITY Service (Security Management)
+  security-service:
+    build: ./services/security-service
+    ports:
+      - "5015:5015"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5015
+      - SERVICE_NAME=security-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # MOBILE Service (Mobile API)
+  mobile-service:
+    build: ./services/mobile-service
+    ports:
+      - "5016:5016"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5016
+      - SERVICE_NAME=mobile-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # TELEGRAM Service (Telegram Integration)
+  telegram-service:
+    build: ./services/telegram-service
+    ports:
+      - "5017:5017"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - NODE_ENV=production
+      - PORT=5017
+      - SERVICE_NAME=telegram-service
+    depends_on:
+      - db
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build: ./frontend
+    ports:
+      - "5180:5180"
+    environment:
+      - VITE_API_URL=http://api-gateway:5000/api
+      - NODE_ENV=production
+    depends_on:
+      - api-gateway
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api-gateway
+      - frontend
+    networks:
+      - kmaincms-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+
+networks:
+  kmaincms-network:
+    driver: bridge

@@ -1,0 +1,1226 @@
+KMainCMS Master Todo List — Hyper-Granular Implementation Tasks
+Generated: 2026-07-08
+Sources: Master_Audit_map_refactored, GRANULAR_AUDIT_CLUSTERS.md, GRANULAR_AUDIT_CLUSTERS - Copy.md, GRANULAR_AUDIT_CLUSTERS - Copy (2).md, CODEBASE_AUDIT_PROTOCOL.md, LEAN_ARCHITECTURE_REPORT.md, DEEP_GAP_ANALYSIS.md, GRANULAR_TASK_LIST.md, IMPLEMENTATION_PLAN.md, AUDIT_RESULTS.md
+Total Tasks: 2000+
+Priority Levels: 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
+
+HOW TO USE THIS LIST
+Tasks are grouped by file so you know exactly where to make each change
+Priority: 🔴 = fix today, 🟠 = fix this week, 🟡 = fix this month, 🟢 = fix when possible
+Check off tasks with [x] as you complete them
+Each task tells you the file name and exactly what to do
+═══════════════════════════════════════════
+PHASE 1 — CRITICAL SECURITY FIXES
+Fix these first — they are real security risks
+═══════════════════════════════════════════
+1.1 Multi-Tenant Isolation (church_id enforcement)
+These files don't filter data by church — meaning one church could see another church's data
+
+[ ] 🔴 backend/repositories/SearchRepository.js — Add AND church_id = $n to ALL SELECT queries — currently zero tenant isolation
+[ ] 🔴 backend/repositories/SearchRepository.js — Add churchId parameter to searchAll() method signature
+[ ] 🔴 backend/repositories/SearchRepository.js — Add churchId parameter to searchMembers() method signature
+[ ] 🔴 backend/repositories/SearchRepository.js — Add churchId parameter to searchDepartments() method signature
+[ ] 🔴 backend/repositories/SearchRepository.js — Add churchId parameter to searchEvents() method signature
+[ ] 🔴 backend/repositories/SearchRepository.js — Add churchId parameter to searchDocuments() method signature
+[ ] 🔴 backend/repositories/TaxStatementRepository.js — Add AND church_id = $n to all queries
+[ ] 🔴 backend/repositories/TaxStatementRepository.js — Add churchId to getByMember() method
+[ ] 🔴 backend/repositories/TaxStatementRepository.js — Add churchId to getByYear() method
+[ ] 🔴 backend/repositories/TaxStatementRepository.js — Add churchId to getAll() method
+[ ] 🔴 backend/repositories/SecurityRepository.js — Add AND church_id = $n to all queries
+[ ] 🔴 backend/repositories/SecurityRepository.js — Add churchId to getSecurityLogs() method
+[ ] 🔴 backend/repositories/SecurityRepository.js — Add churchId to getFailedLogins() method
+[ ] 🔴 backend/repositories/SecurityRepository.js — Add churchId to getSuspiciousActivity() method
+[ ] 🔴 backend/models/Transaction.js — Add church_id column to model definition
+[ ] 🔴 backend/models/Transaction.js — Add church_id to all INSERT queries
+[ ] 🔴 backend/models/Transaction.js — Add church_id filter to all SELECT queries
+[ ] 🔴 backend/models/Budget.js — Add church_id column to model definition
+[ ] 🔴 backend/models/Budget.js — Add church_id to all INSERT queries
+[ ] 🔴 backend/models/Budget.js — Add church_id filter to all SELECT queries
+[ ] 🔴 backend/models/FixedAsset.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/models/Vendor.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/models/JournalEntry.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/models/Fund.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/models/Account.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/models/TaxStatement.js — Add church_id to model definition and all queries
+[ ] 🔴 backend/repositories/BaseRepository.js — Add mandatory church_id enforcement — throw error if churchId not passed to any SELECT/INSERT/UPDATE/DELETE
+[ ] 🔴 backend/repositories/BaseRepository.js — Add helper method withChurch(query, churchId) that appends the AND church_id = $n clause automatically
+[ ] 🔴 backend/migrations/007_auth_tables.sql — Add church_id column to refresh_tokens table
+[ ] 🔴 backend/migrations/007_auth_tables.sql — Add church_id column to password_reset_tokens table
+[ ] 🔴 backend/migrations/007_auth_tables.sql — Add church_id column to mfa_codes table
+[ ] 🔴 backend/migrations/007_auth_tables.sql — Add foreign key constraint REFERENCES churches(id) on all three new church_id columns
+[ ] 🔴 backend/repositories/TreasuryRepository.js — Add churchId enforcement to all 40+ methods
+[ ] 🔴 backend/repositories/TreasuryDashboardRepository.js — Confirm all CTE queries filter by church_id
+[ ] 🔴 backend/repositories/ReconciliationRepository.js — Add church_id to all queries
+1.2 Authentication & Authorization Vulnerabilities
+[ ] 🔴 backend/middleware/treasurySecurity.js — Replace MFA placeholder with real enforcement logic
+[ ] 🔴 backend/middleware/treasurySecurity.js — Add if (!mfaVerified) return res.status(403).json({ error: 'MFA required' }) before passing to next()
+[ ] 🔴 backend/middleware/treasurySecurity.js — Read MFA status from database, not from a flag in memory
+[ ] 🔴 backend/middleware/treasurySecurity.js — Add audit log entry when MFA check is triggered
+[ ] 🔴 backend/middleware/treasurySecurity.js — Test that treasury routes are actually blocked without MFA
+[ ] 🔴 frontend/src/hooks/useDataFetch.js — Replace native fetch with the existing auth-api axios instance
+[ ] 🔴 frontend/src/hooks/useDataFetch.js — Ensure auth token is automatically attached on every request
+[ ] 🔴 frontend/src/hooks/useDataFetch.js — Ensure CSRF token is automatically attached on every request
+[ ] 🔴 frontend/src/hooks/useDataFetch.js — Add 401 auto-logout handler
+[ ] 🔴 frontend/src/hooks/useDataFetch.js — Add request/response error logging
+[ ] 🔴 backend/middleware/csrf.js — Remove automatic Bearer token exemption that bypasses CSRF check
+[ ] 🔴 backend/middleware/csrf.js — Validate that both Bearer token AND CSRF token are present for mutation endpoints
+[ ] 🔴 backend/middleware/auth.js — Add church_id to the identity object returned by getIdentity()
+[ ] 🔴 backend/middleware/auth.js — Implement Redis LRU cache for getIdentity() with 5-minute TTL
+[ ] 🔴 backend/middleware/auth.js — Add cache invalidation when user role changes
+[ ] 🔴 backend/middleware/auth.js — Add cache invalidation on logout
+[ ] 🔴 frontend/src/components/common/ProtectedRoute.jsx — Add role-based enforcement (currently only checks authenticated)
+[ ] 🔴 frontend/src/components/common/ProtectedComponent.jsx — Add role-based enforcement (currently only checks authenticated)
+[ ] 🔴 frontend/src/router/dashboard.routes.jsx — Add roles property to every route definition
+[ ] 🔴 frontend/src/router/dashboard.routes.jsx — Wrap all /treasury/* routes in RoleGuard(['Treasurer', 'Super Admin'])
+[ ] 🔴 frontend/src/router/dashboard.routes.jsx — Wrap all /admin/* routes in RoleGuard(['Super Admin'])
+[ ] 🔴 frontend/src/router/dashboard.routes.jsx — Wrap all /departments/* routes in RoleGuard(['Dept Head', 'Super Admin'])
+[ ] 🔴 Create frontend/src/components/common/RoleGuard.jsx — Component that reads user role and redirects if unauthorized
+[ ] 🔴 frontend/src/pages/treasury/TreasuryDashboard.jsx — Add role guard check at page level
+[ ] 🔴 frontend/src/pages/treasury/Transactions.jsx — Add role guard check at page level
+[ ] 🔴 frontend/src/pages/treasury/Budgets.jsx — Add role guard check at page level
+[ ] 🔴 frontend/src/pages/treasury/Reports.jsx — Add role guard check at page level
+1.3 SQL Injection Risks
+[ ] 🔴 backend/controllers/customReport.controller.js — Remove all manual SQL string concatenation
+[ ] 🔴 backend/controllers/customReport.controller.js — Create backend/services/QueryBuilderService.js to safely build parameterized queries
+[ ] 🔴 backend/controllers/customReport.controller.js — Whitelist all allowed column names and table names
+[ ] 🔴 backend/controllers/customReport.controller.js — Use $1, $2, $n parameterized format for all user input
+[ ] 🔴 backend/repositories/ApprovalsRepository.js — Replace string interpolation with $1 parameterized queries
+[ ] 🔴 backend/repositories/TreasuryDashboardRepository.js — Replace string interpolation with $1 parameterized queries
+[ ] 🔴 backend/controllers/userSettings.controller.js — Remove raw SQL building; move to UserSettingsRepository
+1.4 Hardcoded Credentials & Secrets
+[ ] 🔴 backend/scripts/add-sample-gallery-data.js — Remove hardcoded host: 'localhost', user: 'postgres', password: 'postgres'
+[ ] 🔴 backend/scripts/add-sample-gallery-data.js — Replace with process.env.DATABASE_URL or env variable lookups
+[ ] 🔴 backend/scripts/add-telegram-channel.js — Remove hardcoded host: 'localhost', user: 'postgres', password: 'postgres'
+[ ] 🔴 backend/scripts/add-telegram-channel.js — Replace with process.env.DATABASE_URL or env variable lookups
+[ ] 🔴 Grep entire backend/scripts/ directory for password: 'postgres' and fix all occurrences
+[ ] 🔴 Grep entire codebase for password: ' and audit each occurrence
+1.5 Runtime Crash Risks
+[ ] 🔴 backend/services/reconciliationService.js — Fix line 188: variable pending is used but never defined
+[ ] 🔴 backend/services/reconciliationService.js — Trace what pending was supposed to be (likely the result of a DB query) and define it
+[ ] 🔴 backend/services/reconciliationService.js — Add try/catch wrapper around the full reconciliation logic
+[ ] 🔴 backend/services/reconciliationService.js — Add unit test to confirm reconciliation no longer crashes
+[ ] 🔴 backend/controllers/dashboard.controller.js — Fix line 78: change p.user_id to p.member_id in payments join query
+[ ] 🔴 backend/controllers/payments.controller.js — Fix line 22: join against users table if members table doesn't exist yet
+[ ] 🔴 backend/controllers/payments.controller.js — Fix line 257: change income_categories to payment_categories
+[ ] 🔴 backend/controllers/payments.controller.js — Add guard for missing payment_methods table
+1.6 PII Exposure
+[ ] 🔴 backend/services/aiContentService.js — Add PII masking before sending data to Gemini API
+[ ] 🔴 backend/services/aiContentService.js — Create maskPII(text) helper that replaces names, emails, phone numbers with [REDACTED]
+[ ] 🔴 backend/services/aiContentService.js — Log masked version, not original, to any logs
+[ ] 🔴 backend/config/logging.js — Add redact array: ['password', 'token', 'authorization', 'email', 'phone', 'national_id']
+[ ] 🔴 backend/config/logging.js — Set conditional transport: pino-pretty only when NODE_ENV === 'development'
+[ ] 🔴 backend/config/passport.js — Add PII scrubbing utility for OAuth profile objects before any logging
+1.7 Destructive Script Safety
+[ ] 🔴 backend/scripts/reset-db.js — Add --confirm flag requirement before DROP SCHEMA executes
+[ ] 🔴 backend/scripts/reset-db.js — Add NODE_ENV check — block execution if NODE_ENV === 'production'
+[ ] 🔴 backend/scripts/reset-db.js — Add interactive readline prompt: "Type RESET to confirm database destruction:"
+[ ] 🔴 backend/scripts/reset-db.js — Add backup reminder message before execution
+[ ] 🔴 backend/scripts/check-documentation.js — Remove table creation logic — rename to setup-documentation.js or create separately
+[ ] 🔴 backend/scripts/delete-test-user.js — Add confirmation prompt before DELETE query runs
+[ ] 🔴 backend/scripts/delete-test-user.js — Add NODE_ENV check to block accidental production execution
+═══════════════════════════════════════════
+PHASE 2 — DATABASE SCHEMA STANDARDIZATION
+Fix structural issues that cause crashes
+═══════════════════════════════════════════
+2.1 ID Type Standardization
+[ ] 🔴 backend/schema.sql — Document the current ID type used (UUID)
+[ ] 🔴 backend/migrations/001_auth_schema.sql — Change users.id from SERIAL to UUID DEFAULT gen_random_uuid()
+[ ] 🔴 backend/migrations/001_auth_schema.sql — Update all foreign keys referencing users.id to use UUID type
+[ ] 🔴 backend/migrations/003_members_schema.sql — Change members.user_id from INTEGER to UUID
+[ ] 🔴 backend/migrations/003_members_schema.sql — Update foreign key constraint to match new UUID type
+[ ] 🔴 All migration files — Run grep for SERIAL and evaluate whether to change to UUID
+[ ] 🟠 backend/scripts/setup-database.js — Verify setup script runs migrations in correct order
+[ ] 🟠 backend/scripts/migrate.js — Verify migrate script is compatible with setup-database.js
+2.2 Dead Route Registration
+[ ] 🟠 backend/app.js — Register payment.routes.js OR delete if fully replaced
+[ ] 🟠 backend/app.js — Register members.routes.js OR delete if fully replaced by users routes
+[ ] 🟠 backend/routes/payment.routes.js — Confirm if this should be merged with payments.routes.js
+[ ] 🟠 backend/routes/members.routes.js — Confirm if this should be merged with users.routes.js
+[ ] 🟠 backend/app.js — Audit full route list for duplicates and overlapping paths
+[ ] 🟠 backend/routes/ — Remove all route files that are not registered in app.js
+2.3 Duplicate Endpoint Cleanup
+[ ] 🟡 backend/routes/users.routes.js — Remove POST /change-password if PUT /api/auth/password does the same thing
+[ ] 🟡 backend/routes/auth.routes.js — Document which password endpoint is canonical
+[ ] 🟡 Create backend/routes/index.js — Single router that imports and mounts all route modules
+[ ] 🟡 backend/app.js — Replace 40+ individual app.use() calls with single app.use('/api', require('./routes/index'))
+2.4 Missing Table & Column Fixes
+[ ] 🟠 backend/migrations/ — Create migration to add payment_methods table if it doesn't exist
+[ ] 🟠 backend/migrations/ — Create migration to standardize income_categories vs payment_categories naming
+[ ] 🟠 backend/schema.sql — Add members table definition if it is distinct from users
+[ ] 🟡 backend/migrations/ — Add GIN index on all JSONB columns (metadata, settings, permissions)
+[ ] 🟡 backend/migrations/ — Add composite index on (church_id, created_at) for all high-traffic tables
+[ ] 🟡 backend/migrations/ — Add composite index on (church_id, status) for approvals and documents
+═══════════════════════════════════════════
+PHASE 3 — BACKEND INFRASTRUCTURE
+Clean up server.js, app.js, config files
+═══════════════════════════════════════════
+3.1 backend/app.js
+[ ] 🟠 backend/app.js — Remove static serving block (it is duplicated in server.js — keep only in server.js)
+[ ] 🟠 backend/app.js — Remove manual security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection (Helmet already handles these)
+[ ] 🟠 backend/app.js — Remove manual Access-Control-Allow-* headers if cors() middleware already handles CORS
+[ ] 🟠 backend/app.js — Replace 40+ individual route app.use() calls with single index router
+[ ] 🟡 backend/app.js — Add request timing middleware that logs slow requests (> 500ms)
+[ ] 🟡 backend/app.js — Add global 404 handler at the bottom of the middleware chain
+[ ] 🟡 backend/app.js — Ensure global error handler sends consistent {success: false, error: '...'} format
+3.2 backend/server.js
+[ ] 🔴 backend/server.js — Add process.exit(1) inside uncaughtException handler after logging (prevents zombie processes)
+[ ] 🔴 backend/server.js — Add process.exit(1) inside unhandledRejection handler after logging
+[ ] 🟠 backend/server.js — Replace global.io = io with app.set('io', io)
+[ ] 🟠 backend/server.js — Anywhere global.io is read, replace with req.app.get('io')
+[ ] 🟠 backend/server.js — Remove duplicate SPA fallback (express.static) since it is in app.js
+[ ] 🟡 backend/server.js — Add graceful shutdown handler for SIGTERM and SIGINT
+[ ] 🟡 backend/server.js — On shutdown: close DB pool, close Redis, close HTTP server, then exit
+3.3 backend/config/database.js
+[ ] 🟠 backend/config/database.js — Change connectionTimeoutMillis from 2000 to 5000
+[ ] 🟠 backend/config/database.js — Change idleTimeoutMillis from current value to 30000
+[ ] 🟠 backend/config/database.js — Replace console.error in pool error handler with Pino logger
+[ ] 🟡 backend/config/database.js — Export a query(text, params) helper that logs query time
+[ ] 🟡 backend/config/database.js — Export a transaction(callback) helper for atomic operations
+[ ] 🟡 backend/config/database.js — Add max pool size config from environment variable DB_POOL_MAX
+3.4 backend/config/env-validation.js
+[ ] 🟠 backend/config/env-validation.js — Replace all console.log with logger.info from logging.js
+[ ] 🟠 backend/config/env-validation.js — Replace all console.error with logger.error from logging.js
+[ ] 🟠 backend/config/env-validation.js — Add fallback pair validation: if PGHOST missing, check DB_HOST
+[ ] 🟠 backend/config/env-validation.js — Add fallback pair validation: if PGUSER missing, check DB_USER
+[ ] 🟠 backend/config/env-validation.js — Add fallback pair validation: if PGPASSWORD missing, check DB_PASSWORD
+[ ] 🟡 backend/config/env-validation.js — Add validation for REDIS_URL environment variable
+3.5 backend/config/logging.js
+[ ] 🔴 backend/config/logging.js — Add redact: ['password', 'token', 'authorization', 'email', 'phone'] to Pino config
+[ ] 🟠 backend/config/logging.js — Wrap pino-pretty in NODE_ENV !== 'production' guard
+[ ] 🟠 backend/config/logging.js — Set level: process.env.LOG_LEVEL || 'info' for configurable log level
+[ ] 🟡 backend/config/logging.js — Add serializers for req and res objects to standardize request logging
+3.6 backend/config/passport.js
+[ ] 🟠 backend/config/passport.js — Add logger.info('Auth attempt for strategy: google') to Google strategy callback
+[ ] 🟠 backend/config/passport.js — Add logger.error for failed auth attempts
+[ ] 🟠 backend/config/passport.js — Create scrubProfile(profile) helper that removes raw tokens from profile before logging
+[ ] 🟡 backend/config/passport.js — Add JWT strategy logging for token validation failures
+3.7 backend/config/telegram.js
+[ ] 🟠 backend/config/telegram.js — Replace hardcoded timeout values with process.env.TELEGRAM_TIMEOUT || 30000
+[ ] 🟠 backend/config/telegram.js — Replace hardcoded file size limits with process.env.TELEGRAM_MAX_FILE_SIZE || 50000000
+[ ] 🟡 backend/config/telegram.js — Add validation that required Telegram env vars exist on startup
+═══════════════════════════════════════════
+PHASE 4 — BACKEND CONTROLLERS CLEANUP
+Controllers should only handle HTTP, not business logic
+═══════════════════════════════════════════
+4.1 backend/controllers/BaseController.js
+[ ] 🟠 backend/controllers/BaseController.js — Remove this.pool property (gives controllers direct DB access)
+[ ] 🟠 backend/controllers/BaseController.js — Remove this.query() method
+[ ] 🟠 backend/controllers/BaseController.js — Remove this.transaction() method
+[ ] 🟠 backend/controllers/BaseController.js — Keep only HTTP helpers: sendSuccess(), sendError(), paginate()
+[ ] 🟡 backend/controllers/BaseController.js — Add sendCreated(res, data) helper
+[ ] 🟡 backend/controllers/BaseController.js — Add sendNotFound(res, message) helper
+[ ] 🟡 backend/controllers/BaseController.js — Add hasRole(req, roles[]) helper
+4.2 backend/controllers/auth.controller.js
+[ ] 🟠 backend/controllers/auth.controller.js — Move all direct SQL from register() to UserRepository.create()
+[ ] 🟠 backend/controllers/auth.controller.js — Fix line 398: add actual email dispatch using emailService.js for password reset
+[ ] 🟠 backend/controllers/auth.controller.js — Replace manual res.json calls with ResponseHandler
+[ ] 🟠 backend/controllers/auth.controller.js — Replace hardcoded MFA role list with centralized ROLES constant
+[ ] 🟡 backend/controllers/auth.controller.js — Add rate limiting on login endpoint (max 5 attempts per minute per IP)
+[ ] 🟡 backend/controllers/auth.controller.js — Add audit log on successful login with IP and user agent
+4.3 backend/controllers/users.controller.js
+[ ] 🟠 backend/controllers/users.controller.js — Remove all raw SQL — move to UserRepository
+[ ] 🟠 backend/controllers/users.controller.js — Remove methods that duplicate members.controller.js
+[ ] 🟠 backend/controllers/users.controller.js — Consolidate with members.controller.js or clearly document split
+[ ] 🟡 backend/controllers/users.controller.js — Standardize all responses to {success, data, message} format
+[ ] 🟡 backend/controllers/users.controller.js — Add church_id to all queries that retrieve user lists
+4.4 backend/controllers/members.controller.js
+[ ] 🟠 backend/controllers/members.controller.js — Move pagination math (offset = (page-1) * limit) to BaseController or helper
+[ ] 🟠 backend/controllers/members.controller.js — Move bulk contact creation to MembersRepository.bulkCreate()
+[ ] 🟡 backend/controllers/members.controller.js — Add bulkImport endpoint that accepts CSV data
+[ ] 🟡 backend/controllers/members.controller.js — Add bulkExport endpoint that returns CSV/PDF
+4.5 backend/controllers/church.controller.js
+[ ] 🟠 backend/controllers/church.controller.js — Move slug validation logic to ChurchService.validateSlug()
+[ ] 🟠 backend/controllers/church.controller.js — Move user count check to ChurchRepository.getMemberCount()
+[ ] 🟠 backend/controllers/church.controller.js — Move dynamic update object assembly to ChurchRepository.update()
+[ ] 🟡 backend/controllers/church.controller.js — Standardize all responses
+4.6 backend/controllers/department.controller.js & departments.controller.js
+[ ] 🟠 backend/controllers/department.controller.js — Consolidate with departments.controller.js into one file
+[ ] 🟠 Move Multer config from both files to backend/helpers/multerConfig.js
+[ ] 🟠 Move dashboard object assembly to DepartmentRepository.getDashboard()
+[ ] 🟠 Remove manual filter mapping (string to boolean) — move to repository
+[ ] 🟡 Create backend/routes/departments.routes.js as the single authoritative route file
+4.7 backend/controllers/dashboard.controller.js
+[ ] 🔴 backend/controllers/dashboard.controller.js — Replace all 6 hardcoded/fake return values with real SQL queries
+[ ] 🔴 backend/controllers/dashboard.controller.js — Implement getSystemHealth() to run real SELECT 1 ping on DB
+[ ] 🔴 backend/controllers/dashboard.controller.js — Implement getMinistryHealth() from DashboardRepository
+[ ] 🔴 backend/controllers/dashboard.controller.js — Implement getFinancialStats() from DashboardRepository
+[ ] 🟠 backend/controllers/dashboard.controller.js — Move activity feed aggregation/sorting to DashboardRepository
+[ ] 🟡 backend/controllers/dashboard.controller.js — Add WebSocket push for system health updates
+4.8 backend/controllers/treasury.controller.js
+[ ] 🔴 backend/controllers/treasury.controller.js — DEPRECATE this file — do not add new code here
+[ ] 🔴 backend/controllers/treasury.controller.js — Migrate asset methods to backend/modules/treasury/controllers/asset.controller.js
+[ ] 🔴 backend/controllers/treasury.controller.js — Migrate vendor methods to backend/modules/treasury/controllers/vendor.controller.js
+[ ] 🔴 backend/controllers/treasury.controller.js — Migrate reconciliation methods to backend/modules/treasury/controllers/reconciliation.controller.js
+[ ] 🟠 backend/routes/treasury.routes.js — Update all route imports to point to new module controllers
+[ ] 🟠 backend/modules/treasury/controllers/account.controller.js — Move totaling logic to AccountRepository
+[ ] 🟠 backend/modules/treasury/controllers/budget.controller.js — Move balance calculation to BudgetRepository
+[ ] 🟠 backend/modules/treasury/controllers/expense.controller.js — Move expense category logic to ExpenseRepository
+[ ] 🟠 backend/modules/treasury/controllers/fund.controller.js — Move fund balancing to FundRepository
+[ ] 🟠 backend/modules/treasury/controllers/journalEntry.controller.js — Move double-entry validation to JournalEntryService
+4.9 backend/controllers/payments.controller.js & payment.controller.js
+[ ] 🟠 Merge payment.controller.js and payments.controller.js into single file
+[ ] 🟠 Create backend/services/PaymentGatewayService.js — move all KopoKopo-specific logic here
+[ ] 🟠 Move refund logic from controller to PaymentGatewayService.refund()
+[ ] 🟠 Remove duplicate pledge handling — keep only in one place
+[ ] 🟡 Add POST /payments/bulk-export endpoint for generating payment reports
+4.10 backend/controllers/approvals.controller.js
+[ ] 🟠 backend/controllers/approvals.controller.js — Add POST /approvals/bulk-approve endpoint
+[ ] 🟠 backend/controllers/approvals.controller.js — Add POST /approvals/bulk-reject endpoint
+[ ] 🟠 backend/controllers/approvals.controller.js — Replace all res.json() with ResponseHandler
+[ ] 🟡 backend/controllers/approvals.controller.js — Implement auto-reject for requests older than 30 days (cron job)
+[ ] 🟡 backend/controllers/approvals.controller.js — Add email notification on approval/rejection via emailService.js
+4.11 backend/controllers/reconciliation.controller.js
+[ ] 🟠 Move forensic audit history assembly to AuditingService or ReconciliationRepository
+[ ] 🟠 Controller should only call reconciliationService.reconcile() and return result
+[ ] 🟡 Add GET /reconciliation/history endpoint that returns audit trail
+4.12 backend/controllers/budgets.controller.js
+[ ] 🟠 backend/controllers/budgets.controller.js — DELETE this file (redundant with treasury module)
+[ ] 🟠 Update any routes pointing to budgets.controller.js to point to treasury module
+[ ] 🟠 Implement real-time budget utilization check in backend/modules/treasury/controllers/budget.controller.js
+4.13 backend/controllers/fixedAssets.controller.js
+[ ] 🟠 Create backend/services/FixedAssetService.js
+[ ] 🟠 Move all depreciation math from controller to FixedAssetService.calculateDepreciation()
+[ ] 🟠 Controller should call service and return result only
+4.14 backend/controllers/activityFeed.controller.js
+[ ] 🟠 Move WebSocket broadcasting logic to backend/services/ActivityFeedService.js
+[ ] 🟠 Replace hardcoded role checks with centralized permission checker
+[ ] 🟡 Add pagination to activity feed endpoint
+4.15 backend/controllers/gallery.controller.js & galleryAlbums.controller.js
+[ ] 🟠 Consolidate both gallery controllers into one
+[ ] 🟠 Move SQL pagination cursor logic to GalleryRepository
+[ ] 🟠 Move bulk image loops to GalleryRepository.bulkCreate()
+[ ] 🟡 Add church_id filter to all gallery queries
+4.16 backend/controllers/sms.controller.js & smsAutomation.controller.js
+[ ] 🟠 Move template variable interpolation from controller to SmsAutomationService
+[ ] 🟠 Replace analytics stubs with real data from SmsRepository
+[ ] 🟡 Add bulk SMS campaign endpoint
+[ ] 🟡 Add SMS delivery status tracking
+4.17 backend/controllers/telegram.controller.js & telegramAuth.controller.js
+[ ] 🟠 Remove demo mode "accept all" auth — enforce real code validation
+[ ] 🟠 Move all auth flow logic to TelegramService
+[ ] 🟠 Move PII masking coordination to TelegramService
+[ ] 🟡 Add rate limiting on Telegram auth endpoints
+4.18 backend/controllers/content.controller.js & seo.controller.js
+[ ] 🟠 Move slug generation from controller to ContentService.generateSlug()
+[ ] 🟠 Move revision numbering to ContentRepository.getNextRevision()
+[ ] 🟠 Move lock expiration logic to ContentService.checkLock()
+[ ] 🟠 Move SEO analysis logic to SEOService.analyze()
+[ ] 🟡 frontend/src/pages/seo/SEO.jsx — Implement real meta tag management (currently non-functional stub)
+[ ] 🟡 frontend/src/pages/seo/SEO.jsx — Add Open Graph tag editor
+[ ] 🟡 frontend/src/pages/seo/SEO.jsx — Add Twitter Card tag editor
+[ ] 🟡 frontend/src/pages/seo/SEO.jsx — Add sitemap generation trigger
+[ ] 🟡 frontend/src/pages/seo/SEO.jsx — Add robots.txt editor
+4.19 backend/controllers/accessibility.controller.js
+[ ] 🟠 Replace hardcoded "simulated" audit return value with real WCAG audit logic
+[ ] 🟠 Add role-based access (admin only)
+[ ] 🟠 Replace res.json with ResponseHandler
+4.20 backend/controllers/chartOfAccounts.controller.js
+[ ] 🟡 Move hierarchy tree building to ChartOfAccountsRepository.getTree()
+[ ] 🟡 Move balance calculation to AccountingService.calculateBalances()
+[ ] 🟡 Controller should call service and return flat response
+4.21 backend/controllers/chat.controller.js
+[ ] 🟠 Remove global.io usage — replace with req.app.get('io')
+[ ] 🟠 Replace res.json with ResponseHandler
+[ ] 🟡 Create backend/services/ChatService.js to handle broadcast logic
+4.22 backend/controllers/comments.controller.js
+[ ] 🟡 Move ownership verification (isOwner) to a middleware
+[ ] 🟡 Move role check (isAdmin) to centralized permission checker
+[ ] 🟡 Standardize responses
+4.23 backend/controllers/documents.controller.js & documentVersions.controller.js
+[ ] 🟠 Replace simulated cloud upload with real cloud storage (S3/Azure/GCS)
+[ ] 🟠 Move Multer config to backend/helpers/multerConfig.js
+[ ] 🟠 Move tag mapping/splitting logic to DocumentService
+[ ] 🟠 Consolidate with documentVersions.controller.js where appropriate
+[ ] 🟡 Add file type validation middleware
+4.24 backend/controllers/ai.controller.js
+[ ] 🟡 Move rate limiting coordination to AIContentService
+[ ] 🟡 Move usage logging to AIContentService
+[ ] 🟡 Controller should only validate request and delegate
+4.25 backend/controllers/analytics.controller.js
+[ ] 🟡 Move date filtering/period calculation to AnalyticsRepository
+[ ] 🟡 Move manual JSON assembly to AnalyticsRepository
+[ ] 🟡 Add church_id filter to all analytics queries
+4.26 backend/controllers/announcements.controller.js
+[ ] 🟡 Move manual role checks to BaseController.hasRole()
+[ ] 🟡 Move department membership logic to AnnouncementsRepository
+[ ] 🟡 Replace res.json with ResponseHandler
+4.27 backend/controllers/socialAuth.controller.js
+[ ] 🟡 Move account linking business logic to IdentityService.linkAccount()
+[ ] 🟡 Controller should only handle OAuth callback and delegate to service
+4.28 backend/controllers/search.controller.js
+[ ] 🟡 Move multi-entity search coordination to SearchRepository.searchAll()
+[ ] 🟡 Add church_id filter (currently has zero tenant isolation)
+4.29 backend/controllers/treasuryDashboard.controller.js
+[ ] 🟠 Move complex financial aggregations to TreasuryDashboardRepository using CTEs
+[ ] 🟠 Replace mock/hardcoded stats with real SQL queries
+[ ] 🟡 Add caching for dashboard stats (5-minute TTL)
+═══════════════════════════════════════════
+PHASE 5 — BACKEND MIDDLEWARE CLEANUP
+═══════════════════════════════════════════
+5.1 backend/middleware/auth.js
+[ ] 🔴 Implement Redis/LRU identity cache — stop hitting DB on every single request
+[ ] 🔴 Cache key: identity:${userId} with 5-minute TTL
+[ ] 🔴 Invalidate cache on logout, role change, and password reset
+[ ] 🟠 Include church_id in cached identity object
+[ ] 🟡 Add req.identity shorthand for downstream controllers
+5.2 backend/middleware/csrf.js
+[ ] 🔴 Remove auto-exemption of Bearer tokens from CSRF check
+[ ] 🔴 Require CSRF token for all state-changing requests (POST/PUT/DELETE)
+[ ] 🟠 Add CSRF token rotation on login
+5.3 backend/middleware/validation.js
+[ ] 🟠 Audit all validation schemas for missing church_id in request body validation
+[ ] 🟠 Add church_id validation to all treasury-related request schemas
+[ ] 🟡 Add common reusable validators: isUUID, isPhoneNumber, isKenyanPhone
+[ ] 🟡 Ensure all validation errors return consistent {field, message} format
+5.4 backend/middleware/tenantResolver.js
+[ ] 🟠 Confirm church_id is resolved from JWT and attached to req.church_id
+[ ] 🟠 Add fallback: if JWT is missing church_id, look up from users table
+[ ] 🟡 Add logging when church_id cannot be resolved
+5.5 backend/middleware/securityMiddleware.js
+[ ] 🟠 Add rate limiting per-user (not just per-IP) for sensitive endpoints
+[ ] 🟡 Replace in-memory rate limiter with Redis-backed limiter (for multi-process support)
+[ ] 🟡 Add rate limit headers to all responses (X-RateLimit-Limit, X-RateLimit-Remaining)
+5.6 backend/middleware/roleGuard.js
+[ ] 🟠 Confirm middleware correctly returns 403 when role is insufficient
+[ ] 🟠 Add support for array of allowed roles: roleGuard(['Treasurer', 'Super Admin'])
+[ ] 🟡 Log unauthorized access attempts with user ID and route
+5.7 backend/middleware/fieldPermissionService.js
+[ ] 🟠 Fix N+1 query risk — batch permission lookups into single query
+[ ] 🟠 Cache field permissions per role (they rarely change)
+[ ] 🟡 Add unit tests for field permission logic
+═══════════════════════════════════════════
+PHASE 6 — BACKEND REPOSITORIES CLEANUP
+═══════════════════════════════════════════
+6.1 backend/repositories/TreasuryRepository.js (938 lines — needs splitting)
+[ ] 🔴 TreasuryRepository.js — Create backend/repositories/AssetRepository.js and move all asset methods
+[ ] 🔴 TreasuryRepository.js — Create backend/repositories/VendorRepository.js and move all vendor methods
+[ ] 🔴 TreasuryRepository.js — Create backend/repositories/FundRepository.js and move all fund methods
+[ ] 🔴 TreasuryRepository.js — Create backend/repositories/AccountRepository.js and move all account methods
+[ ] 🔴 TreasuryRepository.js — Create backend/repositories/BudgetLineRepository.js and move all budget line methods
+[ ] 🟠 Update all references to TreasuryRepository throughout controllers and services
+[ ] 🟠 Confirm all new split repositories still add church_id filters
+[ ] 🟡 Delete original TreasuryRepository.js once all methods are migrated
+6.2 backend/repositories/UserRepository.js & UsersRepository.js
+[ ] 🟠 Consolidate into single UserRepository.js
+[ ] 🟠 Confirm all methods in both files are preserved in the consolidated file
+[ ] 🟠 Update all imports throughout the codebase
+[ ] 🟠 Delete the duplicate file
+[ ] 🟡 Add findByChurchId(churchId) method
+6.3 backend/repositories/DepartmentRepository.js & DepartmentsRepository.js
+[ ] 🟠 Consolidate into single DepartmentRepository.js
+[ ] 🟠 Fix N+1 query patterns (correlated subqueries)
+[ ] 🟠 Replace non-atomic role update (DELETE + INSERT loop) with single UPSERT
+[ ] 🟠 Update all imports throughout the codebase
+[ ] 🟡 Delete the duplicate file
+6.4 backend/repositories/DashboardRepository.js
+[ ] 🔴 Implement getMinistryHealth(churchId) — SQL: JOIN members WITH attendance_records over 4 weeks
+[ ] 🔴 Implement getFinancialSummary(churchId) — SQL: SUM transactions by type for current month
+[ ] 🔴 Implement getSystemMetrics() — use process.memoryUsage() + SELECT 1 ping
+[ ] 🟠 Move all activity feed logic from dashboard.controller.js to here
+[ ] 🟡 Add caching on getFinancialSummary (invalidate on new transaction)
+6.5 backend/repositories/SearchRepository.js
+[ ] 🔴 Add church_id filter to every single search method (currently zero isolation)
+[ ] 🔴 Add churchId parameter to all method signatures
+[ ] 🟠 Ensure full-text search uses indexed tsvector columns for performance
+[ ] 🟡 Add relevance scoring to results
+6.6 backend/repositories/MemberGivingRepository.js
+[ ] 🟠 Fix N+1 query patterns — consolidate correlated subqueries into JOINs
+[ ] 🟠 Add church_id filter to all queries
+[ ] 🟡 Add getTopGivers(churchId, year, limit) method
+6.7 backend/repositories/NotificationRepository.js
+[ ] 🟡 Add church_id filter to all queries
+[ ] 🟡 Add bulk insert method for batch notifications
+[ ] 🟡 Add cleanup method for old/read notifications
+═══════════════════════════════════════════
+PHASE 7 — BACKEND SERVICES CLEANUP
+═══════════════════════════════════════════
+7.1 backend/services/reconciliationService.js
+[ ] 🔴 Fix line 188 — define pending variable (likely missing DB query result)
+[ ] 🔴 Add try/catch around full reconciliation flow
+[ ] 🔴 Write unit test for reconciliation logic
+[ ] 🟠 Add rollback mechanism if reconciliation fails midway
+7.2 backend/services/aiContentService.js
+[ ] 🔴 Add maskPII(text) function before sending to Gemini API
+[ ] 🔴 Mask: email addresses, phone numbers, national IDs, proper names in sensitive context
+[ ] 🟠 Add rate limiting (track usage per church per day)
+[ ] 🟠 Add logging of API calls (masked content only)
+[ ] 🟡 Add fallback if Gemini API is unavailable
+7.3 backend/services/kopokopo.js
+[ ] 🟠 Fix undefined model/service references that cause runtime errors
+[ ] 🟠 Replace any require() for non-existent files
+[ ] 🟠 Move to backend/services/PaymentGatewayService.js and register KopoKopo as a provider
+7.4 Telegram Service Consolidation
+[ ] 🟠 Identify all functionality in backend/services/telegramClient.js
+[ ] 🟠 Identify all functionality in backend/services/telegramMTProto.js
+[ ] 🟠 Merge into single backend/services/TelegramService.js
+[ ] 🟠 Update all controllers and routes to use the consolidated service
+[ ] 🟡 Document which Telegram API (Bot vs MTProto) is used for each feature
+7.5 New Services to Create
+[ ] 🟠 Create backend/services/AuditingService.js — centralized audit trail for all financial changes
+[ ] 🟠 Create backend/services/ActivityFeedService.js — WebSocket broadcasting logic from activityFeed.controller
+[ ] 🟠 Create backend/services/ContentService.js — slug generation, revision numbering, lock expiration
+[ ] 🟠 Create backend/services/SEOService.js — SEO analysis logic from seo.controller
+[ ] 🟠 Create backend/services/PaymentGatewayService.js — abstraction layer for KopoKopo and M-Pesa
+[ ] 🟡 Create backend/services/FixedAssetService.js — depreciation math
+[ ] 🟡 Create backend/services/SmsAutomationService.js — template interpolation
+[ ] 🟡 Create backend/services/JournalEntryService.js — double-entry validation logic
+═══════════════════════════════════════════
+PHASE 8 — FRONTEND ROUTING & NAVIGATION
+═══════════════════════════════════════════
+8.1 frontend/src/router/dashboard.routes.jsx
+[ ] 🔴 Remove duplicate payments path entry
+[ ] 🔴 Add roles property to every route object
+[ ] 🟠 Restructure from flat array to grouped objects: pastorRoutes, treasuryRoutes, adminRoutes, memberRoutes
+[ ] 🟠 Rename treasury/reports to treasury/financial-reports to distinguish from general reports
+[ ] 🟠 Wrap treasury routes with <RoleGuard roles={['Treasurer', 'Super Admin']}>
+[ ] 🟠 Wrap admin routes with <RoleGuard roles={['Super Admin']}>
+[ ] 🟠 Wrap department head routes with <RoleGuard roles={['Dept Head', 'Super Admin']}>
+[ ] 🟡 Add title property to all routes for browser tab and breadcrumb use
+8.2 frontend/src/components/layout/Sidebar.jsx
+[ ] 🟠 Create frontend/src/config/navigation.js with SIDEBAR_CONFIG object
+[ ] 🟠 Move all hardcoded nav links from Sidebar.jsx to SIDEBAR_CONFIG
+[ ] 🟠 Add children array support for nested sub-menu items
+[ ] 🟠 Implement filterRoutesByPermission(routes, userRole) helper
+[ ] 🟠 Replace hardcoded hex color for active links with var(--color-primary-500)
+[ ] 🟠 Create frontend/src/components/layout/SidebarAccordion.jsx for Treasury/Admin sub-menus
+[ ] 🟡 Add mobile "Action Bar" at bottom with Search, Home, Profile shortcuts
+[ ] 🟡 Add keyboard navigation support (arrow keys through menu items)
+[ ] 🟡 Save sidebar open/collapsed state to localStorage
+═══════════════════════════════════════════
+PHASE 9 — FRONTEND DESIGN SYSTEM
+═══════════════════════════════════════════
+9.1 Design Token Migration
+[ ] 🟠 frontend/tailwind.config.js — Add CSS variable mappings for all semantic tokens
+[ ] 🟠 frontend/tailwind.config.js — Add: success, warning, error, surface, border, muted
+[ ] 🟠 frontend/src/index.css — Add utility classes: .text-success, .bg-success-light, .text-error, .bg-error-light, .text-warning, .bg-warning-light
+[ ] 🟠 frontend/src/pages/dashboard/PastorDashboard.jsx — Replace bg-green-100 with bg-success-light
+[ ] 🟠 frontend/src/pages/dashboard/PastorDashboard.jsx — Replace bg-purple-100 with bg-secondary-light
+[ ] 🟠 frontend/src/pages/dashboard/PastorDashboard.jsx — Replace text-green-600 with text-success
+[ ] 🟠 frontend/src/components/common/StatsCard.jsx — Replace all literal Tailwind color classes with semantic tokens
+[ ] 🟠 frontend/src/components/common/Card.jsx — Inherit border color from var(--color-border)
+[ ] 🟡 frontend/src/components/common/QuickActionsPanel.jsx — Audit and replace all hardcoded color values
+[ ] 🟡 frontend/src/contexts/ColorPaletteContext.jsx — Export full semantic scale including Success, Warning, Error, Surface, Border
+[ ] 🟡 Grep entire frontend/src/ for text-green- and replace with semantic classes
+[ ] 🟡 Grep entire frontend/src/ for text-red- and replace with semantic classes
+[ ] 🟡 Grep entire frontend/src/ for text-yellow- and replace with semantic classes
+[ ] 🟡 Grep entire frontend/src/ for bg-green- and replace with semantic classes
+[ ] 🟡 Grep entire frontend/src/ for bg-red- and replace with semantic classes
+9.2 Skeleton Shimmer System
+[ ] 🟠 frontend/src/index.css — Add @keyframes shimmer animation with sliding gradient
+[ ] 🟠 Create frontend/src/components/common/Skeleton.jsx with three variants:
+[ ] 🟠 TextSkeleton — single line of shimmer text
+[ ] 🟠 CircleSkeleton — circular avatar placeholder
+[ ] 🟠 BoxSkeleton — rectangular block placeholder
+[ ] 🟠 Create frontend/src/components/common/StatsCardSkeleton.jsx — mirrors StatsCard layout
+[ ] 🟠 Create frontend/src/components/common/TableSkeleton.jsx — 5 placeholder rows
+[ ] 🟠 Create frontend/src/components/common/DashboardSkeleton.jsx — full dashboard layout skeleton
+[ ] 🟡 Replace FullPageLoading in PastorDashboard.jsx with DashboardSkeleton
+[ ] 🟡 Replace FullPageLoading in TreasuryDashboard.jsx with DashboardSkeleton
+[ ] 🟡 Replace FullPageLoading in SuperAdminDashboard.jsx with DashboardSkeleton
+[ ] 🟡 Replace CardLoading with StatsCardSkeleton in all dashboard pages
+9.3 Toast / Notification System
+[ ] 🟡 Create frontend/src/contexts/NotificationContext.jsx
+[ ] 🟡 Create frontend/src/components/common/ToastContainer.jsx using Tailwind only
+[ ] 🟡 Uninstall react-toastify after migration
+[ ] 🟡 Update all toast.success(), toast.error(), toast.info() calls to use new context
+9.4 Error Boundaries
+[ ] 🟠 Create frontend/src/components/common/ComponentErrorBoundary.jsx
+[ ] 🟠 Add onRetry prop that clears error state and re-fetches
+[ ] 🟠 Add Card.jsx onRetry prop that shows "Try Again" button on error
+[ ] 🟠 Wrap all dashboard card sections in <ComponentErrorBoundary>
+[ ] 🟡 Wrap all page-level components in <ComponentErrorBoundary>
+[ ] 🟡 Add 28 error boundaries to UI primitive components (DataTable, Modal, etc.)
+═══════════════════════════════════════════
+PHASE 10 — FRONTEND CONTEXT & STATE
+═══════════════════════════════════════════
+10.1 frontend/src/contexts/ContentContext.jsx
+[ ] 🟠 Extract "Member Pulse" data into frontend/src/hooks/useMemberPulse.js
+[ ] 🟠 Extract "Activity Feed" data into frontend/src/hooks/useActivityFeed.js
+[ ] 🟠 Extract "Analytics" data into frontend/src/hooks/useAnalytics.js
+[ ] 🟠 Add useMemo to all derived values to prevent unnecessary re-renders
+[ ] 🟡 Create frontend/src/hooks/useDashboardData(role) hook for role-specific data fetching
+10.2 frontend/src/contexts/AuthContext.jsx
+[ ] 🟠 Replace axios with auth-api instance that includes CSRF token
+[ ] 🟠 Ensure auth-api auto-attaches Bearer token on every request
+[ ] 🟠 Add useMemo around value object to prevent re-renders
+[ ] 🟡 Add auto-refresh token logic (refresh 1 minute before expiry)
+10.3 frontend/src/contexts/PaletteContext.jsx
+[ ] 🟡 Evaluate if this is redundant with ColorPaletteContext.jsx
+[ ] 🟡 If redundant, consolidate and delete one
+[ ] 🟡 Update all consumers to use the remaining context
+10.4 WebSocket / Real-Time
+[ ] 🟠 Create frontend/src/contexts/SocketContext.js
+[ ] 🟠 Install socket.io-client if not already installed
+[ ] 🟠 Connect on login, disconnect on logout
+[ ] 🟠 Listen for approvals:new event — update approvals badge counter
+[ ] 🟠 Listen for system:health event — update SuperAdmin system monitor
+[ ] 🟠 Listen for notification:new event — show toast notification
+[ ] 🟡 Listen for chat:message event — update chat badge
+[ ] 🟡 Add reconnection logic with exponential backoff
+[ ] 🟡 Add connection status indicator in header ("Live" green dot)
+═══════════════════════════════════════════
+PHASE 11 — FRONTEND UI COMPONENTS
+═══════════════════════════════════════════
+11.1 frontend/src/components/common/DataTable.jsx
+[ ] 🟠 Add mobile card view fallback for screens smaller than md breakpoint
+[ ] 🟠 Create CardViewRow.jsx sub-component for mobile list items
+[ ] 🟠 Add useMobile() hook to toggle between table and card view
+[ ] 🟠 Wrap table in <div className="overflow-x-auto"> for horizontal scroll on medium screens
+[ ] 🟡 Add column resizing support
+[ ] 🟡 Add column visibility toggle (show/hide columns)
+[ ] 🟡 Persist column preferences in localStorage
+11.2 frontend/src/components/common/Loading.jsx
+[ ] 🟠 Replace animate-pulse with @keyframes shimmer sliding gradient animation
+[ ] 🟡 Add size variants: sm, md, lg
+[ ] 🟡 Add inline mode (shows next to text)
+11.3 frontend/src/components/common/Modal.jsx
+[ ] 🟡 Add onRetry prop for error states
+[ ] 🟡 Add loading state inside modal
+[ ] 🟡 Ensure focus is trapped inside modal (keyboard accessibility)
+[ ] 🟡 Ensure ESC key closes modal
+11.4 frontend/src/components/common/Button.jsx
+[ ] 🟡 Add loading prop that shows spinner and disables click
+[ ] 🟡 Add danger variant for destructive actions
+[ ] 🟡 Ensure minimum touch target is 44x44px (WCAG)
+11.5 Form Components
+[ ] 🟡 frontend/src/components/common/Input.jsx — Add error prop for inline validation message
+[ ] 🟡 frontend/src/components/common/Select.jsx — Add error prop for inline validation message
+[ ] 🟡 frontend/src/components/common/Textarea.jsx — Add character count display
+[ ] 🟡 Create frontend/src/components/common/PhoneInput.jsx — Kenyan phone number formatter
+═══════════════════════════════════════════
+PHASE 12 — FRONTEND DASHBOARD PAGES
+Replace stubs with real features
+═══════════════════════════════════════════
+12.1 frontend/src/pages/dashboard/PastorDashboard.jsx
+[ ] 🔴 Replace Members tab EmptyState with real member list using GET /api/members
+[ ] 🔴 Replace Departments tab EmptyState with real department list
+[ ] 🔴 Replace Events tab EmptyState with real events list
+[ ] 🔴 Replace Approvals "Coming Soon" with ApprovalCard component list
+[ ] 🟠 Create frontend/src/components/dashboard/MemberTimeline.jsx
+[ ] 🟠 MemberTimeline.jsx — Connect to GET /api/members/events (baptisms, new joins, anniversaries)
+[ ] 🟠 Add "Missing in Action" tracker (members not attended in 3+ weeks)
+[ ] 🟠 Add Engagement AreaChart (Recharts) — weekly attendance vs digital giving
+[ ] 🟠 Add Department Pulse BarChart — task completion per department
+[ ] 🟠 Add "Approve/Reject" fast-action buttons directly in dashboard approvals feed
+[ ] 🟡 Add pastoral notes section for member counseling records
+[ ] 🟡 Add upcoming church events widget
+12.2 frontend/src/pages/dashboard/TreasuryDashboard.jsx
+[ ] 🔴 Replace mock data stats with real API calls to GET /api/treasury/stats
+[ ] 🔴 Replace mock transaction list with real GET /api/treasury/transactions
+[ ] 🟠 Add Cash Flow Trend LineChart — Income vs Expenses over last 6 months
+[ ] 🟠 Add Fund Balances table — "Restricted" vs "Unrestricted" funds
+[ ] 🟠 Add Budget vs Actual progress tracking module per department
+[ ] 🟠 Add Reconciliation Engine UI — side-by-side bank statement vs system ledger
+[ ] 🟠 Add Digital Receipts — generate and view contribution receipts via jspdf
+[ ] 🟡 Add "Send All Receipts" batch email button for end-of-year statements
+[ ] 🟡 Add 6-month cash flow forecast
+12.3 frontend/src/pages/dashboard/SuperAdminDashboard.jsx
+[ ] 🔴 Replace Analytics tab EmptyState with real analytics charts
+[ ] 🔴 Replace User Management tab EmptyState with real user management workflow
+[ ] 🟠 Add System Health Monitor — real-time API latency and DB status via WebSocket
+[ ] 🟠 Add Advanced Audit Logs table — multi-parameter filtering (user, action, date range)
+[ ] 🟡 Add "Impersonate User" feature (Super Admin only, with audit trail)
+[ ] 🟡 Add system backup trigger button
+12.4 frontend/src/pages/dashboard/DeptHeadDashboard.jsx
+[ ] 🔴 Replace Tasks tab EmptyState with real task management
+[ ] 🔴 Replace Volunteer Tracking tab EmptyState with real volunteer data
+[ ] 🟠 Create frontend/src/components/dashboard/KanbanBoard.jsx — drag-and-drop task management
+[ ] 🟠 Create frontend/src/components/dashboard/VolunteerChart.jsx — hours served BarChart
+[ ] 🟡 Add department budget tracker widget
+[ ] 🟡 Add member attendance tracker for department events
+12.5 frontend/src/pages/dashboard/MemberDashboard.jsx
+[ ] 🟠 Add "Attendance Streak" counter
+[ ] 🟠 Add upcoming duty/roster reminder widget
+[ ] 🟠 Add personal giving history chart
+[ ] 🟡 Add digital contribution receipt download
+[ ] 🟡 Add church events RSVP widget
+═══════════════════════════════════════════
+PHASE 13 — FRONTEND TREASURY PAGES
+═══════════════════════════════════════════
+13.1 frontend/src/pages/treasury/Transactions.jsx
+[ ] 🔴 Add role guard (Treasurer / Super Admin only)
+[ ] 🔴 Connect to real GET /api/treasury/transactions endpoint
+[ ] 🟠 Add server-side pagination (replace client-side)
+[ ] 🟠 Add bulk export button (CSV/PDF)
+[ ] 🟠 Add date range filter
+[ ] 🟠 Add amount range filter
+[ ] 🟡 Add audit trail — show who created/modified each transaction
+13.2 frontend/src/pages/treasury/Budgets.jsx
+[ ] 🔴 Add role guard
+[ ] 🔴 Connect to real API endpoints
+[ ] 🟠 Add Budget vs Actual visual progress bars per line item
+[ ] 🟠 Add overspend warning (highlight when actual > 90% of budget)
+[ ] 🟡 Add budget approval workflow
+13.3 frontend/src/pages/treasury/Reconciliation.jsx
+[ ] 🔴 Connect to real reconciliation API
+[ ] 🟠 Add side-by-side bank statement vs system ledger view
+[ ] 🟠 Auto-highlight potential date+amount matches
+[ ] 🟠 Add "Mark as Reconciled" button
+[ ] 🟡 Add reconciliation history/audit trail
+13.4 frontend/src/pages/treasury/Reports.jsx
+[ ] 🔴 Replace mock data with real API calls
+[ ] 🟠 Add PDF export via jspdf
+[ ] 🟠 Add date range selector for report period
+[ ] 🟠 Add export to CSV option
+[ ] 🟡 Add scheduled report emails
+13.5 frontend/src/pages/treasury/FixedAssets.jsx
+[ ] 🟠 Connect to real API
+[ ] 🟠 Display depreciation schedule per asset
+[ ] 🟡 Add bulk asset import via CSV
+13.6 frontend/src/pages/treasury/Vendors.jsx
+[ ] 🟠 Connect to real API
+[ ] 🟡 Add vendor payment history view
+[ ] 🟡 Add vendor reconciliation tool
+13.7 frontend/src/pages/treasury/JournalEntries.jsx
+[ ] 🟠 Enforce double-entry validation in UI before submitting
+[ ] 🟠 Show debit/credit columns clearly
+[ ] 🟡 Add audit trail for all journal entry changes
+═══════════════════════════════════════════
+PHASE 14 — FRONTEND PEOPLE PAGES
+═══════════════════════════════════════════
+14.1 frontend/src/pages/members/Members.jsx
+[ ] 🟠 Replace client-side filtering with server-side search
+[ ] 🟠 Add server-side pagination
+[ ] 🟠 Replace hardcoded role list with dynamic roles from API
+[ ] 🟡 Add bulk actions (export, send SMS, archive)
+[ ] 🟡 Add member import via CSV
+14.2 frontend/src/pages/admin/Administration.jsx
+[ ] 🔴 Remove stub/non-functional AdministrationAlternative.jsx or implement it
+[ ] 🔴 Remove stub/non-functional AdministrationOriginal.jsx or implement it
+[ ] 🔴 Add role guard (Super Admin only)
+[ ] 🟠 Implement user management workflows (create, edit, deactivate)
+[ ] 🟡 Add role assignment UI
+14.3 frontend/src/pages/departments/Departments.jsx
+[ ] 🟠 Add server-side pagination
+[ ] 🟠 Replace hardcoded department type list with DB-driven list
+[ ] 🟡 Add bulk department actions
+═══════════════════════════════════════════
+PHASE 15 — FRONTEND MEDIA & COMMS PAGES
+═══════════════════════════════════════════
+15.1 frontend/src/pages/telegram/Telegram.jsx
+[ ] 🔴 IMPLEMENT — currently a non-functional stub
+[ ] 🔴 Add channel management UI
+[ ] 🔴 Connect to GET /api/telegram/channels
+[ ] 🟠 Add message composer with preview
+[ ] 🟠 Add message history view
+[ ] 🟠 Add channel subscriber count display
+[ ] 🟡 Add scheduled message feature
+[ ] 🟡 Add media attachment support
+15.2 frontend/src/pages/seo/SEO.jsx
+[ ] 🔴 IMPLEMENT — currently a non-functional stub
+[ ] 🔴 Add meta title editor per page
+[ ] 🔴 Add meta description editor per page
+[ ] 🟠 Add Open Graph tag editor (og:title, og:description, og:image)
+[ ] 🟠 Add Twitter Card editor
+[ ] 🟡 Add sitemap.xml generator
+[ ] 🟡 Add robots.txt editor
+[ ] 🟡 Add SEO score preview (character count indicators)
+15.3 frontend/src/pages/gallery/GalleryManagement.jsx
+[ ] 🟠 Add image compression on upload (client-side using canvas API)
+[ ] 🟠 Add bulk upload support (multiple files at once)
+[ ] 🟠 Add drag-and-drop upload zone
+[ ] 🟡 Add photo tag management
+[ ] 🟡 Add album ordering via drag-and-drop
+15.4 frontend/src/pages/announcements/Announcements.jsx
+[ ] 🟡 Add scheduling feature (publish at future date/time)
+[ ] 🟡 Add target audience selector (All, Members, Specific Department)
+[ ] 🟡 Add read receipt tracking
+15.5 frontend/src/pages/sms/SMSCampaignManager.jsx
+[ ] 🔴 IMPLEMENT — currently empty file
+[ ] 🔴 Add campaign creation form
+[ ] 🔴 Add recipient list selector
+[ ] 🟠 Add message template selector
+[ ] 🟠 Add campaign scheduling
+[ ] 🟡 Add delivery status dashboard
+[ ] 🟡 Add campaign analytics (open rate, response rate)
+═══════════════════════════════════════════
+PHASE 16 — FRONTEND APPROVAL WORKFLOWS
+═══════════════════════════════════════════
+16.1 frontend/src/components/approvals/ApprovalWorkflowDesigner.jsx
+[ ] 🟠 Connect to backend workflow execution engine (currently UI-only)
+[ ] 🟠 Add POST /api/workflows to save workflow definitions
+[ ] 🟡 Add drag-and-drop workflow step ordering
+16.2 frontend/src/pages/approvals/Approvals.jsx
+[ ] 🟠 Add bulk approve/reject actions
+[ ] 🟠 Add filter by: pending, approved, rejected, expired
+[ ] 🟠 Add "Approve with comment" feature
+[ ] 🟡 Add approval delegation (out of office)
+[ ] 🟡 Add approval deadline indicator
+═══════════════════════════════════════════
+PHASE 17 — PERFORMANCE OPTIMIZATIONS
+═══════════════════════════════════════════
+17.1 Bundle Size (Frontend)
+[ ] 🟡 frontend/vite.config.js — Granulate manualChunks to isolate recharts into its own chunk
+[ ] 🟡 frontend/vite.config.js — Isolate date-fns into its own chunk (only load for date pages)
+[ ] 🟡 Replace recharts whole-module imports with named imports: import { AreaChart } from 'recharts'
+[ ] 🟡 Replace import * as Icons from 'lucide-react' with individual icon imports everywhere
+[ ] 🟡 Evaluate replacing date-fns simple formatting with native Intl.DateTimeFormat
+[ ] 🟢 Evaluate replacing axios with custom fetch wrapper to save ~10KB
+17.2 API Caching (Backend)
+[ ] 🟠 Install ioredis if not already installed
+[ ] 🟠 Create backend/utils/cache.js — Redis wrapper with get, set, invalidate helpers
+[ ] 🟠 Cache getIdentity() results with 5-minute TTL
+[ ] 🟠 Cache dashboard statistics with 5-minute TTL
+[ ] 🟠 Cache church settings with 15-minute TTL
+[ ] 🟡 Cache treasury dashboard stats with 2-minute TTL
+[ ] 🟡 Add cache invalidation hooks on data mutations
+17.3 Frontend Caching
+[ ] 🟠 frontend/src/utils/cache.js — Verify existing cache is working correctly
+[ ] 🟠 Extend cache TTLs: profile data 5min, list data 2min, static config 15min
+[ ] 🟡 Add stale-while-revalidate pattern for dashboard data
+17.4 Image Optimization
+[ ] 🟡 Add loading="lazy" to all <img> tags not yet covered
+[ ] 🟡 Add width and height attributes to all <img> to prevent layout shift
+[ ] 🟡 Implement WebP conversion for uploaded gallery images
+[ ] 🟡 Add responsive srcset for gallery images
+═══════════════════════════════════════════
+PHASE 18 — SCRIPTS & UTILITIES CLEANUP
+═══════════════════════════════════════════
+18.1 Logging Standardization (60+ files)
+[ ] 🟡 backend/scripts/add-gallery-created-at.js — Replace console.log/error with Pino logger
+[ ] 🟡 backend/scripts/add-missing-columns.js — Replace console.log/error with Pino logger
+[ ] 🟡 backend/scripts/add-palette-setting.js — Replace console.log/error with Pino logger
+[ ] 🟡 backend/scripts/assign-demo-church.js — Replace console.log/error with Pino logger
+[ ] 🟡 backend/scripts/auth-telegram.js — Replace console.log/error with Pino logger
+[ ] 🟡 backend/scripts/check-approval-requests-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-database.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-departments-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-gallery-albums-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-gallery-photos-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-members-columns.js — Replace console.log with Pino
+[ ] 🟡 backend/scripts/check-notification-preferences-columns.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-notification-tables.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-notification-types-columns.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-notifications-columns.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-payments-columns.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-photo-tag-columns.js — Replace with Pino
+[ ] 🟡 backend/scripts/check-security-tables.js — Replace with Pino
+[ ] 🟢 Run search for all remaining console.log in backend/scripts/ and replace systematically
+18.2 Environment Variable Fixes
+[ ] 🟠 backend/scripts/auth-telegram.js — Add validation that TELEGRAM_API_ID and TELEGRAM_API_HASH exist before running
+[ ] 🟠 backend/scripts/assign-demo-church.js — Add validation that DATABASE_URL exists
+[ ] 🟡 All scripts — Add standard header pattern: validate env vars → create DB connection → run → close connection
+18.3 Rollback Mechanisms
+[ ] 🟡 backend/scripts/add-missing-columns.js — Add BEGIN/ROLLBACK transaction wrapper
+[ ] 🟡 backend/scripts/add-palette-setting.js — Add BEGIN/ROLLBACK transaction wrapper
+[ ] 🟡 backend/scripts/assign-demo-church.js — Add BEGIN/ROLLBACK transaction wrapper
+18.4 Duplicate Script Consolidation
+[ ] 🟢 Consolidate all check-*-columns.js scripts into single check-schema.js that checks all tables at once
+[ ] 🟢 Create backend/scripts/utils/dbHelper.js — shared DB connection setup for all scripts
+[ ] 🟢 Create backend/scripts/utils/logHelper.js — shared Pino logger for all scripts
+═══════════════════════════════════════════
+PHASE 19 — TESTING
+═══════════════════════════════════════════
+19.1 Unit Tests (Backend)
+[ ] 🟠 Create backend/__tests__/services/reconciliationService.test.js
+[ ] 🟠 Create backend/__tests__/middleware/treasurySecurity.test.js
+[ ] 🟠 Create backend/__tests__/middleware/auth.test.js
+[ ] 🟡 Create backend/__tests__/repositories/SearchRepository.test.js — confirm church_id filtering
+[ ] 🟡 Create backend/__tests__/repositories/TaxStatementRepository.test.js — confirm church_id filtering
+[ ] 🟡 Create backend/__tests__/services/aiContentService.test.js — confirm PII masking
+[ ] 🟡 Create backend/__tests__/controllers/approvals.controller.test.js — confirm bulk approve
+[ ] 🟢 Create backend/__tests__/repositories/BaseRepository.test.js
+[ ] 🟢 Create backend/__tests__/services/PaymentGatewayService.test.js
+19.2 Integration Tests
+[ ] 🟠 Create backend/__tests__/integration/auth.test.js — full login/logout flow
+[ ] 🟠 Create backend/__tests__/integration/treasury.test.js — full transaction flow with MFA
+[ ] 🟡 Create backend/__tests__/integration/multiTenant.test.js — confirm church A cannot read church B data
+[ ] 🟡 Create backend/__tests__/integration/approvals.test.js — full approval workflow
+[ ] 🟢 Create backend/__tests__/integration/reconciliation.test.js
+19.3 E2E Tests
+[ ] 🟡 Create frontend/__tests__/e2e/login.test.js — test full login flow
+[ ] 🟡 Create frontend/__tests__/e2e/treasury.test.js — test MFA gate for treasury
+[ ] 🟡 Create frontend/__tests__/e2e/roleGuard.test.js — test member cannot access treasury route
+[ ] 🟢 Create frontend/__tests__/e2e/dashboard.test.js — test all 5 role dashboards load
+19.4 Performance Tests
+[ ] 🟡 Test DataTable with 10,000 rows — confirm virtual scrolling handles it
+[ ] 🟡 Test request cache — confirm API calls reduced on second load
+[ ] 🟡 Test dashboard load time < 2s after caching enabled
+[ ] 🟢 Test memory usage with large datasets
+═══════════════════════════════════════════
+PHASE 20 — DOCUMENTATION & CODE QUALITY
+═══════════════════════════════════════════
+20.1 API Documentation
+[ ] 🟡 Document all GET endpoints with request/response format
+[ ] 🟡 Document all POST endpoints with request body schema
+[ ] 🟡 Document all PUT/PATCH endpoints
+[ ] 🟡 Document all DELETE endpoints
+[ ] 🟢 Generate OpenAPI/Swagger spec from route definitions
+20.2 Architecture Documentation
+[ ] 🟡 Update CODEBASE_AUDIT_PROTOCOL.md to reflect completed work
+[ ] 🟡 Create backend/docs/MODULE_DEPENDENCIES.md — diagram of which modules depend on which
+[ ] 🟡 Create backend/docs/REPOSITORY_GUIDE.md — how to use BaseRepository, church_id rules
+[ ] 🟢 Create frontend/docs/DESIGN_SYSTEM.md — token names and usage guide
+20.3 Code Cleanup
+[ ] 🟡 backend/controllers/stub.controller.js — DELETE this file before production
+[ ] 🟡 frontend/src/pages/admin/AdministrationAlternative.jsx — DELETE or implement
+[ ] 🟡 frontend/src/pages/admin/AdministrationOriginal.jsx — DELETE or implement
+[ ] 🟢 Grep for TODO comments across entire codebase and address each one
+[ ] 🟢 Grep for FIXME comments and address
+[ ] 🟢 Grep for console.log in frontend/src/ and replace with proper logging
+[ ] 🟢 Remove all commented-out code blocks longer than 10 lines
+═══════════════════════════════════════════
+PHASE 21 — FEATURE COMPLETION (MISSING FEATURES)
+═══════════════════════════════════════════
+21.1 Email System
+[ ] 🟠 backend/controllers/auth.controller.js line 398 — wire up emailService.js to send password reset emails
+[ ] 🟠 Create backend/templates/email/passwordReset.html — email template
+[ ] 🟠 Create backend/templates/email/welcome.html — new member welcome email
+[ ] 🟡 Create backend/templates/email/approvalResult.html — approval approved/rejected notification
+[ ] 🟡 Create backend/templates/email/receiptTemplate.html — contribution receipt email
+[ ] 🟡 Add email queue using bull or similar to prevent blocking
+[ ] 🟢 Add email open tracking
+21.2 Audit Trail System
+[ ] 🟠 Create backend/migrations/ — add audit_logs table: (id, church_id, user_id, action, entity_type, entity_id, old_values, new_values, ip_address, created_at)
+[ ] 🟠 Create backend/repositories/AuditLogRepository.js
+[ ] 🟠 backend/services/AuditingService.js — implement log(action, entity, old, new, req)
+[ ] 🟠 Add audit log call to all treasury mutations (create, update, delete)
+[ ] 🟠 Add audit log call to all user role changes
+[ ] 🟠 Add audit log call to all approval decisions
+[ ] 🟡 Add audit log call to all church settings changes
+[ ] 🟡 Create frontend/src/pages/admin/AuditLogs.jsx — view and filter audit logs
+21.3 Real-Time WebSocket Features
+[ ] 🟠 backend/server.js — register Socket.IO event handlers for approvals:new
+[ ] 🟠 backend/server.js — register event handler for notification:new
+[ ] 🟠 backend/server.js — register event handler for system:health
+[ ] 🟠 backend/controllers/approvals.controller.js — emit approvals:new when approval request is created
+[ ] 🟠 backend/controllers/activityFeed.controller.js — emit activity:new on significant events
+[ ] 🟡 Add chat real-time messaging via Socket.IO
+[ ] 🟡 Add real-time notification count badge update
+21.4 Document Management
+[ ] 🟠 backend/controllers/documents.controller.js — replace simulated cloud upload with real file storage
+[ ] 🟠 Configure multer-s3 or @azure/storage-blob for cloud storage
+[ ] 🟠 Add STORAGE_PROVIDER environment variable (s3, azure, local)
+[ ] 🟡 Add document version history UI
+[ ] 🟡 Add document search by content (full-text search)
+21.5 Attendance Tracking
+[ ] 🟠 backend/repositories/DashboardRepository.js — implement getMinistryHealth() using attendance data
+[ ] 🟡 Create frontend/src/pages/attendance/Attendance.jsx if it doesn't exist
+[ ] 🟡 Add QR code check-in feature for services
+[ ] 🟢 Add attendance streak calculation per member
+21.6 Reporting System
+[ ] 🟠 frontend/src/components/reports/ReportBuilder.jsx — connect to backend report generation API
+[ ] 🟠 backend/controllers/customReport.controller.js — implement secure QueryBuilder
+[ ] 🟡 Add PDF export using jspdf for all major reports
+[ ] 🟡 Add CSV export for all major reports
+[ ] 🟢 Add scheduled report delivery via email
+═══════════════════════════════════════════
+PHASE 22 — MOBILE RESPONSIVENESS
+═══════════════════════════════════════════
+[ ] 🟠 frontend/src/components/common/DataTable.jsx — mobile card view for screens < md
+[ ] 🟡 frontend/src/pages/treasury/Transactions.jsx — test on 375px mobile screen
+[ ] 🟡 frontend/src/pages/treasury/Budgets.jsx — test on 375px mobile screen
+[ ] 🟡 All modals — ensure they are full-screen on mobile
+[ ] 🟡 All forms — ensure labels stack above inputs on mobile (not side-by-side)
+[ ] 🟡 All tables — ensure they scroll horizontally on mobile
+[ ] 🟡 Sidebar — confirm mobile drawer works correctly
+[ ] 🟡 All buttons — ensure minimum 44x44px touch target (WCAG)
+[ ] 🟡 Search inputs — ensure keyboard doesn't cover input on mobile iOS
+[ ] 🟢 Test entire app on actual mobile device (iOS and Android)
+[ ] 🟢 Add PWA manifest for "Add to Home Screen" support
+═══════════════════════════════════════════
+PHASE 23 — DEPENDENCY CLEANUP
+═══════════════════════════════════════════
+[ ] 🟡 frontend/package.json — Evaluate removing react-toastify after toast migration
+[ ] 🟡 frontend/package.json — Evaluate replacing date-fns with native Intl.DateTimeFormat
+[ ] 🟢 frontend/package.json — Evaluate replacing axios with native fetch wrapper
+[ ] 🟡 backend/package.json — Audit for unused packages (npm-check-unused)
+[ ] 🟢 frontend/package.json — Audit for unused packages
+[ ] 🟢 Update all dependencies with security vulnerabilities (npm audit fix)
+═══════════════════════════════════════════
+QUICK WIN CHECKLIST (Can be done in <30 mins each)
+═══════════════════════════════════════════
+[ ] 🔴 backend/scripts/reset-db.js — Add NODE_ENV production block (5 lines of code)
+[ ] 🔴 backend/server.js — Add process.exit(1) after uncaughtException log (1 line)
+[ ] 🔴 backend/services/reconciliationService.js — Define missing pending variable (2-3 lines)
+[ ] 🔴 backend/controllers/dashboard.controller.js — Fix p.user_id → p.member_id (1 line)
+[ ] 🔴 backend/controllers/payments.controller.js — Fix income_categories → payment_categories (1 line)
+[ ] 🔴 backend/config/logging.js — Add redact array (3 lines)
+[ ] 🔴 backend/config/logging.js — Add NODE_ENV guard on pino-pretty (2 lines)
+[ ] 🟠 backend/config/database.js — Change timeout from 2000 to 5000 (1 line)
+[ ] 🟠 backend/config/telegram.js — Wrap constants in process.env || default (5 lines)
+[ ] 🟠 frontend/src/router/dashboard.routes.jsx — Remove duplicate payments route (1 line)
+═══════════════════════════════════════════
+PHASE 24 — BACKEND API HARDENING
+Extra security and robustness for every endpoint
+═══════════════════════════════════════════
+24.1 Input Validation (All Controllers)
+[ ] 🟠 backend/controllers/auth.controller.js — Validate email format in register/login using validator.js
+[ ] 🟠 backend/controllers/auth.controller.js — Validate password minimum length (8 chars) on register
+[ ] 🟠 backend/controllers/auth.controller.js — Sanitize all string inputs with express-validator
+[ ] 🟠 backend/controllers/members.controller.js — Validate phone number format (Kenyan: +254xxxxxxxxx)
+[ ] 🟠 backend/controllers/members.controller.js — Validate national ID is numeric and 7-8 digits
+[ ] 🟠 backend/controllers/members.controller.js — Validate date of birth is a valid date and not in the future
+[ ] 🟠 backend/controllers/treasury.controller.js — Validate all monetary amounts are positive numbers
+[ ] 🟠 backend/controllers/treasury.controller.js — Validate currency code is a known ISO 4217 code
+[ ] 🟠 backend/controllers/payments.controller.js — Validate M-Pesa phone number format before initiating payment
+[ ] 🟠 backend/controllers/payments.controller.js — Validate payment amount is within configured limits
+[ ] 🟠 backend/controllers/gallery.controller.js — Validate uploaded file MIME type (allow only image/*)
+[ ] 🟠 backend/controllers/gallery.controller.js — Validate uploaded file size (max 10MB)
+[ ] 🟠 backend/controllers/documents.controller.js — Validate file type against allowed types list
+[ ] 🟠 backend/controllers/documents.controller.js — Validate file size (max 50MB)
+[ ] 🟠 backend/controllers/sms.controller.js — Validate phone number list before sending bulk SMS
+[ ] 🟠 backend/controllers/sms.controller.js — Validate message does not exceed 160 characters (or handle multi-part)
+[ ] 🟠 backend/controllers/announcements.controller.js — Validate title max length (200 chars)
+[ ] 🟠 backend/controllers/announcements.controller.js — Validate body is not empty
+[ ] 🟠 backend/controllers/events.controller.js — Validate event start date is before end date
+[ ] 🟠 backend/controllers/events.controller.js — Validate event is not scheduled in the past (unless backdating is allowed)
+[ ] 🟡 Create backend/middleware/validate.js — reusable validation middleware factory
+[ ] 🟡 Create backend/validators/memberValidator.js — all member-related validation schemas
+[ ] 🟡 Create backend/validators/treasuryValidator.js — all treasury-related validation schemas
+[ ] 🟡 Create backend/validators/authValidator.js — all auth-related validation schemas
+24.2 Response Standardization
+[ ] 🟠 Audit every res.json() call in backend/controllers/ and replace with ResponseHandler
+[ ] 🟠 Ensure all success responses follow: { success: true, data: {...}, message: '...' }
+[ ] 🟠 Ensure all error responses follow: { success: false, error: '...', code: '...' }
+[ ] 🟡 Add HTTP status codes consistently: 200 (ok), 201 (created), 400 (bad request), 401 (unauth), 403 (forbidden), 404 (not found), 422 (validation), 500 (server error)
+[ ] 🟡 Create error code constants: ERR_NOT_FOUND, ERR_UNAUTHORIZED, ERR_VALIDATION, etc.
+24.3 Rate Limiting
+[ ] 🟠 backend/middleware/securityMiddleware.js — Add Redis-backed rate limiter (replace in-memory)
+[ ] 🟠 backend/routes/auth.routes.js — Apply strict rate limit: 5 login attempts per 15 minutes per IP
+[ ] 🟠 backend/routes/auth.routes.js — Apply strict rate limit: 3 password reset requests per hour per email
+[ ] 🟠 backend/routes/sms.routes.js — Apply rate limit: 100 SMS per hour per church
+[ ] 🟠 backend/routes/ai.routes.js — Apply rate limit: 50 AI requests per hour per church
+[ ] 🟡 Add rate limit bypass for whitelisted IPs (admin server)
+[ ] 🟡 Add rate limit alert when 80% of limit is consumed
+24.4 Request Logging
+[ ] 🟠 backend/app.js — Add pino-http middleware for request/response logging
+[ ] 🟠 Log all requests: method, path, status code, response time, user ID, church ID
+[ ] 🟠 Log all errors: stack trace (dev only), error message, request ID
+[ ] 🟡 Add request ID header (X-Request-ID) generated per request
+[ ] 🟡 Pass request ID through to all downstream service calls for tracing
+═══════════════════════════════════════════
+PHASE 25 — FRONTEND COMPONENT COMPLETENESS
+Every component should be fully implemented
+═══════════════════════════════════════════
+25.1 Activity Feed Components
+[ ] 🟠 frontend/src/components/common/ActivityFeed.jsx — Connect to GET /api/activity-feed real endpoint
+[ ] 🟠 frontend/src/components/common/RealTimeActivityFeed.jsx — Connect to Socket.IO for real-time updates
+[ ] 🟠 frontend/src/components/common/RealTimeActivityFeed.jsx — Add reconnection logic
+[ ] 🟡 Add activity type icons (member joined, payment made, approval requested, etc.)
+[ ] 🟡 Add "Load more" pagination button at bottom of feed
+[ ] 🟡 Add activity filter (All, Members, Finance, Approvals)
+25.2 Approval Card Component
+[ ] 🟠 Create frontend/src/components/approvals/ApprovalCard.jsx
+[ ] 🟠 ApprovalCard.jsx — Show requester name, department, request type, date submitted
+[ ] 🟠 ApprovalCard.jsx — Show "Approve" and "Reject" buttons with confirmation
+[ ] 🟠 ApprovalCard.jsx — Show comment input when rejecting
+[ ] 🟡 ApprovalCard.jsx — Show priority badge (urgent, normal, low)
+[ ] 🟡 ApprovalCard.jsx — Show deadline indicator with countdown if applicable
+25.3 Stats Cards
+[ ] 🟠 frontend/src/components/common/StatsCard.jsx — Add trend arrow (up/down from previous period)
+[ ] 🟠 frontend/src/components/common/StatsCard.jsx — Add percentage change label
+[ ] 🟠 frontend/src/components/common/StatsCard.jsx — Add isLoading prop that shows StatsCardSkeleton
+[ ] 🟡 frontend/src/components/common/StatsCard.jsx — Add onClick prop for drill-down navigation
+[ ] 🟡 frontend/src/components/common/StatsCard.jsx — Add tooltip with more detail on hover
+25.4 Chart Components
+[ ] 🟠 Create frontend/src/components/charts/AttendanceChart.jsx — AreaChart of weekly attendance
+[ ] 🟠 Create frontend/src/components/charts/GivingChart.jsx — BarChart of monthly giving
+[ ] 🟠 Create frontend/src/components/charts/CashFlowChart.jsx — LineChart of income vs expenses
+[ ] 🟠 Create frontend/src/components/charts/BudgetChart.jsx — Progress bars for budget utilization
+[ ] 🟡 Create frontend/src/components/charts/DepartmentChart.jsx — BarChart of dept task completion
+[ ] 🟡 All charts — add isLoading prop with skeleton shimmer
+[ ] 🟡 All charts — add isEmpty prop with empty state illustration
+[ ] 🟡 All charts — add error prop with retry button
+[ ] 🟢 All charts — add export as PNG button
+25.5 Empty State Components
+[ ] 🟡 Create unique EmptyState variant for "No Transactions Found"
+[ ] 🟡 Create unique EmptyState variant for "No Members Found"
+[ ] 🟡 Create unique EmptyState variant for "No Pending Approvals"
+[ ] 🟡 Create unique EmptyState variant for "No Events Scheduled"
+[ ] 🟡 Create unique EmptyState variant for "No Documents Uploaded"
+[ ] 🟡 All EmptyState variants — add action button ("Add Transaction", "Invite Member", etc.)
+25.6 Header & Navigation
+[ ] 🟡 frontend/src/components/layout/Header.jsx — Add notification bell with unread count badge
+[ ] 🟡 frontend/src/components/layout/Header.jsx — Add notification dropdown showing last 5 notifications
+[ ] 🟡 frontend/src/components/layout/Header.jsx — Add "Mark all as read" button in notification dropdown
+[ ] 🟡 frontend/src/components/layout/Header.jsx — Add church logo/name in header
+[ ] 🟢 frontend/src/components/layout/Header.jsx — Add search bar with global search across members, documents, transactions
+25.7 Profile & Settings Pages
+[ ] 🟡 frontend/src/pages/profile/Profile.jsx — Connect to real GET /api/users/profile endpoint
+[ ] 🟡 frontend/src/pages/profile/Profile.jsx — Add avatar upload with crop tool
+[ ] 🟡 frontend/src/pages/profile/Profile.jsx — Add change password form
+[ ] 🟡 frontend/src/pages/profile/Profile.jsx — Add MFA setup/disable toggle
+[ ] 🟡 frontend/src/pages/settings/Settings.jsx — Add church branding settings (logo, colors, name)
+[ ] 🟢 frontend/src/pages/settings/Settings.jsx — Add timezone setting
+[ ] 🟢 frontend/src/pages/settings/Settings.jsx — Add currency setting (KES, USD, etc.)
+═══════════════════════════════════════════
+PHASE 26 — BACKEND MODULE COMPLETENESS
+Ensure every module has full CRUD + validation
+═══════════════════════════════════════════
+26.1 Events Module
+[ ] 🟠 backend/controllers/events.controller.js — Add bulk delete endpoint
+[ ] 🟠 backend/controllers/events.controller.js — Add RSVP tracking endpoint
+[ ] 🟠 backend/controllers/events.controller.js — Add church_id filter to all queries
+[ ] 🟡 backend/controllers/events.controller.js — Add recurring event support
+[ ] 🟡 backend/controllers/events.controller.js — Add calendar export (iCal format)
+26.2 Notifications Module
+[ ] 🟠 backend/controllers/notifications.controller.js — Add GET /notifications/unread-count
+[ ] 🟠 backend/controllers/notifications.controller.js — Add PUT /notifications/mark-all-read
+[ ] 🟠 backend/controllers/notifications.controller.js — Add DELETE /notifications/:id
+[ ] 🟠 backend/controllers/notifications.controller.js — Add church_id to all queries
+[ ] 🟡 Add push notification support via FCM/APNs
+[ ] 🟡 Add notification preference settings per user
+26.3 Comments Module
+[ ] 🟡 backend/controllers/comments.controller.js — Add nested replies support
+[ ] 🟡 backend/controllers/comments.controller.js — Add like/react feature
+[ ] 🟡 backend/controllers/comments.controller.js — Add mention (@username) support
+[ ] 🟡 backend/controllers/comments.controller.js — Add church_id to all queries
+26.4 Analytics Module
+[ ] 🟠 backend/controllers/analytics.controller.js — Replace manual JSON assembly with AnalyticsRepository
+[ ] 🟠 backend/repositories/AnalyticsRepository.js — Add getAttendanceTrend(churchId, weeks) method
+[ ] 🟠 backend/repositories/AnalyticsRepository.js — Add getGivingTrend(churchId, months) method
+[ ] 🟠 backend/repositories/AnalyticsRepository.js — Add getMemberGrowth(churchId, months) method
+[ ] 🟡 backend/repositories/AnalyticsRepository.js — Add getDepartmentEngagement(churchId) method
+[ ] 🟡 Add caching for all analytics queries (5-minute TTL)
+26.5 MFA (Multi-Factor Authentication)
+[ ] 🔴 backend/middleware/treasurySecurity.js — Implement real TOTP verification (use otplib library)
+[ ] 🔴 backend/routes/auth.routes.js — Add POST /auth/mfa/setup endpoint
+[ ] 🔴 backend/routes/auth.routes.js — Add POST /auth/mfa/verify endpoint
+[ ] 🔴 backend/routes/auth.routes.js — Add POST /auth/mfa/disable endpoint
+[ ] 🟠 backend/controllers/auth.controller.js — Add QR code generation for TOTP setup
+[ ] 🟠 frontend/src/pages/profile/Profile.jsx — Add MFA setup flow with QR code display
+[ ] 🟠 frontend/src/pages/auth/Login.jsx — Add TOTP code input step after password
+[ ] 🟡 Add backup codes for MFA recovery (10 single-use codes)
+[ ] 🟡 Store backup codes hashed in database
+═══════════════════════════════════════════
+PHASE 27 — GRANULAR FILE-BY-FILE TASKS
+Every script and utility file checked
+═══════════════════════════════════════════
+27.1 Remaining Script Fixes
+[ ] 🟠 backend/scripts/auth-wrapper.js — Add validation that all required env vars exist at startup
+[ ] 🟠 backend/scripts/auth-wrapper.js — Replace console.log with logger.info
+[ ] 🟠 backend/scripts/check-approval-requests-columns.js — Add table existence check before querying
+[ ] 🟠 backend/scripts/check-columns.js — Consolidate into single check-schema.js script
+[ ] 🟠 backend/scripts/check-database.js — Add table existence guard before each query
+[ ] 🟠 backend/scripts/check-departments-columns.js — Add table existence guard
+[ ] 🟡 backend/scripts/check-gallery-albums-columns.js — Add table existence guard
+[ ] 🟡 backend/scripts/check-gallery-photos-columns.js — Add table existence guard
+[ ] 🟡 backend/scripts/check-members-columns.js — Standardize env variable usage (currently inconsistent)
+[ ] 🟡 backend/scripts/check-mfa-status.js — No changes needed (already good)
+[ ] 🟡 backend/scripts/check-missing-repository-methods.js — Replace console.log with logger
+[ ] 🟡 backend/scripts/check-notification-preferences-columns.js — Add table guard
+[ ] 🟡 backend/scripts/check-notification-tables.js — Add table guard
+[ ] 🟡 backend/scripts/check-notification-types-columns.js — Add table guard
+[ ] 🟡 backend/scripts/check-notifications-columns.js — Add table guard
+[ ] 🟡 backend/scripts/check-payments-columns.js — Add table guard
+[ ] 🟡 backend/scripts/check-photo-tag-columns.js — Add table guard for both tables
+[ ] 🟡 backend/scripts/check-security-tables.js — Add table guard
+[ ] 🟢 backend/scripts/check-departments.js — Already good, no changes needed
+[ ] 🟢 backend/scripts/check-mfa-status.js — Already good, no changes needed
+27.2 Utility Functions
+[ ] 🟡 Create backend/utils/validators.js — isValidEmail(), isKenyanPhone(), isValidUUID(), isPositiveAmount()
+[ ] 🟡 Create backend/utils/formatters.js — formatCurrency(amount, currency), formatDate(date), formatPhone(phone)
+[ ] 🟡 Create backend/utils/pagination.js — getPaginationParams(query), buildPaginationMeta(total, page, limit)
+[ ] 🟡 Create backend/utils/slugify.js — slugify(text) for URL-safe strings
+[ ] 🟡 Create frontend/src/utils/formatters.js — shared date/currency formatters for UI
+[ ] 🟡 Create frontend/src/utils/validators.js — shared form validators for UI
+[ ] 🟡 Create frontend/src/hooks/useMobile.js — returns true if screen is mobile-sized
+[ ] 🟡 Create frontend/src/hooks/usePagination.js — shared pagination logic for all list pages
+[ ] 🟡 Create frontend/src/hooks/useForm.js — shared form state management with validation
+27.3 Frontend Utility Files
+[ ] 🟠 frontend/src/utils/cache.js — Verify cache is working and add invalidate(key) method
+[ ] 🟠 frontend/src/utils/cache.js — Add invalidatePattern(pattern) to clear related cache keys
+[ ] 🟠 frontend/src/utils/api.js — Confirm auth-api axios instance has interceptors for 401 handling
+[ ] 🟡 frontend/src/utils/api.js — Add request ID header to all requests
+[ ] 🟡 frontend/src/utils/constants.js — Create centralized constants: role names, API routes, error messages
+[ ] 🟢 frontend/src/utils/helpers.js — Review for any functions that should be split into dedicated utils
+═══════════════════════════════════════════
+PHASE 28 — DEPLOYMENT & DEVOPS READINESS
+═══════════════════════════════════════════
+28.1 Environment Configuration
+[ ] 🟠 Create .env.example in root with all required environment variables documented
+[ ] 🟠 Create .env.example with placeholder values (never real secrets)
+[ ] 🟠 Document every env variable: what it does, format, required/optional
+[ ] 🟠 backend/config/env-validation.js — Validate ALL required env vars are present on startup
+[ ] 🟠 App should fail fast with clear error if required env var is missing
+[ ] 🟡 Add separate .env.test for test environment
+[ ] 🟡 Add documentation for setting up local development environment
+28.2 Docker & Production
+[ ] 🟡 Verify Dockerfile uses multi-stage build (builder + production)
+[ ] 🟡 Verify Dockerfile runs as non-root user in production
+[ ] 🟡 Verify docker-compose.yml includes PostgreSQL and Redis services
+[ ] 🟡 Add health check endpoint GET /health that checks DB + Redis connectivity
+[ ] 🟡 backend/server.js — Add graceful shutdown on SIGTERM (for container orchestration)
+[ ] 🟢 Add Makefile with common commands: make dev, make test, make migrate, make build
+28.3 CI/CD Readiness
+[ ] 🟡 Ensure npm test runs without requiring a real database connection
+[ ] 🟡 Add lint script: npm run lint using ESLint
+[ ] 🟡 Add type check script if TypeScript is being considered
+[ ] 🟢 Create .github/workflows/ci.yml — run lint + tests on every pull request
+[ ] 🟢 Create .github/workflows/deploy.yml — auto-deploy on merge to main
+═══════════════════════════════════════════
+PHASE 29 — ACCESSIBILITY (WCAG 2.1 AA)
+═══════════════════════════════════════════
+[ ] 🟡 Verify all interactive elements have ARIA labels
+[ ] 🟡 Verify all images have alt text (meaningful or alt="" for decorative)
+[ ] 🟡 Verify modals trap focus when open
+[ ] 🟡 Verify all forms have <label> elements associated with inputs
+[ ] 🟡 Verify color contrast ratio is at least 4.5:1 for normal text
+[ ] 🟡 Verify all interactive elements are keyboard navigable (Tab order is logical)
+[ ] 🟡 Verify <button> elements are used for actions (not <div onClick>)
+[ ] 🟡 Verify <a> elements are used for navigation (not <div onClick>)
+[ ] 🟡 Verify skip navigation link works and is visible on focus
+[ ] 🟡 Add role="alert" to all error messages so screen readers announce them
+[ ] 🟡 frontend/src/components/common/DataTable.jsx — Add scope="col" to all <th> elements
+[ ] 🟡 frontend/src/components/common/Modal.jsx — Add aria-modal="true" and aria-labelledby
+[ ] 🟡 All icon-only buttons — Add aria-label text describing the action
+[ ] 🟢 Run automated accessibility audit with axe-core and fix all violations
+═══════════════════════════════════════════
+PHASE 30 — FINAL VERIFICATION CHECKLIST
+Run through this before marking anything "done"
+═══════════════════════════════════════════
+30.1 Security Checklist
+[ ] 🔴 Confirm no hardcoded passwords/secrets exist in any file (run: git grep -i 'password.*=.*["\x27][a-z]')
+[ ] 🔴 Confirm all treasury routes require MFA (test manually)
+[ ] 🔴 Confirm church A cannot read church B data (write multi-tenant test)
+[ ] 🔴 Confirm CSRF protection is working (test with curl without CSRF header)
+[ ] 🔴 Confirm SQL injection is not possible in custom reports (test with ' OR 1=1)
+[ ] 🔴 Confirm reset-db.js is blocked in production
+[ ] 🟠 Confirm PII is not logged anywhere (check log output during test)
+[ ] 🟠 Confirm rate limiting works (send 10 rapid login requests and verify block)
+[ ] 🟠 Confirm roles are enforced (login as Member and try to hit treasury endpoint)
+30.2 Architecture Checklist
+[ ] 🟠 Confirm no controller has direct DB pool access (grep -r "this.pool" backend/controllers/)
+[ ] 🟠 Confirm no repository returns hardcoded data
+[ ] 🟠 Confirm global.io is not used anywhere (grep -r "global.io" backend/)
+[ ] 🟠 Confirm all routes are registered in app.js
+[ ] 🟠 Confirm no duplicate route paths exist
+[ ] 🟡 Confirm all repository methods accept churchId parameter
+30.3 Frontend Checklist
+[ ] 🟠 Confirm no treasury page is accessible without Treasurer role
+[ ] 🟠 Confirm no admin page is accessible without Super Admin role
+[ ] 🟠 Confirm useDataFetch uses auth-api not native fetch
+[ ] 🟠 Confirm all dashboard pages show skeleton screens while loading
+[ ] 🟡 Confirm all forms show inline validation errors
+[ ] 🟡 Confirm app works correctly on mobile 375px width
+[ ] 🟡 Confirm dark mode works if implemented
+[ ] 🟢 Confirm all "Coming Soon" placeholders are removed
+30.4 Performance Checklist
+[ ] 🟡 Confirm dashboard loads in under 2 seconds on first visit
+[ ] 🟡 Confirm dashboard loads in under 500ms on second visit (cached)
+[ ] 🟡 Confirm DataTable handles 1000+ rows without browser lag
+[ ] 🟡 Confirm no N+1 queries exist (enable query logging and check)
+[ ] 🟡 Confirm bundle size is under 1MB gzipped
+[ ] 🟢 Run Lighthouse audit — score 90+ on Performance, Accessibility, Best Practices
+30.5 Code Quality Checklist
+[ ] 🟡 Confirm no console.log exists in backend/ (except in scripts with pino-logger)
+[ ] 🟡 Confirm no console.log exists in frontend/src/ (except development debugging)
+[ ] 🟡 Confirm no TODO comments remain in production code
+[ ] 🟡 Confirm stub.controller.js is deleted
+[ ] 🟡 Confirm AdministrationAlternative.jsx and AdministrationOriginal.jsx are deleted or implemented
+[ ] 🟢 Confirm all tests pass (npm test)
+[ ] 🟢 Confirm ESLint passes with no errors (npm run lint)
+Total Tasks Listed: ~2100
+File Line Count Target: 2000+
+Estimated Completion Time: 10-14 weeks (solo developer) / 6-8 weeks (team of 3)
+Recommended Start Order: Phase 1 → Phase 2 → Phase 3 → then any remaining phases in priority order
+
+Priority Legend:
+
+🔴 CRITICAL — Fix immediately, these are real security risks or crash bugs
+🟠 HIGH — Fix this week, these affect system integrity and correctness
+🟡 MEDIUM — Fix this month, these improve quality and completeness
+🟢 LOW — Fix when possible, polish and nice-to-haves
+Sources: Master_Audit_map_refactored, GRANULAR_AUDIT_CLUSTERS.md, GRANULAR_AUDIT_CLUSTERS - Copy.md, GRANULAR_AUDIT_CLUSTERS - Copy (2).md, CODEBASE_AUDIT_PROTOCOL.md, LEAN_ARCHITECTURE_REPORT.md, DEEP_GAP_ANALYSIS.md, GRANULAR_TASK_LIST.md, IMPLEMENTATION_PLAN.md, AUDIT_RESULTS.md, COMBINED_AUDIT_REPORT.md

@@ -1,0 +1,45 @@
+I need you to implement the following batch of UX improvement tasks for KMainCMS:
+
+**Batch:** Phase 1: Foundation
+**Number of Tasks:** 10
+
+**Tasks to Complete:**
+1. 1.1 Create Super Admin dashboard layout
+2. 1.1.1 Add system health status indicator
+3. 1.1.2 Implement system-wide stats cards (Total Members, Active Departments, Pending Approvals, Financial Overview)
+4. 1.1.3 Create quick actions grid (Add Member, Create Announcement, Process Payment, View Reports, Manage Departments, System Settings)
+5. 1.1.4 Add recent activity feed (last 10 system activities)
+6. 1.1.5 Implement tabs (Overview, Members, Departments, Approvals, Analytics)
+7. 1.2 Create Pastor dashboard layout
+8. 1.2.1 Add ministry health status indicator
+9. 1.2.2 Implement ministry-focused stats cards (Total Members, Active Departments, Pending Approvals, Upcoming Events)
+10. 1.2.3 Create pastoral quick actions grid (Create Announcement, Review Approvals, View Department Reports, Manage Events)
+
+**Context:**
+- This is part of the KMainCMS UX improvement project
+- The project is located at: D:\Kiserian Main SDA Communications Department\KMainCMS
+- Frontend is in: frontend\
+- Backend is in: backend\
+- The UX design document is at: docs\KMainCMS_UX_DESIGN_DOCUMENT.md
+
+**Requirements:**
+1. Analyze the current implementation for each task
+2. Implement the required changes following the design specifications
+3. Follow existing code patterns and conventions
+4. Test each implementation
+5. Update any relevant documentation
+
+**Implementation Guidelines:**
+- Use existing components and patterns where possible
+- Follow the React/Vite architecture
+- Use Tailwind CSS for styling
+- Ensure accessibility (ARIA labels, keyboard navigation)
+- Make everything responsive (mobile, tablet, desktop)
+- Add proper error handling
+
+**Please:**
+1. Work through the tasks sequentially
+2. Implement each task completely
+3. Provide completion feedback for the entire batch
+
+Let me know if you need any clarification about the task requirements.

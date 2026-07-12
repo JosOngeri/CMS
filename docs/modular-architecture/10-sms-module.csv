@@ -1,0 +1,37 @@
+Section,Item,Details
+Module Overview,Code,SMS
+Module Overview,Name,SMS / BlessedTexts
+Module Overview,Type,Functional Module
+Module Overview,Description,SMS messaging service integration for church communications
+Database Tables,Table 1,sms_messages - Message records
+Database Tables,Table 2,sms_templates - Message templates
+Database Tables,Table 3,sms_credits - Credit balance
+Database Tables,Table 4,sms_usage_logs - Usage tracking
+Backend Files,Controller,sms.controller.js
+Backend Files,Routes,sms.routes.js
+Backend Files,Service,blessedtexts.js
+Backend Files,Helpers,sms.js
+Frontend Files,Pages,pages/sms/
+Frontend Files,Components,components/sms/
+Frontend Files,Context,contexts/SMSContext.jsx
+API Endpoints,POST /api/sms/send,Send SMS message
+API Endpoints,GET /api/sms/history,Get SMS history
+API Endpoints,GET /api/sms/balance,Get credit balance
+API Endpoints,GET /api/sms/templates,List templates
+API Endpoints,POST /api/sms/templates,Create template
+API Endpoints,PUT /api/sms/templates/:id,Update template
+API Endpoints,DELETE /api/sms/templates/:id,Delete template
+API Endpoints,POST /api/sms/bulk,Send bulk SMS
+API Endpoints,GET /api/sms/analytics,SMS analytics
+Acceptance Criteria,AC-01,SMS can be sent to individual recipients
+Acceptance Criteria,AC-02,Bulk SMS can be sent to groups
+Acceptance Criteria,AC-03,Templates can be created and reused
+Acceptance Criteria,AC-04,Credit balance is tracked accurately
+Acceptance Criteria,AC-05,Delivery status is monitored
+Acceptance Criteria,AC-06,SMS history is searchable
+Prompts,Objective 1 - BlessedTexts Integration,"Integrate with BlessedTexts API for SMS sending delivery tracking and balance checking."
+Prompts,Objective 2 - Template System,"Build SMS template system with variable substitution and preview functionality."
+Prompts,Objective 3 - Bulk Messaging,"Implement bulk SMS with batch processing progress tracking and opt-out handling."
+Prompts,Objective 4 - Credit Management,"Create credit tracking with low-balance alerts usage reporting and cost analysis."
+Prompts,Objective 5 - Integration Points,"Wire SMS to payments treasury and notifications for automated messaging."
+Prompts,Objective 6 - Analytics,"Build SMS analytics dashboard with delivery rates cost analysis and engagement metrics."
