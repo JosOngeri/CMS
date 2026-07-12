@@ -164,7 +164,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Tenant Isolation (Phase 6)
 app.use(tenantResolver);
-app.use(churchContext);
+// churchContext disabled for single-tenant deployment (RLS session vars not configured)
+// app.use(churchContext);
 
 // Identity Protection (Phase 5)
 // Note: We don't apply it globally here yet to allow public routes
