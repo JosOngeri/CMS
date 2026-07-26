@@ -85,6 +85,9 @@ const UserManagement       = lazy(() => import('../pages/users/UserManagement'))
 const PaymentManagement    = lazy(() => import('../pages/payments/PaymentManagement'));
 const MemberDirectory      = lazy(() => import('../pages/members/MemberDirectory'));
 const SMS                  = lazy(() => import('../sms/SMS'));
+const SMSDashboard         = lazy(() => import('../modules/sms/pages/Dashboard'));
+const SMSContacts          = lazy(() => import('../modules/sms/pages/Contacts'));
+const SMSGroups            = lazy(() => import('../modules/sms/pages/Groups'));
 const Announcements        = lazy(() => import('../pages/announcements/Announcements'));
 const Events               = lazy(() => import('../pages/events/Events'));
 const ApprovalInbox        = lazy(() => import('../pages/approvals/ApprovalInbox'));
@@ -120,6 +123,11 @@ const TreasuryAnalytics    = lazy(() => import('../pages/treasury/TreasuryAnalyt
 const GalleryManagement    = lazy(() => import('../pages/gallery/GalleryManagement'));
 const NotificationDashboard = lazy(() => import('../pages/notifications/NotificationDashboard'));
 const Documents            = lazy(() => import('../pages/admin/Documents'));
+
+// Platform Admin Routes
+const PlatformDashboard    = lazy(() => import('../pages/platform/PlatformDashboard'));
+const TenantList           = lazy(() => import('../pages/platform/tenants/TenantList'));
+const TenantDetail         = lazy(() => import('../pages/platform/tenants/TenantDetail'));
 
 const W = ({ C }) => <SafeRoute><C /></SafeRoute>;
 
@@ -178,6 +186,9 @@ export const dashboardRoutes = [
 
   // Communication & Media
   { path: 'sms',                    element: <W C={SMS} /> },
+  { path: 'sms/dashboard',          element: <W C={SMSDashboard} /> },
+  { path: 'sms/contacts',           element: <W C={SMSContacts} /> },
+  { path: 'sms/groups',             element: <W C={SMSGroups} /> },
   { path: 'announcements',          element: <W C={Announcements} /> },
   { path: 'notifications',          element: <W C={NotificationDashboard} /> },
   { path: 'telegram',              element: <W C={Telegram} /> },
@@ -194,4 +205,9 @@ export const dashboardRoutes = [
   { path: 'accessibility',          element: <W C={Accessibility} /> },
   { path: 'testing',               element: <W C={Testing} /> },
   { path: 'documentation',          element: <W C={Documentation} /> },
+
+  // Platform Admin (SaaS Owner Dashboard)
+  { path: 'platform',               element: <W C={PlatformDashboard} /> },
+  { path: 'platform/tenants',       element: <W C={TenantList} /> },
+  { path: 'platform/tenants/:id',   element: <W C={TenantDetail} /> },
 ];
