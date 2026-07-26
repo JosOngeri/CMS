@@ -125,9 +125,9 @@ const NotificationDashboard = lazy(() => import('../pages/notifications/Notifica
 const Documents            = lazy(() => import('../pages/admin/Documents'));
 
 // Platform Admin Routes
-const PlatformDashboard    = lazy(() => import('../pages/platform/PlatformDashboard'));
-const TenantList           = lazy(() => import('../pages/platform/tenants/TenantList'));
-const TenantDetail         = lazy(() => import('../pages/platform/tenants/TenantDetail'));
+// const PlatformDashboard    = lazy(() => import('../pages/platform/PlatformDashboard'));
+// const TenantList           = lazy(() => import('../pages/platform/tenants/TenantList'));
+// const TenantDetail         = lazy(() => import('../pages/platform/tenants/TenantDetail'));
 
 const W = ({ C }) => <SafeRoute><C /></SafeRoute>;
 
@@ -207,7 +207,7 @@ export const dashboardRoutes = [
   { path: 'documentation',          element: <W C={Documentation} /> },
 
   // Platform Admin (SaaS Owner Dashboard)
-  { path: 'platform',               element: <W C={PlatformDashboard} /> },
-  { path: 'platform/tenants',       element: <W C={TenantList} /> },
-  { path: 'platform/tenants/:id',   element: <W C={TenantDetail} /> },
+  // { path: 'platform',               element: <W C={PlatformDashboard} /> },
+  // { path: 'platform/tenants',       element: <W C={TenantList} /> },
+  // { path: 'platform/tenants/:id',   element: <W C={TenantDetail} /> },
 ];
