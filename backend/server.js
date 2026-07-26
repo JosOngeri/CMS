@@ -65,6 +65,15 @@ try {
   logger.warn('Failed to initialize HybridSMS:', error.message);
 }
 
+// Initialize SMS Push Controller for Android app sync
+try {
+  const smsPushController = require('./controllers/smsPush.controller');
+  smsPushController.initializeWebSocket(io);
+  logger.info('SMS Push Controller initialized for Android app sync');
+} catch (error) {
+  logger.warn('Failed to initialize SMS Push Controller:', error.message);
+}
+
 
 
 io.on('connection', (socket) => {
