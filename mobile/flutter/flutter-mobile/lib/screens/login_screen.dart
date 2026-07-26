@@ -3,36 +3,40 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import '../services/biometric_service.dart';
 import '../services/update_service.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/update_dialog.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  bool _isBiometricAvailable = false;
+  bool _isBiometricEnabled = false;
   
-  final LocalAuthentication _localAuth = LocalAuthentication();
+  final BiometricService _biometricService = BiometricService();
 
   @override
   void initState() {
     super.initState();
     _checkForUpdates();
+    _checkBiometricAvailability();
   }
 
   @override
@@ -42,16 +46,29 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _checkBiometricAvailability() async {
+    final isAvailable = await _biometricService.isBiometricAvailable();
+    final isEnabled = await _biometricService.isBiometricEnabled();
+    
+    if (mounted) {
+      setState(() {
+        _isBiometricAvailable = isAvailable;
+        _isBiometricEnabled = isEnabled;
+      });
+    }
+  }
+
   Future<void> _checkForUpdates() async {
     try {
-      final updateService = UpdateService();
-      final hasUpdate = await updateService.checkForUpdate();
-      if (hasUpdate && mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => const UpdateDialog(),
-        );
-      }
+      // Temporarily disabled due to package compatibility
+      // final updateService = UpdateService();
+      // final hasUpdate = await updateService.checkForUpdate();
+      // if (hasUpdate && mounted) {
+      //   showDialog(
+      //     context: context,
+      //     builder: (context) => const UpdateDialog(),
+      //   );
+      // }
     } catch (e) {
       debugPrint('Update check failed: $e');
     }
@@ -63,38 +80,33 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final apiService = ApiService();
+      final apiService = await ApiService.getInstance();
       final result = await apiService.login(
-        _emailController.text.trim(),
+        _emailController.text.trim(), // Now used as identifier (username/email/phone)
         _passwordController.text,
       );
 
       if (result['success']) {
-        // Update auth state
+        // Update auth state using Riverpod
         if (mounted) {
-          context.read<AuthService>().login(result['user'], result['token']);
+          ref.read(authProvider.notifier).login(result['user'], result['token']);
+          
+          // Store credentials for biometric if remember me is checked
+          if (_rememberMe) {
+            await _storeCredentialsForBiometric();
+          }
           
           // Navigate to dashboard
           context.go('/dashboard');
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['error'] ?? 'Login failed'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
+          _showErrorSnackBar(result['error'] ?? 'Login failed');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Network error: ${e.toString()}'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        _showErrorSnackBar('Network error: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -103,39 +115,74 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _biometricLogin() async {
+  Future<void> _storeCredentialsForBiometric() async {
     try {
-      final bool canAuthenticate = await _localAuth.canCheckBiometrics;
-      
-      if (!canAuthenticate) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Biometric authentication not available')),
-          );
-        }
-        return;
-      }
-
-      final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Authenticate to access SDA Church App',
-      );
-
-      if (didAuthenticate) {
-        // Try to get stored credentials and login
-        // This would require storing credentials securely first
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Biometric login successful')),
-          );
+      if (_rememberMe) {
+        final success = await _biometricService.enableBiometric(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+        
+        if (success && mounted) {
+          _showSuccessSnackBar('Biometric login enabled');
         }
       }
     } catch (e) {
+      debugPrint('Error storing credentials for biometric: $e');
+    }
+  }
+
+  Future<void> _biometricLogin() async {
+    try {
+      final credentials = await _biometricService.authenticateWithBiometric();
+      
+      if (credentials != null && mounted) {
+        // Auto-fill credentials
+        _emailController.text = credentials['email'] ?? '';
+        _passwordController.text = credentials['password'] ?? '';
+        
+        // Auto-login
+        await _login();
+      }
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Biometric login failed: ${e.toString()}')),
-        );
+        _showErrorSnackBar('Biometric authentication failed');
       }
     }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -178,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'SDA Church Kiserian Main',
+                    'Msabato',
                     style: Theme.of(context).textTheme.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -193,72 +240,75 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     // Email Field
-                    CustomTextField(
-                      name: 'email',
-                      controller: _emailController,
-                      label: 'Email or Username',
-                      prefixIcon: Icons.person_outline,
-                      validator: FormBuilderValidators.required(
-                        errorText: 'Please enter your email or username',
+                    Semantics(
+                      label: 'Username, email, or phone input field',
+                      hint: 'Enter your username, email, or phone',
+                      textField: true,
+                      child: CustomTextField(
+                        key: const Key('identifier'),
+                        name: 'identifier',
+                        controller: _emailController,
+                        label: 'Username, Email, or Phone',
+                        prefixIcon: Icons.person_outline,
+                        helperText: 'Enter your username, email address, or phone number',
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(
+                            errorText: 'Please enter your username, email, or phone',
+                          ),
+                        ]),
                       ),
-                      textInputAction: TextInputAction.next,
                     ),
                     
                     const SizedBox(height: 16),
                     
                     // Password Field
-                    CustomTextField(
-                      name: 'password',
-                      controller: _passwordController,
-                      label: 'Password',
-                      prefixIcon: Icons.lock_outline,
-                      obscureText: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    Semantics(
+                      label: 'Password input field',
+                      hint: 'Enter your password',
+                      textField: true,
+                      child: CustomTextField(
+                        key: const Key('password'),
+                        name: 'password',
+                        controller: _passwordController,
+                        label: 'Password',
+                        prefixIcon: Icons.lock_outline,
+                        obscureText: _obscurePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
-                        onPressed: () {
-                          setState(() => _obscurePassword = !_obscurePassword);
-                        },
+                        validator: FormBuilderValidators.required(
+                          errorText: 'Please enter your password',
+                        ),
                       ),
-                      validator: FormBuilderValidators.required(
-                        errorText: 'Please enter your password',
-                      ),
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _login(),
                     ),
                     
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     
-                    // Remember Me & Forgot Password
+                    // Remember Me and Forgot Password
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() => _rememberMe = value!);
-                              },
-                            ),
-                            Text(
-                              'Remember me',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ],
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
                         ),
+                        const Text('Remember me'),
+                        const Spacer(),
                         TextButton(
                           onPressed: () {
-                            // Navigate to forgot password
                             context.go('/forgot-password');
                           },
-                          child: Text(
-                            'Forgot password?',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
+                          child: const Text('Forgot Password?'),
                         ),
                       ],
                     ),
@@ -266,78 +316,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
                     
                     // Login Button
-                    LoadingButton(
-                      onPressed: _login,
-                      isLoading: _isLoading,
-                      text: 'Sign In',
-                      fullWidth: true,
+                    Semantics(
+                      label: 'Login button',
+                      hint: 'Sign in to your account',
+                      button: true,
+                      child: LoadingButton(
+                        onPressed: _isLoading ? null : _login,
+                        isLoading: _isLoading,
+                        text: 'Sign In',
+                        fullWidth: true,
+                      ),
                     ),
                     
                     const SizedBox(height: 16),
                     
-                    // Biometric Login Button
-                    OutlinedButton.icon(
-                      onPressed: _biometricLogin,
-                      icon: const Icon(Icons.fingerprint),
-                      label: const Text('Sign in with Biometrics'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Divider
-              Row(
-                children: [
-                  const Expanded(child: Divider()),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'OR',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  const Expanded(child: Divider()),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Register Link
-              Column(
-                children: [
-                  Text(
-                    "Don't have an account?",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  OutlinedButton(
-                    onPressed: () {
-                      // Navigate to registration or contact church admin
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please contact church admin for account creation'),
+                    // Biometric Login Button (only show if available)
+                    if (_isBiometricAvailable)
+                      OutlinedButton.icon(
+                        onPressed: _isLoading ? null : _biometricLogin,
+                        icon: const Icon(Icons.fingerprint),
+                        label: const Text('Sign in with Biometrics'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
-                      );
-                    },
-                    child: const Text('Contact Church Admin'),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // App Version
-              Center(
-                child: Text(
-                  'Version 1.0.0',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
+                      ),
+                  ],
                 ),
               ),
             ],

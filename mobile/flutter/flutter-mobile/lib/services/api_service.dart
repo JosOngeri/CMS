@@ -1,266 +1,458 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'config.dart';
+
+// Custom Retry Interceptor
+class RetryInterceptor extends Interceptor {
+  final Dio dio;
+  final int retries;
+  final List<Duration> retryDelays;
+
+  RetryInterceptor({
+    required this.dio,
+    this.retries = 3,
+    this.retryDelays = const [
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+      Duration(seconds: 3),
+    ],
+  });
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    if (_shouldRetry(err)) {
+      final retryCount = err.requestOptions.extra['retryCount'] ?? 0;
+      if (retryCount < retries) {
+        final delay = retryDelays[retryCount];
+        await Future.delayed(delay);
+        
+        final requestOptions = err.requestOptions;
+        requestOptions.extra['retryCount'] = retryCount + 1;
+        
+        try {
+          final response = await dio.fetch(requestOptions);
+          return handler.resolve(response);
+        } catch (e) {
+          return handler.next(err);
+        }
+      }
+    }
+    handler.next(err);
+  }
+
+  bool _shouldRetry(DioException err) {
+    return err.type == DioExceptionType.connectionTimeout ||
+           err.type == DioExceptionType.receiveTimeout ||
+           err.type == DioExceptionType.connectionError ||
+           (err.type == DioExceptionType.badResponse &&
+            err.response?.statusCode != null &&
+            err.response!.statusCode! >= 500);
+  }
+}
 
 class ApiService {
-  static const String _baseUrl = 'http://localhost:5005/api';
-  static const Duration _timeout = Duration(seconds: 10);
-  
-  // Get current API URL based on environment
-  static String get baseUrl {
-    const bool isProduction = bool.fromEnvironment('dart.vm.product');
-    return isProduction ? 'https://kiserian-main-sda.onrender.com/api' : _baseUrl;
-  }
-  
   final Dio _dio;
-  final FlutterSecureStorage _secureStorage;
+  final SharedPreferences _prefs;
   
   Dio get dio => _dio;
   
-  ApiService._(this._dio, this._secureStorage);
+  ApiService._(this._dio, this._prefs);
   
-  factory ApiService() {
-    final dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: _timeout,
-      receiveTimeout: _timeout,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
-    
-    const secureStorage = FlutterSecureStorage();
-    
-    // Add auth interceptor
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final token = await secureStorage.read(key: 'auth_token');
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          handler.next(options);
+  static ApiService? _instance;
+  
+  static Future<ApiService> getInstance() async {
+    if (_instance == null) {
+      final dio = Dio(BaseOptions(
+        baseUrl: AppConfig.effectiveApiUrl,
+        connectTimeout: AppConfig.apiTimeout,
+        receiveTimeout: AppConfig.apiTimeout,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            // Token expired, clear storage
-            await secureStorage.delete(key: 'auth_token');
-            await secureStorage.delete(key: 'user_data');
-            // Navigate to login (handled by auth service)
-          }
-          handler.next(error);
-        },
-      ),
-    );
-    
-    return ApiService._(dio, secureStorage);
+      ));
+      
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Add logging interceptor in development
+      if (AppConfig.enableLogging && kDebugMode) {
+        dio.interceptors.add(
+          LogInterceptor(
+            requestBody: true,
+            responseBody: true,
+            error: true,
+          ),
+        );
+      }
+      
+      // Add retry interceptor
+      dio.interceptors.add(RetryInterceptor(dio: dio));
+      
+      // Add auth and error handling interceptor
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) async {
+            final token = prefs.getString('auth_token');
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+            handler.next(options);
+          },
+          onError: (error, handler) async {
+            // Handle 401 Unauthorized
+            if (error.response?.statusCode == 401) {
+              await prefs.remove('auth_token');
+              await prefs.remove('user_data');
+            }
+            
+            // Handle network errors
+            if (error.type == DioExceptionType.connectionTimeout) {
+              handler.reject(
+                DioException(
+                  requestOptions: error.requestOptions,
+                  type: DioExceptionType.connectionTimeout,
+                  error: 'Connection timeout. Please check your internet connection.',
+                ),
+              );
+              return;
+            }
+            
+            if (error.type == DioExceptionType.receiveTimeout) {
+              handler.reject(
+                DioException(
+                  requestOptions: error.requestOptions,
+                  type: DioExceptionType.receiveTimeout,
+                  error: 'Server response timeout. Please try again.',
+                ),
+              );
+              return;
+            }
+            
+            if (error.type == DioExceptionType.connectionError) {
+              handler.reject(
+                DioException(
+                  requestOptions: error.requestOptions,
+                  type: DioExceptionType.connectionError,
+                  error: 'No internet connection. Please check your network.',
+                ),
+              );
+              return;
+            }
+            
+            handler.next(error);
+          },
+        ),
+      );
+      
+      _instance = ApiService._(dio, prefs);
+    }
+    return _instance!;
   }
   
-  // Authentication endpoints
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  // Helper method to get error message from DioException
+  String getErrorMessage(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection timeout. Please check your internet connection.';
+      case DioExceptionType.receiveTimeout:
+        return 'Server response timeout. Please try again.';
+      case DioExceptionType.connectionError:
+        return 'No internet connection. Please check your network.';
+      case DioExceptionType.badResponse:
+        final statusCode = error.response?.statusCode;
+        switch (statusCode) {
+          case 400:
+            return 'Invalid request. Please check your input.';
+          case 401:
+            return 'Session expired. Please login again.';
+          case 403:
+            return 'Access denied. You don\'t have permission.';
+          case 404:
+            return 'Resource not found.';
+          case 500:
+            return 'Server error. Please try again later.';
+          case 503:
+            return 'Service unavailable. Please try again later.';
+          default:
+            return 'Request failed with status code: $statusCode';
+        }
+      case DioExceptionType.cancel:
+        return 'Request was cancelled.';
+      case DioExceptionType.unknown:
+        return 'An unknown error occurred.';
+      default:
+        return 'An error occurred: ${error.message}';
+    }
+  }
+
+  // Authentication methods
+  Future<Map<String, dynamic>> login(String identifier, String password) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+      debugPrint('=== API: Attempting login ===');
+      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/api/sms/auth/login ===');
+      debugPrint('=== API: Identifier (username/email/phone): $identifier ===');
+      
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/api/sms/auth/login',
+        data: {
+          'identifier': identifier,
+          'password': password,
+        },
+      );
+      
+      debugPrint('=== API: Login response status: ${response.statusCode} ===');
+      debugPrint('=== API: Login response data: ${response.data} ===');
       
       if (response.statusCode == 200) {
-        final data = response.data;
-        
-        // Store token and user data
-        await _secureStorage.write(key: 'auth_token', value: data['token']);
-        await _secureStorage.write(key: 'user_data', value: jsonEncode(data['user']));
-        
+        // Handle CMS ResponseHandler format
+        if (response.data['success'] == true && response.data['data'] != null) {
+          final responseData = response.data['data'];
+          
+          // Store SMS-scoped JWT token
+          final token = responseData['token'];
+          await _prefs.setString('auth_token', token);
+          
+          // Store organization metadata for API configuration
+          final organizationMetadata = {
+            'church_id': responseData['church_id'],
+            'church_slug': responseData['church_slug'],
+            'sync_endpoint_url': responseData['sync_endpoint_url'],
+            'snapshot_interval': responseData['snapshot_interval'],
+            'rolling_update_interval': responseData['rolling_update_interval'],
+          };
+          await _prefs.setString('organization_metadata', jsonEncode(organizationMetadata));
+          
+          // Store user data
+          await _prefs.setString('user_data', jsonEncode(responseData['user']));
+          
+          return {
+            'success': true,
+            'user': responseData['user'],
+            'token': token,
+            'organization': organizationMetadata,
+          };
+        }
+        // Fallback to direct format
         return {
           'success': true,
-          'user': data['user'],
-          'token': data['token'],
+          'user': response.data['user'],
+          'token': response.data['token'] ?? response.data['accessToken'],
+          'organization': response.data['organization'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': response.data['message'] ?? 'Login failed',
         };
       }
-      
-      return {'success': false, 'error': 'Login failed'};
     } on DioException catch (e) {
+      debugPrint('=== API: Login DioException: ${e.toString()} ===');
+      debugPrint('=== API: Login error type: ${e.type} ===');
+      if (e.response != null) {
+        debugPrint('=== API: Login error response: ${e.response?.data} ===');
+      }
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
       };
-    }
-  }
-  
-  Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
-    try {
-      final response = await _dio.post('/auth/register', data: userData);
-      
-      if (response.statusCode == 201) {
-        final data = response.data;
-        
-        await _secureStorage.write(key: 'auth_token', value: data['token']);
-        await _secureStorage.write(key: 'user_data', value: jsonEncode(data['user']));
-        
-        return {
-          'success': true,
-          'user': data['user'],
-          'token': data['token'],
-        };
-      }
-      
-      return {'success': false, 'error': 'Registration failed'};
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
-      };
-    }
-  }
-  
-  Future<Map<String, dynamic>> getCurrentUser() async {
-    try {
-      final token = await _secureStorage.read(key: 'auth_token');
-      final userData = await _secureStorage.read(key: 'user_data');
-      
-      if (token != null && userData != null) {
-        return {
-          'success': true,
-          'user': jsonDecode(userData),
-          'token': token,
-          'isAuthenticated': true,
-        };
-      }
-      
-      return {'success': false, 'isAuthenticated': false};
     } catch (e) {
-      return {'success': false, 'isAuthenticated': false};
+      debugPrint('=== API: Login general error: ${e.toString()} ===');
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
     }
   }
-  
-  Future<void> logout() async {
-    await _secureStorage.delete(key: 'auth_token');
-    await _secureStorage.delete(key: 'user_data');
-    await SharedPreferences.getInstance().then((prefs) => prefs.clear());
+
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? 'Password reset email sent',
+        };
+      } else {
+        return {
+          'success': false,
+          'error': response.data['message'] ?? 'Failed to send reset email',
+        };
+      }
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
+      };
+    }
   }
-  
-  // Dashboard data
+
+  // Dashboard methods
   Future<Map<String, dynamic>> getDashboardData() async {
     try {
-      final response = await _dio.get('/dashboard');
+      final service = await getInstance();
+      final response = await service._dio.get('/dashboard');
       
       if (response.statusCode == 200) {
         return {
           'success': true,
           'data': response.data,
         };
+      } else {
+        return {
+          'success': false,
+          'error': 'Failed to load dashboard data',
+        };
       }
-      
-      return {'success': false, 'error': 'Failed to load dashboard'};
     } on DioException catch (e) {
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
       };
     }
   }
-  
-  // Announcements
-  Future<Map<String, dynamic>> getAnnouncements() async {
+
+  // Payments methods
+  Future<Map<String, dynamic>> initiatePayment(Map<String, dynamic> paymentData) async {
     try {
-      final response = await _dio.get('/announcements');
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/payments/initiate',
+        data: paymentData,
+      );
       
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'announcements': response.data,
+          'data': response.data,
+        };
+      } else {
+        return {
+          'success': false,
+          'error': response.data['message'] ?? 'Payment initiation failed',
         };
       }
-      
-      return {'success': false, 'error': 'Failed to load announcements'};
     } on DioException catch (e) {
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
       };
     }
   }
-  
-  // Payments
+
   Future<Map<String, dynamic>> getPaymentHistory() async {
     try {
-      final response = await _dio.get('/payments/history');
+      final service = await getInstance();
+      final response = await service._dio.get('/payments/history');
       
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'payments': response.data,
+          'data': response.data,
         };
-      }
-      
-      return {'success': false, 'error': 'Failed to load payment history'};
-    } on DioException catch (e) {
-      return {
-        'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
-      };
-    }
-  }
-  
-  Future<Map<String, dynamic>> makePayment(Map<String, dynamic> paymentData) async {
-    try {
-      final response = await _dio.post('/payments', data: paymentData);
-      
-      if (response.statusCode == 201) {
+      } else {
         return {
-          'success': true,
-          'payment': response.data,
+          'success': false,
+          'error': 'Failed to load payment history',
         };
       }
-      
-      return {'success': false, 'error': 'Payment failed'};
     } on DioException catch (e) {
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
       };
     }
   }
-  
-  // Profile
-  Future<Map<String, dynamic>> getProfile() async {
+
+  // Announcements methods
+  Future<Map<String, dynamic>> getAnnouncements() async {
     try {
-      final response = await _dio.get('/profile');
+      final service = await getInstance();
+      final response = await service._dio.get('/announcements');
       
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'profile': response.data,
+          'data': response.data,
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Failed to load announcements',
         };
       }
-      
-      return {'success': false, 'error': 'Failed to load profile'};
     } on DioException catch (e) {
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
       };
     }
   }
-  
+
+  // Profile methods
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profileData) async {
     try {
-      final response = await _dio.put('/profile', data: profileData);
+      final service = await getInstance();
+      final response = await service._dio.put(
+        '/profile',
+        data: profileData,
+      );
       
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'profile': response.data,
+          'data': response.data,
+        };
+      } else {
+        return {
+          'success': false,
+          'error': response.data['message'] ?? 'Profile update failed',
         };
       }
-      
-      return {'success': false, 'error': 'Failed to update profile'};
     } on DioException catch (e) {
       return {
         'success': false,
-        'error': e.response?.data['error'] ?? 'Network error occurred',
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Network error: ${e.toString()}',
       };
     }
   }
