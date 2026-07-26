@@ -91,6 +91,12 @@ const passwordResetLimiter = createRateLimiter({
 
 });
 
+const platformAuthLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: isProduction ? 5 : 50,
+  message: { success: false, error: 'Too many platform login attempts, please try again later' }
+});
+
 const uploadLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: isProduction ? 30 : 100,
@@ -130,6 +136,7 @@ module.exports = {
   strictLimiter,
   apiLimiter,
   passwordResetLimiter,
+  platformAuthLimiter,
   uploadLimiter,
   getRateLimitStats
 };

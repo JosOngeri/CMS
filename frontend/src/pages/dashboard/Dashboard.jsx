@@ -11,6 +11,8 @@ import Card from '../../components/common/Card'
 import { FullPageLoading, InlineLoading } from '../../components/common/Loading'
 import { EmptyState, ErrorEmptyState, GalleryEmptyState } from '../../components/common/EmptyState'
 import { useDataFetch } from '../../hooks/useDataFetch'
+import MobileWrapper from '../../components/mobile/MobileWrapper'
+import MobileDashboard from '../../components/mobile/MobileDashboard'
 import SuperAdminDashboard from './SuperAdminDashboard'
 import PastorDashboard from './PastorDashboard'
 import DepartmentHeadDashboard from './DepartmentHeadDashboard'
@@ -32,26 +34,46 @@ const Dashboard = () => {
   
   // Check if user has Super Admin role
   if (userRoles.includes('Super Admin')) {
-    return <SuperAdminDashboard />
+    return (
+      <MobileWrapper mobileComponent={<MobileDashboard />}>
+        <SuperAdminDashboard />
+      </MobileWrapper>
+    )
   }
   
   // Check if user has Pastor role
   if (userRoles.includes('Pastor')) {
-    return <PastorDashboard />
+    return (
+      <MobileWrapper mobileComponent={<MobileDashboard />}>
+        <PastorDashboard />
+      </MobileWrapper>
+    )
   }
   
   // Check if user has Department Head role
   if (userRoles.includes('Department Head')) {
-    return <DepartmentHeadDashboard />
+    return (
+      <MobileWrapper mobileComponent={<MobileDashboard />}>
+        <DepartmentHeadDashboard />
+      </MobileWrapper>
+    )
   }
   
   // Check if user has Treasurer role
   if (userRoles.includes('Treasurer')) {
-    return <TreasurerDashboard />
+    return (
+      <MobileWrapper mobileComponent={<MobileDashboard />}>
+        <TreasurerDashboard />
+      </MobileWrapper>
+    )
   }
   
   // Default dashboard for members and other roles
-  return <MemberDashboard />
+  return (
+    <MobileWrapper mobileComponent={<MobileDashboard />}>
+      <MemberDashboard />
+    </MobileWrapper>
+  )
 }
 
 const DefaultDashboard = () => {

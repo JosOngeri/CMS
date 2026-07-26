@@ -23,6 +23,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   bool _isLoading = false;
   String _selectedCategory = 'Tithe';
   String _paymentMethod = 'STK Push';
+  List<dynamic>? _paymentHistory;
+  bool _isLoadingHistory = false;
 
   final List<String> _categories = [
     'Tithe',
@@ -43,10 +45,39 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadPaymentHistory();
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadPaymentHistory() async {
+    setState(() {
+      _isLoadingHistory = true;
+    });
+
+    try {
+      final apiService = await ApiService.getInstance();
+      final result = await apiService.getPaymentHistory();
+      
+      if (result['success'] == true) {
+        setState(() {
+          _paymentHistory = result['payments'] ?? [];
+        });
+      }
+    } catch (e) {
+      // Handle error silently for now
+    } finally {
+      setState(() {
+        _isLoadingHistory = false;
+      });
+    }
   }
 
   Future<void> _initiatePayment() async {
@@ -84,6 +115,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
       if (result['success']) {
         _showPaymentSuccess(result);
+        // Refresh payment history after successful payment
+        await _loadPaymentHistory();
       } else {
         _showPaymentError(result['error']);
       }
@@ -96,7 +129,8 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
 
   Future<Map<String, dynamic>> _initiateSTKPush(Map<String, dynamic> paymentData) async {
     try {
-      final response = await ApiService().dio.post('/payments/initiate', data: paymentData);
+      final apiService = await ApiService.getInstance();
+      final response = await apiService.dio.post('/payments/initiate', data: paymentData);
       
       if (response.statusCode == 200) {
         return {
@@ -106,15 +140,20 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         };
       }
       
-      return {'success': false, 'error': 'Failed to initiate payment'};
+      final errorData = response.data;
+      return {
+        'success': false,
+        'error': errorData['userMessage'] ?? errorData['error'] ?? 'Failed to initiate payment'
+      };
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      return {'success': false, 'error': 'Network error. Please try again.'};
     }
   }
 
   Future<Map<String, dynamic>> _generatePaymentLink(Map<String, dynamic> paymentData) async {
     try {
-      final response = await ApiService().dio.post('/payments/payment-link', data: paymentData);
+      final apiService = await ApiService.getInstance();
+      final response = await apiService.dio.post('/payments/payment-link', data: paymentData);
       
       if (response.statusCode == 200) {
         return {
@@ -124,15 +163,20 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         };
       }
       
-      return {'success': false, 'error': 'Failed to generate payment link'};
+      final errorData = response.data;
+      return {
+        'success': false,
+        'error': errorData['userMessage'] ?? errorData['error'] ?? 'Failed to generate payment link'
+      };
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      return {'success': false, 'error': 'Network error. Please try again.'};
     }
   }
 
   Future<Map<String, dynamic>> _generateQRCode(Map<String, dynamic> paymentData) async {
     try {
-      final response = await ApiService().dio.post('/payments/qr-code', data: paymentData);
+      final apiService = await ApiService.getInstance();
+      final response = await apiService.dio.post('/payments/qr-code', data: paymentData);
       
       if (response.statusCode == 200) {
         return {
@@ -142,9 +186,13 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         };
       }
       
-      return {'success': false, 'error': 'Failed to generate QR code'};
+      final errorData = response.data;
+      return {
+        'success': false,
+        'error': errorData['userMessage'] ?? errorData['error'] ?? 'Failed to generate QR code'
+      };
     } catch (e) {
-      return {'success': false, 'error': e.toString()};
+      return {'success': false, 'error': 'Network error. Please try again.'};
     }
   }
 
@@ -152,15 +200,30 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Payment Initiated'),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text('Payment Initiated'),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(result['message']),
+            if (result['transactionId'] != null) ...[
+              const SizedBox(height: 16),
+              const Text('Transaction ID:', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              SelectableText(
+                result['transactionId'],
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
             if (result['paymentUrl'] != null) ...[
               const SizedBox(height: 16),
-              const Text('Payment Link:'),
+              const Text('Payment Link:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               SelectableText(
                 result['paymentUrl'],
@@ -171,18 +234,26 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                 ),
               ),
             ],
+            if (result['expiresAt'] != null) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Expires: ${result['expiresAt']}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
           ],
         ),
         actions: [
           if (result['paymentUrl'] != null)
-            TextButton(
+            TextButton.icon(
               onPressed: () async {
                 final uri = Uri.parse(result['paymentUrl']);
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
               },
-              child: const Text('Open Link'),
+              icon: const Icon(Icons.open_in_new),
+              label: const Text('Open Link'),
             ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -198,6 +269,14 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       SnackBar(
         content: Text(error),
         backgroundColor: Theme.of(context).colorScheme.error,
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
       ),
     );
   }
@@ -209,6 +288,12 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         title: const Text('Make Payment'),
         backgroundColor: Theme.of(context).colorScheme.surfaceContainerLowest,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => _showPaymentHistory(),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -279,7 +364,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                       // Category Dropdown
                       // ignore: deprecated_member_use
                       DropdownButtonFormField<String>(
-                        initialValue: _selectedCategory,
+                        value: _selectedCategory,
                         decoration: const InputDecoration(
                           labelText: 'Payment Category',
                           prefixIcon: Icon(Icons.category),
@@ -312,7 +397,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                               errorText: 'Please enter phone number',
                             ),
                             FormBuilderValidators.match(
-                              RegExp(r'^2547\d{8}$'),
+                              r'^2547\d{8}$',
                               errorText: 'Enter valid number: 2547XXXXXXXX',
                             ),
                           ]),
@@ -397,6 +482,84 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         return Icons.qr_code_scanner;
       default:
         return Icons.payment;
+    }
+  }
+
+  void _showPaymentHistory() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Payment History'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: _isLoadingHistory
+              ? const Center(child: CircularProgressIndicator())
+              : _paymentHistory == null || _paymentHistory!.isEmpty
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.receipt_long, size: 48, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text('No payment history'),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _paymentHistory!.length,
+                      itemBuilder: (context, index) {
+                        final payment = _paymentHistory![index];
+                        return ListTile(
+                          leading: const Icon(Icons.payment, color: Colors.green),
+                          title: Text(payment['category'] ?? 'Payment'),
+                          subtitle: Text(
+                            '${payment['description'] ?? ''} • ${payment['date'] ?? ''}',
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                'KES ${payment['amount'] ?? '0'}',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                payment['status'] ?? 'Unknown',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _getStatusColor(payment['status']),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+      case 'success':
+        return Colors.green;
+      case 'pending':
+      case 'processing':
+        return Colors.orange;
+      case 'failed':
+      case 'cancelled':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 }

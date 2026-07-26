@@ -1,7 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The INTERNET permission is required for development. Specifically,
-         the Flutter tool needs it to communicate with the running application
-         to allow setting breakpoints, to provide hot reload, etc.
-    -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Debug-specific configurations -->
+    <application
+        android:debuggable="true"
+        android:allowBackup="true">
+        
+        <!-- Development API configuration -->
+        <meta-data
+            android:name="com.sdachurch.api.base_url"
+            android:value="http://10.0.2.2:8000" />
+            
+        <!-- Enable debug logging in debug builds -->
+        <meta-data
+            android:name="com.sdachurch.logging.enabled"
+            android:value="true" />
+    </application>
 </manifest>

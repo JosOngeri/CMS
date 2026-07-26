@@ -7,9 +7,68 @@ class ChurchRepository extends BaseRepository {
 
   async getAllChurches() {
     const result = await this.pool.query(
-      'SELECT id, name, slug, settings, created_at FROM churches ORDER BY created_at DESC'
+      'SELECT id, name, slug, settings, is_active, created_at, updated_at FROM churches ORDER BY created_at DESC'
     );
     return result.rows;
+  }
+
+  async getActiveChurches() {
+    const result = await this.pool.query(
+      'SELECT id, name, slug, settings, is_active, created_at, updated_at FROM churches WHERE is_active = true ORDER BY created_at DESC'
+    );
+    return result.rows;
+  }
+
+  async getPlatformChurches({ search, status, tier, sortBy, sortOrder, page, limit }) {
+    const conditions = [];
+    const values = [];
+
+    if (search) {
+      values.push(`%${search}%`);
+      conditions.push(`(name ILIKE $${values.length} OR slug ILIKE $${values.length})`);
+    }
+    if (status === "active") {
+      conditions.push("(is_active = true OR is_active IS NULL)");
+    }
+    if (status === "suspended") {
+      conditions.push("is_active = false");
+    }
+    if (tier) {
+      values.push(tier);
+      conditions.push("COALESCE(settings->>'subscription_tier', 'basic') = $" + values.length);
+    }
+
+    const allowedSortFields = new Set(["created_at", "name", "updated_at"]);
+    const safeSortBy = allowedSortFields.has(sortBy) ? sortBy : "created_at";
+    const safeSortOrder = sortOrder === "ASC" ? "ASC" : "DESC";
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    values.push(limit, (page - 1) * limit);
+    const query = [
+      "SELECT id, name, slug, settings, is_active, created_at, updated_at, COUNT(*) OVER() AS total_count",
+      "FROM churches",
+      whereClause,
+      `ORDER BY ${safeSortBy} ${safeSortOrder}`,
+      `LIMIT $${values.length - 1} OFFSET $${values.length}`
+    ].filter(Boolean).join(" ");
+    const result = await this.pool.query(query, values);
+
+    return {
+      churches: result.rows,
+      total: Number(result.rows[0]?.total_count || 0)
+    };
+  }
+
+  async archiveChurch(id) {
+    const result = await this.pool.query(
+      `UPDATE churches
+       SET is_active = false,
+           settings = jsonb_set(COALESCE(settings, '{}'::jsonb), '{archived_at}', to_jsonb(CURRENT_TIMESTAMP::text), true),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING *`,
+      [id]
+    );
+    return result.rows[0];
   }
 
   async getDefaultChurch() {
@@ -112,6 +171,33 @@ class ChurchRepository extends BaseRepository {
       [churchId]
     );
     return parseInt(result.rows[0].count);
+  }
+
+  async getTenantMetrics(churchId) {
+    const [userCount, memberCount, paymentCount, departmentCount] = await Promise.all([
+      this.getUserCount(churchId),
+      this.getMemberCount(churchId),
+      this.getPaymentCount(churchId),
+      this.getDepartmentCount(churchId)
+    ]);
+
+    return { userCount, memberCount, paymentCount, departmentCount };
+  }
+
+  async getTenantActivity(churchId, limit) {
+    const result = await this.pool.query(
+      `SELECT
+        'user' AS type,
+        CONCAT('User ', name, ' logged in') AS title,
+        'User activity' AS description,
+        last_login AS created_at
+      FROM users
+      WHERE church_id = $1 AND last_login IS NOT NULL
+      ORDER BY last_login DESC
+      LIMIT $2`,
+      [churchId, limit]
+    );
+    return result.rows;
   }
 
   async updateChurchSettings(id, settings) {

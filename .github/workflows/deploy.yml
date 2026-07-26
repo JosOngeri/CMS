@@ -1,9 +1,15 @@
-name: Deploy to Production
+name: Deploy to Production VPS
 
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: 'Skip tests before deployment'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   deploy:
@@ -13,66 +19,100 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-    
-    - name: Build and push Backend
-      uses: docker/build-push-action@v4
-      with:
-        context: ./backend
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/kmaincms-backend:latest
-        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/kmaincms-backend:buildcache
-        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/kmaincms-backend:buildcache,mode=max
-    
-    - name: Build and push Frontend
-      uses: docker/build-push-action@v4
-      with:
-        context: ./frontend
-        push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/kmaincms-frontend:latest
-        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/kmaincms-frontend:buildcache
-        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/kmaincms-frontend:buildcache,mode=max
-    
-    - name: Deploy to server
+    - name: Deploy to VPS via SSH
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /opt/kmaincms
-          docker-compose pull
-          docker-compose up -d
-          docker system prune -f
-    
-    - name: Run database migrations
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /opt/kmaincms
-          docker-compose exec -T backend npm run migrate
+          echo "Starting deployment to VPS..."
+          
+          # Navigate to project directory
+          cd /var/www/kmaincms
+          
+          # Pull latest changes from GitHub
+          echo "Pulling latest changes from GitHub..."
+          git pull origin main
+          
+          # Install backend dependencies
+          echo "Installing backend dependencies..."
+          cd backend
+          npm install --production
+          
+          # Install frontend dependencies
+          echo "Installing frontend dependencies..."
+          cd ../frontend
+          npm install --production
+          
+          # Build frontend for production
+          echo "Building frontend for production..."
+          npm run build
+          
+          # Go back to backend directory
+          cd ../backend
+          
+          # Restart PM2 application
+          echo "Restarting PM2 application..."
+          pm2 restart kmaincms
+          pm2 save
+          
+          # Wait for application to start
+          echo "Waiting for application to start..."
+          sleep 15
+          
+          # Check application status
+          echo "Checking application status..."
+          pm2 status
+          
+          # Check application logs
+          echo "Checking recent logs..."
+          pm2 logs kmaincms --lines 20 --nostream
     
     - name: Health check
       uses: appleboy/ssh-action@master
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          sleep 30
-          curl -f http://localhost/api/health || exit 1
+          echo "Running health checks..."
+          
+          # Check backend health endpoint
+          echo "Testing backend health endpoint..."
+          curl -f https://cms.josongeri.co.ke/api/health || exit 1
+          
+          # Test mobile API endpoints
+          echo "Testing mobile API endpoints..."
+          curl -f https://cms.josongeri.co.ke/api/mobile/dashboard || exit 1
+          
+          echo "All health checks passed!"
+    
+    - name: Verify mobile API integration
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          echo "Verifying mobile API integration..."
+          
+          # Check if mobile routes are accessible
+          curl -f https://cms.josongeri.co.ke/api/mobile/contacts/sync || exit 1
+          curl -f https://cms.josongeri.co.ke/api/mobile/templates/sync || exit 1
+          curl -f https://cms.josongeri.co.ke/api/mobile/sync/status || exit 1
+          
+          echo "Mobile API integration verified!"
     
     - name: Notify deployment success
       if: success()
       run: |
-        echo "Deployment successful!"
+        echo "✅ Deployment to VPS successful!"
+        echo "🚀 KMainCMS is now live at https://cms.josongeri.co.ke"
+        echo "📱 Mobile API integration is active"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Deployment to VPS failed!"
+        echo "Please check the logs and VPS status"

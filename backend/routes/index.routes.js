@@ -52,6 +52,12 @@ const analyticsRoutes = require('./analytics.routes');
 const aiRoutes = require('./ai.routes');
 const chatRoutes = require('./chat.routes');
 const syncRoutes = require('./sync.routes');
+const mobileRoutes = require('./mobile.routes');
+const platformRoutes = require('./platform.routes');
+const smsContactsRoutes = require('./smsContacts.routes');
+const smsGroupsRoutes = require('./smsGroups.routes');
+const smsAuthRoutes = require('./smsAuth.routes');
+const smsSyncRoutes = require('./smsSync.routes');
 
 // Mount routes with appropriate middleware
 // Note: route modules apply their own auth (authenticateToken, identityGuard, etc.)
@@ -98,6 +104,12 @@ router.use('/document-approval', strictLimiter, documentApprovalRoutes);
 router.use('/analytics', generalLimiter, analyticsRoutes);
 router.use('/ai', strictLimiter, aiRoutes);
 router.use('/chat', generalLimiter, chatRoutes);
-router.use('/sync', generalLimiter, syncRoutes);
+router.use('/sync', strictLimiter, syncRoutes);
+router.use('/mobile', generalLimiter, mobileRoutes);
+router.use('/platform', strictLimiter, platformRoutes);
+router.use('/sms-contacts', generalLimiter, smsContactsRoutes);
+router.use('/sms-groups', generalLimiter, smsGroupsRoutes);
+router.use('/sms/auth', authLimiter, smsAuthRoutes);
+router.use('/sms/sync', generalLimiter, smsSyncRoutes);
 
 module.exports = router;

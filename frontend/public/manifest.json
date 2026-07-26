@@ -1,40 +1,48 @@
 {
   "name": "KMainCMS",
   "short_name": "KMainCMS",
-  "description": "Kiserian Main SDA Church Content Management System",
+  "description": "Kiserian Main SDA Church Management System",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
-  "orientation": "portrait",
+  "background_color": "#FEFDFB",
+  "theme_color": "#3B82F6",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "business"],
-  "screenshots": [],
+  "categories": ["productivity", "lifestyle"],
   "shortcuts": [
     {
       "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "View dashboard",
-      "url": "/dashboard",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "short_name": "Home",
+      "description": "Go to dashboard",
+      "url": "/dashboard/overview",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
     },
     {
-      "name": "Members",
-      "short_name": "Members",
-      "description": "View members",
-      "url": "/members",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "name": "Payments",
+      "short_name": "Pay",
+      "description": "Make payments",
+      "url": "/dashboard/payments/my",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Announcements",
+      "short_name": "News",
+      "description": "View announcements",
+      "url": "/dashboard/announcements",
+      "icons": [{ "src": "/logo.png", "sizes": "192x192" }]
     }
   ]
 }

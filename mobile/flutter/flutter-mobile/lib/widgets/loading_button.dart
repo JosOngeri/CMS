@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LoadingButton extends StatelessWidget {
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool isLoading;
   final String text;
   final bool fullWidth;
@@ -10,7 +10,7 @@ class LoadingButton extends StatelessWidget {
 
   const LoadingButton({
     super.key,
-    required this.onPressed,
+    this.onPressed,
     this.isLoading = false,
     required this.text,
     this.fullWidth = false,

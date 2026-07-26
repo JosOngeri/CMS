@@ -3,10 +3,12 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import PublicShell from './shells/PublicShell';
 import { publicRoutes } from './router/public.routes';
 import { FullPageLoading } from './components/common/Loading';
+import { AuthProvider } from './contexts/AuthContext';
 
 // Auth and Dashboard are loaded only when the user navigates to them.
 const AuthShell = lazy(() => import('./shells/AuthShell'));
 const DashboardShell = lazy(() => import('./shells/DashboardShell'));
+const PlatformShell = lazy(() => import('./shells/PlatformShell'));
 
 const ShellFallback = () => <FullPageLoading message="Loading..." />;
 
@@ -38,6 +40,16 @@ export const createAppRouter = () => {
         <Suspense fallback={<ShellFallback />}>
           <DashboardShell />
         </Suspense>
+      )
+    },
+    {
+      path: '/platform/*',
+      element: (
+        <AuthProvider>
+          <Suspense fallback={<ShellFallback />}>
+            <PlatformShell />
+          </Suspense>
+        </AuthProvider>
       )
     },
     {

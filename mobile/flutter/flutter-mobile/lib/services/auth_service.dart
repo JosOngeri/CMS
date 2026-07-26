@@ -1,64 +1,163 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'api_service.dart';
+import 'package:flutter/foundation.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:riverpod/riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthService extends ChangeNotifier {
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
-  
-  Map<String, dynamic>? _user;
-  String? _token;
-  bool _isAuthenticated = false;
-  bool _isLoading = true;
+// Auth State Class
+class AuthState {
+  final Map<String, dynamic>? user;
+  final String? token;
+  final bool isAuthenticated;
+  final bool isLoading;
+  final String? errorMessage;
 
-  Map<String, dynamic>? get user => _user;
-  String? get token => _token;
-  bool get isAuthenticated => _isAuthenticated;
-  bool get isLoading => _isLoading;
+  const AuthState({
+    this.user,
+    this.token,
+    this.isAuthenticated = false,
+    this.isLoading = true,
+    this.errorMessage,
+  });
 
-  AuthService() {
+  AuthState copyWith({
+    Map<String, dynamic>? user,
+    String? token,
+    bool? isAuthenticated,
+    bool? isLoading,
+    String? errorMessage,
+  }) {
+    return AuthState(
+      user: user ?? this.user,
+      token: token ?? this.token,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      isLoading: isLoading ?? this.isLoading,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+// Auth State Notifier with ChangeNotifier for GoRouter
+class AuthNotifier extends StateNotifier<AuthState> {
+  // final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  SharedPreferences? _prefs;
+
+  AuthNotifier() : super(const AuthState()) {
+    _initPrefs();
+  }
+
+  Future<void> _initPrefs() async {
+    debugPrint('=== Auth: Initializing SharedPreferences ===');
+    _prefs = await SharedPreferences.getInstance();
+    debugPrint('=== Auth: SharedPreferences initialized ===');
     _loadStoredAuth();
   }
 
   Future<void> _loadStoredAuth() async {
+    debugPrint('=== Auth: Starting to load stored auth ===');
+    if (_prefs == null) {
+      debugPrint('=== Auth: Prefs is null, cannot load auth ===');
+      return;
+    }
+    
     try {
-      final token = await _secureStorage.read(key: 'auth_token');
-      final userData = await _secureStorage.read(key: 'user_data');
+      final token = _prefs!.getString('auth_token');
+      final userData = _prefs!.getString('user_data');
+      debugPrint('=== Auth: Token found: ${token != null}, User data found: ${userData != null} ===');
 
       if (token != null && userData != null) {
-        _token = token;
-        _user = jsonDecode(userData);
-        _isAuthenticated = true;
+        debugPrint('=== Auth: User is authenticated, setting loading to false ===');
+        state = state.copyWith(
+          token: token,
+          user: jsonDecode(userData),
+          isAuthenticated: true,
+          isLoading: false,
+        );
+      } else {
+        debugPrint('=== Auth: No stored auth, user not authenticated ===');
+        state = state.copyWith(
+          isAuthenticated: false,
+          isLoading: false,
+        );
       }
     } catch (e) {
-      _isAuthenticated = false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      debugPrint('=== Auth: Error loading auth: $e ===');
+      state = state.copyWith(
+        isAuthenticated: false,
+        isLoading: false,
+        errorMessage: 'Failed to load authentication data',
+      );
+    }
+    debugPrint('=== Auth: Loading complete, isLoading: ${state.isLoading} ===');
+  }
+
+  Future<void> login(Map<String, dynamic> user, String token) async {
+    try {
+      await _prefs!.setString('auth_token', token);
+      await _prefs!.setString('user_data', jsonEncode(user));
+      
+      state = state.copyWith(
+        user: user,
+        token: token,
+        isAuthenticated: true,
+        isLoading: false,
+        errorMessage: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to save authentication data',
+      );
     }
   }
 
-  void login(Map<String, dynamic> user, String token) {
-    _user = user;
-    _token = token;
-    _isAuthenticated = true;
-    notifyListeners();
-  }
-
   Future<void> logout() async {
-    await ApiService().logout();
-    _user = null;
-    _token = null;
-    _isAuthenticated = false;
-    notifyListeners();
+    try {
+      await _prefs!.remove('auth_token');
+      await _prefs!.remove('user_data');
+      
+      state = const AuthState(
+        isAuthenticated: false,
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to clear authentication data',
+      );
+    }
   }
 
   Future<void> updateUser(Map<String, dynamic> updatedUser) async {
-    _user = updatedUser;
-    await _secureStorage.write(
-      key: 'user_data',
-      value: jsonEncode(updatedUser),
-    );
-    notifyListeners();
+    try {
+      await _prefs!.setString('auth_token', state.token ?? '');
+      await _prefs!.setString('user_data', jsonEncode(updatedUser));
+      
+      state = state.copyWith(user: updatedUser);
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to update user data',
+      );
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
   }
 }
+
+// Riverpod Providers
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier();
+});
+
+// Convenience providers
+final isAuthenticatedProvider = Provider<bool>((ref) {
+  return ref.watch(authProvider).isAuthenticated;
+});
+
+final userProvider = Provider<Map<String, dynamic>?>((ref) {
+  return ref.watch(authProvider).user;
+});
+
+final tokenProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).token;
+});

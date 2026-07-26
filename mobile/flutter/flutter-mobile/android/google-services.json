@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "PLACEHOLDER_PROJECT_NUMBER",
+    "firebase_url": "https://placeholder-project-id.firebaseio.com",
+    "project_id": "placeholder-project-id",
+    "storage_bucket": "placeholder-project-id.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "PLACEHOLDER_APP_ID",
+        "android_client_info": {
+          "package_name": "com.sdachurch.sda_church_mobile",
+          "certificate_hash": "PLACEHOLDER_CERTIFICATE_HASH"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "PLACEHOLDER_CLIENT_ID",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "PLACEHOLDER_API_KEY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "PLACEHOLDER_CLIENT_ID",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

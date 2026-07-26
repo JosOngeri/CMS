@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Release-specific configurations -->
+    <application
+        android:debuggable="false"
+        android:allowBackup="true">
+        
+        <!-- Production API configuration -->
+        <meta-data
+            android:name="com.sdachurch.api.base_url"
+            android:value="https://api.sdachurchkiserian.com" />
+            
+        <!-- Disable debug logging in release -->
+        <meta-data
+            android:name="com.sdachurch.logging.enabled"
+            android:value="false" />
+    </application>
+</manifest>

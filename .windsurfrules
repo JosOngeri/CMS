@@ -94,3 +94,28 @@
   - Running tests and builds
   - Understanding architectural decisions
 - Be patient and provide educational context alongside implementation
+
+## Mobile App and Web UI Consistency
+- **CRITICAL**: The Flutter mobile app and React web UI must be kept visually and functionally consistent
+- When updating UI components in either platform, mirror the changes in the other platform when possible
+- Maintain consistent color schemes, typography, and design patterns across both platforms
+- Use the same component names and structure where applicable (e.g., Dashboard, Settings, Profile)
+- Keep feature parity between mobile and web versions for core functionality
+- When adding new features, implement them in both platforms simultaneously or document the discrepancy
+- Color scheme reference (from Flutter app theme.dart):
+  - Primary: #3B82F6 (Blue)
+  - Secondary: #F59E0B (Gold)
+  - Background: #FEFDFB (Off-white)
+  - Surface: #FFFFFF (White)
+  - Text Primary: #1F2937
+  - Text Secondary: #6B7280
+  - Success: #22C55E
+  - Error: #EF4444
+- Component patterns to maintain consistency:
+  - Stat cards with icons and values
+  - Activity feeds with timestamps
+  - Bottom navigation for mobile views
+  - Card-based layouts with rounded corners
+  - Touch-friendly button sizes (minimum 44px)
+- Before marking UI changes as complete, verify the equivalent component exists in both platforms
+- Document any intentional differences between mobile and web implementations

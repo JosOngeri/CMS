@@ -21,9 +21,13 @@ const comparePassword = async (password, hash) => {
 };
 
 // Generate access token (short-lived: 1h for security)
-const generateAccessToken = (userId, roles, mfaVerified = false) => {
+const generateAccessToken = (userId, roles, mfaVerified = false, scope = null) => {
+  const payload = { userId, roles, mfaVerified };
+  if (scope) {
+    payload.scope = Array.isArray(scope) ? scope : [scope];
+  }
   return jwt.sign(
-    { userId, roles, mfaVerified },
+    payload,
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
   );

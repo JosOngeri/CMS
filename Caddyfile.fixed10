@@ -1,0 +1,44 @@
+josongeri.co.ke, www.josongeri.co.ke {
+	root * /var/www/josongeri.co.ke
+	file_server
+}
+
+cms.josongeri.co.ke {
+	# Backend API proxy (must be first)
+	@api {
+		reverse_proxy localhost:5005
+	}
+
+	# Frontend SPA and static assets
+	root * /var/www/CMS/frontend/dist {
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Cache static assets
+	@static {
+		path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
+	}
+	header @static Cache-Control "public, immutable, max-age=31536000"
+
+	# Security headers
+	header X-Frame-Options "SAMEORIGIN"
+	header X-Content-Type-Options "nosniff"
+	header X-XSS-Protection "1; mode=block"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+}
+
+churchcms.josongeri.co.ke, kiserianchurch.josongeri.co.ke, pesatrail.josongeri.co.ke, plotnest.josongeri.co.ke, miraglobal.josongeri.co.ke, churchapp.josongeri.co.ke, smsapp.josongeri.co.ke, telegramdrive.josongeri.co.ke, android.josongeri.co.ke, mvp.josongeri.co.ke {
+	root * /var/www/subdomains/placeholder
+	file_server
+}
+
+parealty.co.ke, www.parealty.co.ke {
+	root * /home/deploy/plotnest/public
+	file_server
+}
+
+ehcsl.josongeri.co.ke {
+	root * /var/www/subdomains/ehcsl
+	file_server
+}

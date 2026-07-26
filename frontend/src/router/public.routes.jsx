@@ -3,6 +3,7 @@
  */
 
 import React, { lazy, Suspense } from 'react';
+import { AuthProvider } from '../contexts/AuthContext';
 
 const Loader = () => (
   <div className="flex items-center justify-center min-h-64 p-8">
@@ -64,6 +65,7 @@ const Announcements           = lazy(() => import('../pages/public/Announcements
 const Terms                   = lazy(() => import('../pages/public/Terms'));
 const Privacy                 = lazy(() => import('../pages/public/Privacy'));
 const PhotoGalleryPage        = lazy(() => import('../pages/PhotoGalleryPage'));
+const PlatformLogin           = lazy(() => import('../pages/platform/PlatformLogin'));
 
 const W = ({ C }) => <SafeRoute><C /></SafeRoute>;
 
@@ -74,4 +76,5 @@ export const publicRoutes = [
   { path: 'terms',                         element: <W C={Terms} /> },
   { path: 'privacy',                       element: <W C={Privacy} /> },
   { path: 'gallery',                       element: <W C={PhotoGalleryPage} /> },
+  { path: 'platform/login',                element: <AuthProvider><W C={PlatformLogin} /></AuthProvider> },
 ];

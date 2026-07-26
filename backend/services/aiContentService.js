@@ -10,13 +10,27 @@ const logger = require('../config/logging');
 class AIContentService {
   constructor() {
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is required');
+      logger.warn('GEMINI_API_KEY is not set. AI content generation service will be disabled.');
+      this.enabled = false;
+      this.genAI = null;
+      this.model = 'gemini-pro';
+      this.cache = new Map();
+      this.cacheTTL = 10 * 60 * 1000;
+      this.dailyLimit = parseInt(process.env.GEMINI_DAILY_LIMIT || '100', 10);
+      return;
     }
+    this.enabled = true;
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     this.model = 'gemini-pro';
     this.cache = new Map(); // Simple in-memory cache
     this.cacheTTL = 10 * 60 * 1000; // 10 minutes in milliseconds
     this.dailyLimit = parseInt(process.env.GEMINI_DAILY_LIMIT || '100', 10); // Default 100 requests per day per church
+  }
+
+  checkEnabled() {
+    if (!this.enabled) {
+      throw new Error('AI service is disabled. Set GEMINI_API_KEY environment variable to enable.');
+    }
   }
 
   /**
@@ -191,6 +205,7 @@ class AIContentService {
    * @returns {Promise<object>} Generated content
    */
   async generateAnnouncement(data) {
+    this.checkEnabled();
     const { topic, tone, audience, keyPoints, churchId, userId } = data;
 
     try {
@@ -322,6 +337,7 @@ class AIContentService {
    * @returns {Promise<object>} Generated content
    */
   async generateDocument(data) {
+    this.checkEnabled();
     const { documentType, topic, sections, tone, churchId, userId } = data;
 
     try {
@@ -414,6 +430,7 @@ class AIContentService {
    * @returns {Promise<object>} Generated content
    */
   async generateMemberCommunication(data) {
+    this.checkEnabled();
     const { memberName, communicationType, purpose, context, churchId, userId } = data;
 
     try {
@@ -510,6 +527,7 @@ class AIContentService {
    * @returns {Promise<object>} Content suggestions
    */
   async generateSuggestions(data) {
+    this.checkEnabled();
     const { contentType, context, existingContent, churchId, userId } = data;
 
     try {
@@ -603,6 +621,7 @@ class AIContentService {
    * @returns {Promise<object>} Condensed content
    */
   async condenseForSMS(data) {
+    this.checkEnabled();
     const { content, maxLength = 500, churchId, userId } = data;
 
     try {

@@ -8,31 +8,85 @@
 
 /* ── Semantic CSS Tokens ─────────────────────────────────────────────────── */
 :root {
-  --color-primary:        #1a5276;   /* deep SDA blue */
-  --color-surface:        #ffffff;
-  --color-background:     #f8fafc;
-  --color-text:           #0f172a;
-  --color-textSecondary:  #64748b;
-  --color-success:        #10b981;
-  --color-warning:        #f59e0b;
-  --color-error:          #ef4444;
-  --color-border:         #e2e8f0;
+  /* Church Warm Palette - Default */
+  --color-primary:        #4A6FA5;   /* Warm inviting blue - spiritual guidance */
+  --color-primary-variant: #3A5F8F;
+  --color-secondary:      #6B8E23;   /* Natural green - spiritual growth */
+  --color-secondary-variant: #5A7E1F;
+  --color-accent:         #E07A5F;   /* Warm orange - community fellowship */
+  --color-surface:        #FAF8F5;   /* Warm white - approachable surfaces */
+  --color-background:     #FEFDFB;   /* Off-white - warm welcome */
+  --color-text:           #2C3E50;   /* High contrast dark with warmth */
+  --color-textSecondary:  #5D6D7E;   /* Medium contrast with warmth */
+  --color-textTertiary:   #8A9AAB;   /* Tertiary text with warmth */
+  --color-success:        #D4A017;   /* Warm golden - abundance blessing */
+  --color-warning:        #CC8E35;   /* Warm amber - stewardship care */
+  --color-error:          #C45C3E;   /* Soft red - critical attention */
+  --color-border:         #E8E4E0;   /* Soft warm gray - gentle separation */
+  --color-divider:        #DAD6D2;   /* Divider with warmth */
   --color-overlay:        rgba(0,0,0,0.5);
-  --color-accent:         #f39c12;
 }
 
 [data-theme='dark'] {
-  --color-primary:        #3b82f6;
-  --color-surface:        #1e293b;
-  --color-background:     #0f172a;
-  --color-text:           #f8fafc;
-  --color-textSecondary:  #94a3b8;
-  --color-success:        #059669;
-  --color-warning:        #d97706;
-  --color-error:          #dc2626;
-  --color-border:         #334155;
+  /* Church Warm Dark Palette */
+  --color-primary:        #5B8BD4;
+  --color-primary-variant: #4A7AC3;
+  --color-secondary:      #8FBC8F;
+  --color-secondary-variant: #7EAC7E;
+  --color-accent:         #F0A080;
+  --color-surface:        #252B3A;
+  --color-background:     #1A1F2C;
+  --color-text:           #F5F3EF;
+  --color-textSecondary:  #C5C3BF;
+  --color-textTertiary:   #95938F;
+  --color-success:        #EBC944;
+  --color-warning:        #E6B355;
+  --color-error:          #E07A5F;
+  --color-border:         #3A4152;
+  --color-divider:        #4A5162;
   --color-overlay:        rgba(0,0,0,0.7);
-  --color-accent:         #fbbf24;
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  /* Church Warm High Contrast Palette */
+  --color-primary:        #3A5F8F;
+  --color-primary-variant: #2A4F7F;
+  --color-secondary:      #5A7E1F;
+  --color-secondary-variant: #4A6E0F;
+  --color-accent:         #D06A4F;
+  --color-surface:        #FFFFFF;
+  --color-background:     #FFFFFF;
+  --color-text:           #000000;
+  --color-textSecondary:  #1A1A1A;
+  --color-textTertiary:   #2A2A2A;
+  --color-success:        #B49017;
+  --color-warning:        #AC7E25;
+  --color-error:          #A44C2E;
+  --color-border:         #000000;
+  --color-divider:        #000000;
+  --color-overlay:        rgba(0,0,0,0.8);
+}
+
+/* Large Text Mode */
+.large-text {
+  /* Church Warm Large Text Palette */
+  --color-primary:        #4A6FA5;
+  --color-primary-variant: #3A5F8F;
+  --color-secondary:      #6B8E23;
+  --color-secondary-variant: #5A7E1F;
+  --color-accent:         #E07A5F;
+  --color-surface:        #FAF8F5;
+  --color-background:     #FEFDFB;
+  --color-text:           #1A2A3A;
+  --color-textSecondary:  #4A5A6A;
+  --color-textTertiary:   #7A8A9A;
+  --color-success:        #D4A017;
+  --color-warning:        #CC8E35;
+  --color-error:          #C45C3E;
+  --color-border:         #D8D4D0;
+  --color-divider:        #CAC6C0;
+  --color-overlay:        rgba(0,0,0,0.5);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -138,5 +192,332 @@ input:-webkit-autofill:active {
     background-color: var(--color-surface) !important;
     color: var(--color-text) !important;
     border: 1px solid var(--color-border);
+  }
+}
+
+/* ── Mobile Responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Mobile-specific adjustments */
+  body {
+    font-size: 16px;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* Touch-friendly button sizes */
+  .btn {
+    min-height: 48px;
+    min-width: 48px;
+    font-size: 16px;
+  }
+
+  /* Mobile card adjustments */
+  .card {
+    border-radius: 12px;
+    margin: 8px;
+  }
+
+  /* Mobile input adjustments */
+  .input {
+    font-size: 16px; /* Prevent iOS zoom */
+    padding: 12px 16px;
+    border-radius: 8px;
+  }
+
+  /* Mobile-friendly spacing */
+  .panel {
+    padding: 16px;
+    margin: 8px;
+    border-radius: 12px;
+  }
+
+  /* Hide scrollbars but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Mobile navigation adjustments */
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 8px 16px;
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Mobile header adjustments */
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 16px;
+    z-index: 999;
+  }
+
+  /* Mobile grid adjustments */
+  .mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Mobile-friendly touch targets */
+  button, a, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile text adjustments */
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  p { font-size: 14px; }
+
+  /* Mobile container adjustments */
+  .container {
+    padding: 16px;
+    max-width: 100%;
+  }
+
+  /* Mobile table adjustments */
+  table {
+    font-size: 14px;
+  }
+  
+  table th, table td {
+    padding: 8px;
+  }
+
+  /* Mobile modal adjustments */
+  .modal {
+    padding: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Mobile form adjustments */
+  form {
+    gap: 16px;
+  }
+
+  /* Mobile sidebar adjustments */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1001;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-overlay);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ── Mobile App-Like UI Components ─────────────────────────────────────────── */
+.mobile-app-container {
+  min-height: 100vh;
+  background: var(--color-background);
+  padding-bottom: 80px; /* Space for bottom navigation */
+}
+
+.mobile-stat-card {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.mobile-stat-card .icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.mobile-stat-card .value {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.mobile-stat-card .label {
+  font-size: 12px;
+  color: var(--color-textSecondary);
+  text-align: center;
+}
+
+.mobile-activity-item {
+  background: var(--color-surface);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-activity-item .icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.mobile-activity-item .content {
+  flex: 1;
+}
+
+.mobile-activity-item .title {
+  font-weight: 600;
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.mobile-activity-item .description {
+  color: var(--color-textSecondary);
+  font-size: 12px;
+}
+
+.mobile-activity-item .time {
+  color: var(--color-textTertiary);
+  font-size: 11px;
+}
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 16px;
+  color: var(--color-textTertiary);
+  text-decoration: none;
+  min-width: 60px;
+  transition: color 0.2s;
+}
+
+.mobile-bottom-nav-item.active {
+  color: var(--color-primary);
+}
+
+.mobile-bottom-nav-item .icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.mobile-bottom-nav-item .label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.mobile-fab {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  z-index: 999;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mobile-fab:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.mobile-refresh-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  color: var(--color-textSecondary);
+}
+
+/* ── Touch Feedback ───────────────────────────────────────────────────────── */
+@media (hover: none) {
+  .btn:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  .card:active {
+    transform: scale(0.99);
+  }
+
+  .mobile-bottom-nav-item:active {
+    opacity: 0.7;
+  }
+
+  .mobile-activity-item:active {
+    background: var(--color-border);
+  }
+}
+
+/* ── Safe Area Support ─────────────────────────────────────────────────────── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .mobile-bottom-nav {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-app-container {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 }

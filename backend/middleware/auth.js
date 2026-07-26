@@ -96,6 +96,11 @@ const authenticateToken = async (req, res, next) => {
     }
 
     req.user = buildUserIdentity(identity);
+    
+    // Add scope from token if present
+    if (decoded.scope) {
+      req.user.scope = decoded.scope;
+    }
 
     next();
   } catch (error) {

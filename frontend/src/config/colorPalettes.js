@@ -9,7 +9,11 @@
  * - Each palette has exactly 11 colors
  */
 
+import { churchPalettes, defaultChurchPalette } from './churchColorPalette.js';
+
 export const colorPalettes = {
+  // Church-focused palettes
+  ...churchPalettes,
   // Classic Blue - Professional and trustworthy
   classicBlue: {
     name: 'Classic Blue',
@@ -283,8 +287,8 @@ export const colorPalettes = {
   }
 };
 
-// Default palette
-export const defaultPalette = 'classicBlue';
+// Default palette - changed to church-focused palette
+export const defaultPalette = defaultChurchPalette;
 
 // Get palette by key
 export const getPalette = (paletteKey) => {
