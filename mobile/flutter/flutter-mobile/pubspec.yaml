@@ -47,6 +47,9 @@ dependencies:
   # Connectivity
   connectivity_plus: ^5.0.0
   
+  # WebSocket
+  web_socket_channel: ^2.4.0
+  
   # Biometric Authentication
   local_auth: ^2.1.0
   
