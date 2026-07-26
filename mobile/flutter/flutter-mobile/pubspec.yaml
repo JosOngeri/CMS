@@ -5,82 +5,61 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
+  flutter: '>=3.24.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
   # UI & Navigation
-  cupertino_icons: ^1.0.2
+  cupertino_icons: ^1.0.6
   material_design_icons_flutter: ^7.0.7296
-  go_router: ^17.2.3
+  go_router: ^12.0.0
   
   # HTTP & API
-  http: ^1.1.0
-  dio: ^5.3.2
+  dio: ^5.4.0
   
   # State Management
-  provider: ^6.1.1
-  flutter_riverpod: ^3.3.1
-  riverpod: ^3.2.1
+  flutter_riverpod: ^2.4.0
   
   # Storage
-  shared_preferences: ^2.2.2
-  
-  # Authentication
-  # 🔒 Secure Storage (upgrade all together)
-  flutter_secure_storage: ^10.2.0
-  flutter_secure_storage_linux: ^3.0.0
-  flutter_secure_storage_macos: ^4.0.0
-  flutter_secure_storage_platform_interface: ^2.0.1
-  flutter_secure_storage_web: ^2.1.1
-  flutter_secure_storage_windows: ^4.2.1
+  shared_preferences: ^2.2.0
+  flutter_secure_storage: ^9.0.0
+  sqflite: ^2.3.0
   
   # Forms
-  flutter_form_builder: ^10.3.0
-  form_builder_validators: ^11.0.0
+  flutter_form_builder: ^9.0.0
+  form_builder_validators: ^10.0.0
   
   # UI Components
   cached_network_image: ^3.3.0
-  shimmer: ^3.0.0
-  # 🎨 UI / Animations
-  lottie: ^3.3.3
   
   # Utilities
-  intl: any
-  logger: ^2.0.2+1
-  
-  # 🔥 Firebase (upgrade together)
-  firebase_core: ^4.9.0
-  firebase_messaging: ^16.2.2
+  logger: ^2.0.0
+  crypto: ^3.0.3
   
   # URL Launcher
-  url_launcher: ^6.2.1
+  url_launcher: ^6.2.0
   
-  # Camera & Image
-  image_picker: ^1.0.4
+  # Path Provider
+  path_provider: ^2.1.0
   
-  # Biometrics
-  # 👤 Local Auth (upgrade all together)
-  local_auth: ^3.0.1
-  local_auth_android: ^2.0.8
-  local_auth_darwin: ^2.0.3
-  local_auth_windows: ^2.0.1
-
-  # App Updates
-  package_info_plus: ^10.1.0
-  open_filex: ^4.0.0
+  # Biometric Authentication
+  local_auth: ^2.1.0
+  
+  # Image Picker
+  image_picker: ^1.0.0
+  
+  # Permissions
   permission_handler: ^11.0.0
-  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # 🧹 Linting
-  flutter_lints: ^6.0.0
-  lints: ^6.1.0
-  # 🎨 App Icons
-  flutter_launcher_icons: ^0.14.1
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.0
+  mockito: ^5.4.0
+  build_runner: ^2.4.0
 
 flutter:
   uses-material-design: true
