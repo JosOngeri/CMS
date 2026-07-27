@@ -33,7 +33,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist-new',
     sourcemap: true,
     emptyOutDir: true,
     minify: 'terser',
