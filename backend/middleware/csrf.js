@@ -26,11 +26,6 @@ function csrfTokenMiddleware(req, res, next) {
     return next();
   }
 
-  // Skip CSRF for SMS endpoints (external API clients)
-  if (req.path.startsWith('/api/sms/')) {
-    return next();
-  }
-
   // Validate CSRF token for state-changing requests
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   if (!validateCSRFToken(token)) {

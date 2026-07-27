@@ -194,14 +194,14 @@ class ApiService {
   Future<Map<String, dynamic>> login(String identifier, String password) async {
     try {
       debugPrint('=== API: Attempting login ===');
-      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/api/sms/auth/login ===');
+      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/api/auth/login ===');
       debugPrint('=== API: Identifier (username/email/phone): $identifier ===');
       
       final service = await getInstance();
       final response = await service._dio.post(
-        '/api/sms/auth/login',
+        '/api/auth/login',
         data: {
-          'identifier': identifier,
+          'email': identifier, // Use identifier as email for compatibility
           'password': password,
         },
       );
@@ -214,19 +214,9 @@ class ApiService {
         if (response.data['success'] == true && response.data['data'] != null) {
           final responseData = response.data['data'];
           
-          // Store SMS-scoped JWT token
-          final token = responseData['token'];
+          // Store JWT token (regular webapp token, not SMS-scoped)
+          final token = responseData['accessToken'] ?? responseData['token'];
           await _prefs.setString('auth_token', token);
-          
-          // Store organization metadata for API configuration
-          final organizationMetadata = {
-            'church_id': responseData['church_id'],
-            'church_slug': responseData['church_slug'],
-            'sync_endpoint_url': responseData['sync_endpoint_url'],
-            'snapshot_interval': responseData['snapshot_interval'],
-            'rolling_update_interval': responseData['rolling_update_interval'],
-          };
-          await _prefs.setString('organization_metadata', jsonEncode(organizationMetadata));
           
           // Store user data
           await _prefs.setString('user_data', jsonEncode(responseData['user']));
@@ -235,7 +225,6 @@ class ApiService {
             'success': true,
             'user': responseData['user'],
             'token': token,
-            'organization': organizationMetadata,
           };
         }
         // Fallback to direct format
@@ -243,7 +232,6 @@ class ApiService {
           'success': true,
           'user': response.data['user'],
           'token': response.data['token'] ?? response.data['accessToken'],
-          'organization': response.data['organization'],
         };
       } else {
         return {
