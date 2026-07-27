@@ -1,0 +1,126 @@
+name: Performance & Accessibility CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Run accessibility tests
+      working-directory: ./frontend
+      run: npm run test:accessibility
+      
+    - name: Build application
+      working-directory: ./frontend
+      run: npm run build
+      
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v9
+      with:
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+        urls: |
+          http://localhost:5181
+        budgetPath: ./frontend/.github/lighthouse-budget.json
+        configPath: ./frontend/.github/lighthouse-config.js
+        
+    - name: Analyze bundle size
+      working-directory: ./frontend
+      run: |
+        npm run build:analyze
+        # Check if bundle size exceeds limits
+        if [ $(stat -c%s "dist/assets/index-*.js" | head -1) -gt 200000 ]; then
+          echo "Main bundle exceeds 200KB limit"
+          exit 1
+        fi
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: frontend/dist/
+        
+  accessibility:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Run accessibility audit
+      working-directory: ./frontend
+      run: npm run test:a11y
+      
+    - name: Check color contrast
+      working-directory: ./frontend
+      run: npm run test:contrast
+      
+    - name: Verify ARIA attributes
+      working-directory: ./frontend
+      run: npm run test:aria
+      
+    - name: Test keyboard navigation
+      working-directory: ./frontend
+      run: npm run test:keyboard
+      
+  bundle-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+      
+    - name: Build with bundle analysis
+      working-directory: ./frontend
+      run: npm run build:analyze
+      
+    - name: Generate bundle report
+      working-directory: ./frontend
+      run: npx vite-bundle-visualizer
+      
+    - name: Upload bundle report
+      uses: actions/upload-artifact@v3
+      with:
+        name: bundle-report
+        path: frontend/dist/stats.html

@@ -1,0 +1,48 @@
+{
+  "budgets": [
+    {
+      "path": "/*.js",
+      "timings": [
+        {
+          "metric": "interactive",
+          "budget": 3800
+        },
+        {
+          "metric": "first-contentful-paint",
+          "budget": 1800
+        },
+        {
+          "metric": "largest-contentful-paint",
+          "budget": 2500
+        }
+      ]
+    },
+    {
+      "path": "/*.css",
+      "resourceSizes": [
+        {
+          "resourceType": "stylesheet",
+          "budget": 50
+        }
+      ]
+    },
+    {
+      "path": "/assets/index-*.js",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 200
+        }
+      ]
+    },
+    {
+      "path": "/assets/vendor-*.js",
+      "resourceSizes": [
+        {
+          "resourceType": "script",
+          "budget": 500
+        }
+      ]
+    }
+  ]
+}
