@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'api_service.dart';
 import 'sync_storage_service.dart';
+import '../models/sync_models.dart';
 
 class PullSyncService {
   static final PullSyncService _instance = PullSyncService._internal();
