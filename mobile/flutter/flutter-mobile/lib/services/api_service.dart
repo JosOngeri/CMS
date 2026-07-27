@@ -201,9 +201,15 @@ class ApiService {
       final response = await service._dio.post(
         '/api/auth/login',
         data: {
-          'email': identifier, // Use identifier as email for compatibility
+          'email': identifier, // Backend expects 'email' parameter
           'password': password,
         },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
       );
       
       debugPrint('=== API: Login response status: ${response.statusCode} ===');
@@ -221,6 +227,8 @@ class ApiService {
           // Store user data
           await _prefs.setString('user_data', jsonEncode(responseData['user']));
           
+          debugPrint('=== API: Login successful, token stored ===');
+          
           return {
             'success': true,
             'user': responseData['user'],
@@ -234,6 +242,7 @@ class ApiService {
           'token': response.data['token'] ?? response.data['accessToken'],
         };
       } else {
+        debugPrint('=== API: Login failed with status ${response.statusCode} ===');
         return {
           'success': false,
           'error': response.data['message'] ?? 'Login failed',
@@ -244,6 +253,7 @@ class ApiService {
       debugPrint('=== API: Login error type: ${e.type} ===');
       if (e.response != null) {
         debugPrint('=== API: Login error response: ${e.response?.data} ===');
+        debugPrint('=== API: Login error status: ${e.response?.statusCode} ===');
       }
       return {
         'success': false,

@@ -26,6 +26,11 @@ function csrfTokenMiddleware(req, res, next) {
     return next();
   }
 
+  // Skip CSRF for auth endpoints (mobile apps don't use CSRF)
+  if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
+    return next();
+  }
+
   // Validate CSRF token for state-changing requests
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   if (!validateCSRFToken(token)) {
