@@ -25,6 +25,79 @@
   --color-border:         #E8E4E0;   /* Soft warm gray - gentle separation */
   --color-divider:        #DAD6D2;   /* Divider with warmth */
   --color-overlay:        rgba(0,0,0,0.5);
+
+  /* Typography System */
+  --font-display: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  --font-body: 'Inter', 'Segoe UI', 'system-ui', '-apple-system', 'BlinkMacSystemFont', sans-serif;
+  --font-utility: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Type Scale - Standard Mode */
+  --font-size-base: 18px;
+  --font-size-display-xl: 48px;
+  --font-size-display-lg: 36px;
+  --font-size-display-md: 24px;
+  --font-size-display-sm: 20px;
+  --font-size-body-lg: 20px;
+  --font-size-body-md: 18px;
+  --font-size-body-sm: 16px;
+  --font-size-body-xs: 14px;
+  --font-size-caption-md: 14px;
+  --font-size-caption-sm: 12px;
+
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+  --line-height-loose: 1.8;
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-relaxed: 0.01em;
+  --letter-spacing-wide: 0.05em;
+
+  /* Font Weights */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing System */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+  --spacing-4xl: 96px;
+  --spacing-5xl: 128px;
+
+  /* Semantic Spacing */
+  --spacing-content-xs: 8px;
+  --spacing-content-sm: 16px;
+  --spacing-content-md: 24px;
+  --spacing-content-lg: 32px;
+  --spacing-content-xl: 48px;
+
+  --spacing-component-xs: 12px;
+  --spacing-component-sm: 16px;
+  --spacing-component-md: 24px;
+  --spacing-component-lg: 32px;
+  --spacing-component-xl: 48px;
+
+  --spacing-layout-xs: 16px;
+  --spacing-layout-sm: 24px;
+  --spacing-layout-md: 32px;
+  --spacing-layout-lg: 48px;
+  --spacing-layout-xl: 64px;
+  --spacing-layout-2xl: 96px;
+
+  /* Touch Targets */
+  --touch-target-minimum: 48px;
+  --touch-target-recommended: 56px;
+  --touch-target-large: 64px;
 }
 
 [data-theme='dark'] {
@@ -87,6 +160,63 @@
   --color-border:         #D8D4D0;
   --color-divider:        #CAC6C0;
   --color-overlay:        rgba(0,0,0,0.5);
+
+  /* Large Text Typography */
+  --font-size-base: 24px;
+  --font-size-display-xl: 60px;
+  --font-size-display-lg: 48px;
+  --font-size-display-md: 32px;
+  --font-size-display-sm: 28px;
+  --font-size-body-lg: 28px;
+  --font-size-body-md: 24px;
+  --font-size-body-sm: 20px;
+  --font-size-body-xs: 18px;
+  --font-size-caption-md: 18px;
+  --font-size-caption-sm: 16px;
+
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.7;
+  --line-height-loose: 1.9;
+
+  --letter-spacing-tight: -0.01em;
+  --letter-spacing-normal: 0.01em;
+  --letter-spacing-relaxed: 0.02em;
+  --letter-spacing-wide: 0.06em;
+
+  /* Large Text Spacing */
+  --spacing-xs: 6px;
+  --spacing-sm: 12px;
+  --spacing-md: 20px;
+  --spacing-lg: 28px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 56px;
+  --spacing-3xl: 72px;
+  --spacing-4xl: 104px;
+  --spacing-5xl: 136px;
+
+  --spacing-content-xs: 12px;
+  --spacing-content-sm: 20px;
+  --spacing-content-md: 28px;
+  --spacing-content-lg: 40px;
+  --spacing-content-xl: 56px;
+
+  --spacing-component-xs: 16px;
+  --spacing-component-sm: 20px;
+  --spacing-component-md: 28px;
+  --spacing-component-lg: 40px;
+  --spacing-component-xl: 56px;
+
+  --spacing-layout-xs: 20px;
+  --spacing-layout-sm: 28px;
+  --spacing-layout-md: 40px;
+  --spacing-layout-lg: 56px;
+  --spacing-layout-xl: 72px;
+  --spacing-layout-2xl: 104px;
+
+  --touch-target-minimum: 56px;
+  --touch-target-recommended: 64px;
+  --touch-target-large: 72px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
