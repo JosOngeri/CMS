@@ -304,7 +304,7 @@ class ApiService {
   Future<Map<String, dynamic>> getDashboardData() async {
     try {
       final service = await getInstance();
-      final response = await service._dio.get('/dashboard');
+      final response = await service._dio.get('/mobile/dashboard');
       
       if (response.statusCode == 200) {
         return {
@@ -366,7 +366,7 @@ class ApiService {
   Future<Map<String, dynamic>> getPaymentHistory() async {
     try {
       final service = await getInstance();
-      final response = await service._dio.get('/payments/history');
+      final response = await service._dio.get('/mobile/payments');
       
       if (response.statusCode == 200) {
         return {
@@ -396,7 +396,7 @@ class ApiService {
   Future<Map<String, dynamic>> getAnnouncements() async {
     try {
       final service = await getInstance();
-      final response = await service._dio.get('/announcements');
+      final response = await service._dio.get('/mobile/announcements');
       
       if (response.statusCode == 200) {
         return {
@@ -427,7 +427,7 @@ class ApiService {
     try {
       final service = await getInstance();
       final response = await service._dio.put(
-        '/profile',
+        '/auth/profile',
         data: profileData,
       );
       
