@@ -57,4 +57,7 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/verify-email', authController.verifyEmail);
 
+// Username validation (public endpoint for real-time validation)
+router.get('/check-username/:username', authController.checkUsernameAvailability);
+
 module.exports = router;

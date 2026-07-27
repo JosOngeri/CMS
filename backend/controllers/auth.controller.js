@@ -164,6 +164,14 @@ class AuthController extends BaseController {
         return ResponseHandler.error(res, 'Email already registered', 409);
       }
 
+      // Validate username uniqueness globally (across all churches)
+      if (username) {
+        const existingUsername = await UserRepository.findByUsernameGlobal(username);
+        if (existingUsername) {
+          return ResponseHandler.error(res, 'Username already taken. Please choose a different username.', 409);
+        }
+      }
+
       // Validate password strength
       const passwordValidation = validatePasswordStrength(password);
       if (!passwordValidation.isValid) {
@@ -580,123 +588,27 @@ class AuthController extends BaseController {
     }
   }
 
-  async enableMFA(req, res) {
+  async checkUsernameAvailability(req, res) {
     try {
-      const userId = req.user.id;
-
-      // Get user email
-      const email = await AuthRepository.getUserEmail(userId);
-
-      if (!email) {
-        return res.status(404).json({ success: false, error: 'User not found' });
+      const { username } = req.params;
+      
+      if (!username || username.length < 3) {
+        return res.json({
+          success: false,
+          available: false,
+          message: 'Username must be at least 3 characters'
+        });
       }
-
-      // Generate MFA secret
-      const secret = generateMFASecret(email);
-
-      // Store secret temporarily (not enabled yet)
-      await AuthRepository.updateMFASecret(userId, secret.base32);
-
-      // Log MFA setup initiation
-      await AuthRepository.logAuthAudit(userId, 'MFA_SETUP_INITIATED', JSON.stringify({ email }), req.ip, req.headers['user-agent']);
-
+      // Check username availability globally (across all churches)
+      const isAvailable = await UserRepository.isUsernameAvailable(username);
       res.json({
         success: true,
-        data: {
-          secret: secret.base32,
-          qrCode: generateMFAQRCode(secret),
-        },
+        available: isAvailable,
+        message: isAvailable ? 'Username is available' : 'Username is already taken'
       });
     } catch (error) {
-      this.logger.error('enableMFA', error);
-      res.status(500).json({ success: false, error: 'Failed to enable MFA' });
-    }
-  }
-
-  async verifyMFASetup(req, res) {
-    try {
-      const userId = req.user.id;
-      const { token } = req.body;
-
-      // Get user's MFA secret
-      const mfaSecret = await AuthRepository.getMFASecret(userId);
-
-      if (!mfaSecret) {
-        return res.status(400).json({ success: false, error: 'MFA not set up' });
-      }
-
-      // Verify token
-      const isValid = verifyMFAToken(mfaSecret, token);
-
-      if (!isValid) {
-        return res.status(400).json({ success: false, error: 'Invalid MFA token' });
-      }
-
-      // Enable MFA
-      await AuthRepository.enableMFA(userId);
-
-      // Log MFA enablement
-      await AuthRepository.logAuthAudit(userId, 'MFA_ENABLED', JSON.stringify({}), req.ip, req.headers['user-agent']);
-
-      res.json({
-        success: true,
-        message: 'MFA enabled successfully',
-      });
-    } catch (error) {
-      this.logger.error('verifyMFASetup', error);
-      res.status(500).json({ success: false, error: 'Failed to verify MFA setup' });
-    }
-  }
-
-  async disableMFA(req, res) {
-    try {
-      const userId = req.user.id;
-      const { password } = req.body;
-
-      // Verify password
-      const user = await UserRepository.findById(userId);
-
-      if (!user) {
-        return res.status(404).json({ success: false, error: 'User not found' });
-      }
-
-      const isValid = await comparePassword(password, user.password_hash);
-      if (!isValid) {
-        return res.status(400).json({ success: false, error: 'Invalid password' });
-      }
-
-      // Disable MFA
-      await AuthRepository.disableMFA(userId);
-
-      // Log MFA disablement
-      await AuthRepository.logAuthAudit(userId, 'MFA_DISABLED', JSON.stringify({}), req.ip, req.headers['user-agent']);
-
-      res.json({
-        success: true,
-        message: 'MFA disabled successfully',
-      });
-    } catch (error) {
-      this.logger.error('disableMFA', error);
-      res.status(500).json({ success: false, error: 'Failed to disable MFA' });
-    }
-  }
-
-  async getAuditLog(req, res) {
-    try {
-      const userId = req.user.id;
-      const { limit = 50, offset = 0 } = req.query;
-
-      const auditLog = await AuthRepository.getAuthAuditLog(userId, limit, offset);
-
-      res.json({
-        success: true,
-        data: auditLog,
-      });
-    } catch (error) {
-      this.logger.error('getAuditLog', error);
-      res.status(500).json({ success: false, error: 'Failed to fetch audit log' });
+      this.logger.error('checkUsernameAvailability', error);
+      res.status(500).json({ success: false, error: 'Failed to check username availability' });
     }
   }
 }
-
-module.exports = new AuthController();

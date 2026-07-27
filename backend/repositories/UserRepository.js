@@ -31,6 +31,27 @@ class UserRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  async findByUsernameGlobal(username) {
+    // Check username globally across all churches
+    const query = 'SELECT * FROM users WHERE username = $1';
+    const result = await this.pool.query(query, [username]);
+    return result.rows[0];
+  }
+
+  async isUsernameAvailable(username, excludeUserId = null) {
+    // Check if username is available globally
+    let query = 'SELECT id FROM users WHERE username = $1';
+    const params = [username];
+
+    if (excludeUserId) {
+      query += ' AND id != $2';
+      params.push(excludeUserId);
+    }
+
+    const result = await this.pool.query(query, params);
+    return result.rows.length === 0;
+  }
+
   async findByPhone(phone, churchId = null) {
     let query = 'SELECT * FROM users WHERE phone = $1 OR phone_number = $1';
     const params = [phone];
