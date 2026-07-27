@@ -105,7 +105,10 @@ const getBaseDomain = (origin) => {
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, Postman, etc.)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      logger.info('CORS allowed: No origin (mobile app/tool)');
+      return callback(null, true);
+    }
 
     // In development, allow any localhost origin AND IP addresses
     if (isDevelopment) {
@@ -129,6 +132,7 @@ app.use(cors({
     const baseDomain = getBaseDomain(origin);
     const allowedBaseDomains = [
       'kmaincms.org',
+      'josongeri.co.ke',
       process.env.BASE_DOMAIN,
       process.env.PRODUCTION_BASE_DOMAIN
     ].filter(Boolean);
@@ -154,7 +158,7 @@ app.use(cors({
     return callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'Accept', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'Accept', 'X-Requested-With', 'x-csrf-token'],
   credentials: true,
 }));
 

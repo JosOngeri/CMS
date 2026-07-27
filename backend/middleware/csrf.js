@@ -27,7 +27,7 @@ function csrfTokenMiddleware(req, res, next) {
   }
 
   // Skip CSRF for SMS auth endpoints (external API clients)
-  if (req.path.startsWith('/api/sms/auth')) {
+  if (req.path.startsWith('/api/sms/auth') || req.path.startsWith('/api/sms/sync')) {
     return next();
   }
 
