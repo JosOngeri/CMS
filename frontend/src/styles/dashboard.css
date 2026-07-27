@@ -16,6 +16,58 @@
   font-size: 1rem;
 }
 
+/* MemberDashboard-specific styles */
+.member-dashboard {
+  /* Simplified layout with generous spacing */
+  padding: var(--spacing-layout-md);
+}
+
+.member-dashboard .page-header {
+  margin-bottom: var(--spacing-section-md);
+}
+
+.member-dashboard .page-title {
+  font-size: var(--font-size-display-lg);
+  line-height: var(--line-height-tight);
+}
+
+.member-dashboard .page-subtitle {
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-normal);
+}
+
+/* Large text mode for MemberDashboard */
+.large-text .member-dashboard {
+  padding: var(--spacing-layout-lg);
+}
+
+.large-text .member-dashboard .page-header {
+  margin-bottom: var(--spacing-section-lg);
+}
+
+.large-text .member-dashboard .page-title {
+  font-size: var(--font-size-display-xl);
+  line-height: var(--line-height-tight);
+}
+
+.large-text .member-dashboard .page-subtitle {
+  font-size: var(--font-size-body-lg);
+  line-height: var(--line-height-normal);
+}
+
+/* High contrast mode for MemberDashboard */
+.high-contrast .member-dashboard {
+  padding: var(--spacing-layout-md);
+}
+
+.high-contrast .member-dashboard .page-title {
+  color: #000000;
+}
+
+.high-contrast .member-dashboard .page-subtitle {
+  color: #1A1A1A;
+}
+
 /* Stats Card Styles */
 .stat-card {
   display: flex;

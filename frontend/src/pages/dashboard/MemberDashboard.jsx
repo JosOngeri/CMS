@@ -9,8 +9,9 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import Card from '../../components/common/Card'
-import StatsCard from '../../components/common/StatsCard'
-import QuickActionsPanel from '../../components/common/QuickActionsPanel'
+import ChurchStatsCard from '../../components/dashboard/ChurchStatsCard'
+import ChurchQuickActions from '../../components/dashboard/ChurchQuickActions'
+import PersonalGrowthViz from '../../components/dashboard/PersonalGrowthViz'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -251,132 +252,102 @@ const MemberDashboard = () => {
         </div>
       </div>
 
-      {/* Personal Status */}
-      <Card>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <div>
-              <span className="text-sm text-[var(--color-textSecondary)]">Attendance Rate</span>
-              <span className="block text-sm font-medium text-green-600">{personalStatus.attendanceRate}%</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <DollarSign className="h-5 w-5 text-[var(--color-primary)]-600" />
-            <div>
-              <span className="text-sm text-[var(--color-textSecondary)]">Contribution Rate</span>
-              <span className="block text-sm font-medium text-[var(--color-primary)]-600">{personalStatus.contributionRate}%</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Heart className="h-5 w-5 text-purple-600" />
-            <div>
-              <span className="text-sm text-[var(--color-textSecondary)]">Activity Level</span>
-              <span className="block text-sm font-medium text-purple-600">{personalStatus.activityLevel}%</span>
-            </div>
-          </div>
-        </div>
-      </Card>
+      {/* Personal Growth Visualization - Hero Element */}
+      <PersonalGrowthViz 
+        growthData={{
+          attendanceRate: personalStatus.attendanceRate,
+          contributionRate: personalStatus.contributionRate,
+          activityLevel: personalStatus.activityLevel,
+          spiritualGrowth: Math.round((personalStatus.attendanceRate + personalStatus.contributionRate + personalStatus.activityLevel) / 3)
+        }}
+        engagementData={{
+          departmentsInvolved: stats.departmentAssignments,
+          eventsAttended: stats.upcomingEvents,
+          communityService: 0,
+          prayerRequests: 0
+        }}
+        journeyData={{
+          memberSince: user?.created_at || '2023-01-01',
+          milestones: [
+            { date: user?.created_at || '2023-01-01', title: 'Joined Church', type: 'milestone' }
+          ]
+        }}
+      />
 
-      {/* Tab Navigation */}
-      <div className="border-b border-[var(--color-border)]">
-        <nav className="flex space-x-8">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+      {/* Stats Grid with Church-Focused Design */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <ChurchStatsCard
+          title="Department Assignments"
+          value={stats.departmentAssignments}
+          change="Active departments"
+          changeType="neutral"
+          icon={Building}
+          statType="members"
+          linkTo="/departments/my"
+        />
+        <ChurchStatsCard
+          title="Pending Approvals"
+          value={stats.pendingApprovals}
+          change="Requires attention"
+          changeType="neutral"
+          icon={CheckSquare}
+          statType="default"
+          linkTo="/approvals/my"
+        />
+        <ChurchStatsCard
+          title="Upcoming Events"
+          value={stats.upcomingEvents}
+          change="Next event in 3 days"
+          changeType="neutral"
+          icon={Calendar}
+          statType="events"
+          linkTo="/events"
+        />
+        <ChurchStatsCard
+          title="Personal Contributions"
+          value={`KES ${stats.personalContributions.toLocaleString()}`}
+          change="This year total"
+          changeType="neutral"
+          icon={DollarSign}
+          statType="financial"
+          linkTo="/payments/my"
+        />
       </div>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <>
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatsCard
-              title="Department Assignments"
-              value={stats.departmentAssignments}
-              change="Active departments"
-              changeType="neutral"
-              icon={Building}
-              iconColor="bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600"
-              linkTo="/departments/my"
-            />
-            <StatsCard
-              title="Pending Approvals"
-              value={stats.pendingApprovals}
-              change="Requires attention"
-              changeType="neutral"
-              icon={CheckSquare}
-              iconColor="bg-yellow-100 text-yellow-600"
-              linkTo="/approvals/my"
-            />
-            <StatsCard
-              title="Upcoming Events"
-              value={stats.upcomingEvents}
-              change="Next event in 3 days"
-              changeType="neutral"
-              icon={Calendar}
-              iconColor="bg-green-100 text-green-600"
-              linkTo="/events"
-            />
-            <StatsCard
-              title="Personal Contributions"
-              value={`KES ${stats.personalContributions.toLocaleString()}`}
-              change="This year total"
-              changeType="neutral"
-              icon={DollarSign}
-              iconColor="bg-purple-100 text-purple-600"
-              linkTo="/payments/my"
-            />
-          </div>
+      {/* Church-Focused Quick Actions */}
+      <ChurchQuickActions />
 
-          {/* Quick Actions Grid */}
-          <QuickActionsPanel 
-            actions={quickActions}
-            title="Quick Actions"
-          />
-
-          {/* Recent Personal Activity Feed */}
-          <Card>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Recent Activity</h2>
-              <Link to="/activity" className="text-sm text-primary-600 hover:text-primary-700">
-                View all
-              </Link>
-            </div>
-            {recentActivities.length > 0 ? (
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${activity.color} bg-opacity-10`}>
-                      <activity.icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-[var(--color-text)]">{activity.title}</p>
-                      <p className="text-sm text-[var(--color-textSecondary)]">{activity.description}</p>
-                      <p className="text-xs text-[var(--color-textSecondary)] mt-1">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
+      {/* Recent Personal Activity Feed */}
+      <Card>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Activity</h2>
+          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+            View all
+          </Link>
+        </div>
+        {recentActivities.length > 0 ? (
+          <div className="space-y-4">
+            {recentActivities.map((activity) => (
+              <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
+                <div className={`p-2 rounded-lg ${activity.color} bg-opacity-10`}>
+                  <activity.icon className="h-4 w-4" aria-hidden="true" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[var(--color-text)]">{activity.title}</p>
+                  <p className="text-sm text-[var(--color-textSecondary)]">{activity.description}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">{activity.time}</p>
+                </div>
               </div>
-            ) : (
-              <EmptyState
-                icon={Heart}
-                title="No recent activity"
-                description="Your activities will appear here"
-              />
-            )}
-          </Card>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Heart}
+            title="No recent activity"
+            description="Your activities will appear here"
+          />
+        )}
+      </Card>
         </>
       )}
 
