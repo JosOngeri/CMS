@@ -9,7 +9,7 @@ class AppConfig {
   // Production (CMS) - configurable via environment variable
   // Set API_URL environment variable to override this default
   static String get _prodApiUrl => 
-      const String.fromEnvironment('API_URL', defaultValue: 'http://192.168.1.100:5005/api'); // Use local IP for testing
+      const String.fromEnvironment('API_URL', defaultValue: 'https://cms.josongeri.co.ke/api');
   
   // Current API URL based on environment and platform
   static String get apiUrl {
