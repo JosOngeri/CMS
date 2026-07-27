@@ -194,12 +194,12 @@ class ApiService {
   Future<Map<String, dynamic>> login(String identifier, String password) async {
     try {
       debugPrint('=== API: Attempting login ===');
-      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/api/auth/login ===');
+      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/auth/login ===');
       debugPrint('=== API: Identifier (username/email/phone): $identifier ===');
       
       final service = await getInstance();
       final response = await service._dio.post(
-        '/api/auth/login',
+        '/auth/login',
         data: {
           'email': identifier, // Backend expects 'email' parameter
           'password': password,
