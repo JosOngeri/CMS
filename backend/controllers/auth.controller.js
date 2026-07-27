@@ -611,6 +611,86 @@ class AuthController extends BaseController {
       res.status(500).json({ success: false, error: 'Failed to check username availability' });
     }
   }
+
+  async enableMFA(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      // Generate MFA secret
+      const secret = generateMFASecret();
+      const qrCode = await generateMFAQRCode(secret, user.email);
+      
+      // Store MFA secret (not yet verified)
+      await AuthRepository.storeMFASecret(userId, secret, false);
+      
+      res.json({
+        success: true,
+        data: { secret, qrCode }
+      });
+    } catch (error) {
+      this.logger.error('enableMFA', error);
+      res.status(500).json({ success: false, error: 'Failed to enable MFA' });
+    }
+  }
+
+  async verifyMFASetup(req, res) {
+    try {
+      const { token } = req.body;
+      const userId = req.user.id;
+      
+      // Get stored MFA secret
+      const mfaData = await AuthRepository.getMFASecret(userId);
+      
+      if (!mfaData) {
+        return res.status(400).json({ success: false, error: 'MFA not enabled' });
+      }
+      
+      // Verify token
+      const isValid = await verifyMFAToken(token, mfaData.secret);
+      
+      if (isValid) {
+        // Mark MFA as verified
+        await AuthRepository.verifyMFA(userId);
+        res.json({ success: true, message: 'MFA verified successfully' });
+      } else {
+        res.status(400).json({ success: false, error: 'Invalid MFA token' });
+      }
+    } catch (error) {
+      this.logger.error('verifyMFASetup', error);
+      res.status(500).json({ success: false, error: 'Failed to verify MFA setup' });
+    }
+  }
+
+  async disableMFA(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      // Remove MFA secret
+      await AuthRepository.removeMFASecret(userId);
+      
+      res.json({ success: true, message: 'MFA disabled successfully' });
+    } catch (error) {
+      this.logger.error('disableMFA', error);
+      res.status(500).json({ success: false, error: 'Failed to disable MFA' });
+    }
+  }
+
+  async getAuditLog(req, res) {
+    try {
+      const userId = req.user.id;
+      
+      // Get audit log for user
+      const auditLog = await AuthRepository.getUserAuditLog(userId);
+      
+      res.json({
+        success: true,
+        data: auditLog
+      });
+    } catch (error) {
+      this.logger.error('getAuditLog', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch audit log' });
+    }
+  }
 }
 
 module.exports = new AuthController();
