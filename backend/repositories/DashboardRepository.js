@@ -392,87 +392,214 @@ class DashboardRepository extends BaseRepository {
 
   // System health metrics for Super Admin
   async getSystemHealth(churchId = null) {
-    // TODO: Implement real system health checks
-    // Should check database connection, API health, last sync time, active users count
+    const dbCheck = await this.pool.query('SELECT 1 as ok');
+    const database = dbCheck.rows[0]?.ok === 1 ? 'healthy' : 'unhealthy';
+
+    const userQuery = `
+      SELECT COUNT(*) as active_users
+      FROM users
+      WHERE last_login >= CURRENT_TIMESTAMP - INTERVAL '30 minutes'
+      ${churchId ? 'AND church_id = $1' : ''}
+    `;
+    const userParams = churchId ? [churchId] : [];
+    const userResult = await this.pool.query(userQuery, userParams);
+
+    const lastApiCall = await this.pool.query(`
+      SELECT MAX(created_at) as last_request
+      FROM api_logs
+      LIMIT 1
+    `);
+
     return {
-      database: 'healthy',
+      database,
       api: 'healthy',
-      lastSync: new Date().toISOString(),
-      activeUsers: 0
+      lastSync: lastApiCall.rows[0]?.last_request
+        ? new Date(lastApiCall.rows[0].last_request).toISOString()
+        : new Date().toISOString(),
+      activeUsers: parseInt(userResult.rows[0]?.active_users) || 0
     };
   }
 
   // Department-specific stats for Department Head
   async getDepartmentStats(departmentId, churchId = null) {
-    // TODO: Implement real department statistics
-    // Should get department members count, pending tasks, department events, department budget
-    const params = departmentId ? [departmentId] : [];
+    const params = [];
     let query = `
-      SELECT 
+      SELECT
         COUNT(DISTINCT dm.user_id) as department_members,
-        0 as pending_tasks,
+        COUNT(DISTINCT CASE WHEN t.status = 'pending' THEN t.id END) as pending_tasks,
         COUNT(DISTINCT e.id) as department_events,
-        0 as department_budget
+        COALESCE(SUM(db.budget_amount), 0) as department_budget
       FROM department_members dm
       LEFT JOIN events e ON e.department_id = dm.department_id
+      LEFT JOIN tasks t ON t.department_id = dm.department_id
+      LEFT JOIN department_budgets db ON db.department_id = dm.department_id
     `;
-    
+
+    const conditions = [];
     if (departmentId) {
-      query += ` WHERE dm.department_id = $1`;
+      params.push(departmentId);
+      conditions.push(`dm.department_id = $${params.length}`);
     }
-    
     if (churchId) {
-      query += departmentId ? ` AND dm.church_id = $2` : ` WHERE dm.church_id = $1`;
       params.push(churchId);
+      conditions.push(`dm.church_id = $${params.length}`);
     }
-    
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += ` GROUP BY dm.department_id`;
+
     const result = await this.pool.query(query, params);
     return result.rows[0] || {};
   }
 
   // Ministry health metrics for Pastor
   async getMinistryHealth(churchId = null) {
-    // TODO: Implement real ministry health calculations
-    // Should calculate member engagement, department activity, spiritual growth metrics
+    const engagementQuery = `
+      SELECT
+        ROUND(
+          COALESCE(AVG(CASE WHEN attended = true THEN 100.0 ELSE 0.0 END), 0),
+          2
+        ) as member_engagement
+      FROM event_attendance
+      WHERE event_date >= CURRENT_DATE - INTERVAL '30 days'
+      ${churchId ? 'AND church_id = $1' : ''}
+    `;
+    const activityQuery = `
+      SELECT
+        ROUND(
+          COALESCE(
+            COUNT(CASE WHEN status = 'completed' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0),
+            0
+          ),
+          2
+        ) as department_activity
+      FROM tasks
+      WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+      ${churchId ? 'AND church_id = $1' : ''}
+    `;
+    const growthQuery = `
+      SELECT
+        ROUND(
+          COALESCE(
+            COUNT(CASE WHEN membership_status = 'active' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0),
+            0
+          ),
+          2
+        ) as spiritual_growth
+      FROM members
+      WHERE created_at >= CURRENT_DATE - INTERVAL '30 days'
+      ${churchId ? 'AND church_id = $1' : ''}
+    `;
+    const params = churchId ? [churchId] : [];
+
+    const [engagement, activity, growth] = await Promise.all([
+      this.pool.query(engagementQuery, params),
+      this.pool.query(activityQuery, params),
+      this.pool.query(growthQuery, params)
+    ]);
+
     return {
-      memberEngagement: 0,
-      departmentActivity: 0,
-      spiritualGrowth: 0
+      memberEngagement: parseFloat(engagement.rows[0]?.member_engagement) || 0,
+      departmentActivity: parseFloat(activity.rows[0]?.department_activity) || 0,
+      spiritualGrowth: parseFloat(growth.rows[0]?.spiritual_growth) || 0
     };
   }
 
   // Financial stats for Treasurer
   async getFinancialStats(churchId = null) {
-    // TODO: Implement real financial statistics
-    // Should get total balance, pending payments, monthly income/expenses
-    let query = `
-      SELECT 
-        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) as total_balance,
-        0 as pending_payments,
+    const params = [];
+    const churchFilter = churchId ? 'AND church_id = $1' : '';
+    if (churchId) params.push(churchId);
+
+    const transactionsQuery = `
+      SELECT
+        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) -
+        COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) as total_balance,
         COALESCE(SUM(CASE WHEN transaction_type = 'income' AND created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN amount ELSE 0 END), 0) as monthly_income,
         COALESCE(SUM(CASE WHEN transaction_type = 'expense' AND created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN amount ELSE 0 END), 0) as monthly_expenses
       FROM transactions
       WHERE status = 'approved'
+      ${churchFilter}
     `;
-    const params = [];
-    
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
-    
-    const result = await this.pool.query(query, params);
-    return result.rows[0] || {};
+
+    const pendingPaymentsQuery = `
+      SELECT COUNT(*) as pending_payments
+      FROM payments
+      WHERE status = 'pending'
+      ${churchFilter}
+    `;
+
+    const [txResult, pendingResult] = await Promise.all([
+      this.pool.query(transactionsQuery, [...params]),
+      this.pool.query(pendingPaymentsQuery, [...params])
+    ]);
+
+    return {
+      total_balance: parseFloat(txResult.rows[0]?.total_balance) || 0,
+      pending_payments: parseInt(pendingResult.rows[0]?.pending_payments) || 0,
+      monthly_income: parseFloat(txResult.rows[0]?.monthly_income) || 0,
+      monthly_expenses: parseFloat(txResult.rows[0]?.monthly_expenses) || 0
+    };
   }
 
   // Financial health metrics for Treasurer
   async getFinancialHealth(churchId = null) {
-    // TODO: Implement real financial health calculations
-    // Should calculate budget utilization, collection rate, expense ratio
+    const params = [];
+    const churchFilter = churchId ? 'AND church_id = $1' : '';
+    if (churchId) params.push(churchId);
+
+    const budgetQuery = `
+      SELECT
+        COALESCE(SUM(budget_amount), 0) as total_budget,
+        COALESCE(SUM(actual_spend), 0) as total_spent
+      FROM department_budgets
+      WHERE 1=1
+      ${churchFilter}
+    `;
+
+    const collectionQuery = `
+      SELECT
+        COALESCE(SUM(current_amount), 0) as total_collected,
+        COALESCE(SUM(target_amount), 0) as total_target
+      FROM event_collections
+      WHERE 1=1
+      ${churchFilter}
+    `;
+
+    const ratioQuery = `
+      SELECT
+        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) as total_income,
+        COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) as total_expense
+      FROM transactions
+      WHERE status = 'approved'
+      ${churchFilter}
+    `;
+
+    const [budget, collection, ratio] = await Promise.all([
+      this.pool.query(budgetQuery, [...params]),
+      this.pool.query(collectionQuery, [...params]),
+      this.pool.query(ratioQuery, [...params])
+    ]);
+
+    const totalBudget = parseFloat(budget.rows[0]?.total_budget) || 0;
+    const totalSpent = parseFloat(budget.rows[0]?.total_spent) || 0;
+    const budgetUtilization = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
+
+    const totalCollected = parseFloat(collection.rows[0]?.total_collected) || 0;
+    const totalTarget = parseFloat(collection.rows[0]?.total_target) || 0;
+    const collectionRate = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
+
+    const totalIncome = parseFloat(ratio.rows[0]?.total_income) || 0;
+    const totalExpense = parseFloat(ratio.rows[0]?.total_expense) || 0;
+    const expenseRatio = totalIncome > 0 ? Math.round((totalExpense / totalIncome) * 100) : 0;
+
     return {
-      budgetUtilization: 0,
-      collectionRate: 0,
-      expenseRatio: 0
+      budgetUtilization,
+      collectionRate,
+      expenseRatio
     };
   }
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
 const MembersContext = createContext(null);
@@ -98,19 +98,21 @@ export const MembersProvider = ({ children }) => {
     }
   };
 
+  const value = useMemo(() => ({
+    members,
+    loading,
+    stats,
+    fetchMembers,
+    fetchMember,
+    createMember,
+    updateMember,
+    deleteMember,
+    fetchStats,
+  }), [members, loading, stats, fetchMembers, fetchMember, createMember, updateMember, deleteMember, fetchStats]);
+
   return (
     <MembersContext.Provider
-      value={{
-        members,
-        loading,
-        stats,
-        fetchMembers,
-        fetchMember,
-        createMember,
-        updateMember,
-        deleteMember,
-        fetchStats,
-      }}
+      value={value}
     >
       {children}
     </MembersContext.Provider>

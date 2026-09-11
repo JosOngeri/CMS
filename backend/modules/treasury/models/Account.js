@@ -17,6 +17,7 @@ class Account {
     this.description = data.description || '';
     this.is_active = data.is_active !== undefined ? data.is_active : true;
     this.balance = data.balance || 0;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -59,7 +60,8 @@ class Account {
       fund_id: this.fund_id,
       description: this.description,
       is_active: this.is_active,
-      balance: this.balance
+      balance: this.balance,
+      church_id: this.church_id
     };
   }
 

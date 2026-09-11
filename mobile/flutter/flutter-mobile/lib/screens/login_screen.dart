@@ -329,6 +329,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     
                     const SizedBox(height: 16),
+
+                    // Server URL configuration
+                    TextButton.icon(
+                      onPressed: () => context.go('/server-url'),
+                      icon: const Icon(Icons.settings),
+                      label: const Text('Configure Server URL'),
+                    ),
+
+                    const SizedBox(height: 16),
                     
                     // Biometric Login Button (only show if available)
                     if (_isBiometricAvailable)

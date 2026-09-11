@@ -5,7 +5,7 @@
  */
 
 const request = require('supertest');
-const app = require('../server');
+const { app } = require('../../server');
 
 describe('Critical User Workflows E2E Tests', () => {
   let authToken;

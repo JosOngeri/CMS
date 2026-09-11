@@ -117,36 +117,11 @@ const commonValidations = {
  * Sanitization middleware to prevent XSS attacks
  * Uses express-validator's native sanitizers for robust XSS prevention
  */
-const sanitizeInput = (req, res, next) => {
-  const sanitizeString = (str) => {
-    // Use express-validator's native sanitizers
-    let sanitized = str.trim().escape();
-    // Strip JavaScript protocol URIs and event handlers
-    sanitized = sanitized
-      .replace(/javascript:/gi, '')
-      .replace(/onerror=/gi, '')
-      .replace(/onload=/gi, '')
-      .replace(/onclick=/gi, '')
-      .replace(/onmouseover=/gi, '');
-    return sanitized;
-  };
-
-  if (req.body) {
-    for (const key in req.body) {
-      if (typeof req.body[key] === 'string') {
-        req.body[key] = sanitizeString(req.body[key]);
-      }
-    }
-  }
-  if (req.query) {
-    for (const key in req.query) {
-      if (typeof req.query[key] === 'string') {
-        req.query[key] = sanitizeString(req.query[key]);
-      }
-    }
-  }
-  next();
-};
+const sanitizeInput = [
+  body('*').trim().escape(),
+  query('*').trim().escape(),
+  (req, res, next) => next()
+];
 
 /**
  * Length validation helper

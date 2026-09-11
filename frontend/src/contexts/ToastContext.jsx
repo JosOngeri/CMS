@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useMemo } from 'react';
 
 const ToastContext = createContext(null);
 
@@ -63,8 +63,10 @@ export const ToastProvider = ({ children }) => {
     }
   };
 
+  const value = useMemo(() => ({ toasts, success, error, info, warning, clearAll }), [toasts, success, error, info, warning, clearAll]);
+
   return (
-    <ToastContext.Provider value={{ toasts, success, error, info, warning, clearAll }}>
+    <ToastContext.Provider value={value}>
       {children}
       <div
         className={`fixed z-50 ${getPositionClasses('top-right')}`}

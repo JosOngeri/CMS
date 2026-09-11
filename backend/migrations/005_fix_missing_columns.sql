@@ -1,3 +1,5 @@
+-- DEPRECATED: Superseded by 007_auth_tables.sql, 010_documents_schema.sql, and 022_add_missing_church_id.sql.
+-- Kept for audit trail only. The statements below are idempotent and safe to re-run.
 -- Fix missing columns in existing tables
 
 -- Add 'used' column to refresh_tokens table if it doesn't exist

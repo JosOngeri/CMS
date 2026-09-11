@@ -12,8 +12,8 @@ class HybridSMS {
     this.providers = new Map();
     this.defaultProvider = null;
     this.io = null; // Will be set via setIo method
-    // Don't auto-load providers to avoid startup errors
-    // this.loadProviders();
+    // Load providers asynchronously; errors are handled gracefully
+    this.loadProviders().catch(err => logger.warn('hybridSMS provider auto-load skipped:', err.message));
   }
 
   setIo(io) {
@@ -89,7 +89,8 @@ class HybridSMS {
     const recipientCount = recipients.length;
 
     // Determine routing strategy
-    if (recipientCount < 400) {
+    const smallBatchThreshold = parseInt(process.env.SMS_SMALL_BATCH_THRESHOLD, 10) || 400;
+    if (recipientCount < smallBatchThreshold) {
       // Small batch: Use JOSms via WebSocket
       return this.sendViaJOSms(payload);
     } else {

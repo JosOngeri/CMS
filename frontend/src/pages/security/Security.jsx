@@ -11,17 +11,7 @@ const Security = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  // Mock security logs
-  const mockLogs = [
-    { id: 1, action: 'LOGIN_SUCCESS', user: 'admin@sda.org', ip: '192.168.1.100', timestamp: '2026-06-18 14:32:15', status: 'success' },
-    { id: 2, action: 'LOGIN_FAILED', user: 'unknown@test.com', ip: '192.168.1.105', timestamp: '2026-06-18 14:30:22', status: 'failed' },
-    { id: 3, action: 'PASSWORD_CHANGE', user: 'pastor@sda.org', ip: '192.168.1.102', timestamp: '2026-06-18 14:15:00', status: 'success' },
-    { id: 4, action: 'ROLE_UPDATE', user: 'admin@sda.org', ip: '192.168.1.100', timestamp: '2026-06-18 13:45:30', status: 'success' },
-    { id: 5, action: 'LOGIN_SUCCESS', user: 'elder@sda.org', ip: '192.168.1.103', timestamp: '2026-06-18 13:30:00', status: 'success' },
-    { id: 6, action: 'UNAUTHORIZED_ACCESS', user: 'unknown', ip: '192.168.1.200', timestamp: '2026-06-18 12:15:45', status: 'failed' },
-    { id: 7, action: 'API_ACCESS', user: 'system', ip: '127.0.0.1', timestamp: '2026-06-18 12:00:00', status: 'success' },
-    { id: 8, action: 'LOGIN_SUCCESS', user: 'treasurer@sda.org', ip: '192.168.1.104', timestamp: '2026-06-18 11:45:00', status: 'success' },
-  ];
+
 
   const [securitySettings, setSecuritySettings] = useState({
     twoFactorAuth: false,
@@ -36,10 +26,11 @@ const Security = () => {
 
   const fetchLogs = async () => {
     try {
-      const response = await api.get('/security/logs');
-      setLogs(response.data.logs || mockLogs);
+      const response = await api.get('/api/audit-logs?limit=50');
+      setLogs(response.data?.data?.logs || response.data?.data || []);
     } catch (error) {
-      setLogs(mockLogs);
+      toast.error('Failed to load security logs');
+      setLogs([]);
     } finally {
       setLoading(false);
     }

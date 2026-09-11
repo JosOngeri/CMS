@@ -460,6 +460,59 @@ class ReportsRepository extends BaseRepository {
     );
     return result.rows;
   }
+
+  async getReportTemplates(churchId = null) {
+    try {
+      const result = await this.pool.query(
+        `SELECT *
+         FROM report_templates
+         WHERE church_id = $1 OR church_id IS NULL
+         ORDER BY name`,
+        [churchId]
+      );
+      if (result.rows.length > 0) {
+        return result.rows;
+      }
+    } catch (error) {
+      // report_templates table may not exist; use fallback defaults
+    }
+
+    return [
+      {
+        id: 'weekly_financial',
+        name: 'Weekly Financial Report',
+        description: 'Summary of weekly income and expenses',
+        dataSource: 'payments',
+        scheduleConfig: 'weekly',
+        reportConfig: {
+          columns: ['id', 'amount', 'payment_date', 'status', 'payment_method'],
+          filters: []
+        }
+      },
+      {
+        id: 'monthly_attendance',
+        name: 'Monthly Attendance Report',
+        description: 'Monthly member attendance summary',
+        dataSource: 'members',
+        scheduleConfig: 'monthly',
+        reportConfig: {
+          columns: ['id', 'first_name', 'last_name', 'email', 'phone', 'joined_date'],
+          filters: []
+        }
+      },
+      {
+        id: 'daily_approvals',
+        name: 'Daily Approval Summary',
+        description: 'Daily approval requests status',
+        dataSource: 'approvals',
+        scheduleConfig: 'daily',
+        reportConfig: {
+          columns: ['id', 'title', 'status', 'priority', 'created_at'],
+          filters: []
+        }
+      }
+    ];
+  }
 }
 
 module.exports = new ReportsRepository();

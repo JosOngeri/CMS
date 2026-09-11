@@ -60,6 +60,10 @@ class ApiService {
   final SharedPreferences _prefs;
   
   Dio get dio => _dio;
+
+  void updateBaseUrl(String url) {
+    _dio.options.baseUrl = url;
+  }
   
   ApiService._(this._dio, this._prefs);
   

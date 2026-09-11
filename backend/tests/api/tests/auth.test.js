@@ -30,17 +30,17 @@ jest.mock('../../../config/database', () => ({
   query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
 }));
 
-jest.mock('../../utils/emailService.js', () => ({
+jest.mock('../../../utils/emailService.js', () => ({
   sendEmail: jest.fn().mockResolvedValue({ sent: true }),
 }));
 
 // -- Imports -------------------------------------------------------------------
 const request  = require('supertest');
 const bcrypt   = require('bcryptjs');
-const app      = require('../../server');
-const db       = require('../../config/database');
-const { sendEmail } = require('../../utils/emailService');
-const { createAdminToken, createMemberToken, seedTestUser, TEST_UUIDS } = require('../setup/test-helpers');
+const app      = require('../../../server');
+const db       = require('../../../config/database');
+const { sendEmail } = require('../../../utils/emailService');
+const { createAdminToken, createMemberToken, seedTestUser, TEST_UUIDS } = require('../../setup/test-helpers');
 
 // -- Pre-compute a real bcrypt hash so bcrypt.compare works correctly ----------
 // Cost factor 4 = very fast (~5ms) while still being real bcrypt

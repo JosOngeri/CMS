@@ -25,6 +25,7 @@ class Contribution {
     this.batch_id = data.batch_id || null;
     this.entered_by = data.entered_by || null;
     this.entered_by_name = data.entered_by_name || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -69,7 +70,8 @@ class Contribution {
       acknowledged: this.acknowledged,
       acknowledged_at: this.acknowledged_at,
       batch_id: this.batch_id,
-      entered_by: this.entered_by
+      entered_by: this.entered_by,
+      church_id: this.church_id
     };
   }
 

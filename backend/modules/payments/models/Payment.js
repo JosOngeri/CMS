@@ -14,6 +14,7 @@ class Payment {
     this.transaction_id = data.transaction_id || null;
     this.mpesa_receipt_number = data.mpesa_receipt_number || null;
     this.payment_date = data.payment_date || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     this.payment_items = data.payment_items || [];
@@ -76,7 +77,8 @@ class Payment {
       status: this.status,
       transaction_id: this.transaction_id,
       mpesa_receipt_number: this.mpesa_receipt_number,
-      payment_date: this.payment_date
+      payment_date: this.payment_date,
+      church_id: this.church_id
     };
   }
 

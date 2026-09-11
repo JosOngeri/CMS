@@ -1,3 +1,5 @@
+-- DEPRECATED: Superseded by backend/migrations/004_gallery_schema.sql.
+-- Kept for audit trail only. The statements below are idempotent and safe to re-run.
 -- Create gallery_photos table for storing photo metadata
 CREATE TABLE IF NOT EXISTS gallery_photos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

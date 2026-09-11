@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useMemo } from 'react'
 import { useAuth } from './AuthContext'
 
 const PaletteContext = createContext()
@@ -87,7 +87,7 @@ export const PaletteProvider = ({ children }) => {
     setEditMode(prev => !prev)
   }
 
-  const value = {
+  const value = useMemo(() => ({
     currentPalette,
     palettes,
     loading,
@@ -96,7 +96,7 @@ export const PaletteProvider = ({ children }) => {
     toggleEditMode,
     applyPalette,
     refetchPalettes: fetchPalettes
-  }
+  }), [currentPalette, palettes, loading, editMode, setEditMode, toggleEditMode, applyPalette, fetchPalettes])
 
   return (
     <PaletteContext.Provider value={value}>

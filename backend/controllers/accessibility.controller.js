@@ -1,7 +1,6 @@
 const BaseController = require('./BaseController');
 const AccessibilityRepository = require('../repositories/AccessibilityRepository');
 const AccessibilityService = require('../services/AccessibilityService');
-const ResponseHandler = require('../utils/ResponseHandler');
 const { createLogger } = require('../helpers/controllerLogger');
 
 /**
@@ -23,10 +22,10 @@ class AccessibilityController extends BaseController {
   async getSettings(req, res) {
     try {
       const settings = await AccessibilityRepository.getSettings();
-      return ResponseHandler.success(res, { settings });
+      return this.success(res, { settings });
     } catch (error) {
       this.logger.error('getSettings', error);
-      return ResponseHandler.error(res, 'Failed to fetch settings');
+      return this.error(res, 'Failed to fetch settings');
     }
   }
 
@@ -50,10 +49,10 @@ class AccessibilityController extends BaseController {
       await AccessibilityRepository.updateSettings({
         highContrast, reducedMotion, textSize, screenReader, keyboardNavigation, focusIndicators, skipLinks
       });
-      return ResponseHandler.success(res, null, 'Settings updated successfully');
+      return this.success(res, {}, 'Settings updated successfully');
     } catch (error) {
       this.logger.error('updateSettings', error);
-      return ResponseHandler.error(res, 'Failed to update settings');
+      return this.error(res, 'Failed to update settings');
     }
   }
 
@@ -69,19 +68,19 @@ class AccessibilityController extends BaseController {
   async audit(req, res) {
     try {
       // Check RBAC - only admins can run accessibility audits
-      if (!AccessibilityService.canRunAudit(req.user)) {
-        return ResponseHandler.forbidden(res, 'Admin access required to run accessibility audits');
+      if (!this.isAdmin(req.user)) {
+        return this.forbidden(res, 'Admin access required to run accessibility audits');
       }
 
       const { url, html } = req.body;
-      
+
       // Perform actual accessibility audit using service
       const results = await AccessibilityService.performAudit(url, html);
 
-      return ResponseHandler.success(res, { results }, 'Accessibility audit completed');
+      return this.success(res, { results }, 'Accessibility audit completed');
     } catch (error) {
       this.logger.error('audit', error);
-      return ResponseHandler.error(res, 'Failed to run accessibility audit');
+      return this.error(res, 'Failed to run accessibility audit');
     }
   }
 }

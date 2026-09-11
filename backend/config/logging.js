@@ -11,10 +11,17 @@ const logger = pino({
     paths: [
       'password',
       'token',
+      'tokens',
       'authorization',
+      'accessToken',
+      'refreshToken',
+      'mfaToken',
       'email',
       'req.headers.authorization',
       'req.headers.cookie',
+      'req.headers["x-auth-token"]',
+      'req.body.password',
+      'req.body.email',
       'res.headers["set-cookie"]'
     ],
     remove: true

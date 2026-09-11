@@ -47,3 +47,9 @@ CREATE INDEX IF NOT EXISTS idx_announcements_public_created ON announcements(is_
 CREATE INDEX IF NOT EXISTS idx_events_public_date ON events(is_public, event_date);
 CREATE INDEX IF NOT EXISTS idx_payments_member_status ON payments(member_id, status);
 CREATE INDEX IF NOT EXISTS idx_users_active_created ON users(is_active, created_at DESC);
+
+-- GIN indexes for JSONB search
+CREATE INDEX IF NOT EXISTS idx_auth_audit_log_details_gin ON auth_audit_log USING gin(details);
+CREATE INDEX IF NOT EXISTS idx_payment_audit_log_values_gin ON payment_audit_log USING gin(old_values, new_values);
+CREATE INDEX IF NOT EXISTS idx_settings_validation_rules_gin ON settings USING gin(validation_rules);
+CREATE INDEX IF NOT EXISTS idx_sms_templates_merge_fields_gin ON sms_templates USING gin(merge_fields);

@@ -1,5 +1,6 @@
 const DepartmentRepository = require('../repositories/DepartmentRepository');
 const BaseController = require('./BaseController');
+const NotificationService = require('../services/notificationService');
 const { createLogger } = require('../helpers/controllerLogger');
 const multer = require('multer');
 const path = require('path');
@@ -565,18 +566,25 @@ class DepartmentController extends BaseController {
     }
   }
 
-  // Helper function to notify department members (placeholder for notification system)
+  // Helper function to notify department members via real-time notifications
   async notifyDepartmentMembers(departmentId, type, data) {
     try {
-      // In a real implementation, this would send notifications via:
-      // - Email notifications
-      // - Push notifications for mobile app
-      // - SMS notifications
-      // - In-app notifications
+      const members = await DepartmentRepository.getMembers(departmentId);
+      const title = data?.title || `New ${type}`;
+      const message = data?.message || `A new ${type} has been posted in your department.`;
+      const notification = {
+        title,
+        message,
+        type,
+        metadata: { departmentId, ...data },
+        createdAt: new Date().toISOString()
+      };
 
-      this.logger.debug('notifyDepartmentMembers', { departmentId, type, data });
+      for (const member of members) {
+        await NotificationService.sendRealTimeNotification(member.id, notification);
+      }
 
-      // For now, just log the notification
+      this.logger.info('notifyDepartmentMembers', { departmentId, type, recipients: members.length });
       return true;
     } catch (error) {
       this.logger.error('notifyDepartmentMembers', error);

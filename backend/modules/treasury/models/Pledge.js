@@ -25,6 +25,7 @@ class Pledge {
     this.reminder_sent = data.reminder_sent || false;
     this.reminder_sent_at = data.reminder_sent_at || null;
     this.created_by = data.created_by || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -71,7 +72,8 @@ class Pledge {
       notes: this.notes,
       reminder_sent: this.reminder_sent,
       reminder_sent_at: this.reminder_sent_at,
-      created_by: this.created_by
+      created_by: this.created_by,
+      church_id: this.church_id
     };
   }
 
@@ -93,6 +95,9 @@ class Pledge {
   }
 
   recordPayment(amount) {
+    if (this.amount_paid + amount > this.total_amount) {
+      throw new Error(`Payment of ${amount} would exceed pledge total of ${this.total_amount}`);
+    }
     this.amount_paid += amount;
     if (this.isComplete()) {
       this.status = 'completed';

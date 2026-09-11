@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 
 const SettingsContext = createContext(null);
@@ -36,8 +36,10 @@ export const SettingsProvider = ({ children }) => {
     return settings[key] !== undefined ? settings[key] : defaultValue;
   };
 
+  const value = useMemo(() => ({ settings, loading, updateSettings, getSetting, fetchPublicSettings }), [settings, loading, updateSettings, getSetting, fetchPublicSettings]);
+
   return (
-    <SettingsContext.Provider value={{ settings, loading, updateSettings, getSetting, fetchPublicSettings }}>
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );

@@ -88,13 +88,10 @@ class SMSController extends BaseController {
       const totalBalance = providers.reduce((sum, provider) => sum + (parseFloat(provider.balance) || 0), 0);
       const currency = providers.length > 0 ? providers[0].currency : 'KES';
 
-      res.json({
-        success: true,
-        data: {
-          balance: totalBalance,
-          currency: currency,
-          message: totalBalance > 0 ? 'SMS balance available' : 'Low SMS balance'
-        }
+      this.success(res, {
+        balance: totalBalance,
+        currency: currency,
+        message: totalBalance > 0 ? 'SMS balance available' : 'Low SMS balance'
       });
     } catch (error) {
       this.logger.error('getSMSBalance', error);
@@ -158,7 +155,7 @@ class SMSController extends BaseController {
       const churchId = req.user.church_id;
 
       await SMSRepository.updateCampaignStatus(campaignId, 'active', churchId);
-      res.json({ success: true });
+      this.success(res, {}, 'Campaign activated successfully');
     } catch (error) {
       this.logger.error('sendCampaign', error);
       this.error(res, 'Failed to send campaign');
@@ -249,15 +246,12 @@ class SMSController extends BaseController {
         });
       }
 
-      res.json({
-        success: true,
-        data: {
-          batches: batchResults,
-          totalRecipients: filteredRecipients.length,
-          optedOutCount: optedOutCount,
-          batchCount: batches.length,
-          status: 'pending'
-        }
+      this.success(res, {
+        batches: batchResults,
+        totalRecipients: filteredRecipients.length,
+        optedOutCount: optedOutCount,
+        batchCount: batches.length,
+        status: 'pending'
       });
     } catch (error) {
       this.logger.error('sendSMS', error);
@@ -276,30 +270,12 @@ class SMSController extends BaseController {
       const churchId = req.user.church_id;
       const pendingLogs = await SMSRepository.getPendingSMSLogs(churchId);
 
-      const updatedCount = { delivered: 0, failed: 0, pending: 0 };
-
-      for (const log of pendingLogs) {
-        // In a real implementation, this would call the SMS gateway API
-        // For now, we'll simulate the polling logic
-        // TODO: Integrate with actual SMS gateway delivery receipt API
-
-        // Simulate delivery status check (replace with actual gateway call)
-        const mockStatus = Math.random() > 0.3 ? 'delivered' : 'failed';
-        const deliveryReceipt = mockStatus === 'delivered' ? 'Delivered successfully' : 'Delivery failed';
-
-        await SMSRepository.updateSMSStatus(log.id, mockStatus, deliveryReceipt);
-
-        if (mockStatus === 'delivered') {
-          updatedCount.delivered++;
-        } else if (mockStatus === 'failed') {
-          updatedCount.failed++;
-        } else {
-          updatedCount.pending++;
-        }
-      }
+      // TODO: Replace with per-provider delivery receipt API calls once credentials are configured.
+      // Until then, we intentionally leave pending logs unchanged instead of fabricating statuses.
+      const updatedCount = { delivered: 0, failed: 0, pending: pendingLogs.length };
 
       this.success(res, {
-        message: 'Delivery status poll completed',
+        message: 'Delivery status poll completed; no gateway configured to update statuses',
         updated: updatedCount
       });
     } catch (error) {
@@ -319,10 +295,7 @@ class SMSController extends BaseController {
       const churchId = req.user.church_id;
       const templates = await SMSRepository.getTemplates(churchId);
 
-      res.json({
-        success: true,
-        data: templates
-      });
+      this.success(res, { data: templates });
     } catch (error) {
       this.logger.error('getTemplates', error);
       this.error(res, 'Failed to fetch templates');
@@ -348,10 +321,7 @@ class SMSController extends BaseController {
 
       const template = await SMSRepository.createTemplate(name, content, category, mergeFields, req.user.id, churchId);
 
-      res.json({
-        success: true,
-        template
-      });
+      this.success(res, { template });
     } catch (error) {
       this.logger.error('createTemplate', error);
       this.error(res, 'Failed to create template');
@@ -441,16 +411,13 @@ class SMSController extends BaseController {
         });
       }
 
-      res.json({
-        success: true,
-        data: {
-          batches: batchResults,
-          totalRecipients: filteredRecipients.length,
-          optedOutCount: optedOutCount,
-          batchCount: batches.length,
-          message: message,
-          status: 'pending'
-        }
+      this.success(res, {
+        batches: batchResults,
+        totalRecipients: filteredRecipients.length,
+        optedOutCount: optedOutCount,
+        batchCount: batches.length,
+        message: message,
+        status: 'pending'
       });
     } catch (error) {
       this.logger.error('sendTemplate', error);
@@ -471,7 +438,7 @@ class SMSController extends BaseController {
       const churchId = req.user.church_id;
       await SMSRepository.deleteTemplate(req.params.id, churchId);
 
-      res.json({ success: true });
+      this.success(res, {}, 'Template deleted successfully');
     } catch (error) {
       this.logger.error('deleteTemplate', error);
       this.error(res, 'Failed to delete template');
@@ -489,10 +456,7 @@ class SMSController extends BaseController {
       const churchId = req.user.church_id;
       const campaigns = await SMSRepository.getCampaignsWithStats(churchId);
 
-      res.json({
-        success: true,
-        data: campaigns
-      });
+      this.success(res, { data: campaigns });
     } catch (error) {
       this.logger.error('getCampaigns', error);
       this.error(res, 'Failed to fetch campaigns');
@@ -516,7 +480,7 @@ class SMSController extends BaseController {
 
       await SMSRepository.updateCampaignStatus(req.params.id, status, churchId);
 
-      res.json({ success: true });
+      this.success(res, {}, 'Campaign status updated successfully');
     } catch (error) {
       this.logger.error('updateCampaignStatus', error);
       this.error(res, 'Failed to update campaign status');
@@ -538,8 +502,7 @@ class SMSController extends BaseController {
 
       const { stats, trends, topRecipients } = await SMSRepository.getAnalyticsWithTopRecipients(months, churchId);
 
-      res.json({
-        success: true,
+      this.success(res, {
         analytics: {
           totalSent: parseInt(stats.total_sent) || 0,
           deliveryRate: parseFloat(stats.delivery_rate) || 0,
@@ -569,16 +532,13 @@ class SMSController extends BaseController {
       const now = new Date();
       const hourAgo = new Date(now - 3600000);
 
-      const sentCount = await SMSRepository.getRateLimitStatus(userId, churchId);
-      const limit = 100;
+      const status = await SMSRepository.getRateLimitStatus(churchId);
+      const sentCount = parseInt(status?.sent_today) || 0;
+      const limit = parseInt(status?.rate_limit) || 100;
       const remaining = Math.max(0, limit - sentCount);
       const resetIn = 3600 - (Math.floor((now - hourAgo) / 1000) % 3600);
 
-      res.json({
-        success: true,
-        remaining,
-        resetIn
-      });
+      this.success(res, { remaining, resetIn, limit });
     } catch (error) {
       this.logger.error('getRateLimit', error);
       this.error(res, 'Failed to fetch rate limit');
@@ -597,10 +557,7 @@ class SMSController extends BaseController {
       const userId = req.user.id;
       const messages = await SMSRepository.getRecentLogsByUser(userId, 10);
 
-      res.json({
-        success: true,
-        messages
-      });
+      this.success(res, { messages });
     } catch (error) {
       this.logger.error('getRecentMessages', error);
       this.error(res, 'Failed to fetch recent messages');
@@ -621,10 +578,7 @@ class SMSController extends BaseController {
 
       const analytics = await SMSRepository.getTemplateAnalytics(templateId);
 
-      res.json({
-        success: true,
-        analytics
-      });
+      this.success(res, { analytics });
     } catch (error) {
       this.logger.error('getTemplateAnalytics', error);
       this.error(res, 'Failed to fetch template analytics');
@@ -646,10 +600,7 @@ class SMSController extends BaseController {
 
       const versions = await SMSRepository.getTemplateVersions(templateId, churchId);
 
-      res.json({
-        success: true,
-        versions
-      });
+      this.success(res, { versions });
     } catch (error) {
       this.logger.error('getTemplateVersions', error);
       this.error(res, 'Failed to fetch template versions');
@@ -672,7 +623,7 @@ class SMSController extends BaseController {
 
       await SMSRepository.approveTemplate(templateId, req.user.id, churchId);
 
-      res.json({ success: true });
+      this.success(res, {}, 'Template approved successfully');
     } catch (error) {
       this.logger.error('approveTemplate', error);
       this.error(res, 'Failed to approve template');
@@ -695,7 +646,7 @@ class SMSController extends BaseController {
 
       await SMSRepository.rejectTemplate(templateId, req.user.id, churchId);
 
-      res.json({ success: true });
+      this.success(res, {}, 'Template rejected successfully');
     } catch (error) {
       this.logger.error('rejectTemplate', error);
       this.error(res, 'Failed to reject template');
@@ -717,10 +668,7 @@ class SMSController extends BaseController {
 
       const results = await SMSRepository.getABTestResults(templateId, churchId);
 
-      res.json({
-        success: true,
-        results
-      });
+      this.success(res, { results });
     } catch (error) {
       this.logger.error('getABTestResults', error);
       this.error(res, 'Failed to fetch A/B test results');
@@ -743,20 +691,22 @@ class SMSController extends BaseController {
       const campaign = await SMSRepository.getCampaignById(campaignId, churchId);
 
       if (!campaign) {
-        return res.status(404).json({ success: false, error: 'Campaign not found' });
+        return this.notFound(res, 'Campaign not found');
       }
 
-      const suggestions = [
-        'Best send time: 10:00 AM - 12:00 PM',
-        'Consider A/B testing subject lines',
-        'Target inactive members for re-engagement',
-        'Reduce message length to improve delivery rate'
-      ];
+      const stats = await SMSRepository.getSMSStats(churchId);
+      const deliveryRate = parseFloat(stats?.delivery_rate) || 0;
+      const suggestions = [];
 
-      res.json({
-        success: true,
-        suggestions
-      });
+      if (deliveryRate < 90) {
+        suggestions.push('Delivery rate is below target; clean invalid numbers before sending.');
+      }
+      if (deliveryRate >= 90) {
+        suggestions.push('Delivery rate is healthy; consider A/B testing send times.');
+      }
+      suggestions.push('Reduce message length to improve delivery and reduce cost.');
+
+      this.success(res, { campaign, suggestions });
     } catch (error) {
       this.logger.error('optimizeCampaign', error);
       this.error(res, 'Failed to optimize campaign');
@@ -774,25 +724,22 @@ class SMSController extends BaseController {
   async getPredictiveAnalytics(req, res) {
     try {
       const { days = 30 } = req.query;
-      
-      const predictions = [];
-      const now = new Date();
-      
-      for (let i = 0; i < days; i++) {
-        const date = new Date(now);
-        date.setDate(date.getDate() + i);
-        
-        predictions.push({
-          date: date.toISOString().split('T')[0],
-          predicted: Math.floor(Math.random() * 500) + 200,
-          actual: i < 7 ? Math.floor(Math.random() * 500) + 200 : null
-        });
-      }
+      const churchId = req.user.church_id;
 
-      res.json({
-        success: true,
-        predictions
+      const dailyCounts = await SMSRepository.getDailyMessageCounts(days, churchId);
+      const now = new Date();
+
+      const predictions = dailyCounts.map((row, index) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() + index);
+        return {
+          date: date.toISOString().split('T')[0],
+          actual: parseInt(row.sent) || null,
+          predicted: parseInt(row.delivered) || 0
+        };
       });
+
+      this.success(res, { predictions });
     } catch (error) {
       this.logger.error('getPredictiveAnalytics', error);
       this.error(res, 'Failed to fetch predictive analytics');
@@ -807,17 +754,19 @@ class SMSController extends BaseController {
    */
   async getBenchmarks(req, res) {
     try {
+      const churchId = req.user.church_id;
+      const stats = await SMSRepository.getSMSStats(churchId);
+      const totalSent = parseInt(stats?.total_sent) || 0;
+      const totalCost = parseFloat(stats?.total_cost) || 0;
+
       const benchmarks = [
-        { metric: 'Delivery Rate', yourValue: 95.2, industryAvg: 92.0 },
-        { metric: 'Response Rate', yourValue: 12.5, industryAvg: 8.0 },
-        { metric: 'Cost per SMS', yourValue: 0.45, industryAvg: 0.50 },
-        { metric: 'Opt-out Rate', yourValue: 0.8, industryAvg: 1.2 }
+        { metric: 'Delivery Rate', yourValue: parseFloat(stats?.delivery_rate) || 0, industryAvg: 92.0 },
+        { metric: 'Response Rate', yourValue: parseFloat(stats?.response_rate) || 0, industryAvg: 8.0 },
+        { metric: 'Cost per SMS', yourValue: totalSent > 0 ? totalCost / totalSent : 0, industryAvg: 0.50 },
+        { metric: 'Opt-out Rate', yourValue: parseFloat(stats?.opt_out_rate) || 0, industryAvg: 1.2 }
       ];
 
-      res.json({
-        success: true,
-        benchmarks
-      });
+      this.success(res, { benchmarks });
     } catch (error) {
       this.logger.error('getBenchmarks', error);
       this.error(res, 'Failed to fetch benchmarks');
@@ -834,15 +783,19 @@ class SMSController extends BaseController {
     try {
       const churchId = req.user.church_id;
 
-      const topContributors = await SMSRepository.getTopContributors(churchId);
+      const [topContributors, stats] = await Promise.all([
+        SMSRepository.getTopContributors(churchId),
+        SMSRepository.getSMSStats(churchId)
+      ]);
 
+      const deliveryRate = parseFloat(stats?.delivery_rate) || 0;
       const teamPerformance = topContributors.map(user => ({
         member: user.name,
-        successRate: 85 + Math.random() * 15
+        smsCount: parseInt(user.sms_count) || 0,
+        successRate: deliveryRate
       }));
 
-      res.json({
-        success: true,
+      this.success(res, {
         insights: {
           topContributors,
           teamPerformance

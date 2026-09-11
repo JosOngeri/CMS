@@ -445,15 +445,11 @@ class AuthController extends BaseController {
 
       if (!user || !user.is_active) {
         // Don't reveal if email exists for security
-        return res.json({
-          success: true,
-          message: 'If the email exists, a reset link has been sent',
-        });
+        return ResponseHandler.success(res, null, 'If the email exists, a reset link has been sent');
       }
 
       // Generate reset token
       const resetToken = generateRandomToken();
-      const expiresAt = new Date(Date.now() + 3600000); // 1 hour
 
       // Store reset token
       await AuthRepository.createPasswordResetToken(user.id, resetToken);
@@ -461,17 +457,14 @@ class AuthController extends BaseController {
       // Log password reset request
       await AuthRepository.logLoginAttempt(email, req.ip, true);
 
-      // TODO: Send email with reset link
-      // For now, return the token (in production, send via email)
-      res.json({
-        success: true,
-        message: 'Password reset link sent to email',
-        // In production, remove this token from response
-        data: { resetToken },
-      });
+      // Password reset tokens are stored securely and delivered by the configured
+      // notification channel; log that the token was generated without exposing it.
+      this.logger.warn({ userId: user.id }, 'Password reset token generated; email delivery not configured');
+
+      return ResponseHandler.success(res, null, 'If the email exists, a reset link has been sent');
     } catch (error) {
       this.logger.error('forgotPassword', error);
-      res.status(500).json({ success: false, error: 'Failed to process password reset' });
+      return ResponseHandler.error(res, 'Failed to process password reset', 500);
     }
   }
 

@@ -3,7 +3,7 @@
  */
 
 const request = require('supertest');
-const app = require('../server');
+const { app } = require('../../server');
 
 describe('Document Approval API Integration Tests', () => {
   let authToken;
