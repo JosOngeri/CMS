@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 
 const GalleryContext = createContext(null);
@@ -142,14 +142,16 @@ export const GalleryProvider = ({ children }) => {
     }
   };
 
+  const value = useMemo(() => ({
+    albums, photos, tags, loading, error,
+    fetchAlbums, fetchAlbumById, createAlbum, updateAlbum, deleteAlbum,
+    fetchPhotos, createPhoto, deletePhoto,
+    fetchTags, createTag,
+    fetchPhotoComments, addPhotoComment
+  }), [albums, photos, tags, loading, error, fetchAlbums, fetchAlbumById, createAlbum, updateAlbum, deleteAlbum, fetchPhotos, createPhoto, deletePhoto, fetchTags, createTag, fetchPhotoComments, addPhotoComment]);
+
   return (
-    <GalleryContext.Provider value={{
-      albums, photos, tags, loading, error,
-      fetchAlbums, fetchAlbumById, createAlbum, updateAlbum, deleteAlbum,
-      fetchPhotos, createPhoto, deletePhoto,
-      fetchTags, createTag,
-      fetchPhotoComments, addPhotoComment
-    }}>
+    <GalleryContext.Provider value={value}>
       {children}
     </GalleryContext.Provider>
   );

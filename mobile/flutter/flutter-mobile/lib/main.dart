@@ -29,7 +29,14 @@ void main() async {
   // }
 
   // Initialize services
-  await SharedPreferences.getInstance();
+  final prefs = await SharedPreferences.getInstance();
+
+  // Load any previously saved server URL so the app can target a different backend
+  final savedApiUrl = prefs.getString('api_url');
+  if (savedApiUrl != null && savedApiUrl.isNotEmpty) {
+    AppConfig.setCustomApiUrl(savedApiUrl);
+    debugPrint('Loaded saved API URL: $savedApiUrl');
+  }
   
   // Initialize Socket.IO service for KMainCMS integration
   // try {

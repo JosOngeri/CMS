@@ -29,6 +29,7 @@ class Expense {
     this.submitted_by = data.submitted_by || null;
     this.submitted_by_name = data.submitted_by_name || null;
     this.notes = data.notes || '';
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -86,7 +87,8 @@ class Expense {
       approved_at: this.approved_at,
       rejection_reason: this.rejection_reason,
       submitted_by: this.submitted_by,
-      notes: this.notes
+      notes: this.notes,
+      church_id: this.church_id
     };
   }
 
@@ -186,6 +188,19 @@ class Expense {
       paid: 'green'
     };
     return colors[this.status] || 'gray';
+  }
+
+  /**
+   * Check whether the expense fits within a given budget
+   */
+  checkBudgetFit(budget) {
+    if (budget && typeof budget.getRemaining === 'function') {
+      const remaining = budget.getRemaining();
+      if (this.amount > remaining) {
+        throw new Error(`Expense exceeds remaining budget by ${this.amount - remaining}`);
+      }
+    }
+    return true;
   }
 }
 

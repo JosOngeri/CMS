@@ -33,6 +33,7 @@ class FixedAsset {
     this.disposal_amount = data.disposal_amount || null;
     this.notes = data.notes || '';
     this.created_by = data.created_by || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -86,7 +87,8 @@ class FixedAsset {
       disposal_date: this.disposal_date,
       disposal_amount: this.disposal_amount,
       notes: this.notes,
-      created_by: this.created_by
+      created_by: this.created_by,
+      church_id: this.church_id
     };
   }
 

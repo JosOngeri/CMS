@@ -27,6 +27,7 @@ class Project {
     this.beneficiaries = data.beneficiaries || '';
     this.expected_outcomes = data.expected_outcomes || '';
     this.created_by = data.created_by || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -73,7 +74,8 @@ class Project {
       location: this.location,
       beneficiaries: this.beneficiaries,
       expected_outcomes: this.expected_outcomes,
-      created_by: this.created_by
+      created_by: this.created_by,
+      church_id: this.church_id
     };
   }
 

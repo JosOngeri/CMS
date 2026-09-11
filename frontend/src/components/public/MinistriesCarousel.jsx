@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../contexts/SettingsContext';
 import { 
   ChevronLeft, 
   ChevronRight,
@@ -38,7 +39,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-const ministries = [
+const defaultMinistries = [
   // Leadership
   { name: 'Elders', icon: 'Shield', description: 'Church Elders Council - Spiritual leadership', category: 'Leadership', slug: 'elders' },
   { name: 'Deaconry', icon: 'Star', description: 'Deacons and Deaconesses - Service ministry', category: 'Leadership', slug: 'deaconry' },
@@ -116,6 +117,8 @@ const categoryColors = {
 };
 
 const MinistriesCarousel = () => {
+  const { getSetting } = useSettings();
+  const ministries = getSetting('ministries') || defaultMinistries;
   const carouselRef = useRef(null);
 
   // Auto-scroll carousel

@@ -315,15 +315,36 @@ class SmsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getCampaignById(id) {
-    const query = `
+  async getCampaignById(id, churchId = null) {
+    let query = `
       SELECT c.*, t.name as template_name
       FROM sms_campaigns c
       LEFT JOIN sms_templates t ON c.template_id = t.id
       WHERE c.id = $1
     `;
-    const result = await this.pool.query(query, [id]);
+    const params = [id];
+    if (churchId) {
+      query += ` AND c.church_id = $2`;
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rows[0];
+  }
+
+  async getDailyMessageCounts(days, churchId) {
+    const query = `
+      SELECT
+        DATE(created_at) as date,
+        COUNT(*) as sent,
+        COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered
+      FROM sms_logs
+      WHERE church_id = $1
+        AND created_at >= CURRENT_DATE - INTERVAL '1 day' * $2
+      GROUP BY DATE(created_at)
+      ORDER BY date
+    `;
+    const result = await this.pool.query(query, [churchId, days]);
+    return result.rows;
   }
 
   async getTopContributors(churchId, limit = 10) {

@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const { validateEnv } = require('./config/env-validation');
 
@@ -172,11 +172,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  console.error('Error message:', error.message);
-  console.error('Stack trace:', error.stack);
-  logger.error('Uncaught Exception:', error);
-  logger.error('Stack trace:', error.stack);
+  logger.error({ err: error, message: error.message, stack: error.stack }, 'Uncaught Exception');
   logger.error('Shutting down due to uncaught exception');
   process.exit(1);
 });

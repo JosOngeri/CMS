@@ -25,6 +25,7 @@ class Vendor {
     this.category = data.category || 'other';
     this.notes = data.notes || '';
     this.is_active = data.is_active !== undefined ? data.is_active : true;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -63,7 +64,8 @@ class Vendor {
       preferred_payment_method: this.preferred_payment_method,
       category: this.category,
       notes: this.notes,
-      is_active: this.is_active
+      is_active: this.is_active,
+      church_id: this.church_id
     };
   }
 

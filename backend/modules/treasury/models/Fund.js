@@ -16,6 +16,7 @@ class Fund {
     this.target_amount = data.target_amount || null;
     this.current_balance = data.current_balance || 0;
     this.is_active = data.is_active !== undefined ? data.is_active : true;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -68,7 +69,8 @@ class Fund {
       end_date: this.end_date,
       target_amount: this.target_amount,
       current_balance: this.current_balance,
-      is_active: this.is_active
+      is_active: this.is_active,
+      church_id: this.church_id
     };
   }
 

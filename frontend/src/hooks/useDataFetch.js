@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 /**
- * Custom hook for data fetching with consistent error and empty state handling
+ * Custom hook for data fetching with consistent error and empty state handling.
+ * Uses the configured axios instance so auth/CSRF interceptors are respected.
  * @param {string} url - The API endpoint to fetch from
  * @param {Object} options - Additional options
  * @param {Object} options.initialData - Initial data state
@@ -26,7 +28,6 @@ export const useDataFetch = (url, options = {}) => {
     if (!enabled) return;
 
     const controller = new AbortController();
-    const { signal } = controller;
     let retryCount = 0;
     const maxRetries = 3;
 
@@ -35,44 +36,38 @@ export const useDataFetch = (url, options = {}) => {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(url, {
-          signal,
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+        const response = await axios.get(url, {
+          signal: controller.signal,
+          withCredentials: true,
+          timeout: 30000
         });
 
-        if (!response.ok) {
-          // Don't retry on 4xx errors (client errors)
-          if (response.status >= 400 && response.status < 500) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          // Retry on 5xx errors and network errors
-          if (retryCount < maxRetries) {
-            retryCount++;
-            const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 2s, 4s, 8s
-            await new Promise(resolve => setTimeout(resolve, delay));
-            return attemptFetch();
-          }
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
+        const result = response.data;
         const transformedData = transform(result);
         setData(transformedData);
       } catch (err) {
-        if (err.name === 'AbortError') {
+        if (err.name === 'CanceledError' || err.name === 'AbortError' || axios.isCancel(err)) {
           // Ignore cancellation caused by component unmount or dependency change
           return;
         }
-        // Retry on network errors
-        if (retryCount < maxRetries && !err.message.includes('HTTP error')) {
+
+        const status = err.response?.status;
+        // Don't retry on 4xx client errors
+        if (status >= 400 && status < 500) {
+          setError(err.response?.data?.error || err.message || `Request failed with status ${status}`);
+          setLoading(false);
+          return;
+        }
+
+        // Retry on 5xx / network errors
+        if (retryCount < maxRetries) {
           retryCount++;
-          const delay = Math.pow(2, retryCount) * 1000;
+          const delay = Math.pow(2, retryCount) * 1000; // 2s, 4s, 8s
           await new Promise(resolve => setTimeout(resolve, delay));
           return attemptFetch();
         }
-        console.error(`Failed to fetch data from ${url}:`, err);
-        setError(err.message || 'Failed to load data');
+
+        setError(err.response?.data?.error || err.message || 'Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -88,6 +83,7 @@ export const useDataFetch = (url, options = {}) => {
     return () => {
       if (typeof cleanup === 'function') cleanup();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, url, ...dependencies]);
 
   return {

@@ -8,6 +8,7 @@ import '../screens/dashboard_screen.dart';
 import '../screens/announcements_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/forgot_password_screen.dart';
+import '../screens/server_url_screen.dart';
 import '../services/auth_service.dart';
 
 // Loading screen for auth state restoration
@@ -89,6 +90,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/server-url',
+        builder: (context, state) => const ServerUrlScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

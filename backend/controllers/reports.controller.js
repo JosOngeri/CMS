@@ -467,42 +467,9 @@ class ReportsController extends BaseController {
    */
   async getReportTemplates(req, res) {
     try {
-      const templates = [
-        {
-          id: 'weekly_financial',
-          name: 'Weekly Financial Report',
-          description: 'Summary of weekly income and expenses',
-          dataSource: 'payments',
-          scheduleConfig: 'weekly',
-          reportConfig: {
-            columns: ['id', 'amount', 'payment_date', 'status', 'payment_method'],
-            filters: []
-          }
-        },
-        {
-          id: 'monthly_attendance',
-          name: 'Monthly Attendance Report',
-          description: 'Monthly member attendance summary',
-          dataSource: 'members',
-          scheduleConfig: 'monthly',
-          reportConfig: {
-            columns: ['id', 'first_name', 'last_name', 'email', 'phone', 'joined_date'],
-            filters: []
-          }
-        },
-        {
-          id: 'daily_approvals',
-          name: 'Daily Approval Summary',
-          description: 'Daily approval requests status',
-          dataSource: 'approvals',
-          scheduleConfig: 'daily',
-          reportConfig: {
-            columns: ['id', 'title', 'status', 'priority', 'created_at'],
-            filters: []
-          }
-        }
-      ];
-      
+      const churchId = req.user?.church_id;
+      const templates = await ReportsRepository.getReportTemplates(churchId);
+
       this.success(res, { templates });
     } catch (error) {
       this.logger.error('getReportTemplates', error);

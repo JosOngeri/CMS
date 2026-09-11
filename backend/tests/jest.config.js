@@ -38,7 +38,9 @@ module.exports = {
   verbose: true,
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/../$1'
+    '^@/(.*)$': '<rootDir>/../$1',
+    '^uuid$': '<rootDir>/setup/uuid-mock.js',
+    '^hibp$': '<rootDir>/setup/hibp-mock.js'
   },
   transform: {},
   transformIgnorePatterns: [

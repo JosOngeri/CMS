@@ -57,8 +57,11 @@ const convertUserSlugToId = async (req, res, next) => {
 router.get('/directory', authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 50, role, department } = req.query;
+    
+    // Get church_id from request context or use default
+    const churchId = req.user.church_id || req.headers['x-tenant-church-id'] || null;
 
-    const result = await userRepository.getMemberDirectory({ page, limit, role, department });
+    const result = await userRepository.getMemberDirectory({ page, limit, role, department }, churchId);
 
     res.json(result);
   } catch (error) {
@@ -71,8 +74,11 @@ router.get('/directory', authenticateToken, async (req, res) => {
 router.get('/', authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder']), async (req, res) => {
   try {
     const { page = 1, limit = 50, role, department } = req.query;
+    
+    // Get church_id from request context or use default
+    const churchId = req.user.church_id || req.headers['x-tenant-church-id'] || null;
 
-    const result = await userRepository.getAllUsers({ page, limit, role, department });
+    const result = await userRepository.getAllUsers({ page, limit, role, department }, churchId);
 
     res.json(result);
   } catch (error) {

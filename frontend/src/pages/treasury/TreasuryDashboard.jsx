@@ -48,36 +48,30 @@ const TreasuryDashboard = () => {
   const fetchTreasuryData = async () => {
     try {
       setLoading(true)
-      
-      // Use mock data for now since treasury stats endpoint doesn't exist
-      setStats({
-        totalIncome: 1500000,
-        totalExpenses: 850000,
-        netIncome: 650000,
-        fundBalance: 2500000,
-        pendingExpenses: 120000,
-        budgetVariance: 50000
-      })
 
-      // Fetch recent transactions
-      const transactionsResponse = await api.get('/treasury/journal-entries?limit=5')
-      if (transactionsResponse.data) {
-        setRecentTransactions(transactionsResponse.data.entries || [])
+      const [statsResponse, transactionsResponse, alertsResponse, approvalsResponse] = await Promise.all([
+        api.get('/api/dashboard/financial-stats').catch(() => null),
+        api.get('/api/dashboard/transactions?limit=5').catch(() => null),
+        api.get('/api/financial-alerts').catch(() => null),
+        api.get('/api/treasury/expenses?status=pending').catch(() => null)
+      ]);
+
+      if (statsResponse?.data?.data) {
+        const data = statsResponse.data.data;
+        setStats({
+          totalIncome: data.totalIncome || 0,
+          totalExpenses: data.totalExpenses || 0,
+          netIncome: data.netIncome || 0,
+          fundBalance: data.fundBalance || 0,
+          pendingExpenses: data.pendingExpenses || 0,
+          budgetVariance: data.budgetVariance || 0
+        });
       }
 
-      // Fetch budget alerts
-      const alertsResponse = await api.get('/treasury/budgets/alerts')
-      if (alertsResponse.data) {
-        setBudgetAlerts(alertsResponse.data.alerts || [])
-      }
-
-      // Fetch pending approvals
-      const approvalsResponse = await api.get('/treasury/expenses?status=pending')
-      if (approvalsResponse.data) {
-        setPendingApprovals(approvalsResponse.data.expenses || [])
-      }
+      setRecentTransactions(transactionsResponse?.data?.data || []);
+      setBudgetAlerts(alertsResponse?.data?.data || []);
+      setPendingApprovals(approvalsResponse?.data?.data || []);
     } catch (error) {
-      console.error('Failed to fetch treasury data:', error)
       toast.error('Failed to load treasury data')
     } finally {
       setLoading(false)

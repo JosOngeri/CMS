@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 
@@ -161,7 +161,7 @@ export const TelegramProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     channels,
     settings,
     isLoading,
@@ -182,7 +182,7 @@ export const TelegramProvider = ({ children }) => {
     fetchChannelAnalytics,
     createWebhook,
     deleteWebhook,
-  };
+  }), [channels, settings, isLoading, isPosting, isSyncing, isUpdating, messageHistory, channelAnalytics, fetchChannels, fetchSettings, createChannel, updateChannel, deleteChannel, postToChannel, syncChannel, updateSettings, fetchChannelHistory, fetchChannelAnalytics, createWebhook, deleteWebhook]);
 
   return <TelegramContext.Provider value={value}>{children}</TelegramContext.Provider>;
 };

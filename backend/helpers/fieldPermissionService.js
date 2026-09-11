@@ -30,40 +30,20 @@ class FieldPermissionService {
     }
   }
 
-  async checkFieldPermission(userId, module, field, action) {
+  async checkFieldPermission(userId, module, field, action, cached = null) {
     try {
-      // Get user roles
-      const userResult = await pool.query(
-        `SELECT roles FROM users WHERE id = $1`,
-        [userId]
-      );
-
-      if (userResult.rows.length === 0) {
-        return false;
+      let permissions;
+      if (cached) {
+        permissions = cached;
+      } else {
+        permissions = await this.bulkFetchPermissions(userId, module);
       }
 
-      const roles = userResult.rows[0].roles || [];
-
-      // Super Admin has all permissions
-      if (roles.includes('Super Admin')) {
+      if (permissions.all) {
         return true;
       }
 
-      // Check field permissions for each role
-      for (const role of roles) {
-        const result = await pool.query(
-          `SELECT can_${action} as has_permission
-           FROM field_permissions
-           WHERE role = $1 AND module = $2 AND field_name = $3`,
-          [role, module, field]
-        );
-
-        if (result.rows.length > 0 && result.rows[0].has_permission) {
-          return true;
-        }
-      }
-
-      return false;
+      return !!(permissions[field] && permissions[field][action]);
     } catch (error) {
       logger.error('checkFieldPermission', 'Check field permission error:', error);
       // Default to false on error
@@ -146,35 +126,39 @@ class FieldPermissionService {
 
   async getModulePermissions(userId, module) {
     try {
-      // Get user roles
-      const userResult = await pool.query(
-        `SELECT roles FROM users WHERE id = $1`,
-        [userId]
-      );
-
-      if (userResult.rows.length === 0) {
-        return {};
-      }
-
-      const roles = userResult.rows[0].roles || [];
-
-      // Super Admin has all permissions
-      if (roles.includes('Super Admin')) {
-        return { all: true };
-      }
-
-      // Get all field permissions for the module
-      const permissions = {};
-      for (const role of roles) {
-        const rolePermissions = await this.getFieldPermissions(role, module);
-        Object.assign(permissions, rolePermissions);
-      }
-
-      return permissions;
+      // Use bulk fetch to avoid N+1 queries and leverage a single round-trip
+      return await this.bulkFetchPermissions(userId, module);
     } catch (error) {
       logger.error('getModulePermissions', 'Get module permissions error:', error);
       return {};
     }
+  }
+
+  /**
+   * Attach bulk permissions to req.user for the current request lifecycle
+   */
+  async cachePermissionsOnUser(req, module) {
+    if (!req.user || !req.user.id) {
+      return {};
+    }
+
+    if (!req.user.fieldPermissions) {
+      req.user.fieldPermissions = {};
+    }
+
+    if (!req.user.fieldPermissions[module]) {
+      req.user.fieldPermissions[module] = await this.bulkFetchPermissions(req.user.id, module);
+    }
+
+    return req.user.fieldPermissions[module];
+  }
+
+  /**
+   * Check a field permission using the cached permissions on req.user when available
+   */
+  async checkCachedPermission(req, module, field, action) {
+    const cached = await this.cachePermissionsOnUser(req, module);
+    return this.checkFieldPermission(req.user.id, module, field, action, cached);
   }
 
   async filterFieldsByPermission(userId, module, data) {

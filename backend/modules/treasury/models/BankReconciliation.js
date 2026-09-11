@@ -17,6 +17,7 @@ class BankReconciliation {
     this.reconciled_by_name = data.reconciled_by_name || null;
     this.reconciled_at = data.reconciled_at || null;
     this.notes = data.notes || '';
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
     
@@ -53,7 +54,8 @@ class BankReconciliation {
       status: this.status,
       reconciled_by: this.reconciled_by,
       reconciled_at: this.reconciled_at,
-      notes: this.notes
+      notes: this.notes,
+      church_id: this.church_id
     };
   }
 

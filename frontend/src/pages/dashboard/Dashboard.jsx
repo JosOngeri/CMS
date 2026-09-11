@@ -144,10 +144,8 @@ const DefaultDashboard = () => {
 
       setRecentActivities(formattedActivities)
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
       setError(error.message || 'Failed to load dashboard data')
       toast.error('Failed to load dashboard data. Please try again.')
-      // Fallback to mock data on error
       setStats({
         totalMembers: 0,
         totalPayments: 0,
@@ -377,44 +375,44 @@ const DefaultDashboard = () => {
         <div className="bg-[var(--color-surface)]  p-6 rounded-lg shadow-sm h-full">
           <h2 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Quick Stats</h2>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
               <div className="flex items-center space-x-3 flex-1">
-                <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-[var(--color-text)] ">
-                  Completed Tasks
-                </span>
-              </div>
-              <span className="text-lg font-bold text-green-600 flex-shrink-0">24</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-              <div className="flex items-center space-x-3 flex-1">
-                <Clock className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-[var(--color-text)] ">
-                  Pending Tasks
-                </span>
-              </div>
-              <span className="text-lg font-bold text-yellow-600 flex-shrink-0">8</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-[var(--color-primary)]-50 rounded-lg">
-              <div className="flex items-center space-x-3 flex-1">
-                <Users className="h-5 w-5 text-[var(--color-primary)]-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-[var(--color-text)] ">
+                <Users className="h-5 w-5 text-[var(--color-primary)] flex-shrink-0" />
+                <span className="text-sm font-medium text-[var(--color-text)]">
                   Active Members
                 </span>
               </div>
-              <span className="text-lg font-bold text-[var(--color-primary)]-600 flex-shrink-0">186</span>
+              <span className="text-lg font-bold text-[var(--color-primary)] flex-shrink-0">{(stats?.totalMembers ?? 0).toLocaleString()}</span>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
               <div className="flex items-center space-x-3 flex-1">
-                <Calendar className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                <span className="text-sm font-medium text-[var(--color-text)] ">
-                  This Week
+                <Calendar className="h-5 w-5 text-[var(--color-secondary)] flex-shrink-0" />
+                <span className="text-sm font-medium text-[var(--color-text)]">
+                  Upcoming Events
                 </span>
               </div>
-              <span className="text-lg font-bold text-purple-600 flex-shrink-0">3 events</span>
+              <span className="text-lg font-bold text-[var(--color-secondary)] flex-shrink-0">{stats?.upcomingEvents ?? 0}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
+              <div className="flex items-center space-x-3 flex-1">
+                <DollarSign className="h-5 w-5 text-[var(--color-success)] flex-shrink-0" />
+                <span className="text-sm font-medium text-[var(--color-text)]">
+                  Total Payments
+                </span>
+              </div>
+              <span className="text-lg font-bold text-[var(--color-success)] flex-shrink-0">KES {(stats?.totalPayments ?? 0).toLocaleString()}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg">
+              <div className="flex items-center space-x-3 flex-1">
+                <Megaphone className="h-5 w-5 text-[var(--color-textSecondary)] flex-shrink-0" />
+                <span className="text-sm font-medium text-[var(--color-text)]">
+                  Announcements
+                </span>
+              </div>
+              <span className="text-lg font-bold text-[var(--color-textSecondary)] flex-shrink-0">{stats?.recentAnnouncements ?? 0}</span>
             </div>
           </div>
         </div>

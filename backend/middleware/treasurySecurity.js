@@ -1,6 +1,8 @@
 const { pool } = require('../config/database');
 const logger = require('../config/logging');
 const ipaddr = require('ipaddr.js');
+const { sendForbidden, sendError } = require('../helpers/errorHandler');
+const { hasAnyRole } = require('../helpers/permissionChecker');
 
 class TreasurySecurityMiddleware {
   // Helper function to check if an IP is in a CIDR range
@@ -37,22 +39,22 @@ class TreasurySecurityMiddleware {
   static async hasTreasuryAccess(req, res, next) {
     try {
       const treasuryRoles = process.env.TREASURY_ROLES?.split(',') || ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'];
-      
+
       if (!req.user || !req.user.roles) {
-        return res.status(403).json({ error: 'Access denied' });
+        return sendForbidden(res, 'Access denied');
       }
 
-      const hasAccess = req.user.roles.some(role => treasuryRoles.includes(role));
+      const hasAccess = hasAnyRole(req.user.roles, treasuryRoles);
 
       if (!hasAccess) {
         logger.warn(`Unauthorized treasury access attempt by user ${req.user.id}`);
-        return res.status(403).json({ error: 'Access denied. Treasury access required.' });
+        return sendForbidden(res, 'Access denied. Treasury access required.');
       }
 
       next();
     } catch (error) {
       logger.error('Treasury access check error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      return sendError(res, new Error('Internal server error'), 500);
     }
   }
 
@@ -63,7 +65,7 @@ class TreasurySecurityMiddleware {
 
       if (allowedEntries.length > 0 && !this.isIPWhitelisted(clientIP, allowedEntries)) {
         logger.warn(`IP whitelist violation: ${clientIP} attempted treasury access`);
-        return res.status(403).json({ error: 'Access denied from this IP address' });
+        return sendForbidden(res, 'Access denied from this IP address');
       }
 
       next();
@@ -136,14 +138,12 @@ class TreasurySecurityMiddleware {
     const isSensitive = sensitivePaths.some(path => req.path.startsWith(path));
 
     if (isSensitive) {
-      // Check if user has MFA verified
-      // This blocks unauthorized sensitive operations based on the mfa_verified flag
-      if (!req.user || !req.user.mfaVerified) {
+      // Block unauthorized sensitive operations when the identity object lacks
+      // a verified MFA session (mfa_verified / mfaVerified).
+      const verified = req.user?.mfaVerified === true || req.user?.mfa_verified === true;
+      if (!req.user || !verified) {
         logger.warn(`MFA required but not verified for sensitive operation: ${req.path} by user ${req.user?.id}`);
-        return res.status(403).json({
-          success: false,
-          error: 'MFA verification required for this operation'
-        });
+        return sendForbidden(res, 'MFA verification required for this operation');
       }
       logger.info(`MFA verified for sensitive operation: ${req.path} by user ${req.user?.id}`);
     }
@@ -170,9 +170,7 @@ class TreasurySecurityMiddleware {
 
       if (userRequests.count >= maxRequests) {
         logger.warn(`Rate limit exceeded for IP: ${clientIP}`);
-        return res.status(429).json({ 
-          error: 'Too many treasury requests. Please try again later.' 
-        });
+        return sendError(res, new Error('Too many treasury requests. Please try again later.'), 429);
       }
 
       userRequests.count++;

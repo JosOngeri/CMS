@@ -26,27 +26,19 @@ class MembersController extends BaseController {
    */
   async getAllMembers(req, res) {
     try {
-      const { page = 1, limit = 20, search, status, filter } = req.query;
-      const offset = (page - 1) * limit;
+      const { search, status, filter } = req.query;
       const churchId = req.user.church_id;
+      const { page, limit, offset } = this.buildPagination(req.query);
 
       const members = await MembersRepository.getAll(
         { search, status, filter, limit, offset },
         churchId
       );
 
-      const total = await MembersRepository.count({ status, filter }, churchId);
+      const total = await MembersRepository.count({ search, status, filter }, churchId);
+      const pagination = this.buildPaginationMeta(total, page, limit);
 
-      res.json({
-        success: true,
-        data: members,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total,
-          pages: Math.ceil(total / limit),
-        },
-      });
+      this.success(res, { members, pagination });
     } catch (error) {
       this.logger.error('getAllMembers', error);
       this.error(res, 'Failed to fetch members');
@@ -72,10 +64,7 @@ class MembersController extends BaseController {
         return this.notFound(res, 'Member not found');
       }
 
-      res.json({
-        success: true,
-        data: member,
-      });
+      this.success(res, { member });
     } catch (error) {
       this.logger.error('getMemberById', error);
       this.error(res, 'Failed to fetch member');
@@ -156,7 +145,7 @@ class MembersController extends BaseController {
         req.get('user-agent')
       );
 
-      this.created(res, { data: member });
+      this.created(res, { member });
     } catch (error) {
       this.logger.error('createMember', error);
       this.error(res, 'Failed to create member');
@@ -229,7 +218,7 @@ class MembersController extends BaseController {
         req.get('user-agent')
       );
 
-      this.success(res, { data: member });
+      this.success(res, { member });
     } catch (error) {
       this.logger.error('updateMember', error);
       this.error(res, 'Failed to update member');
@@ -286,9 +275,8 @@ class MembersController extends BaseController {
 
       const stats = await MembersRepository.getMemberStats(churchId);
 
-      res.json({
-        success: true,
-        data: {
+      this.success(res, {
+        stats: {
           total: stats.total_members,
           active: stats.active_members,
           inactive: stats.inactive_members,

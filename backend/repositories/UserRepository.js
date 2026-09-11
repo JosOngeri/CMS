@@ -134,8 +134,15 @@ class UserRepository extends BaseRepository {
     const { page = 1, limit = 50, role, department } = filters;
     const offset = (page - 1) * limit;
 
-    const params = [churchId];
-    let paramIndex = 2;
+    const params = [];
+    let paramIndex = 1;
+
+    let churchFilter = '';
+    if (churchId) {
+      churchFilter = `u.church_id = $${paramIndex} AND`;
+      params.push(churchId);
+      paramIndex++;
+    }
 
     let roleFilter = '';
     if (role) {
@@ -160,7 +167,7 @@ class UserRepository extends BaseRepository {
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE u.church_id = $1 AND u.is_active = true ${deptFilter}
+        WHERE ${churchFilter} u.is_active = true ${deptFilter}
         GROUP BY u.id
       ) users_with_roles
       WHERE 1=1 ${roleFilter}
@@ -175,8 +182,15 @@ class UserRepository extends BaseRepository {
     const result = await this.pool.query(query, params);
 
     // Get total count
-    const countParams = [churchId];
-    let countParamIndex = 2;
+    const countParams = [];
+    let countParamIndex = 1;
+    let countChurchFilter = '';
+    if (churchId) {
+      countChurchFilter = `u.church_id = $${countParamIndex} AND`;
+      countParams.push(churchId);
+      countParamIndex++;
+    }
+
     let countRoleFilter = '';
     if (role) {
       countRoleFilter = `AND $${countParamIndex} = ANY(roles)`;
@@ -197,7 +211,7 @@ class UserRepository extends BaseRepository {
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE u.church_id = $1 AND u.is_active = true ${countDeptFilter}
+        WHERE ${countChurchFilter} u.is_active = true ${countDeptFilter}
         GROUP BY u.id
       ) users_with_roles
       WHERE 1=1 ${countRoleFilter}
@@ -217,9 +231,9 @@ class UserRepository extends BaseRepository {
     };
   }
 
-  async getAllUsers(filters = {}) {
+  async getAllUsers(filters = {}, churchId) {
     // Re-use member directory logic for admin user list
-    return this.getMemberDirectory(filters);
+    return this.getMemberDirectory(filters, churchId);
   }
 
   async getUserWithDepartments(id, churchId) {

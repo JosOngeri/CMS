@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 
@@ -155,7 +155,7 @@ export const ContentProvider = ({ children }) => {
     fetchDrafts();
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     content,
     drafts,
     categories,
@@ -178,7 +178,7 @@ export const ContentProvider = ({ children }) => {
     updateContent,
     deleteContent,
     publishContent,
-  };
+  }), [content, drafts, categories, tags, websiteSettings, isLoading, isCreating, isUpdating, isDeleting, page, limit, totalCount, fetchContent, fetchDrafts, fetchPage, fetchCategories, fetchTags, fetchWebsiteSettings, createContent, updateContent, deleteContent, publishContent]);
 
   return <ContentContext.Provider value={value}>{children}</Content.Provider>;
 };

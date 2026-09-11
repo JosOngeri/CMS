@@ -48,44 +48,38 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getMemberGrowthTrend(days = 30, churchId = null) {
-    let query = `
+    const query = `
       SELECT
         DATE(created_at) as date,
         COUNT(*) as new_members
       FROM members
-      WHERE created_at >= CURRENT_DATE - INTERVAL '${days} days'
+      WHERE created_at >= CURRENT_DATE - INTERVAL '1 day' * $1
+        ${churchId ? 'AND church_id = $2' : ''}
+      GROUP BY DATE(created_at)
+      ORDER BY date
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
-
-    query += ` GROUP BY DATE(created_at) ORDER BY date`;
+    const params = [days];
+    if (churchId) params.push(churchId);
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
   async getTransactionTrend(days = 30, churchId = null) {
-    let query = `
+    const query = `
       SELECT
         DATE(transaction_date) as date,
         transaction_type,
         COALESCE(SUM(amount), 0) as total_amount
       FROM transactions
       WHERE status = 'approved'
-      AND transaction_date >= CURRENT_DATE - INTERVAL '${days} days'
+        AND transaction_date >= CURRENT_DATE - INTERVAL '1 day' * $1
+        ${churchId ? 'AND church_id = $2' : ''}
+      GROUP BY DATE(transaction_date), transaction_type
+      ORDER BY date
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
-
-    query += ` GROUP BY DATE(transaction_date), transaction_type ORDER BY date`;
+    const params = [days];
+    if (churchId) params.push(churchId);
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -157,29 +151,26 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getMemberActivity(days = 30, churchId = null) {
-    let query = `
+    const query = `
       SELECT
         DATE(activity_date) as date,
         COUNT(DISTINCT member_id) as active_members,
         COUNT(*) as total_activities
       FROM member_activities
-      WHERE activity_date >= CURRENT_DATE - INTERVAL '${days} days'
+      WHERE activity_date >= CURRENT_DATE - INTERVAL '1 day' * $1
+        ${churchId ? 'AND church_id = $2' : ''}
+      GROUP BY DATE(activity_date)
+      ORDER BY date DESC
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
-
-    query += ` GROUP BY DATE(activity_date) ORDER BY date DESC`;
+    const params = [days];
+    if (churchId) params.push(churchId);
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
   async getUserActivity(days = 30, churchId = null) {
-    let query = `
+    const query = `
       SELECT
         DATE(last_login) as date,
         COUNT(*) as active_users,
@@ -187,16 +178,13 @@ class AnalyticsRepository extends BaseRepository {
         COUNT(CASE WHEN last_login >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as weekly_active,
         COUNT(CASE WHEN last_login >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as monthly_active
       FROM users
-      WHERE last_login >= CURRENT_DATE - INTERVAL '${days} days'
+      WHERE last_login >= CURRENT_DATE - INTERVAL '1 day' * $1
+        ${churchId ? 'AND church_id = $2' : ''}
+      GROUP BY DATE(last_login)
+      ORDER BY date DESC
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
-
-    query += ` GROUP BY DATE(last_login) ORDER BY date DESC`;
+    const params = [days];
+    if (churchId) params.push(churchId);
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -480,18 +468,21 @@ class AnalyticsRepository extends BaseRepository {
   async getCustomAnalytics(metrics, startDate, endDate, groupBy, churchId = null) {
     // Build a custom analytics query based on requested metrics
     const metricMap = {
-      'members': 'SELECT COUNT(*) FROM members',
+      'members': 'SELECT COUNT(*) FROM members WHERE 1=1',
       'departments': 'SELECT COUNT(*) FROM departments WHERE is_active = true',
-      'events': 'SELECT COUNT(*) FROM events',
-      'collections': 'SELECT COUNT(*) FROM event_collections',
-      'contributions': 'SELECT COUNT(*) FROM collection_contributions',
-      'transactions': 'SELECT COUNT(*) FROM transactions WHERE status = "approved"'
+      'events': 'SELECT COUNT(*) FROM events WHERE 1=1',
+      'collections': 'SELECT COUNT(*) FROM event_collections WHERE 1=1',
+      'contributions': 'SELECT COUNT(*) FROM collection_contributions WHERE 1=1',
+      'transactions': 'SELECT COUNT(*) FROM transactions WHERE status = \'approved\''
     };
 
     const results = {};
+    const churchFilter = churchId ? ' AND church_id = $1' : '';
+    const params = churchId ? [churchId] : [];
+
     for (const metric of metrics) {
       if (metricMap[metric]) {
-        const result = await this.pool.query(metricMap[metric]);
+        const result = await this.pool.query(`${metricMap[metric]}${churchFilter}`, params);
         results[metric] = result.rows[0];
       }
     }
@@ -506,7 +497,7 @@ class AnalyticsRepository extends BaseRepository {
 
     switch (type) {
       case 'financial':
-        query = 'SELECT * FROM transactions WHERE status = "approved"';
+        query = 'SELECT * FROM transactions WHERE status = \'approved\'';
         if (startDate) {
           query += ' AND transaction_date >= $1';
           params.push(startDate);
@@ -517,7 +508,7 @@ class AnalyticsRepository extends BaseRepository {
         }
         break;
       case 'attendance':
-        query = 'SELECT * FROM member_attendance';
+        query = 'SELECT * FROM member_attendance WHERE 1=1';
         if (startDate) {
           query += ' AND attendance_date >= $1';
           params.push(startDate);

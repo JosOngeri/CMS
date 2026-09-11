@@ -3,21 +3,21 @@ const bcrypt = require('bcryptjs');
 
 class User {
   static async create(userData) {
-    const { username, email, password, first_name, last_name, phone_number } = userData;
+    const { username, email, password, first_name, last_name, phone_number, church_id } = userData;
     
     // Hash password
-    const saltRounds = 10;
+    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS, 10) || 12;
     const password_hash = await bcrypt.hash(password, saltRounds);
 
     const query = `
-      INSERT INTO users (username, email, password_hash, first_name, last_name, phone_number)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, username, email, first_name, last_name, phone_number, created_at
+      INSERT INTO users (username, email, password_hash, first_name, last_name, phone_number, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, username, email, first_name, last_name, phone_number, church_id, created_at
     `;
 
     try {
       const result = await pool.query(query, [
-        username, email, password_hash, first_name, last_name, phone_number
+        username, email, password_hash, first_name, last_name, phone_number, church_id || null
       ]);
       return result.rows[0];
     } catch (error) {
@@ -25,13 +25,13 @@ class User {
     }
   }
 
-  static async findByEmail(email) {
+  static async findByEmail(email, includeInactive = false) {
     const query = `
       SELECT u.*, array_agg(r.name) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.email = $1 AND u.is_active = true
+      WHERE u.email = $1 ${includeInactive ? '' : 'AND u.is_active = true'}
       GROUP BY u.id
     `;
 
@@ -43,13 +43,13 @@ class User {
     }
   }
 
-  static async findByUsername(username) {
+  static async findByUsername(username, includeInactive = false) {
     const query = `
       SELECT u.*, array_agg(r.name) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.username = $1 AND u.is_active = true
+      WHERE u.username = $1 ${includeInactive ? '' : 'AND u.is_active = true'}
       GROUP BY u.id
     `;
 
@@ -61,13 +61,13 @@ class User {
     }
   }
 
-  static async findById(id) {
+  static async findById(id, includeInactive = false) {
     const query = `
       SELECT u.*, array_agg(r.name) as roles
       FROM users u
       LEFT JOIN user_roles ur ON u.id = ur.user_id
       LEFT JOIN roles r ON ur.role_id = r.id
-      WHERE u.id = $1 AND u.is_active = true
+      WHERE u.id = $1 ${includeInactive ? '' : 'AND u.is_active = true'}
       GROUP BY u.id
     `;
 

@@ -26,6 +26,7 @@ class Budget {
     this.notes = data.notes || '';
     this.created_by = data.created_by || null;
     this.created_by_name = data.created_by_name || null;
+    this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
   }
@@ -84,7 +85,8 @@ class Budget {
       start_date: this.start_date,
       end_date: this.end_date,
       notes: this.notes,
-      created_by: this.created_by
+      created_by: this.created_by,
+      church_id: this.church_id
     };
   }
 

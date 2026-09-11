@@ -97,3 +97,16 @@ Documentation/Other Files/*.exe
 .azure/
 .github/workflows/azure-deploy.yml
 docs/AZURE_DEPLOYMENT.md
+dist-new/
+dist_old/
+.env*
+.vite-cache/
+infrastructure/backups/
+docs/archive/*/
+!docs/archive/*.md
+mobile/.gradle/
+mobile/build/
+mobile/node_modules/
+.dart_tool/
+flutter-mobile-build/
+tools/

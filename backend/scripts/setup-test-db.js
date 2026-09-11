@@ -30,6 +30,12 @@ async function setupTestDatabase() {
   console.log('🔧 Setting up test database...');
 
   const migrationsDir = path.join(__dirname, '../migrations');
+  if (!fs.existsSync(migrationsDir)) {
+    console.warn(`⚠️  Migrations directory not found: ${migrationsDir}`);
+    await pool.end();
+    return;
+  }
+
   const migrationFiles = fs.readdirSync(migrationsDir)
     .filter(f => f.endsWith('.sql'))
     .sort();
