@@ -25,6 +25,7 @@ const {
 const { csrfTokenMiddleware, getCsrfToken } = require('./middleware/csrf');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Development mode check
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -133,6 +134,7 @@ app.use(cors({
     const allowedBaseDomains = [
       'kmaincms.org',
       'josongeri.co.ke',
+      'msabato.co.ke',
       process.env.BASE_DOMAIN,
       process.env.PRODUCTION_BASE_DOMAIN
     ].filter(Boolean);
