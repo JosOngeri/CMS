@@ -115,13 +115,16 @@ async function main() {
   });
   await client.connect();
 
-  // Ensure department_members has member_id
+  // Ensure department_members has member_id and churches.slug is unique
   await client.query(`
     ALTER TABLE department_members
     ADD COLUMN IF NOT EXISTS member_id UUID,
     ADD COLUMN IF NOT EXISTS requested_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   `);
+  await client.query('CREATE UNIQUE INDEX IF NOT EXISTS churches_slug_key ON churches(slug)');
+  await client.query('CREATE UNIQUE INDEX IF NOT EXISTS departments_slug_church_key ON departments(slug, church_id)');
+  await client.query('CREATE UNIQUE INDEX IF NOT EXISTS department_members_user_dept_key ON department_members(user_id, department_id)');
 
   const passwordHash = bcrypt.hashSync('right123', 10);
   const memberRole = await client.query("SELECT id FROM roles WHERE name = 'Member'");
