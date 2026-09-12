@@ -115,17 +115,17 @@ app.use(cors({
     if (isDevelopment) {
       // Allow localhost
       if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-        return callback(null, true);
+        return callback(null, origin);
       }
       // Allow all private network IP addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
       if (origin.match(/^http:\/\/(192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+)(:\d+)?$/)) {
-        return callback(null, true);
+        return callback(null, origin);
       }
     }
 
     // Allow explicitly configured origins
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      return callback(null, origin);
     }
 
     // Phase 6: Tenant-aware CORS - Allow church subdomains
@@ -146,7 +146,7 @@ app.use(cors({
       // Validate subdomain format (lowercase letters, numbers, hyphens)
       if (subdomain.match(/^[a-z0-9-]+$/)) {
         logger.info(`Tenant-aware CORS allowed: ${origin} (church: ${subdomain})`);
-        return callback(null, true);
+        return callback(null, origin);
       }
     }
 
@@ -157,7 +157,7 @@ app.use(cors({
     }
 
     // In development, allow unknown origins for flexibility
-    return callback(null, true);
+    return callback(null, origin);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'Accept', 'X-Requested-With', 'x-csrf-token'],
