@@ -30,7 +30,7 @@
 -dontwarn com.google.firebase.**
 
 # Keep secure storage classes
--keep class com.it_nomads FlutterSecureStorage { *; }
+-keep class com.it_nomads.fluttersecurestorage.** { *; }
 -dontwarn com.it_nomads.**
 
 # Keep local auth classes
@@ -48,3 +48,6 @@
 # Keep shared preferences classes
 -keep class io.flutter.plugins.sharedpreferences.** { *; }
 -dontwarn io.flutter.plugins.sharedpreferences.**
+
+# Play Core deferred components are optional - not used by this app
+-dontwarn com.google.android.play.core.**

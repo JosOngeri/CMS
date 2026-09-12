@@ -142,17 +142,23 @@ async function main() {
     const churchId = churchRes.rows[0].id;
     console.log(`\n=== ${church.name} (${church.slug}) target ${church.target} ===`);
 
-    // Departments (slug is globally unique, so prefix with church slug)
+    // Departments (prefix slug with church slug; UPDATE-then-INSERT so this
+    // works whether the DB enforces unique(slug) or unique(slug, church_id))
     const deptMap = {};
     for (const dept of DEPARTMENTS) {
       const deptSlug = `${church.slug}-${dept.slug}`;
-      const res = await client.query(
-        `INSERT INTO departments (name, slug, church_id, is_active)
-         VALUES ($1, $2, $3, true)
-         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, is_active = true
-         RETURNING id`,
+      let res = await client.query(
+        `UPDATE departments SET name = $1, is_active = true
+         WHERE slug = $2 AND church_id = $3 RETURNING id`,
         [dept.name, deptSlug, churchId]
       );
+      if (res.rows.length === 0) {
+        res = await client.query(
+          `INSERT INTO departments (name, slug, church_id, is_active)
+           VALUES ($1, $2, $3, true) RETURNING id`,
+          [dept.name, deptSlug, churchId]
+        );
+      }
       deptMap[dept.slug] = res.rows[0].id;
     }
 

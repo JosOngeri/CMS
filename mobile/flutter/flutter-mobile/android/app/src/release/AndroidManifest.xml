@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Release-specific configurations -->
     <application
-        android:debuggable="false"
         android:allowBackup="true">
         
         <!-- Production API configuration -->
