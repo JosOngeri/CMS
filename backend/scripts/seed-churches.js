@@ -125,6 +125,7 @@ async function main() {
   await client.query('CREATE UNIQUE INDEX IF NOT EXISTS churches_slug_key ON churches(slug)');
   await client.query('CREATE UNIQUE INDEX IF NOT EXISTS departments_slug_church_key ON departments(slug, church_id)');
   await client.query('CREATE UNIQUE INDEX IF NOT EXISTS department_members_user_dept_key ON department_members(user_id, department_id)');
+  await client.query('CREATE UNIQUE INDEX IF NOT EXISTS members_user_id_key ON members(user_id)');
 
   const passwordHash = bcrypt.hashSync('right123', 10);
   const memberRole = await client.query("SELECT id FROM roles WHERE name = 'Member'");
@@ -141,15 +142,16 @@ async function main() {
     const churchId = churchRes.rows[0].id;
     console.log(`\n=== ${church.name} (${church.slug}) target ${church.target} ===`);
 
-    // Departments
+    // Departments (slug is globally unique, so prefix with church slug)
     const deptMap = {};
     for (const dept of DEPARTMENTS) {
+      const deptSlug = `${church.slug}-${dept.slug}`;
       const res = await client.query(
         `INSERT INTO departments (name, slug, church_id, is_active)
          VALUES ($1, $2, $3, true)
-         ON CONFLICT (slug, church_id) DO UPDATE SET name = EXCLUDED.name, is_active = true
+         ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, is_active = true
          RETURNING id`,
-        [dept.name, dept.slug, churchId]
+        [dept.name, deptSlug, churchId]
       );
       deptMap[dept.slug] = res.rows[0].id;
     }
@@ -212,6 +214,11 @@ async function main() {
        SELECT email, $1, first_name, last_name, username, phone_number, phone_number, true, church_id, username, $2
        FROM unnest($3::text[], $4::text[], $5::text[], $6::text[], $7::text[], $8::uuid[])
        AS t(email, first_name, last_name, username, phone_number, church_id)
+       ON CONFLICT (username) DO UPDATE SET
+         email = EXCLUDED.email,
+         password_hash = EXCLUDED.password_hash,
+         is_active = true,
+         church_id = EXCLUDED.church_id
        RETURNING id, email`,
       [passwordHash, church.slug, userEmails, userFirstNames, userLastNames, userUsernames, userPhones, userChurchIds]
     );
@@ -240,6 +247,17 @@ async function main() {
        SELECT user_id, first_name, last_name, email, phone, membership_status, joined_date, baptism_date, date_of_birth, gender, marital_status, occupation, church_id, membership_number
        FROM unnest($1::uuid[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::date[], $8::date[], $9::date[], $10::text[], $11::text[], $12::text[], $13::uuid[], $14::text[])
        AS t(user_id, first_name, last_name, email, phone, membership_status, joined_date, baptism_date, date_of_birth, gender, marital_status, occupation, church_id, membership_number)
+       ON CONFLICT (user_id) DO UPDATE SET
+         membership_status = EXCLUDED.membership_status,
+         joined_date = EXCLUDED.joined_date,
+         baptism_date = EXCLUDED.baptism_date,
+         date_of_birth = EXCLUDED.date_of_birth,
+         gender = EXCLUDED.gender,
+         marital_status = EXCLUDED.marital_status,
+         occupation = EXCLUDED.occupation,
+         church_id = EXCLUDED.church_id,
+         membership_number = EXCLUDED.membership_number,
+         updated_at = CURRENT_TIMESTAMP
        RETURNING id, user_id`,
       [memberUserIds, memberFirstNames, memberLastNames, memberEmails, memberPhones, memberStatuses, memberJoined, memberBaptism, memberDob, memberGender, memberMarital, memberOccupation, memberChurchIds, memberNumbers]
     );
