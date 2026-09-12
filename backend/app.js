@@ -81,9 +81,30 @@ const allowedOrigins = [
   'http://localhost:5180',
   process.env.DEV_IP_ADDRESS,
   'https://kiserian-main-sda-church-website-c7u7oiydk.vercel.app',
+  'https://msabato.co.ke',
+  'https://www.msabato.co.ke',
   process.env.FRONTEND_ORIGIN,
   process.env.PRODUCTION_FRONTEND_URL,
 ].filter(Boolean);
+
+// Multi-part public suffixes (e.g. .co.ke, .co.uk, .com.au) where the
+// registrable domain is the last three labels, not the last two.
+const MULTI_PART_TLDS = new Set([
+  'co.ke', 'or.ke', 'ac.ke', 'go.ke', 'ne.ke', 'me.ke',
+  'co.uk', 'org.uk',
+  'com.au', 'com.br', 'com.cn', 'com.tw', 'com.hk',
+  'co.jp', 'or.jp', 'ac.jp',
+  'co.in', 'co.za',
+  'com.sg', 'com.my', 'co.id', 'co.th', 'com.ph', 'com.vn', 'co.kr',
+  'com.ru', 'com.mx', 'com.ar', 'com.co', 'com.pe', 'com.ve', 'com.ec',
+  'com.bo', 'com.py', 'com.uy', 'com.do', 'com.pr', 'com.gt', 'com.sv',
+  'com.hn', 'com.ni', 'com.cr', 'com.pa', 'com.cu', 'com.jm', 'com.tt',
+  'com.bb', 'com.bs', 'com.bm', 'com.ky', 'com.vc', 'com.ag', 'com.dm',
+  'com.gd', 'com.lc', 'com.kn', 'com.ms', 'com.ai', 'com.vg', 'com.tk',
+  'com.ml', 'com.gq', 'com.cf', 'com.st', 'com.sl', 'com.gm', 'com.gw',
+  'com.gn', 'com.bf', 'com.ne', 'com.td', 'com.cm', 'com.cg', 'com.cd',
+  'com.ga'
+]);
 
 // Extract base domain for tenant subdomain support (Phase 6)
 const getBaseDomain = (origin) => {
@@ -93,8 +114,10 @@ const getBaseDomain = (origin) => {
     const hostname = url.hostname;
     // Handle subdomains like kiserian-main-sda.kmaincms.org
     const parts = hostname.split('.');
+    if (parts.length >= 3 && MULTI_PART_TLDS.has(parts.slice(-2).join('.'))) {
+      return parts.slice(-3).join('.');
+    }
     if (parts.length >= 2) {
-      // Return base domain for subdomain matching
       return parts.slice(-2).join('.');
     }
     return hostname;
