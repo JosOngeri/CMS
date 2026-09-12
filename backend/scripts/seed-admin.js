@@ -39,7 +39,7 @@ async function main() {
        password_hash = EXCLUDED.password_hash,
        is_active = true,
        church_id = EXCLUDED.church_id`,
-    ['admin@kiseriansda.org', passwordHash, 'Admin', 'User', 'admin', true, churchId]
+    ['admin@kiseriansda.org', passwordHash, 'Admin', 'User', 'admin@kiseriansda.org', true, churchId]
   );
 
   await client.query(`
