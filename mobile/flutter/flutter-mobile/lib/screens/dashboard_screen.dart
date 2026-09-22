@@ -17,6 +17,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   final PullSyncService _pullSyncService = PullSyncService();
   Map<String, dynamic>? _stats;
   List<dynamic>? _activities;
+  dynamic _unreadNotifications;
+  dynamic _pendingApprovals;
   bool _isLoading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
@@ -63,10 +65,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       final result = await _apiService!.getDashboardData();
       
       if (result['success']) {
-        final data = result['data'];
+        // API wraps the payload as data.data.stats — unwrap until stats found
+        dynamic data = result['data'];
+        while (data is Map && data['stats'] == null && data['data'] is Map) {
+          data = data['data'];
+        }
         setState(() {
-          _stats = data['stats'];
-          _activities = data['activities'];
+          _stats = data is Map ? data['stats'] : null;
+          _unreadNotifications = data is Map && data['notifications'] is Map
+              ? data['notifications']['unread']
+              : null;
+          _pendingApprovals = data is Map && data['approvals'] is Map
+              ? data['approvals']['pending']
+              : null;
+          _activities = data is Map ? data['activities'] : null;
         });
       } else {
         setState(() {
@@ -202,7 +214,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildWelcomeHeader(Map<String, dynamic>? user) {
-    final firstName = user?['first_name'] ?? 'Member';
+    final firstName = user?['firstName'] ?? user?['first_name'] ?? 'Member';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -236,27 +248,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       children: [
         _buildStatCard(
           'Total Members',
-          '${_stats!['totalMembers'] ?? 0}',
+          '${_stats!['total_members'] ?? 0}',
           Icons.people,
           Colors.blue,
         ),
         _buildStatCard(
-          'Total Payments',
-          'KES ${_stats!['totalPayments'] ?? 0}',
-          Icons.payments,
+          'Departments',
+          '${_stats!['total_departments'] ?? 0}',
+          Icons.groups,
+          Colors.teal,
+        ),
+        _buildStatCard(
+          'Income (30d)',
+          'KES ${_stats!['monthly_income'] ?? 0}',
+          Icons.trending_up,
           Colors.green,
         ),
         _buildStatCard(
-          'Upcoming Events',
-          '${_stats!['upcomingEvents'] ?? 0}',
-          Icons.event,
-          Colors.purple,
+          'Expenses (30d)',
+          'KES ${_stats!['monthly_expense'] ?? 0}',
+          Icons.trending_down,
+          Colors.red,
         ),
         _buildStatCard(
-          'Announcements',
-          '${_stats!['recentAnnouncements'] ?? 0}',
-          Icons.announcement,
+          'Unread Notices',
+          '${_unreadNotifications ?? 0}',
+          Icons.notifications,
           Colors.orange,
+        ),
+        _buildStatCard(
+          'Pending Approvals',
+          '${_pendingApprovals ?? 0}',
+          Icons.approval,
+          Colors.purple,
         ),
       ],
     );

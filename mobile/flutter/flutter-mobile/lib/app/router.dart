@@ -9,6 +9,7 @@ import '../screens/announcements_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/server_url_screen.dart';
+import '../widgets/main_shell.dart';
 import '../services/auth_service.dart';
 
 // Loading screen for auth state restoration
@@ -71,21 +72,43 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-      GoRoute(
-        path: '/dashboard',
-        builder: (context, state) => const DashboardScreen(),
-      ),
-      GoRoute(
-        path: '/payments',
-        builder: (context, state) => const PaymentsScreen(),
-      ),
-      GoRoute(
-        path: '/announcements',
-        builder: (context, state) => const AnnouncementsScreen(),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfileScreen(),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            MainShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/dashboard',
+                builder: (context, state) => const DashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/payments',
+                builder: (context, state) => const PaymentsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/announcements',
+                builder: (context, state) => const AnnouncementsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: '/forgot-password',
