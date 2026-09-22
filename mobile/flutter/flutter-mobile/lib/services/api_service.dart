@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config.dart';
 
@@ -370,12 +372,12 @@ class ApiService {
   Future<Map<String, dynamic>> getPaymentHistory() async {
     try {
       final service = await getInstance();
-      final response = await service._dio.get('/mobile/payments');
-      
-      if (response.statusCode == 200) {
+      final response = await service._dio.get('/payments/my-payments');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
         return {
           'success': true,
-          'data': response.data,
+          'payments': response.data['payments'] ?? [],
         };
       } else {
         return {
@@ -394,6 +396,49 @@ class ApiService {
         'error': 'Network error: ${e.toString()}',
       };
     }
+  }
+
+  /// Download a PDF receipt for a payment. Returns the saved file path.
+  Future<Map<String, dynamic>> downloadReceiptPdf(String paymentId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get(
+        '/payments/$paymentId/receipt',
+        queryParameters: {'format': 'pdf'},
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final filePath = '${dir.path}/receipt-$paymentId.pdf';
+        final file = File(filePath);
+        await file.writeAsBytes(response.data as List<int>);
+        return {'success': true, 'path': filePath};
+      }
+
+      return {'success': false, 'error': 'Failed to download receipt'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Resolve a server-relative path (e.g. /uploads/avatars/x.jpg) to a full URL.
+  String resolveFileUrl(String? path) {
+    if (path == null || path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    final base = _dio.options.baseUrl.replaceFirst(RegExp(r'/api/?$'), '');
+    return '$base$path';
+  }
+
+  /// CMS controllers wrap payloads as { success, message, data: { data: X } }.
+  /// Unwrap nested 'data' envelopes until the real payload is reached.
+  dynamic _unwrapData(dynamic data) {
+    while (data is Map && data['data'] != null && data.length <= 2) {
+      data = data['data'];
+    }
+    return data;
   }
 
   // Announcements methods
@@ -456,6 +501,163 @@ class ApiService {
         'success': false,
         'error': 'Network error: ${e.toString()}',
       };
+    }
+  }
+
+  /// Upload a profile photo (multipart). Returns { success, avatarUrl }.
+  Future<Map<String, dynamic>> uploadProfilePhoto(File photo) async {
+    try {
+      final service = await getInstance();
+      final formData = FormData.fromMap({
+        'photo': await MultipartFile.fromFile(photo.path),
+      });
+
+      final response = await service._dio.post(
+        '/auth/profile/photo',
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {
+          'success': true,
+          'avatarUrl': response.data['data']?['avatarUrl'],
+        };
+      }
+
+      return {
+        'success': false,
+        'error': response.data['error'] ?? 'Photo upload failed',
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Fetch the digital membership card payload.
+  Future<Map<String, dynamic>> getMembershipCard() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/mobile/membership-card');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'data': _unwrapData(response.data['data'])};
+      }
+
+      return {
+        'success': false,
+        'error': response.data['message'] ?? 'Membership card unavailable',
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // Events methods
+  Future<Map<String, dynamic>> getEvents() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/mobile/events');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'events': _unwrapData(response.data['data']) ?? []};
+      }
+
+      return {'success': false, 'error': 'Failed to load events'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// RSVP to an event. [status] is attending|maybe|not_attending|cancelled.
+  Future<Map<String, dynamic>> rsvpEvent(String eventId, String status) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/mobile/events/$eventId/rsvp',
+        data: {'status': status},
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'data': _unwrapData(response.data['data'])};
+      }
+
+      return {
+        'success': false,
+        'error': response.data['error'] ?? 'Failed to record RSVP',
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Departments the current user is assigned to.
+  Future<Map<String, dynamic>> getMyDepartments() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/mobile/my-departments');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'departments': _unwrapData(response.data['data']) ?? []};
+      }
+
+      return {'success': false, 'error': 'Failed to load departments'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Document library (Sabbath School quarterlies, bulletins, policies).
+  Future<Map<String, dynamic>> getDocuments() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/documents');
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = _unwrapData(response.data['data']);
+        return {'success': true, 'documents': data is List ? data : (data?['documents'] ?? [])};
+      }
+
+      return {'success': false, 'error': 'Failed to load documents'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Download a document file. Returns the saved file path.
+  Future<Map<String, dynamic>> downloadDocument(String documentId, String fileName) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get(
+        '/documents/$documentId/download',
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200) {
+        final dir = await getApplicationDocumentsDirectory();
+        final safeName = fileName.replaceAll(RegExp(r'[^\w\.\-]'), '_');
+        final filePath = '${dir.path}/$safeName';
+        await File(filePath).writeAsBytes(response.data as List<int>);
+        return {'success': true, 'path': filePath};
+      }
+
+      return {'success': false, 'error': 'Failed to download document'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
     }
   }
 }

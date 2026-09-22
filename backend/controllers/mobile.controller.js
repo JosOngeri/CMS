@@ -23,6 +23,7 @@ class MobileController extends BaseController {
     try {
       const userId = req.user.id;
       const churchId = req.user.church_id;
+      const roles = req.user.roles || [];
 
       const [
         unreadCount,
@@ -31,7 +32,7 @@ class MobileController extends BaseController {
       ] = await Promise.all([
         MobileRepository.getUnreadNotificationsCount(userId, churchId),
         MobileRepository.getPendingApprovalsCount(userId, churchId),
-        MobileRepository.getQuickStats(churchId)
+        MobileRepository.getQuickStats(churchId, userId, roles)
       ]);
 
       this.success(res, {
@@ -114,6 +115,66 @@ class MobileController extends BaseController {
   }
 
   /**
+   * Get departments the current user is assigned to
+   */
+  async getMyDepartments(req, res) {
+    try {
+      const userId = req.user.id;
+      const churchId = req.user.church_id;
+
+      const result = await MobileRepository.getMyDepartments(userId, churchId);
+
+      this.success(res, { data: result });
+    } catch (error) {
+      this.logger.error('getMyDepartments', error);
+      this.error(res, 'Failed to fetch your departments');
+    }
+  }
+
+  /**
+   * Get digital membership card data for the current user
+   */
+  async getMembershipCard(req, res) {
+    try {
+      const userId = req.user.id;
+
+      const card = await MobileRepository.getMembershipCard(userId);
+
+      if (!card) {
+        return this.notFound(res, 'Membership card not available');
+      }
+
+      this.success(res, { data: card });
+    } catch (error) {
+      this.logger.error('getMembershipCard', error);
+      this.error(res, 'Failed to fetch membership card');
+    }
+  }
+
+  /**
+   * RSVP to an event (persists to event_attendance)
+   */
+  async rsvpMobileEvent(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const userId = req.user.id;
+
+      const validStatuses = ['attending', 'maybe', 'not_attending', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ success: false, error: 'Invalid RSVP status' });
+      }
+
+      const rsvp = await MobileRepository.rsvpEvent(id, userId, status);
+
+      this.success(res, { data: rsvp }, 'RSVP recorded successfully');
+    } catch (error) {
+      this.logger.error('rsvpMobileEvent', error);
+      this.error(res, 'Failed to record RSVP');
+    }
+  }
+
+  /**
    * Get mobile events
    * @param {Object} req - Express request object
    * @param {Object} req.query - Query parameters
@@ -132,7 +193,7 @@ class MobileController extends BaseController {
         return this.success(res, { data: [] });
       }
 
-      const result = await MobileRepository.getMobileEvents(churchId);
+      const result = await MobileRepository.getMobileEvents(churchId, req.user.id);
       this.success(res, { data: result });
     } catch (error) {
       this.logger.error('getMobileEvents', error);

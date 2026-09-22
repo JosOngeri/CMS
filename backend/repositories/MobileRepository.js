@@ -31,7 +31,14 @@ class MobileRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getQuickStats(churchId = null) {
+  async getQuickStats(churchId = null, userId = null, roles = []) {
+    const privilegedRoles = ['Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'Department Head'];
+    const isPrivileged = Array.isArray(roles) && roles.some(role => privilegedRoles.includes(role));
+
+    if (!isPrivileged && userId) {
+      return this.getMemberQuickStats(churchId, userId);
+    }
+
     let query = `
       SELECT
         (SELECT COUNT(*) FROM members) as total_members,
@@ -53,7 +60,53 @@ class MobileRepository extends BaseRepository {
     }
 
     const result = await this.pool.query(query, params);
-    return result.rows[0];
+    return { scope: 'church', ...result.rows[0] };
+  }
+
+  async getMemberQuickStats(churchId, userId) {
+    const scalar = async (query, params) => {
+      try {
+        const result = await this.pool.query(query, params);
+        return result.rows[0]?.value ?? 0;
+      } catch (error) {
+        return 0;
+      }
+    };
+
+    const params = churchId ? [userId, churchId] : [userId];
+    const churchFilter = churchId ? ' AND church_id = $2' : '';
+
+    const [contributions, departments, events, announcements] = await Promise.all([
+      scalar(
+        `SELECT COALESCE(SUM(amount), 0) AS value FROM payments
+         WHERE member_id = $1 AND status IN ('completed', 'approved', 'success', 'verified')${churchFilter}`,
+        params
+      ),
+      scalar(
+        `SELECT COUNT(*) AS value FROM department_members
+         WHERE user_id = $1 AND is_active = true AND (status IS NULL OR status = 'active')${churchFilter}`,
+        params
+      ),
+      scalar(
+        `SELECT COUNT(*) AS value FROM event_attendance ea
+         JOIN events e ON e.id = ea.event_id
+         WHERE ea.member_id = $1 AND e.event_date >= CURRENT_DATE${churchFilter ? ' AND e.church_id = $2' : ''}`,
+        params
+      ),
+      scalar(
+        `SELECT COUNT(*) AS value FROM notifications
+         WHERE user_id = $1 AND is_read = false AND type = 'announcement'${churchFilter}`,
+        params
+      ),
+    ]);
+
+    return {
+      scope: 'member',
+      personal_contributions: contributions,
+      my_departments: parseInt(departments),
+      upcoming_events: parseInt(events),
+      unread_announcements: parseInt(announcements),
+    };
   }
 
   async getRecentActivity(userId, limit = 10, churchId = null) {
@@ -120,6 +173,71 @@ class MobileRepository extends BaseRepository {
     return result.rows;
   }
 
+  async getMyDepartments(userId, churchId) {
+    let query = `
+      SELECT d.id, d.name, d.description, d.category,
+             dm.role_in_department, dm.joined_at
+      FROM department_members dm
+      JOIN departments d ON d.id = dm.department_id
+      WHERE dm.user_id = $1
+      AND dm.is_active = true
+      AND d.is_active = true
+    `;
+    const params = [userId];
+
+    if (churchId) {
+      query += ` AND d.church_id = $2`;
+      params.push(churchId);
+    }
+
+    query += ` ORDER BY d.name`;
+
+    const result = await this.pool.query(query, params);
+    return result.rows;
+  }
+
+  async getMembershipCard(userId) {
+    let result;
+    try {
+      result = await this.pool.query(
+        `SELECT u.id AS user_id, u.first_name, u.last_name, u.email, u.avatar_url,
+                m.membership_number, c.name AS church_name
+         FROM users u
+         LEFT JOIN members m ON m.user_id = u.id
+         LEFT JOIN churches c ON c.id = u.church_id
+         WHERE u.id = $1`,
+        [userId]
+      );
+    } catch (error) {
+      // avatar_url may not exist before migration 026 runs
+      result = await this.pool.query(
+        `SELECT u.id AS user_id, u.first_name, u.last_name, u.email,
+                NULL AS avatar_url,
+                m.membership_number, c.name AS church_name
+         FROM users u
+         LEFT JOIN members m ON m.user_id = u.id
+         LEFT JOIN churches c ON c.id = u.church_id
+         WHERE u.id = $1`,
+        [userId]
+      );
+    }
+
+    const row = result.rows[0];
+    if (!row) {
+      return null;
+    }
+
+    return {
+      userId: row.user_id,
+      memberName: `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+      email: row.email,
+      avatarUrl: row.avatar_url,
+      membershipNumber: row.membership_number,
+      churchName: row.church_name,
+      verificationCode: `KMC:${row.user_id}:${row.membership_number || 'PENDING'}`,
+    };
+  }
+
   async checkEventsTable() {
     const result = await this.pool.query(`
       SELECT EXISTS (
@@ -130,19 +248,49 @@ class MobileRepository extends BaseRepository {
     return result.rows[0].exists;
   }
 
-  async getMobileEvents(churchId) {
+  async getMobileEvents(churchId, userId = null) {
     const query = `
-      SELECT id, title, description, event_date, event_time, location
-      FROM events
-      WHERE church_id = $1
-      AND event_date >= CURRENT_DATE
+      SELECT e.id, e.title, e.description, e.event_date, e.event_time, e.location,
+             e.is_public, e.max_attendees, e.poster_url,
+             d.name AS department_name,
+             (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id) AS attendee_count,
+             (SELECT ea2.rsvp_status FROM event_attendance ea2
+              WHERE ea2.event_id = e.id AND ea2.member_id = $2) AS my_rsvp_status
+      FROM events e
+      LEFT JOIN departments d ON d.id = e.department_id
+      WHERE e.church_id = $1
+      AND e.event_date >= CURRENT_DATE
+      ORDER BY e.event_date ASC, e.event_time ASC
     `;
-    const params = [churchId];
 
-    query += ' ORDER BY event_date ASC, event_time ASC';
-
-    const result = await this.pool.query(query, params);
+    const result = await this.pool.query(query, [churchId, userId]);
     return result.rows;
+  }
+
+  async rsvpEvent(eventId, userId, status) {
+    if (status === 'not_attending' || status === 'cancelled') {
+      await this.pool.query(
+        'DELETE FROM event_attendance WHERE event_id = $1 AND member_id = $2',
+        [eventId, userId]
+      );
+      return {
+        event_id: eventId,
+        user_id: userId,
+        status,
+        registered_at: null,
+      };
+    }
+
+    const result = await this.pool.query(
+      `INSERT INTO event_attendance (event_id, member_id, rsvp_status)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (event_id, member_id)
+       DO UPDATE SET rsvp_status = $3
+       RETURNING *`,
+      [eventId, userId, status]
+    );
+
+    return result.rows[0];
   }
 
   async getSyncData(syncDate, churchId) {

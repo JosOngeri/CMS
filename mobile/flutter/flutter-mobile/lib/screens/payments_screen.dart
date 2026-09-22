@@ -25,6 +25,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
   String _paymentMethod = 'STK Push';
   List<dynamic>? _paymentHistory;
   bool _isLoadingHistory = false;
+  final Set<String> _downloadingReceipts = {};
 
   final List<String> _categories = [
     'Tithe',
@@ -485,6 +486,36 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     }
   }
 
+  Future<void> _downloadReceipt(String paymentId) async {
+    setState(() => _downloadingReceipts.add(paymentId));
+
+    try {
+      final apiService = await ApiService.getInstance();
+      final result = await apiService.downloadReceiptPdf(paymentId);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // close history dialog
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Receipt saved to ${result['path']}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } else {
+        _showPaymentError(result['error'] ?? 'Failed to download receipt');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showPaymentError('Failed to download receipt');
+      }
+    } finally {
+      _downloadingReceipts.remove(paymentId);
+    }
+  }
+
   void _showPaymentHistory() {
     showDialog(
       context: context,
@@ -510,27 +541,52 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                       itemCount: _paymentHistory!.length,
                       itemBuilder: (context, index) {
                         final payment = _paymentHistory![index];
+                        final paymentId = payment['id']?.toString();
+                        final isDownloading =
+                            paymentId != null && _downloadingReceipts.contains(paymentId);
                         return ListTile(
                           leading: const Icon(Icons.payment, color: Colors.green),
-                          title: Text(payment['category'] ?? 'Payment'),
-                          subtitle: Text(
-                            '${payment['description'] ?? ''} • ${payment['date'] ?? ''}',
+                          title: Text(
+                            payment['category'] ?? payment['payment_type'] ?? 'Payment',
                           ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
+                          subtitle: Text(
+                            '${payment['description'] ?? payment['notes'] ?? ''} • ${payment['date'] ?? payment['payment_date'] ?? ''}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                'KES ${payment['amount'] ?? '0'}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'KES ${payment['amount'] ?? '0'}',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    payment['status'] ?? 'Unknown',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: _getStatusColor(payment['status']),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                payment['status'] ?? 'Unknown',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: _getStatusColor(payment['status']),
-                                ),
-                              ),
+                              if (paymentId != null)
+                                isDownloading
+                                    ? const Padding(
+                                        padding: EdgeInsets.only(left: 8),
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                      )
+                                    : IconButton(
+                                        icon: const Icon(Icons.picture_as_pdf, size: 20),
+                                        tooltip: 'Download PDF receipt',
+                                        onPressed: () => _downloadReceipt(paymentId),
+                                      ),
                             ],
                           ),
                         );

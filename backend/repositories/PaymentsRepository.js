@@ -347,10 +347,11 @@ class PaymentsRepository extends BaseRepository {
     const result = await this.pool.query(
       `SELECT p.*,
               pm.name as payment_method_name,
-              m.first_name || ' ' || m.last_name as member_name
+              COALESCE(m.first_name || ' ' || m.last_name, u.first_name || ' ' || u.last_name) as member_name
        FROM payments p
        LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
        LEFT JOIN members m ON p.member_id = m.id
+       LEFT JOIN users u ON p.member_id = u.id
        WHERE p.id = $1 AND p.member_id = $2`,
       [id, userId]
     );

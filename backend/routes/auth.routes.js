@@ -3,6 +3,38 @@ const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { authenticateToken, optionalAuth, requireRole } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Profile photo upload storage
+const avatarStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../uploads/avatars');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, `avatar-${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const avatarUpload = multer({
+  storage: avatarStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|webp/;
+    const ok = allowedTypes.test(path.extname(file.originalname).toLowerCase()) &&
+               allowedTypes.test(file.mimetype);
+    if (ok) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files (jpeg, jpg, png, webp) are allowed'));
+    }
+  }
+});
 
 // Validation rules
 const registerValidation = [
@@ -42,6 +74,7 @@ router.post('/logout', authController.logout);
 // Protected routes
 router.get('/profile', authenticateToken, authController.getProfile);
 router.put('/profile', authenticateToken, authController.updateProfile);
+router.post('/profile/photo', authenticateToken, avatarUpload.single('photo'), authController.uploadProfilePhoto);
 router.put('/password', authenticateToken, authController.changePassword);
 router.get('/sessions', authenticateToken, authController.getSessions);
 router.delete('/sessions/:sessionId', authenticateToken, authController.revokeSession);

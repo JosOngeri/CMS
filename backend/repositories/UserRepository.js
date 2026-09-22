@@ -509,11 +509,21 @@ class UserRepository extends BaseRepository {
   }
 
   async getProfile(userId) {
-    const result = await this.pool.query(
-      `SELECT id, email, first_name, last_name, phone, phone_number, is_active, email_verified, created_at
-       FROM users WHERE id = $1`,
-      [userId]
-    );
+    let result;
+    try {
+      result = await this.pool.query(
+        `SELECT id, email, first_name, last_name, phone, phone_number, avatar_url, is_active, email_verified, created_at
+         FROM users WHERE id = $1`,
+        [userId]
+      );
+    } catch (error) {
+      // avatar_url may not exist before migration 026 runs
+      result = await this.pool.query(
+        `SELECT id, email, first_name, last_name, phone, phone_number, NULL AS avatar_url, is_active, email_verified, created_at
+         FROM users WHERE id = $1`,
+        [userId]
+      );
+    }
 
     if (result.rows.length === 0) {
       return null;

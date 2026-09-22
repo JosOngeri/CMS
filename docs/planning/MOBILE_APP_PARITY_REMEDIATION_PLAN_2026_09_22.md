@@ -81,6 +81,27 @@ npx playwright test e2e/mobile-parity-member1-2026-09-22.spec.js --project=chrom
 
 # 3. Analyze and verify Flutter codebase
 cd mobile/flutter/flutter-mobile
+flutter pub get   # required: qr_flutter dependency added
 flutter analyze
 flutter test
 ```
+
+---
+
+## 5. Implementation Status (Verified 2026-09-22)
+
+### Completed
+- **Phase 1**: `MobileRepository.getQuickStats(churchId, userId, roles)` is now role-aware. Members receive `{ scope: 'member', personal_contributions, my_departments, upcoming_events, unread_announcements }`; privileged roles keep church-wide stats. `dashboard_screen.dart` renders member-specific cards based on `user['roles']`.
+- **Phase 2**: `POST /api/auth/profile/photo` (multer, `uploads/avatars/`, 5MB limit) added; `users.avatar_url` column added via `migrations/026_mobile_parity.sql` (**applied to local DB — verified**). `GET /api/mobile/membership-card` returns member name, membership number, church name, and verification code; `profile_screen.dart` renders the QR card via `qr_flutter` and re-enables the camera button via `media_service.dart`.
+- **Phase 3**: New `events_screen.dart` (list + RSVP toggle) and `departments_screen.dart` (assigned departments via `GET /api/mobile/my-departments`). `POST /api/mobile/events/:id/rsvp` and the existing `POST /api/events/:id/rsvp` now persist to `event_attendance.rsvp_status`. Bottom nav now has 5 tabs: Home, Payments, Events, News, Profile.
+- **Phase 4**: `GET /api/payments/:id/receipt?format=pdf` returns a generated PDF (jspdf). Receipt download button added to payment history modal. New `documents_screen.dart` lists/downloads files from `GET /api/documents`.
+
+### Bugs fixed along the way
+- `getPaymentHistory()` called non-existent `/mobile/payments` → now calls `/payments/my-payments`.
+- `PUT /auth/profile` silently ignored the app's snake_case fields (`first_name`/`last_name`) → now accepts both casings.
+- `payments.member_id` receipt join fixed (`members.id` → also joins `users.id`, member name now resolves).
+- Login response now includes `phone` and `avatarUrl`.
+
+### Caveats / Manual steps required
+- `flutter pub get` must be run before building (new `qr_flutter` dep). Flutter SDK was not on PATH in this environment, so `flutter analyze`/`flutter test` were **not run** — static review only.
+- Run `node backend/scripts/run-migration-026.js` on any other environment (e.g., production VPS) before deploying.

@@ -113,6 +113,8 @@ class AuthController extends BaseController {
           email: user.email,
           firstName: user.first_name,
           lastName: user.last_name,
+          phone: user.phone,
+          avatarUrl: user.avatar_url || null,
           churchId: user.church_id,
           roles: identity.roles,
           mfaEnabled: identity.mfaEnabled,
@@ -350,7 +352,10 @@ class AuthController extends BaseController {
   async updateProfile(req, res) {
     try {
       const userId = req.user.id;
-      const { firstName, lastName, phone } = req.body;
+      // Accept both camelCase (web) and snake_case (mobile) field names
+      const firstName = req.body.firstName ?? req.body.first_name;
+      const lastName = req.body.lastName ?? req.body.last_name;
+      const phone = req.body.phone ?? req.body.phone_number;
 
       const updates = {};
       if (firstName !== undefined) updates.first_name = firstName;
@@ -374,6 +379,32 @@ class AuthController extends BaseController {
     } catch (error) {
       this.logger.error('updateProfile', error);
       res.status(500).json({ success: false, error: 'Failed to update profile' });
+    }
+  }
+
+  async uploadProfilePhoto(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ success: false, error: 'No photo uploaded' });
+      }
+
+      const userId = req.user.id;
+      const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+      const result = await UserRepository.updateProfile(userId, { avatar_url: avatarUrl });
+
+      if (!result) {
+        return res.status(404).json({ success: false, error: 'User not found' });
+      }
+
+      res.json({
+        success: true,
+        message: 'Profile photo uploaded successfully',
+        data: { avatarUrl },
+      });
+    } catch (error) {
+      this.logger.error('uploadProfilePhoto', error);
+      res.status(500).json({ success: false, error: 'Failed to upload profile photo' });
     }
   }
 

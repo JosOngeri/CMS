@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const eventsRepository = require('../repositories/EventsRepository');
+const MobileRepository = require('../repositories/MobileRepository');
 const MpesaService = require('../utils/mpesa');
 const multer = require('multer');
 const path = require('path');
@@ -285,14 +286,16 @@ router.post('/:id/rsvp', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid RSVP status' });
     }
 
+    const rsvp = await MobileRepository.rsvpEvent(id, req.user.id, status);
+
     res.json({
       success: true,
       message: 'RSVP recorded successfully',
       rsvp: {
         event_id: id,
         user_id: req.user.id,
-        status,
-        registered_at: new Date().toISOString()
+        status: rsvp.rsvp_status || status,
+        registered_at: rsvp.registered_at || new Date().toISOString()
       }
     });
   } catch (error) {

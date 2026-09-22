@@ -33,6 +33,7 @@ dependencies:
   
   # UI Components
   cached_network_image: ^3.3.0
+  qr_flutter: ^4.1.0
   
   # Utilities
   logger: ^2.0.0

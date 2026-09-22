@@ -30,6 +30,11 @@ class MainShell extends StatelessWidget {
             label: 'Payments',
           ),
           NavigationDestination(
+            icon: Icon(Icons.event_outlined),
+            selectedIcon: Icon(Icons.event),
+            label: 'Events',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.announcement_outlined),
             selectedIcon: Icon(Icons.announcement),
             label: 'News',

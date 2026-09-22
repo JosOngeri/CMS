@@ -1,9 +1,9 @@
-# KMainCMS Mobile App Feature Parity & Remediation Plan
+# KMainCMS Mobile App Feature Parity & Privacy Remediation Plan
 
 **Author:** AI Quality & Mobile Engineering Specialist  
 **Date:** September 22, 2026  
 **Account Context:** `member1@newlife.com` (New Life SDA Church, Membership No: `NE-0001`, Role: Member)  
-**Target Codebase:** `mobile/flutter/flutter-mobile` & `frontend/src`  
+**Target Codebase:** `mobile/flutter/flutter-mobile` & `backend/` & `frontend/src`  
 
 ---
 
@@ -11,27 +11,32 @@
 
 This remediation plan outlines the engineering steps to achieve **100% feature parity** between the **Flutter Mobile Application** and the **React Web Platform** for church member users (`member1@newlife.com`).
 
-It addresses a **critical data privacy defect** on the mobile dashboard where regular members are currently exposed to church-wide financial totals (`monthly_income` and `monthly_expense`), and establishes missing core modules including **Events RSVP**, **My Departments**, **PDF Receipts Download**, **QR Membership Card**, and **Profile Photo Upload**.
+It addresses a **critical data privacy defect** on the backend repository (`MobileRepository.js`) where regular members calling `/mobile/dashboard` are currently exposed to church-wide financial totals (`monthly_income` and `monthly_expense`), and establishes missing core mobile modules including **Events RSVP**, **My Departments**, **PDF Receipts Download**, **QR Membership Card**, and **Profile Photo Upload**.
 
 ---
 
 ## 2. Priority Remediation Phases
 
-### Phase 1: Mobile Dashboard Privacy Fix (Critical / Immediate)
-- **Problem:** `dashboard_screen.dart` calls generic `getDashboardData()` which populates `monthly_income` and `monthly_expense` on the mobile home screen.
-- **Fix:** Update `dashboard_screen.dart` to check `ref.watch(userProvider)['role']`. If role is `Member`, fetch `/api/dashboard/personal-stats` and `/api/dashboard/personal-activity`.
-- **UI Elements:**
-  - Personal Contributions (KES)
-  - My Assigned Departments
-  - Upcoming Church Events
-  - Unread Announcements
-  - Personal Spiritual Growth Indicator
+### Phase 1: Backend Privacy Fix & Mobile Dashboard Role Awareness
+- **Backend (`MobileRepository.js` & `mobile.controller.js`):**
+  - Update `getQuickStats(churchId, userId, role)` in `MobileRepository.js`.
+  - For `Member` role, execute query for personal metrics:
+    - Personal Contributions Total (KES)
+    - Assigned Departments Count
+    - Registered Upcoming Events Count
+  - For Admin/Treasurer/Pastor roles, return church-wide `monthly_income` and `monthly_expense`.
+- **Flutter UI (`dashboard_screen.dart`):**
+  - Read user role from `authProvider` (`ref.watch(userProvider)`).
+  - Render personal metrics for `Member` role:
+    - Personal Contributions (KES)
+    - My Assigned Departments
+    - Upcoming Church Events
+    - Unread Announcements
 
 ### Phase 2: Profile Picture Upload & QR Membership Card
-- **Problem:** Camera picker in `profile_screen.dart` is commented out (`// Temporarily disabled due to package compatibility`).
-- **Fix:** Restore `image_picker` package support and implement `uploadProfilePhoto()` in `api_service.dart`.
-- **New Feature:** Render a **Digital Membership Card Widget** on profile screen:
-  - Member Name
+- **Photo Upload (`profile_screen.dart`):** Re-enable camera button with `image_picker` package support and implement `uploadProfilePhoto()` in `api_service.dart`.
+- **Digital Card Widget:** Render a **Digital Membership Card Widget** on profile screen:
+  - Member Name (`member1`)
   - Membership No (`NE-0001`)
   - Church Name (`New Life SDA`)
   - Verification QR Code.
@@ -54,7 +59,7 @@ It addresses a **critical data privacy defect** on the mobile dashboard where re
 
 ## 3. Automated Playwright E2E Test (`frontend/e2e/mobile-parity-member1.spec.js`)
 
-A Playwright test script has been added at `frontend/e2e/mobile-parity-member1.spec.js` that tests:
+A Playwright test script has been created at `frontend/e2e/mobile-parity-member1.spec.js` that tests:
 1. Login with `member1@newlife.com` / `right123`.
 2. Dashboard privacy check (verifying `Monthly Income` and `Monthly Expense` are hidden from regular members).
 3. Payments & M-Pesa STK Push option availability.

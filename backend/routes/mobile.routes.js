@@ -17,9 +17,14 @@ router.get('/announcements', mobileController.getMobileAnnouncements);
 
 // Mobile departments
 router.get('/departments', mobileController.getMobileDepartments);
+router.get('/my-departments', mobileController.getMyDepartments);
+
+// Digital membership card
+router.get('/membership-card', mobileController.getMembershipCard);
 
 // Mobile events
 router.get('/events', mobileController.getMobileEvents);
+router.post('/events/:id/rsvp', mobileController.rsvpMobileEvent);
 
 // Mobile data sync
 router.post('/sync', mobileController.syncMobileData);

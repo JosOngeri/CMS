@@ -157,7 +157,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       children: [
                         _buildWelcomeHeader(user),
                         const SizedBox(height: 24),
-                        if (_stats != null) _buildStatsCards(),
+                        if (_stats != null) _buildStatsCards(user),
                         const SizedBox(height: 24),
                         if (_activities != null && _activities!.isNotEmpty)
                           _buildRecentActivities()
@@ -237,7 +237,85 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildStatsCards() {
+  bool _isMemberOnly(Map<String, dynamic>? user) {
+    const privilegedRoles = [
+      'Super Admin',
+      'Pastor',
+      'First Elder',
+      'Treasurer',
+      'Department Head',
+    ];
+    final roles = (user?['roles'] as List?)?.map((e) => e.toString()).toList() ?? [];
+    return !roles.any(privilegedRoles.contains);
+  }
+
+  Widget _buildStatsCards(Map<String, dynamic>? user) {
+    final children = _isMemberOnly(user)
+        ? [
+            _buildStatCard(
+              'My Contributions',
+              'KES ${_stats!['personal_contributions'] ?? 0}',
+              Icons.volunteer_activism,
+              Colors.green,
+            ),
+            _buildStatCard(
+              'My Departments',
+              '${_stats!['my_departments'] ?? 0}',
+              Icons.groups,
+              Colors.teal,
+            ),
+            _buildStatCard(
+              'Upcoming Events',
+              '${_stats!['upcoming_events'] ?? 0}',
+              Icons.event,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              'Unread Notices',
+              '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
+              Icons.notifications,
+              Colors.orange,
+            ),
+          ]
+        : [
+            _buildStatCard(
+              'Total Members',
+              '${_stats!['total_members'] ?? 0}',
+              Icons.people,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              'Departments',
+              '${_stats!['total_departments'] ?? 0}',
+              Icons.groups,
+              Colors.teal,
+            ),
+            _buildStatCard(
+              'Income (30d)',
+              'KES ${_stats!['monthly_income'] ?? 0}',
+              Icons.trending_up,
+              Colors.green,
+            ),
+            _buildStatCard(
+              'Expenses (30d)',
+              'KES ${_stats!['monthly_expense'] ?? 0}',
+              Icons.trending_down,
+              Colors.red,
+            ),
+            _buildStatCard(
+              'Unread Notices',
+              '${_unreadNotifications ?? 0}',
+              Icons.notifications,
+              Colors.orange,
+            ),
+            _buildStatCard(
+              'Pending Approvals',
+              '${_pendingApprovals ?? 0}',
+              Icons.approval,
+              Colors.purple,
+            ),
+          ];
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -245,44 +323,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       mainAxisSpacing: 16,
       crossAxisSpacing: 16,
       childAspectRatio: 1.5,
-      children: [
-        _buildStatCard(
-          'Total Members',
-          '${_stats!['total_members'] ?? 0}',
-          Icons.people,
-          Colors.blue,
-        ),
-        _buildStatCard(
-          'Departments',
-          '${_stats!['total_departments'] ?? 0}',
-          Icons.groups,
-          Colors.teal,
-        ),
-        _buildStatCard(
-          'Income (30d)',
-          'KES ${_stats!['monthly_income'] ?? 0}',
-          Icons.trending_up,
-          Colors.green,
-        ),
-        _buildStatCard(
-          'Expenses (30d)',
-          'KES ${_stats!['monthly_expense'] ?? 0}',
-          Icons.trending_down,
-          Colors.red,
-        ),
-        _buildStatCard(
-          'Unread Notices',
-          '${_unreadNotifications ?? 0}',
-          Icons.notifications,
-          Colors.orange,
-        ),
-        _buildStatCard(
-          'Pending Approvals',
-          '${_pendingApprovals ?? 0}',
-          Icons.approval,
-          Colors.purple,
-        ),
-      ],
+      children: children,
     );
   }
 
