@@ -110,3 +110,7 @@ mobile/node_modules/
 .dart_tool/
 flutter-mobile-build/
 tools/
+
+# Credential exports - never commit
+USER_LOGINS.md
+cms_users_export.txt
