@@ -257,24 +257,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               'KES ${_stats!['personal_contributions'] ?? 0}',
               Icons.volunteer_activism,
               Colors.green,
+              onTap: () => context.go('/payments'),
             ),
             _buildStatCard(
               'My Departments',
               '${_stats!['my_departments'] ?? 0}',
               Icons.groups,
               Colors.teal,
+              onTap: () => context.push('/departments'),
             ),
             _buildStatCard(
               'Upcoming Events',
               '${_stats!['upcoming_events'] ?? 0}',
               Icons.event,
               Colors.blue,
+              onTap: () => context.go('/events'),
             ),
             _buildStatCard(
               'Unread Notices',
               '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
               Icons.notifications,
               Colors.orange,
+              onTap: () => context.go('/announcements'),
             ),
           ]
         : [
@@ -283,36 +287,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               '${_stats!['total_members'] ?? 0}',
               Icons.people,
               Colors.blue,
+              onTap: () => context.push('/members'),
             ),
             _buildStatCard(
               'Departments',
               '${_stats!['total_departments'] ?? 0}',
               Icons.groups,
               Colors.teal,
+              onTap: () => context.push('/departments'),
             ),
             _buildStatCard(
               'Income (30d)',
               'KES ${_stats!['monthly_income'] ?? 0}',
               Icons.trending_up,
               Colors.green,
+              onTap: () => context.go('/payments'),
             ),
             _buildStatCard(
               'Expenses (30d)',
               'KES ${_stats!['monthly_expense'] ?? 0}',
               Icons.trending_down,
               Colors.red,
+              onTap: () => context.go('/payments'),
             ),
             _buildStatCard(
               'Unread Notices',
               '${_unreadNotifications ?? 0}',
               Icons.notifications,
               Colors.orange,
+              onTap: () => context.go('/announcements'),
             ),
             _buildStatCard(
               'Pending Approvals',
               '${_pendingApprovals ?? 0}',
               Icons.approval,
               Colors.purple,
+              onTap: () => context.push('/approvals'),
             ),
           ];
 
@@ -327,34 +337,52 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color,
+      {VoidCallback? onTap}) {
     return Semantics(
       label: '$title: $value',
       value: value,
-      hint: 'Statistics card showing $title',
+      hint: 'Statistics card showing $title. Tap for details.',
+      button: onTap != null,
       child: Card(
         elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 32, color: color),
-              const SizedBox(height: 8),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 32, color: color),
+                const SizedBox(height: 8),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        title,
+                        style: const TextStyle(fontSize: 12),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (onTap != null) ...[
+                      const SizedBox(width: 2),
+                      Icon(Icons.chevron_right, size: 14, color: Colors.grey[400]),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -393,34 +421,43 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     
     IconData icon;
     Color color;
-    
+    String? route;
+
     switch (type) {
       case 'payment':
         icon = Icons.payment;
         color = Colors.green;
+        route = '/payments';
         break;
       case 'announcement':
         icon = Icons.announcement;
         color = Colors.orange;
+        route = '/announcements';
         break;
       case 'event':
         icon = Icons.event;
         color = Colors.purple;
+        route = '/events';
         break;
       default:
         icon = Icons.info;
         color = Colors.blue;
     }
-    
+
     return Semantics(
       label: 'Activity: $description',
-      hint: 'Recent activity item',
+      hint: route != null ? 'Recent activity item. Tap to view.' : 'Recent activity item',
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
+        clipBehavior: Clip.antiAlias,
         child: ListTile(
           leading: Icon(icon, color: color),
           title: Text(description ?? 'Unknown activity'),
           subtitle: Text(createdAt ?? 'Unknown time'),
+          trailing: route != null
+              ? Icon(Icons.chevron_right, color: Colors.grey[400])
+              : null,
+          onTap: route != null ? () => context.go(route!) : null,
         ),
       ),
     );

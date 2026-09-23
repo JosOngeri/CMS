@@ -31,6 +31,13 @@ function csrfTokenMiddleware(req, res, next) {
     return next();
   }
 
+  // Skip CSRF for Bearer-token API clients (mobile app) — CSRF only protects
+  // cookie-based sessions; browsers never attach Authorization headers cross-site.
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
   // Validate CSRF token for state-changing requests
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   if (!validateCSRFToken(token)) {

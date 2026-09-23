@@ -617,6 +617,82 @@ class ApiService {
     }
   }
 
+  /// Church member directory.
+  Future<Map<String, dynamic>> getMembers({String? search, int page = 1, int limit = 50}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/members', queryParameters: {
+        'page': page,
+        'limit': limit,
+        if (search != null && search.isNotEmpty) 'search': search,
+      });
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = _unwrapData(response.data['data']);
+        return {
+          'success': true,
+          'members': data is List ? data : (data?['members'] ?? []),
+          'pagination': data is Map ? data['pagination'] : null,
+        };
+      }
+
+      return {'success': false, 'error': 'Failed to load members'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Approval requests (pending + history).
+  Future<Map<String, dynamic>> getApprovals({String? status}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/approvals', queryParameters: {
+        if (status != null && status.isNotEmpty) 'filter': status,
+      });
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = _unwrapData(response.data['data']);
+        return {'success': true, 'approvals': data is List ? data : (data?['approvals'] ?? [])};
+      }
+
+      return {'success': false, 'error': 'Failed to load approvals'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Approve an approval request (leaders only).
+  Future<Map<String, dynamic>> approveRequest(String approvalId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.put('/approvals/$approvalId/approve');
+      return {'success': response.statusCode == 200 && response.data['success'] == true};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Reject an approval request (leaders only).
+  Future<Map<String, dynamic>> rejectRequest(String approvalId, {String? reason}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.put('/approvals/$approvalId/reject', data: {
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+      });
+      return {'success': response.statusCode == 200 && response.data['success'] == true};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
   /// Document library (Sabbath School quarterlies, bulletins, policies).
   Future<Map<String, dynamic>> getDocuments() async {
     try {

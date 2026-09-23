@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
 class AnnouncementsScreen extends ConsumerStatefulWidget {
@@ -30,9 +31,11 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
   }
 
   Future<void> _loadReadAnnouncements() async {
-    // Load read announcements from local storage
-    // For now, this is a placeholder
-    // TODO: Implement local storage for read announcements
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('read_announcements') ?? [];
+    setState(() {
+      _readAnnouncements = saved.toSet();
+    });
   }
 
   Future<void> _loadAnnouncements() async {
@@ -76,11 +79,13 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
     await _loadAnnouncements();
   }
 
-  void _markAsRead(String announcementId) {
+  Future<void> _markAsRead(String announcementId) async {
+    if (announcementId.isEmpty) return;
     setState(() {
       _readAnnouncements.add(announcementId);
     });
-    // TODO: Save to local storage
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('read_announcements', _readAnnouncements.toList());
   }
 
   void _showAnnouncementDetail(Map<String, dynamic> announcement) {

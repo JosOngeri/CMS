@@ -21,8 +21,23 @@ const createRateLimiter = (options) => {
   // Remove prefix from options as it's not supported in v7
   const { prefix, ...limiterOptions } = options;
 
+  // Some proxies append the client port to X-Forwarded-For (e.g. "1.2.3.4:5678"),
+  // which trips express-rate-limit's IP validation. Strip a trailing :port so
+  // rate limiting keys on a clean IP.
+  const clientIp = (req) => {
+    const ip = req.ip || '';
+    // Only strip ":port" from IPv4-style values (e.g. "1.2.3.4:5678");
+    // leave IPv6 and plain IPv4 untouched.
+    if (/^\d{1,3}(\.\d{1,3}){3}:\d+$/.test(ip)) {
+      return ip.slice(0, ip.lastIndexOf(':'));
+    }
+    return ip;
+  };
+
   const finalOptions = {
     ...limiterOptions,
+    keyGenerator: clientIp,
+    validate: { ip: false },
     store: isRedisAvailable ? new RedisStore({
       client: redisCache.client,
       prefix: `ratelimit:${limiterName}:`,
