@@ -30,7 +30,7 @@ class TelegramChurchController extends BaseController {
   async saveConfig(req, res) {
     try {
       const churchId = req.user.church_id;
-      const {
+      let {
         channelId,
         channelName,
         channelUsername,
@@ -38,6 +38,8 @@ class TelegramChurchController extends BaseController {
         syncIntervalHours,
         isActive
       } = req.body;
+
+      const effectiveChannelId = channelId || channelUsername;
 
       const result = await pool.query(
         `INSERT INTO telegram_channels
@@ -52,7 +54,7 @@ class TelegramChurchController extends BaseController {
            is_active = EXCLUDED.is_active,
            updated_at = CURRENT_TIMESTAMP
          RETURNING *`,
-        [churchId, channelId, channelName, channelUsername, autoSyncToAnnouncements || false, syncIntervalHours || 1, isActive !== false]
+        [churchId, effectiveChannelId, channelName, channelUsername, autoSyncToAnnouncements || false, syncIntervalHours || 1, isActive !== false]
       );
 
       this.success(res, { message: 'Telegram config saved', data: result.rows[0] });
