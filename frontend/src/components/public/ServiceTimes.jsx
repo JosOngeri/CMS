@@ -83,7 +83,7 @@ const ServiceTimes = () => {
                 key={index}
                 className={`group relative p-8 rounded-2xl transition-all duration-300 cursor-pointer ${
                   service.highlight
-                    ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)] text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                    ? 'bg-gradient-to-br from-[var(--color-primary-strong)] to-[var(--color-primary-variant)] text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
                     : 'bg-[var(--color-surface)] hover:shadow-lg border border-[var(--color-border)] shadow-sm'
                 }`}
                 onClick={() => addToCalendar(service.day, service.time)}

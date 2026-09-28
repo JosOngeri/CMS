@@ -84,7 +84,7 @@ const HeroSection = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   to="/announcements"
-                  className="btn btn-lg bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface)] shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  className="btn btn-lg bg-white text-[var(--color-primary-strong)] hover:bg-white/90 shadow-xl hover:shadow-2xl transition-all duration-300 group"
                   aria-label="View announcements"
                 >
                   <span>View Announcements</span>
@@ -92,7 +92,7 @@ const HeroSection = () => {
                 </Link>
                 <Link
                   to="/auth/login"
-                  className="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-[var(--color-surface)] hover:text-[var(--color-primary)] transition-all duration-300"
+                  className="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-white hover:text-[var(--color-primary-strong)] transition-all duration-300"
                   aria-label="Access member portal"
                 >
                   Member Portal

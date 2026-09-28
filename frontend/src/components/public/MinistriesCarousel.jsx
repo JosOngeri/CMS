@@ -106,14 +106,14 @@ const iconMap = {
 
 const categoryColors = {
   'Leadership': 'from-purple-500 to-purple-600',
-  'Ministry': 'from-[var(--color-primary)] to-[var(--color-primary)]',
+  'Ministry': 'from-[var(--color-primary-strong)] to-[var(--color-primary-variant)]',
   'Worship': 'from-pink-500 to-pink-600',
   'Education': 'from-green-500 to-green-600',
   'Youth': 'from-yellow-500 to-yellow-600',
   'Service': 'from-red-500 to-red-600',
   'Special': 'from-indigo-500 to-indigo-600',
   'Communication': 'from-cyan-500 to-cyan-600',
-  'Other': 'from-[var(--color-textSecondary)] to-[var(--color-text)]',
+  'Other': 'from-slate-500 to-slate-600',
 };
 
 const MinistriesCarousel = () => {

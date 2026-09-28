@@ -31,7 +31,7 @@ function DownloadsPage() {
     if (!manifest?.latest) return null;
     const v = manifest.latest;
     return (
-      <section className="bg-[var(--color-primary)] text-white rounded-2xl p-8 md:p-12 mb-16 shadow-xl">
+      <section className="bg-[var(--color-primary-strong)] text-white rounded-2xl p-8 md:p-12 mb-16 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           <div className="p-4 bg-white/10 rounded-2xl">
             <Smartphone className="w-12 h-12" />
@@ -101,7 +101,7 @@ function DownloadsPage() {
                   {v.size && <span className="text-sm text-[var(--color-textSecondary)]">{formatBytes(v.size)}</span>}
                   <a
                     href={`/api/apk/download/${v.version}`}
-                    className="inline-flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-lg font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors"
+                    className="inline-flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-lg font-medium hover:bg-[var(--color-primary-strong)] hover:text-white hover:border-[var(--color-primary-strong)] transition-colors"
                   >
                     <Download className="w-4 h-4" />
                     Download

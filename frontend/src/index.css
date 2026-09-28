@@ -11,6 +11,7 @@
   /* Church Warm Palette - Default */
   --color-primary:        #4A6FA5;   /* Warm inviting blue - spiritual guidance */
   --color-primary-variant: #3A5F8F;
+  --color-primary-strong:  #3A5F8F;  /* Filled surfaces w/ white text (dark-mode safe) */
   --color-secondary:      #6B8E23;   /* Natural green - spiritual growth */
   --color-secondary-variant: #5A7E1F;
   --color-accent:         #E07A5F;   /* Warm orange - community fellowship */
@@ -32,6 +33,17 @@
   --color-success-light:   #F7EFD3;
   --color-warning-light:   #F6EBD6;
   --color-error-light:     #F6E3DC;
+  /* Primary numeric scale (referenced by Tailwind primary-50..900 config) */
+  --color-primary-50:  #F0F4FA;
+  --color-primary-100: #DFE8F3;
+  --color-primary-200: #C3D3E8;
+  --color-primary-300: #9FB8D8;
+  --color-primary-400: #7396C0;
+  --color-primary-500: #4A6FA5;
+  --color-primary-600: #3E6192;
+  --color-primary-700: #35527A;
+  --color-primary-800: #2C4263;
+  --color-primary-900: #22324B;
 
   /* Typography System */
   --font-display: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
@@ -111,6 +123,7 @@
   /* Church Warm Dark Palette */
   --color-primary:        #5B8BD4;
   --color-primary-variant: #4A7AC3;
+  --color-primary-strong:  #2A4F7F;  /* Dark-mode: deep blue so white text stays readable */
   --color-secondary:      #8FBC8F;
   --color-secondary-variant: #7EAC7E;
   --color-accent:         #F0A080;
@@ -131,6 +144,17 @@
   --color-success-light:   #3D3721;
   --color-warning-light:   #3D3220;
   --color-error-light:     #3F2A25;
+  /* Primary numeric scale - dark: dark tints low, readable mid, deep highs */
+  --color-primary-50:  #222E45;
+  --color-primary-100: #27334E;
+  --color-primary-200: #31415F;
+  --color-primary-300: #3B5378;
+  --color-primary-400: #4A77B5;
+  --color-primary-500: #5B8BD4;
+  --color-primary-600: #3E65A3;
+  --color-primary-700: #2F5183;
+  --color-primary-800: #26405F;
+  --color-primary-900: #1D3050;
 }
 
 /* High Contrast Mode */
@@ -138,6 +162,7 @@
   /* Church Warm High Contrast Palette */
   --color-primary:        #3A5F8F;
   --color-primary-variant: #2A4F7F;
+  --color-primary-strong:  #1F3E66;  /* High contrast: darkest navy */
   --color-secondary:      #5A7E1F;
   --color-secondary-variant: #4A6E0F;
   --color-accent:         #D06A4F;
@@ -158,6 +183,17 @@
   --color-success-light:   #EFE3B8;
   --color-warning-light:   #EDDCB0;
   --color-error-light:     #EFCFC3;
+  /* Primary numeric scale - high contrast */
+  --color-primary-50:  #EFF4FA;
+  --color-primary-100: #DCE7F2;
+  --color-primary-200: #B9CCE3;
+  --color-primary-300: #8FAFD2;
+  --color-primary-400: #6489B4;
+  --color-primary-500: #3A5F8F;
+  --color-primary-600: #2E4C72;
+  --color-primary-700: #25405F;
+  --color-primary-800: #1F3E66;
+  --color-primary-900: #16293F;
 }
 
 /* Large Text Mode */
@@ -165,6 +201,7 @@
   /* Church Warm Large Text Palette */
   --color-primary:        #4A6FA5;
   --color-primary-variant: #3A5F8F;
+  --color-primary-strong:  #3A5F8F;
   --color-secondary:      #6B8E23;
   --color-secondary-variant: #5A7E1F;
   --color-accent:         #E07A5F;
@@ -185,6 +222,17 @@
   --color-success-light:   #F7EFD3;
   --color-warning-light:   #F6EBD6;
   --color-error-light:     #F6E3DC;
+  /* Primary numeric scale - large text */
+  --color-primary-50:  #F0F4FA;
+  --color-primary-100: #DFE8F3;
+  --color-primary-200: #C3D3E8;
+  --color-primary-300: #9FB8D8;
+  --color-primary-400: #7396C0;
+  --color-primary-500: #4A6FA5;
+  --color-primary-600: #3E6192;
+  --color-primary-700: #35527A;
+  --color-primary-800: #2C4263;
+  --color-primary-900: #22324B;
 
   /* Large Text Typography */
   --font-size-base: 24px;
@@ -268,7 +316,7 @@ input:-webkit-autofill:active {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .church-gradient {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #2563EB 100%);
+  background: linear-gradient(135deg, var(--color-primary-strong) 0%, #2563EB 100%);
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -315,7 +363,7 @@ input:-webkit-autofill:active {
 
   .btn-primary {
     @apply btn text-white shadow-md hover:shadow-lg;
-    background-color: var(--color-primary) !important;
+    background-color: var(--color-primary-strong) !important;
     --tw-ring-color: var(--color-primary);
   }
 
