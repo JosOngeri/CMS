@@ -106,7 +106,7 @@ const NewsletterSection = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full btn bg-white text-[#1B3252] font-semibold hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Subscribe to newsletter"
                     >
                       {isSubmitting ? (
