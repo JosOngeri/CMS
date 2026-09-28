@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Announcements Module >> Can schedule announcement
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Announcements Module >> Can schedule announcement
 - Location: e2e\comprehensive-website-test.spec.js:463:5
 
 # Error details

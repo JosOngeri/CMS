@@ -106,7 +106,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- Insert default SMS settings (placeholder - to be updated with actual values)
 INSERT INTO sms_settings (provider_name, api_url, api_key, sender_id, is_active) VALUES
-('BlessedTexts', 'https://api.blessedtexts.com/sms', 'your_api_key_here', 'KMainCMS', false)
+('BlessedTexts', 'https://api.blessedtexts.com/sms', 'your_api_key_here', 'Msabato CMS', false)
 ON CONFLICT DO NOTHING;
 
 -- ============================================

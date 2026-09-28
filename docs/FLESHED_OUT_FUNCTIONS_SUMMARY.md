@@ -1,7 +1,7 @@
-# KMainCMS - Fleshed Out Functions Summary
+# Msabato CMS - Fleshed Out Functions Summary
 
 ## Overview
-This document summarizes all functions that have been fleshed out and made fully interactive across the KMainCMS codebase.
+This document summarizes all functions that have been fleshed out and made fully interactive across the Msabato CMS codebase.
 
 ## Dashboard Module
 

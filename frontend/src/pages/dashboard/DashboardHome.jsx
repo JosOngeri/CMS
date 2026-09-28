@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Users, Image as ImageIcon, FileText, DollarSign, MessageSquare, Calendar, TrendingUp, Activity, Sparkles, Church, BarChart3, TestTube, Download } from 'lucide-react';
 import { useMembers } from '../../contexts/MembersContext';
+import { useChurchBranding } from '../../hooks/useChurchBranding';
 
 function DashboardHome() {
   const { stats: memberStats, fetchStats } = useMembers();
+  const { churchName, fullName } = useChurchBranding();
   const [stats, setStats] = useState([
     { label: 'Total Members', value: '0', icon: Users, color: 'from-[var(--color-primary)]-800 to-[var(--color-primary)]-900', iconBg: 'bg-[var(--color-primary)]-100', iconColor: 'text-[var(--color-primary)]-800' },
     { label: 'Gallery Photos', value: '0', icon: ImageIcon, color: 'from-emerald-500 to-emerald-600', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
@@ -43,10 +45,10 @@ function DashboardHome() {
             <div className="p-3 bg-[var(--color-surface)]/20 rounded-xl">
               <Church className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold">Welcome to KMainCMS</h1>
+            <h1 className="text-3xl font-bold">Welcome to {churchName}</h1>
           </div>
           <p className="text-xl text-white/90 max-w-2xl">
-            Kiserian Main SDA Church Management System - Overview of your church administration dashboard
+            {fullName} - Overview of your church administration dashboard
           </p>
         </div>
       </div>

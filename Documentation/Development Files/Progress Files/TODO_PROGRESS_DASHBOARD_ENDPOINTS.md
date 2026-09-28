@@ -13,9 +13,9 @@
 - **Repository Method:** `getDepartmentHealthMetrics()` and `getUserDepartments()` in `DashboardRepository.js`
 - **Route:** Added to `dashboard.routes.js`
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\controllers\dashboard.controller.js`
-  - `D:\VIbeCode\KMainCMS\backend\repositories\DashboardRepository.js`
-  - `D:\VIbeCode\KMainCMS\backend\routes\dashboard.routes.js`
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\dashboard.controller.js`
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\DashboardRepository.js`
+  - `D:\VIbeCode\Msabato CMS\backend\routes\dashboard.routes.js`
 - **Returns:**
   ```json
   {
@@ -41,9 +41,9 @@
 - **Repository Method:** `getDepartmentActivityFeed()` and `getUserDepartments()` in `DashboardRepository.js`
 - **Route:** Added to `dashboard.routes.js`
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\controllers\dashboard.controller.js`
-  - `D:\VIbeCode\KMainCMS\backend\repositories\DashboardRepository.js`
-  - `D:\VIbeCode\KMainCMS\backend\routes\dashboard.routes.js`
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\dashboard.controller.js`
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\DashboardRepository.js`
+  - `D:\VIbeCode\Msabato CMS\backend\routes\dashboard.routes.js`
 - **Returns:**
   ```json
   [

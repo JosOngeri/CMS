@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The SMS App Integration Plan provides a comprehensive roadmap for integrating the JOSms Android application with the KMainCMS system. The plan follows an **offline-first architecture** with emphasis on lean resource usage for production environments.
+The SMS App Integration Plan provides a comprehensive roadmap for integrating the JOSms Android application with the Msabato CMS system. The plan follows an **offline-first architecture** with emphasis on lean resource usage for production environments.
 
 ## Plan Assessment
 

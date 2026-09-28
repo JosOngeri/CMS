@@ -1,6 +1,6 @@
-# KMainCMS UX Design Document Generation Prompt
+# Msabato CMS UX Design Document Generation Prompt
 
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 **Target Platform:** Web Application (Responsive Desktop, Tablet, Mobile)
 **Design Language:** Modern Web 2024/2025 - Clean, Professional, Accessible
 **Document Date:** June 20, 2026
@@ -9,7 +9,7 @@
 
 ## Prompt for UX Design Document Generation
 
-Create a comprehensive UX design document for KMainCMS (Church Management System) that follows the structure and depth of the Church SMS UX design document. 
+Create a comprehensive UX design document for Msabato CMS (Church Management System) that follows the structure and depth of the Church SMS UX design document. 
 
 **IMPORTANT:** First analyze the current implementation in the codebase, then generate the design document based on the actual current state. The document should:
 
@@ -32,8 +32,8 @@ Create a comprehensive UX design document for KMainCMS (Church Management System
 **Reference UX Design Analysis Required:**
 - Analyze the Ubuntu HRMS UX design at `D:\0000 SCO400 Project 2026\Ubuntu Software\documentation\deployment\UI-Genealogy.md`
 - Extract best practices from the Ubuntu HRMS UI hierarchy and navigation patterns
-- Identify successful patterns from Ubuntu HRMS that could be applied to KMainCMS
-- Compare Ubuntu HRMS role-based dashboard approach with KMainCMS implementation
+- Identify successful patterns from Ubuntu HRMS that could be applied to Msabato CMS
+- Compare Ubuntu HRMS role-based dashboard approach with Msabato CMS implementation
 - Learn from Ubuntu HRMS's comprehensive module organization and user flows
 - Analyze Ubuntu HRMS's approach to stats cards, quick actions, and tab-based navigation
 - Review Ubuntu HRMS's permission-based access patterns across different user roles (Admin, Manager, Employee)
@@ -710,7 +710,7 @@ Document how modules should work together:
 
 ## Conclusion
 
-This UX design document should serve as the single source of truth for all design decisions in KMainCMS. It should guide designers, developers, and stakeholders in creating a cohesive, accessible, and user-friendly church management system that serves the needs of all users from Super Admins to regular Members.
+This UX design document should serve as the single source of truth for all design decisions in Msabato CMS. It should guide designers, developers, and stakeholders in creating a cohesive, accessible, and user-friendly church management system that serves the needs of all users from Super Admins to regular Members.
 
 The document should be comprehensive enough to answer any design question, specific enough to guide implementation, and flexible enough to evolve with the system's needs.
 

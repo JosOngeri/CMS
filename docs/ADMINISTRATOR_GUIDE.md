@@ -1,8 +1,8 @@
-# KMainCMS Administrator Guide
+# Msabato CMS Administrator Guide
 
 ## Overview
 
-This guide is for system administrators responsible for managing KMainCMS. It covers system configuration, user management, security, and maintenance tasks.
+This guide is for system administrators responsible for managing Msabato CMS. It covers system configuration, user management, security, and maintenance tasks.
 
 ## Table of Contents
 1. [System Administration](#system-administration)
@@ -119,7 +119,7 @@ Key metrics to monitor:
 
 ### User Roles
 
-KMainCMS has several user roles with different permissions:
+Msabato CMS has several user roles with different permissions:
 
 #### Super Admin
 - Full system access
@@ -692,7 +692,7 @@ npm run db:optimize
 
 ## Conclusion
 
-Effective administration of KMainCMS requires:
+Effective administration of Msabato CMS requires:
 
 - Regular monitoring and maintenance
 - Proactive security management

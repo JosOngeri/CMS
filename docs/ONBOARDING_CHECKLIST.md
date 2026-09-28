@@ -1,8 +1,8 @@
-# KMainCMS Onboarding Checklist
+# Msabato CMS Onboarding Checklist
 
 ## Overview
 
-This checklist helps new users get started with KMainCMS. Follow these steps to set up your account and become familiar with the system.
+This checklist helps new users get started with Msabato CMS. Follow these steps to set up your account and become familiar with the system.
 
 ## Table of Contents
 1. [First-Time Setup](#first-time-setup)
@@ -17,7 +17,7 @@ This checklist helps new users get started with KMainCMS. Follow these steps to 
 
 ### Account Access
 - [ ] Receive login credentials from administrator
-- [ ] Access the KMainCMS URL
+- [ ] Access the Msabato CMS URL
 - [ ] Log in with your email and password
 - [ ] Complete the welcome wizard
 - [ ] Set up password recovery options

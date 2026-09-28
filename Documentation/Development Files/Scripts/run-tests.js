@@ -8,7 +8,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-console.log('🧪 Running KMainCMS Test Suite...\n');
+console.log('🧪 Running Msabato CMS Test Suite...\n');
 
 const backendPath = path.join(__dirname, 'backend');
 const frontendPath = path.join(__dirname, 'frontend');

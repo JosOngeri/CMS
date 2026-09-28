@@ -1,6 +1,6 @@
 # Phase 4 Refactoring: The "Holy Trinity" Script System
 
-This document outlines the usage of the three specialized Python scripts designed to safely refactor the KMainCMS legacy `pool.query` calls into the modern Repository pattern (Phase 4).
+This document outlines the usage of the three specialized Python scripts designed to safely refactor the Msabato CMS legacy `pool.query` calls into the modern Repository pattern (Phase 4).
 
 ## 1. Overview of the Trinity
 
@@ -16,7 +16,7 @@ This document outlines the usage of the three specialized Python scripts designe
 
 1.  **Python 3.10+**: Ensure Python is installed and accessible in your PATH.
 2.  **Git Cleanliness**: Your working tree **must** be clean (no uncommitted changes).
-3.  **Backup Space**: Ensure you have enough disk space for repository snapshots in `D:\Kiserian Main SDA Communications Department\KMainCMS\backups`.
+3.  **Backup Space**: Ensure you have enough disk space for repository snapshots in `D:\Kiserian Main SDA Communications Department\Msabato CMS\backups`.
 
 ---
 

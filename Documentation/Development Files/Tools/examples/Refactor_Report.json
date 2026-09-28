@@ -49,7 +49,7 @@
     ],
     "metadata": {
       "manifest_version": "1.0",
-      "project": "KMainCMS",
+      "project": "Msabato CMS",
       "total_mappings": 663,
       "total_steps": 3,
       "high_confidence_steps": 3,
@@ -105,7 +105,7 @@
       "timestamp": "2026-06-22T12:00:40Z"
     }
   ],
-  "pre_run_snapshot": "D:/Kiserian Main SDA Communications Department/KMainCMS/pre_refactor_snapshot_KMainCMS_20260622_120000.tar.gz",
+  "pre_run_snapshot": "D:/Kiserian Main SDA Communications Department/Msabato CMS/pre_refactor_snapshot_Msabato CMS_20260622_120000.tar.gz",
   "final_status": "success",
   "total_steps": 3,
   "successful_steps": 3,

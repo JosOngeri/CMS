@@ -3,7 +3,7 @@
  * Validates all major modules and captures screenshots.
  */
 
-describe('KMainCMS Full System Test', () => {
+describe('Msabato CMS Full System Test', () => {
   const baseUrl = 'http://localhost:5180';
 
   beforeEach(() => {

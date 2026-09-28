@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Departments Module >> Can assign members to department
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Departments Module >> Can assign members to department
 - Location: e2e\comprehensive-website-test.spec.js:292:5
 
 # Error details

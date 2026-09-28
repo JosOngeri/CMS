@@ -14,7 +14,7 @@ module.exports = {
     cwd: './frontend',
     env: {
       NODE_ENV: 'development',
-      NODE_PATH: 'D:/VIbeCode/KMainCMS/node_modules'
+      NODE_PATH: 'D:/VIbeCode/Msabato CMS/node_modules'
     }
   }]
 };

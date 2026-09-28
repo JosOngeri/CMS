@@ -46,8 +46,8 @@ const ServiceTimes = () => {
   const { getSetting } = useSettings();
 
   const serviceTimes = getSetting('service_times') || defaultServiceTimes;
-  const churchName = getSetting('church_name') || 'Kiserian Main SDA Church';
-  const churchLocation = getSetting('church_location') || `${churchName}, Kiserian, Kenya`;
+  const churchName = getSetting('church_name') || 'Msabato CMS';
+  const churchLocation = getSetting('church_location') || `${churchName}, Kenya`;
 
   const addToCalendar = (serviceName, time) => {
     const title = `${serviceName} - ${churchName}`;

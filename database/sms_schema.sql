@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS sms_campaigns (
 
 -- Insert default SMS provider (placeholder)
 INSERT INTO sms_providers (name, provider_type, sender_id, is_active) VALUES
-('Africas Talking', 'africas_talking', 'KMainCMS', false)
+('Africas Talking', 'africas_talking', 'Msabato CMS', false)
 ON CONFLICT DO NOTHING;
 
 -- Insert default SMS templates

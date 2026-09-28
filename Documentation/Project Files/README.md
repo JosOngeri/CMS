@@ -1,11 +1,11 @@
-# KMainCMS - Kiserian Main SDA Church Website
+# Msabato CMS - Kiserian Main SDA Church Website
 
 Modular church management system built with clean architecture principles.
 
 ## Project Structure
 
 ```
-KMainCMS/
+Msabato CMS/
 ├── backend/              # Node.js/Express API
 │   ├── config/          # Configuration files
 │   ├── controllers/     # Module controllers

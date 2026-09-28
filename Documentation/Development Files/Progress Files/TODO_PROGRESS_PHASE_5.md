@@ -18,14 +18,14 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 2. Fix duplicate index in 008_permissions_schema.sql
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\008_permissions_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\008_permissions_schema.sql`
 - **Change:** Removed duplicate index definitions on lines 27-28
 - **Before:** Duplicate CREATE INDEX statements for role_permissions
 - **After:** Single index definitions for role_id and permission_id
 
 ### 3. Fix 004_gallery_schema.sql - change SERIAL to UUID
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\004_gallery_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\004_gallery_schema.sql`
 - **Changes:**
   - Added UUID extension enablement
   - Changed all SERIAL PRIMARY KEY to UUID DEFAULT uuid_generate_v4() PRIMARY KEY
@@ -37,7 +37,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 4. Fix 006_settings_schema.sql - change SERIAL to UUID
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\006_settings_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\006_settings_schema.sql`
 - **Changes:**
   - Added UUID extension enablement
   - Changed id from SERIAL to UUID DEFAULT uuid_generate_v4()
@@ -47,7 +47,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 5. Fix 007_auth_tables.sql - change SERIAL to UUID
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\007_auth_tables.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\007_auth_tables.sql`
 - **Changes:**
   - Added UUID extension enablement
   - Changed all SERIAL to UUID DEFAULT uuid_generate_v4()
@@ -60,7 +60,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 6. Fix 008_permissions_schema.sql - change SERIAL to UUID
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\008_permissions_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\008_permissions_schema.sql`
 - **Changes:**
   - Added UUID extension enablement
   - Changed permissions.id from SERIAL to UUID DEFAULT uuid_generate_v4()
@@ -126,7 +126,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 10. Create migration file 009_add_church_id_to_all_tables.sql
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\009_add_church_id_to_main_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\009_add_church_id_to_main_schema.sql`
 - **Purpose:** Add church_id columns to main schema tables (complete_schema.sql)
 - **Tables covered:** users, members, departments, announcements, events, payments, pledges, login_attempts, member_contacts, member_groups, payment_categories, payment_methods, roles, user_roles
 - **Implementation:** Uses DO blocks to check if column exists before adding
@@ -134,7 +134,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 11. Update reset-db.js to run migrations 004-009
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\scripts\reset-db.js`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\scripts\reset-db.js`
 - **Changes:**
   - Added migration execution loop after complete_schema.sql
   - Runs migrations 004-010 in order
@@ -144,7 +144,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 12. Add church_id to settings table and fix UNIQUE constraint
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\006_settings_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\006_settings_schema.sql`
 - **Changes:**
   - Added church_id UUID column (nullable)
   - Changed UNIQUE constraint from (key) to (key, church_id)
@@ -153,7 +153,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 13. Update SettingsRepository.js to add church_id filters
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\repositories\SettingsRepository.js`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\repositories\SettingsRepository.js`
 - **Methods updated:**
   - createSetting(data, churchId) - added churchId parameter
   - getSettingByKeySimple(key, churchId) - added churchId filter
@@ -168,7 +168,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 14. Confirm documents table exists or create it
 - **Status:** ✅ Completed
-- **File Created:** `D:\VIbeCode\KMainCMS\backend\migrations\010_documents_schema.sql`
+- **File Created:** `D:\VIbeCode\Msabato CMS\backend\migrations\010_documents_schema.sql`
 - **Table schema:**
   - id: UUID DEFAULT uuid_generate_v4() PRIMARY KEY
   - church_id: UUID (nullable)
@@ -190,7 +190,7 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 15. Add ON DELETE CASCADE to gallery foreign keys
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\backend\migrations\004_gallery_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\backend\migrations\004_gallery_schema.sql`
 - **Constraints added:**
   - gallery_photos.album_id → gallery_albums(id) ON DELETE CASCADE
   - gallery_comments.photo_id → gallery_photos(id) ON DELETE CASCADE
@@ -203,14 +203,14 @@ Successfully implemented all Phase 5 database schema fixes focusing on UUID/SERI
 
 ### 16. Verify generate_user_slug function in complete_schema.sql
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\database\complete_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\database\complete_schema.sql`
 - **Finding:** Function exists at lines 32-57
 - **Function signature:** `generate_user_slug(first_name VARCHAR, last_name VARCHAR, user_id UUID) RETURNS VARCHAR`
 - **Functionality:** Generates unique slugs from names with collision handling
 
 ### 17. Verify uuid_generate_v4() availability
 - **Status:** ✅ Completed
-- **File:** `D:\VIbeCode\KMainCMS\database\complete_schema.sql`
+- **File:** `D:\VIbeCode\Msabato CMS\database\complete_schema.sql`
 - **Finding:** UUID extension enabled at line 6: `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`
 - **Usage:** All tables use `uuid_generate_v4()` for UUID generation
 - **Note:** Using uuid-ossp extension which provides uuid_generate_v4()

@@ -1,6 +1,6 @@
 # Skill: Comprehensive Codebase Audit Protocol
 
-This protocol defines the systematic process for auditing the KMainCMS codebase (2,500+ files) to ensure a lean, mobile-friendly, and functional architecture.
+This protocol defines the systematic process for auditing the Msabato CMS codebase (2,500+ files) to ensure a lean, mobile-friendly, and functional architecture.
 
 ## 1. Operational Protocol
 

@@ -1,4 +1,4 @@
-# KMainCMS Unified Master Upgrade Plan: Phase 2.0 (Neutrino-Fidelity)
+# Msabato CMS Unified Master Upgrade Plan: Phase 2.0 (Neutrino-Fidelity)
 
 **Date:** 2026-06-22  
 **Version:** 2.0 (Combined & Unified)  
@@ -8,7 +8,7 @@
 ---
 
 ## 1. Executive Summary
-This document integrates the **15-Phase Modernization Roadmap** with the **Neutrino-Level Feature Requirements**. It transitions KMainCMS from a single-church application into a high-concurrency "Church-as-a-Service" platform capable of supporting 100k+ users and 2k+ admins with absolute tenant isolation.
+This document integrates the **15-Phase Modernization Roadmap** with the **Neutrino-Level Feature Requirements**. It transitions Msabato CMS from a single-church application into a high-concurrency "Church-as-a-Service" platform capable of supporting 100k+ users and 2k+ admins with absolute tenant isolation.
 
 ### Key Strategic Pillars:
 1.  **Isolation Shield**: Multi-tenancy via PostgreSQL Row-Level Security (RLS).
@@ -103,4 +103,4 @@ This document integrates the **15-Phase Modernization Roadmap** with the **Neutr
 
 ---
 **Approved By**: Lead Technical Architect  
-**Documentation Link**: [KMainCMS_Unified_Master_Upgrade_Plan.md](file:///D:/Kiserian%20Main%20SDA%20Communications%20Department/KMainCMS/plans/KMainCMS_Unified_Master_Upgrade_Plan.md)
+**Documentation Link**: [Msabato CMS_Unified_Master_Upgrade_Plan.md](file:///D:/Kiserian%20Main%20SDA%20Communications%20Department/Msabato CMS/plans/Msabato CMS_Unified_Master_Upgrade_Plan.md)

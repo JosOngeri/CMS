@@ -1,4 +1,4 @@
-# Troubleshooting Guide - KMainCMS VPS Deployment
+# Troubleshooting Guide - Msabato CMS VPS Deployment
 
 ## Common Issues and Solutions
 

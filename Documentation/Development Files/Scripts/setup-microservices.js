@@ -38,7 +38,7 @@ services.forEach(service => {
   const packageJson = {
     name: service.name,
     version: '1.0.0',
-    description: `${service.name} for KMainCMS`,
+    description: `${service.name} for Msabato CMS`,
     main: 'server.js',
     scripts: {
       start: 'node server.js',

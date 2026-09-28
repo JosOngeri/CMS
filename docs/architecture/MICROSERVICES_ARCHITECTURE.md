@@ -1,7 +1,7 @@
-# KMainCMS Microservices Architecture
+# Msabato CMS Microservices Architecture
 
 ## Overview
-KMainCMS has been converted from a monolithic architecture to a microservices architecture where each sidebar item (module) is containerized as a separate mini app.
+Msabato CMS has been converted from a monolithic architecture to a microservices architecture where each sidebar item (module) is containerized as a separate mini app.
 
 ## Architecture
 
@@ -352,4 +352,4 @@ The original monolithic backend is preserved in the `backend/` directory and can
 
 ## Conclusion
 
-The microservices architecture provides better scalability, fault isolation, and independent development for each module of the KMainCMS system. Each sidebar item is now a standalone mini app that can be developed, deployed, and scaled independently.
+The microservices architecture provides better scalability, fault isolation, and independent development for each module of the Msabato CMS system. Each sidebar item is now a standalone mini app that can be developed, deployed, and scaled independently.

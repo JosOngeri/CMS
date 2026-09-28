@@ -2,7 +2,7 @@
 
 **Date:** 2025-01-18
 **Component:** DataTable.jsx
-**Location:** D:\VIbeCode\KMainCMS\frontend\src\components\common\DataTable.jsx
+**Location:** D:\VIbeCode\Msabato CMS\frontend\src\components\common\DataTable.jsx
 
 ---
 

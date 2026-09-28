@@ -10,9 +10,9 @@ from pathlib import Path
 
 # --- CONFIGURATION ---
 CONFIG = {
-    "manifest": r"D:\Kiserian Main SDA Communications Department\KMainCMS\plans\PHASE4_REFACTORING_MANIFEST.json",
-    "mappings": r"D:\Kiserian Main SDA Communications Department\KMainCMS\plans\COMPLETE_QUERY_REPLACEMENT_LIST.md",
-    "backup_dir": r"D:\Kiserian Main SDA Communications Department\KMainCMS\backups",
+    "manifest": r"D:\Kiserian Main SDA Communications Department\Msabato CMS\plans\PHASE4_REFACTORING_MANIFEST.json",
+    "mappings": r"D:\Kiserian Main SDA Communications Department\Msabato CMS\plans\COMPLETE_QUERY_REPLACEMENT_LIST.md",
+    "backup_dir": r"D:\Kiserian Main SDA Communications Department\Msabato CMS\backups",
     "approval_batch_size": 10,
     "approval_token": "./APPROVE_PHASE4.token"
 }

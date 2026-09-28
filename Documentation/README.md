@@ -1,6 +1,6 @@
-# KMainCMS Documentation
+# Msabato CMS Documentation
 
-This directory contains comprehensive documentation for the KMainCMS project, including deployment guides, configuration references, and troubleshooting procedures.
+This directory contains comprehensive documentation for the Msabato CMS project, including deployment guides, configuration references, and troubleshooting procedures.
 
 ## 📁 Current Project Structure
 
@@ -248,7 +248,7 @@ When updating documentation:
 
 ## 📄 License
 
-This documentation is part of the KMainCMS project. Refer to the main project license for usage terms.
+This documentation is part of the Msabato CMS project. Refer to the main project license for usage terms.
 
 ---
 

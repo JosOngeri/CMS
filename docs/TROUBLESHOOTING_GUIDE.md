@@ -1,8 +1,8 @@
-# KMainCMS Troubleshooting Guide
+# Msabato CMS Troubleshooting Guide
 
 ## Overview
 
-This guide helps you resolve common issues with KMainCMS. Find solutions for login problems, feature issues, performance problems, and more.
+This guide helps you resolve common issues with Msabato CMS. Find solutions for login problems, feature issues, performance problems, and more.
 
 ## Table of Contents
 1. [Common Issues](#common-issues)
@@ -630,7 +630,7 @@ When contacting support, include:
 - **Email:** support@yourchurch.com
 - **Phone:** [church phone number]
 - **In-Person:** Church office hours
-- **Help Button:** In the KMainCMS system
+- **Help Button:** In the Msabato CMS system
 
 ---
 
@@ -676,7 +676,7 @@ When contacting support, include:
 
 ## Conclusion
 
-This troubleshooting guide covers the most common issues you may encounter with KMainCMS. For issues not covered here, or if you need additional assistance, don't hesitate to contact support.
+This troubleshooting guide covers the most common issues you may encounter with Msabato CMS. For issues not covered here, or if you need additional assistance, don't hesitate to contact support.
 
 Remember to provide detailed information about your issue to help us resolve it quickly.
 

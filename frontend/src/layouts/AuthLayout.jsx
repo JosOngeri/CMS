@@ -1,9 +1,11 @@
 import { Outlet } from 'react-router-dom'
 import { Church } from 'lucide-react'
 import { useColorPalette } from '../contexts/ColorPaletteContext'
+import { useChurchBranding } from '../hooks/useChurchBranding'
 
 const AuthLayout = () => {
   const { colors } = useColorPalette()
+  const { churchName } = useChurchBranding()
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: colors.background }}>
@@ -15,7 +17,7 @@ const AuthLayout = () => {
               <Church className="h-16 w-16" />
             </div>
             <h1 className="text-4xl font-bold mb-6">
-              SDA Church Kiserian Main
+              {churchName}
             </h1>
             <p className="text-xl mb-8" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
               Welcome to our digital community platform

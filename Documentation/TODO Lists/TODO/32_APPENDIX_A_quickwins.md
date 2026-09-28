@@ -1,5 +1,5 @@
 # APPENDIX A — QUICK-WIN TASKS (< 10 minutes each)
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 - [ ] 🔴 `auth.js` line 1: add `const { pool } = require('../config/database');`

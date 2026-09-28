@@ -1,7 +1,7 @@
 @echo off
-REM Database setup script for KMainCMS (Windows)
+REM Database setup script for Msabato CMS (Windows)
 
-echo Setting up KMainCMS database...
+echo Setting up Msabato CMS database...
 
 REM Check if PostgreSQL is installed
 where psql >nul 2>nul

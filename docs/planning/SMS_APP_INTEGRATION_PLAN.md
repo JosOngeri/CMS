@@ -1,12 +1,12 @@
-# SMS App Integration Plan - JOSms ↔ KMainCMS
+# SMS App Integration Plan - JOSms ↔ Msabato CMS
 
 ## Executive Summary
 
-This document outlines the integration strategy between the JOSms Android application and the KMainCMS system. The integration follows an **offline-first approach** with lean resource usage for production environments.
+This document outlines the integration strategy between the JOSms Android application and the Msabato CMS system. The integration follows an **offline-first approach** with lean resource usage for production environments.
 
 ## Current Architecture Analysis
 
-### KMainCMS (Backend)
+### Msabato CMS (Backend)
 - **Tech Stack**: Node.js/Express, React frontend
 - **SMS Module**: Full SMS management with providers, templates, campaigns, analytics
 - **Mobile Support**: Existing mobile controller with optimized endpoints

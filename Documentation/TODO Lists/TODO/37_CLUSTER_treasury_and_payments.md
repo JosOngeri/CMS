@@ -1,5 +1,5 @@
 # CLUSTER — Treasury and Payments
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 > Collected from ALL phases. Every task that touches: TreasuryRepository, TreasuryDashboard, TreasurerDashboard, treasury.controller.js, treasury.routes.js, payments.controller.js, payments.routes.js, PaymentsRepository, M-Pesa, reconciliation, tax statements, receipts, budgets, funds, campaigns.

@@ -18,7 +18,7 @@ const MobileApp = () => {
       {/* Mobile Header */}
       <div className="bg-[var(--color-primary)]-600 text-white p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">KMainCMS</h1>
+          <h1 className="text-xl font-bold">Msabato CMS</h1>
           <Smartphone size={24} />
         </div>
       </div>

@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Departments Module >> Department settings page loads
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Departments Module >> Department settings page loads
 - Location: e2e\comprehensive-website-test.spec.js:306:5
 
 # Error details

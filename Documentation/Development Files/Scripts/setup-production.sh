@@ -5,7 +5,7 @@
 
 set -e
 
-echo "🚀 KMainCMS Production Environment Setup"
+echo "🚀 Msabato CMS Production Environment Setup"
 echo "=========================================="
 echo ""
 
@@ -38,7 +38,7 @@ if [ ! -f nginx/ssl/cert.pem ]; then
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout nginx/ssl/key.pem \
         -out nginx/ssl/cert.pem \
-        -subj "/C=KE/ST=Nairobi/L=Nairobi/O=KMainCMS/CN=localhost"
+        -subj "/C=KE/ST=Nairobi/L=Nairobi/O=Msabato CMS/CN=localhost"
     chmod 600 nginx/ssl/key.pem
     chmod 644 nginx/ssl/cert.pem
     echo "⚠️  For production, replace with proper SSL certificates (Let's Encrypt)"

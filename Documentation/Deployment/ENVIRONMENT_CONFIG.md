@@ -1,7 +1,7 @@
 # Environment Configuration Guide
 
 ## Overview
-This guide explains all environment variables required for KMainCMS deployment and provides best practices for configuration management.
+This guide explains all environment variables required for Msabato CMS deployment and provides best practices for configuration management.
 
 ## Environment Variables Reference
 
@@ -59,7 +59,7 @@ MPESA_CALLBACK_URL=https://cms.josongeri.co.ke/api/payments/mpesa/callback
 # Primary SMS Provider
 SMS_PROVIDER=josms            # josms, blessed_texts, africas_talking
 JOSMS_API_KEY=your_josms_api_key
-JOSMS_SENDER_ID=KMainCMS
+JOSMS_SENDER_ID=Msabato CMS
 
 # Backup SMS Providers
 BLESSED_TEXTS_API_KEY=your_blessed_texts_key

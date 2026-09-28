@@ -2,7 +2,7 @@
 
 ## Document Overview
 
-This document outlines the plan for creating a comprehensive SaaS Owner Dashboard (Platform Admin Dashboard) for KMainCMS. This dashboard will provide the SaaS platform owner with a centralized view of all tenants, platform performance metrics, revenue analytics, and administrative capabilities for managing the multi-tenant church management system.
+This document outlines the plan for creating a comprehensive SaaS Owner Dashboard (Platform Admin Dashboard) for Msabato CMS. This dashboard will provide the SaaS platform owner with a centralized view of all tenants, platform performance metrics, revenue analytics, and administrative capabilities for managing the multi-tenant church management system.
 
 ## 1. Business Objectives
 

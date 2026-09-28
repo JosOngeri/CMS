@@ -133,8 +133,8 @@ const calculatePasswordStrength = (password) => {
 // Generate MFA secret
 const generateMFASecret = (email) => {
   return speakeasy.generateSecret({
-    name: `KMainCMS (${email})`,
-    issuer: 'KMainCMS',
+    name: `Msabato CMS (${email})`,
+    issuer: 'Msabato CMS',
   });
 };
 

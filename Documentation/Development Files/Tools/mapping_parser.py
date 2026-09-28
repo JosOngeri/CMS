@@ -125,7 +125,7 @@ def summarize(mappings: List[QueryMapping]) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    mapping_path = Path("D:/Kiserian Main SDA Communications Department/KMainCMS/plans/COMPLETE_QUERY_REPLACEMENT_LIST.md")
+    mapping_path = Path("D:/Kiserian Main SDA Communications Department/Msabato CMS/plans/COMPLETE_QUERY_REPLACEMENT_LIST.md")
 
     mappings = parse_query_mappings(mapping_path)
     valid, errors = validate_mappings(mappings)

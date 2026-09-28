@@ -5,8 +5,10 @@ import { Eye, EyeOff, Church, Loader2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'
+import { useChurchBranding } from '../../hooks/useChurchBranding'
 
 const Login = () => {
+  const { churchName } = useChurchBranding()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
@@ -48,7 +50,7 @@ const Login = () => {
             Welcome Back
           </h2>
           <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
-            Sign in to your SDA Church Kiserian account
+            Sign in to your {churchName} account
           </p>
         </div>
 

@@ -1,11 +1,11 @@
-# KMainCMS - Comprehensive UX Design Document
+# Msabato CMS - Comprehensive UX Design Document
 
 **Version:** 1.0  
-**Project:** KMainCMS - Church Management System  
+**Project:** Msabato CMS - Church Management System  
 **Target Platform:** Web Application (Responsive Desktop, Tablet, Mobile)  
 **Design Language:** Modern Web 2024/2025 - Clean, Professional, Accessible  
 **Document Date:** June 20, 2026  
-**Based On:** Ubuntu HRMS UI Genealogy + KMainCMS Implementation Analysis
+**Based On:** Ubuntu HRMS UI Genealogy + Msabato CMS Implementation Analysis
 
 ---
 
@@ -35,7 +35,7 @@
 
 ### Core Design Philosophy
 
-KMainCMS follows a **clean, professional, accessible** design philosophy adapted from Ubuntu HRMS patterns, tailored for church management workflows.
+Msabato CMS follows a **clean, professional, accessible** design philosophy adapted from Ubuntu HRMS patterns, tailored for church management workflows.
 
 | Principle | Description | Application |
 |-----------|-------------|-------------|
@@ -180,7 +180,7 @@ KMainCMS follows a **clean, professional, accessible** design philosophy adapted
 ### App Structure Overview
 
 ```
-KMainCMS
+Msabato CMS
 ├── Authentication (Public)
 │   ├── Login
 │   ├── Register
@@ -417,7 +417,7 @@ Member (Personal Access)
 **Sidebar Navigation (Desktop)**
 ```
 ┌─────────────────────────┐
-│   KMainCMS Logo         │
+│   Msabato CMS Logo         │
 │   [Church Name]         │
 ├─────────────────────────┤
 │   Dashboard             │
@@ -439,7 +439,7 @@ Member (Personal Access)
 **Mobile Navigation (Hamburger Menu)**
 ```
 ┌─────────────────────────┐
-│ ☰  KMainCMS            │
+│ ☰  Msabato CMS            │
 ├─────────────────────────┤
 │ [Content Area]          │
 │                         │
@@ -1298,52 +1298,52 @@ Settings ↔ All Modules
 
 #### 1. Role-Based Dashboards
 - **Ubuntu HRMS**: 5 distinct dashboards (Admin, Manager, Employee, Daily Labourer, Contractor)
-- **KMainCMS Application**: 5 role-based dashboards (Super Admin, Pastor, Department Head, Treasurer, Member)
+- **Msabato CMS Application**: 5 role-based dashboards (Super Admin, Pastor, Department Head, Treasurer, Member)
 - **Implementation**: Create dashboard layouts customized for each role with relevant stats and quick actions
 
 #### 2. Clickable Stats Cards
 - **Ubuntu HRMS**: Stats cards navigate to detailed views (e.g., Total Employees → /admin/employees)
-- **KMainCMS Application**: Make stats cards clickable to navigate to relevant modules
+- **Msabato CMS Application**: Make stats cards clickable to navigate to relevant modules
 - **Implementation**: Add onClick handlers to StatsCard component with navigation
 
 #### 3. Quick Actions Grid
 - **Ubuntu HRMS**: Quick actions organized in grid layout (4-6 items per row)
-- **KMainCMS Application**: Organize quick actions in consistent grid layout
+- **Msabato CMS Application**: Organize quick actions in consistent grid layout
 - **Implementation**: Use QuickActionsPanel with responsive grid
 
 #### 4. Tab-Based Navigation
 - **Ubuntu HRMS**: Each module has consistent tab navigation (e.g., Admin tabs: Overview, Employees, Attendance, Payroll, KPIs, Analytics)
-- **KMainCMS Application**: Add tabs to major modules
+- **Msabato CMS Application**: Add tabs to major modules
 - **Implementation**: Implement TabNavigation component with consistent structure
 
 #### 5. Status Badge System
 - **Ubuntu HRMS**: Color-coded status badges (Active-green, Pending-yellow, Inactive-gray)
-- **KMainCMS Application**: Implement consistent status badge system
+- **Msabato CMS Application**: Implement consistent status badge system
 - **Implementation**: Create StatusBadge component with defined status types
 
 #### 6. Drill-Down Navigation
 - **Ubuntu HRMS**: Clickable table rows navigate to detail pages (e.g., /admin/employees/:id)
-- **KMainCMS Application**: Make table rows clickable to navigate to detail pages
+- **Msabato CMS Application**: Make table rows clickable to navigate to detail pages
 - **Implementation**: Add onRowClick to DataTable component
 
 #### 7. Permission-Based UI
 - **Ubuntu HRMS**: Different roles see different UI elements (e.g., managers see view-only versions)
-- **KMainCMS Application**: Implement permission-based UI visibility
+- **Msabato CMS Application**: Implement permission-based UI visibility
 - **Implementation**: Use ProtectedComponent wrapper for permission-controlled elements
 
 #### 8. Settings Organization
 - **Ubuntu HRMS**: Settings organized by category tabs (General, Attendance, Payroll, Leave, KPI, Notifications)
-- **KMainCMS Application**: Organize settings by category tabs
+- **Msabato CMS Application**: Organize settings by category tabs
 - **Implementation**: Implement SettingsTabs with categorized settings
 
 #### 9. Empty State Handling
 - **Ubuntu HRMS**: Empty states with action buttons (e.g., "View Full Attendance" button)
-- **KMainCMS Application**: Enhance empty states with contextual actions
+- **Msabato CMS Application**: Enhance empty states with contextual actions
 - **Implementation**: Add action buttons to EmptyState component
 
 #### 10. Performance Metrics
 - **Ubuntu HRMS**: Performance bars with percentage values (e.g., Attendance Rate 85%)
-- **KMainCMS Application**: Add performance metrics to dashboards
+- **Msabato CMS Application**: Add performance metrics to dashboards
 - **Implementation**: Create PerformanceMetrics component with progress bars
 
 ### Best Practices to Apply
@@ -1371,7 +1371,7 @@ Settings ↔ All Modules
 
 ## Conclusion
 
-This comprehensive UX design document provides a complete blueprint for improving the KMainCMS user experience. By combining the proven patterns from Ubuntu HRMS with a thorough analysis of the current KMainCMS implementation, this document addresses:
+This comprehensive UX design document provides a complete blueprint for improving the Msabato CMS user experience. By combining the proven patterns from Ubuntu HRMS with a thorough analysis of the current Msabato CMS implementation, this document addresses:
 
 1. **Consistency** - Unified component patterns across all modules
 2. **Usability** - Clear navigation and information hierarchy
@@ -1380,7 +1380,7 @@ This comprehensive UX design document provides a complete blueprint for improvin
 5. **Professionalism** - Enterprise-grade UX that builds trust
 6. **Church Context** - Tailored for church management workflows
 
-The implementation roadmap prioritizes high-impact, quick-win improvements first, followed by more complex features. This approach allows KMainCMS to incrementally improve its UX while maintaining system stability.
+The implementation roadmap prioritizes high-impact, quick-win improvements first, followed by more complex features. This approach allows Msabato CMS to incrementally improve its UX while maintaining system stability.
 
 **Document Status**: Complete and Ready for Implementation
 **Next Steps**: Begin Phase 1 implementation with role-based dashboards and enhanced stats cards

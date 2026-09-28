@@ -1,4 +1,4 @@
-# KMainCMS Navigation Map
+# Msabato CMS Navigation Map
 
 This document maps all pages in the application to their UI navigation paths.
 

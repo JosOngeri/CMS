@@ -90,6 +90,38 @@ class SettingsRepository extends BaseRepository {
       settings[row.key] = this.parseValue(row.value, row.value_type);
     });
 
+    // If the caller is unauthenticated, pick the first active church as the
+    // default tenant and expose its name/slug so public pages can brand
+    // themselves correctly.
+    if (!churchId) {
+      try {
+        const churchRes = await this.pool.query(
+          `SELECT id, name, slug, theme_color, logo_url
+           FROM churches
+           WHERE is_active = true
+           ORDER BY created_at ASC
+           LIMIT 1`
+        );
+        if (churchRes.rows[0]) {
+          const church = churchRes.rows[0];
+          settings.church_name = church.name;
+          settings.church_slug = church.slug;
+          settings.church_id = church.id;
+          settings.theme_color = church.theme_color;
+          settings.logo_url = church.logo_url;
+        } else {
+          settings.church_name = 'Msabato CMS';
+          settings.church_slug = 'default';
+        }
+      } catch (e) {
+        settings.church_name = 'Msabato CMS';
+        settings.church_slug = 'default';
+      }
+    }
+
+    // Provide a neutral product name as a fallback/constant
+    settings.product_name = 'Msabato CMS';
+
     return settings;
   }
 

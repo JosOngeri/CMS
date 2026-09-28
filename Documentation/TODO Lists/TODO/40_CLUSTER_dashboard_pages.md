@@ -1,5 +1,5 @@
 # CLUSTER — Dashboard Pages
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 > Collected from ALL phases. Every task that touches: PastorDashboard, TreasuryDashboard, TreasurerDashboard, SuperAdminDashboard, AdminDashboard, DepartmentHeadDashboard, MemberDashboard, dashboard.controller.js, DashboardRepository, dashboard.routes.js (backend).

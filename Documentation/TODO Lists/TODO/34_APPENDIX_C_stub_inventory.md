@@ -1,5 +1,5 @@
 # APPENDIX C — COMPLETE STUB INVENTORY (All Files Confirmed Stubbed)
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 | File | Stub Type | What's Missing |

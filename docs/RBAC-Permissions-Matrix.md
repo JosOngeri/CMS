@@ -1,4 +1,4 @@
-# KMainCMS RBAC Permissions Matrix
+# Msabato CMS RBAC Permissions Matrix
 
 Complete overview of all modules, functions, and role permissions in the system.
 

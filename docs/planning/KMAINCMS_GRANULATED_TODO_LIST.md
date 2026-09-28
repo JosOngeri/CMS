@@ -1,4 +1,4 @@
-# KMainCMS Granulated Implementation To-Do List
+# Msabato CMS Granulated Implementation To-Do List
 
 ## 🟢 Phase 1: SQL Schema Unification (Primary Priority)
 *Objective: Ensure database integrity by making all IDs consistent (UUID).*

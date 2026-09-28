@@ -13,7 +13,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Debug: Show API URL being used
-  debugPrint('=== SDA Church App Starting ===');
+  debugPrint('=== Msabato CMS App Starting ===');
   debugPrint('API URL: ${AppConfig.debugApiUrl}');
   debugPrint('Is Production: ${AppConfig.isProduction}');
   debugPrint('Is Development: ${AppConfig.isDevelopment}');
@@ -38,7 +38,7 @@ void main() async {
     debugPrint('Loaded saved API URL: $savedApiUrl');
   }
   
-  // Initialize Socket.IO service for KMainCMS integration
+  // Initialize Socket.IO service for Msabato CMS integration
   // try {
   //   SocketService().initialize();
   //   SocketService().connect();

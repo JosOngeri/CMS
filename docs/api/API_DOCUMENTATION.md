@@ -1,8 +1,8 @@
-# KMainCMS API Documentation
+# Msabato CMS API Documentation
 
 ## Overview
 
-KMainCMS is a comprehensive church management system API built with Node.js, Express, and PostgreSQL.
+Msabato CMS is a comprehensive church management system API built with Node.js, Express, and PostgreSQL.
 
 ## Base URL
 

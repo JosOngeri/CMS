@@ -1,8 +1,8 @@
-# KMainCMS Developer Guide
+# Msabato CMS Developer Guide
 
 ## Overview
 
-This guide is for developers who want to contribute to KMainCMS or build integrations with the system. It covers API documentation, development setup, contribution guidelines, and technical architecture.
+This guide is for developers who want to contribute to Msabato CMS or build integrations with the system. It covers API documentation, development setup, contribution guidelines, and technical architecture.
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
@@ -29,7 +29,7 @@ This guide is for developers who want to contribute to KMainCMS or build integra
 ### Project Structure
 
 ```
-KMainCMS/
+Msabato CMS/
 ├── backend/              # Node.js API server
 │   ├── controllers/     # Request handlers
 │   ├── services/        # Business logic
@@ -61,7 +61,7 @@ KMainCMS/
 1. **Clone the repository**
 ```bash
 git clone <repository-url>
-cd KMainCMS
+cd Msabato CMS
 ```
 
 2. **Install dependencies**
@@ -422,7 +422,7 @@ npm run android
 
 ### Backend Architecture
 
-KMainCMS backend follows a layered architecture:
+Msabato CMS backend follows a layered architecture:
 
 ```
 ┌─────────────────┐
@@ -926,6 +926,6 @@ This project is licensed under the MIT License.
 
 ## Conclusion
 
-This developer guide provides the foundation for contributing to KMainCMS. By following these guidelines and best practices, you can help build a robust, secure, and maintainable church management system.
+This developer guide provides the foundation for contributing to Msabato CMS. By following these guidelines and best practices, you can help build a robust, secure, and maintainable church management system.
 
-Thank you for your interest in contributing to KMainCMS!
+Thank you for your interest in contributing to Msabato CMS!

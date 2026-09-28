@@ -5,8 +5,10 @@
 
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Calendar, Users } from 'lucide-react';
+import { useChurchBranding } from '../../hooks/useChurchBranding';
 
 const HeroSection = () => {
+  const { churchName, shortName } = useChurchBranding();
   return (
     <section className="church-gradient text-white relative overflow-hidden">
       {/* Decorative background pattern */}
@@ -29,8 +31,8 @@ const HeroSection = () => {
                 />
                 <div className="text-left">
                   <h1 className="text-3xl md:text-5xl font-light text-white/90">Welcome to</h1>
-                  <h2 className="text-4xl md:text-6xl font-bold text-white">Kiserian Main</h2>
-                  <p className="text-xl md:text-2xl text-white/80 font-medium">Seventh-day Adventist Church</p>
+                  <h2 className="text-4xl md:text-6xl font-bold text-white">{shortName}</h2>
+                  <p className="text-xl md:text-2xl text-white/80 font-medium">Church Management Portal</p>
                 </div>
               </div>
 

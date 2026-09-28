@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Members Module >> Member directory pagination works
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Members Module >> Member directory pagination works
 - Location: e2e\comprehensive-website-test.spec.js:245:5
 
 # Error details

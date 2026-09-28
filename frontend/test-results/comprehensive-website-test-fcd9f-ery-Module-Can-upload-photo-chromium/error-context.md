@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Gallery Module >> Can upload photo
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Gallery Module >> Can upload photo
 - Location: e2e\comprehensive-website-test.spec.js:549:5
 
 # Error details

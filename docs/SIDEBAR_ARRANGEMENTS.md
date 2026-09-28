@@ -1,6 +1,6 @@
 # Sidebar Arrangement Proposals
 
-This document presents three alternative sidebar arrangements for KMainCMS, each maintaining 10 sidebar items but with different grouping strategies and tab reorganizations.
+This document presents three alternative sidebar arrangements for Msabato CMS, each maintaining 10 sidebar items but with different grouping strategies and tab reorganizations.
 
 ---
 

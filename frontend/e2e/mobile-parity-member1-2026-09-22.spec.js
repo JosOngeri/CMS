@@ -1,6 +1,6 @@
 /**
  * Playwright E2E Parity Test Suite for member1@newlife.com (Dated: 2026-09-22)
- * KMainCMS Website & Mobile Device Compatibility Assessment
+ * Msabato CMS Website & Mobile Device Compatibility Assessment
  *
  * Supports:
  * 1. Web Mobile Viewport Testing (Pixel 7 resolution: 393x851)

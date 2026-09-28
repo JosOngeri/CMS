@@ -1,5 +1,5 @@
 /**
- * Comprehensive E2E Tests for KMainCMS Website
+ * Comprehensive E2E Tests for Msabato CMS Website
  * Complete website testing including all modules, color system, and user workflows
  */
 
@@ -48,7 +48,7 @@ const USERS = {
   }
 };
 
-test.describe('KMainCMS Comprehensive Website Tests', () => {
+test.describe('Msabato CMS Comprehensive Website Tests', () => {
   test.describe('Authentication System', () => {
     test('Super Admin login with valid credentials', async ({ page }) => {
       await page.goto(`${BASE_URL}/auth/login`);

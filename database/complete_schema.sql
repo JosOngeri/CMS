@@ -1,4 +1,4 @@
--- KMainCMS Complete Database Schema (Standardized to UUID)
+-- Msabato CMS Complete Database Schema (Standardized to UUID)
 -- Seventh-day Adventist Church - Kiserian Main
 -- Church Management System
 

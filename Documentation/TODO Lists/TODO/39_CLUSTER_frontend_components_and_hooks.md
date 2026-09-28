@@ -1,5 +1,5 @@
 # CLUSTER — Frontend Components and Hooks
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 > Collected from ALL phases. Every task that touches: DataTable, Loading, StatsCard, ErrorBoundary, WebSocketManager, RealTimeActivityFeed, useDataFetch, useActivityFeed, useFieldPermissions, usePermission, ToastContext, ContentContext, TelegramContext.

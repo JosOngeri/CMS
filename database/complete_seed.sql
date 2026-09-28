@@ -1,4 +1,4 @@
--- KMainCMS Complete Seed Data
+-- Msabato CMS Complete Seed Data
 -- Seventh-day Adventist Church - Kiserian Main
 -- Sample data for all tables
 
@@ -309,7 +309,7 @@ ON CONFLICT DO NOTHING;
 
 -- Insert SMS provider
 INSERT INTO sms_providers (name, provider_type, sender_id, is_active) VALUES
-('Africas Talking', 'africas_talking', 'KMainCMS', false)
+('Africas Talking', 'africas_talking', 'Msabato CMS', false)
 ON CONFLICT DO NOTHING;
 
 -- Insert SMS templates

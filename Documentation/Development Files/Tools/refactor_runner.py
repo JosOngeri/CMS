@@ -356,7 +356,7 @@ def validate_manifest(manifest: Dict[str, Any]) -> None:
         raise ValueError(f"Invalid manifest: {exc.message}") from exc
 
 
-def generate_manifest_from_mappings(mapping_file: Path, project: str = "KMainCMS") -> Dict[str, Any]:
+def generate_manifest_from_mappings(mapping_file: Path, project: str = "Msabato CMS") -> Dict[str, Any]:
     """If a manifest is missing, derive a minimal one from the mapping file."""
     mappings = load_query_mappings(mapping_file)
     phases: Dict[str, Dict[str, Any]] = {}

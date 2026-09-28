@@ -6,41 +6,41 @@
 ## Task Log
 
 ### Task 1: Fix dashboard.controller.js line 115: change activities.splice(limit) → activities.slice(0, limit)
-- **File:** D:\VIbeCode\KMainCMS\backend\controllers\dashboard.controller.js
+- **File:** D:\VIbeCode\Msabato CMS\backend\controllers\dashboard.controller.js
 - **Status:** Skipped - code not found (line mismatch)
 - **Timestamp:** 2025-01-18
 - **Details:** The `splice` code mentioned in the task does not exist in the current file. Line 115 is a blank line. The file may have been updated since the todo was created.
 
 ### Task 2: Fix AdminDashboard.jsx line 26: change /dashboard/stats → /api/dashboard/stats
-- **File:** D:\VIbeCode\KMainCMS\frontend\src\pages\admin\AdminDashboard.jsx
+- **File:** D:\VIbeCode\Msabato CMS\frontend\src\pages\admin\AdminDashboard.jsx
 - **Status:** Completed
 - **Timestamp:** 2025-01-18
 - **Change Made:** Changed `api.get('/dashboard/stats')` to `api.get('/api/dashboard/stats')` on line 26
 - **Verification:** Read back lines 24-43 to confirm the change was applied correctly
 
 ### Task 3: Replace hardcoded 85% in PastorDashboard.jsx line 178 with calculated value
-- **File:** D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\PastorDashboard.jsx
+- **File:** D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\PastorDashboard.jsx
 - **Status:** Completed
 - **Timestamp:** 2025-01-18
 - **Change Made:** Replaced hardcoded `85%` with `Math.round((ministryHealth.memberEngagement + ministryHealth.departmentActivity + ministryHealth.spiritualGrowth) / 3)%` on line 178
 - **Verification:** Read back lines 175-189 to confirm the change was applied correctly
 
 ### Task 4: Replace hardcoded 75% in TreasurerDashboard.jsx line 171 with calculated value
-- **File:** D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\TreasurerDashboard.jsx
+- **File:** D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\TreasurerDashboard.jsx
 - **Status:** Completed
 - **Timestamp:** 2025-01-18
 - **Change Made:** Replaced hardcoded `75%` with `Math.round((financialHealth.budgetUtilization + financialHealth.collectionRate) / 2)%` on line 171
 - **Verification:** Read back lines 168-182 to confirm the change was applied correctly
 
 ### Task 5: Replace hardcoded 76% in DepartmentHeadDashboard.jsx line 172 with calculated value
-- **File:** D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\DepartmentHeadDashboard.jsx
+- **File:** D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\DepartmentHeadDashboard.jsx
 - **Status:** Completed
 - **Timestamp:** 2025-01-18
 - **Change Made:** Replaced hardcoded `76%` with `Math.round((departmentHealth.memberParticipation + departmentHealth.taskCompletion + departmentHealth.budgetUtilization) / 3)%` on line 172
 - **Verification:** Read back lines 169-183 to confirm the change was applied correctly
 
 ### Task 6: Replace hardcoded 85% in MemberDashboard.jsx line 165 with calculated value
-- **File:** D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\MemberDashboard.jsx
+- **File:** D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\MemberDashboard.jsx
 - **Status:** Completed
 - **Timestamp:** 2025-01-18
 - **Change Made:** Replaced hardcoded `85%` with `Math.round((personalStatus.attendanceRate + personalStatus.contributionRate + personalStatus.activityLevel) / 3)%` on line 165
@@ -74,12 +74,12 @@ Per the rules, the following tasks were skipped as they require creating new bac
 - All other tasks requiring new backend endpoint creation
 
 ### Files Modified:
-1. D:\VIbeCode\KMainCMS\frontend\src\pages\admin\AdminDashboard.jsx
-2. D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\PastorDashboard.jsx
-3. D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\TreasurerDashboard.jsx
-4. D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\DepartmentHeadDashboard.jsx
-5. D:\VIbeCode\KMainCMS\frontend\src\pages\dashboard\MemberDashboard.jsx
+1. D:\VIbeCode\Msabato CMS\frontend\src\pages\admin\AdminDashboard.jsx
+2. D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\PastorDashboard.jsx
+3. D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\TreasurerDashboard.jsx
+4. D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\DepartmentHeadDashboard.jsx
+5. D:\VIbeCode\Msabato CMS\frontend\src\pages\dashboard\MemberDashboard.jsx
 
 ### Files Updated (Todo File):
-1. D:\VIbeCode\KMainCMS\TODO\40_CLUSTER_dashboard_pages.md (marked completed tasks with [x])
+1. D:\VIbeCode\Msabato CMS\TODO\40_CLUSTER_dashboard_pages.md (marked completed tasks with [x])
 

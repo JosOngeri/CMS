@@ -1,7 +1,7 @@
-# KMainCMS Granulated Master Upgrade Plan (Neutrino-Fidelity)
+# Msabato CMS Granulated Master Upgrade Plan (Neutrino-Fidelity)
 
 **Date:** 2026-06-22  
-**Target System:** KMainCMS (Unified Platform)  
+**Target System:** Msabato CMS (Unified Platform)  
 **Lead Standard:** Zero-Trust | Modular | Multi-Tenant | Forensic Audit
 
 ---

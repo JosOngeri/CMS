@@ -22,7 +22,7 @@ const churchNames = {
   '-': '(no church assigned)'
 };
 
-let md = '# KMainCMS - User Login Details\n\n';
+let md = '# Msabato CMS - User Login Details\n\n';
 md += `**Site:** https://msabato.co.ke  \n`;
 md += `**Generated:** ${new Date().toISOString().slice(0, 10)}  \n`;
 md += `**Password for every account:** \`right123\`\n\n`;

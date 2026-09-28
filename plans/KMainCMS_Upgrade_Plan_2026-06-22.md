@@ -1,9 +1,9 @@
-# KMainCMS Comprehensive Upgrade Plan
+# Msabato CMS Comprehensive Upgrade Plan
 
 **Date:** 2026-06-22  
-**Target System:** KMainCMS (Kiserian Main SDA Church Management System)  
+**Target System:** Msabato CMS (Kiserian Main SDA Church Management System)  
 **Reference Material:** `D:\VIbeCode\ChurchApp\handoff` architecture blueprints  
-**Objective:** Modernize KMainCMS into a lightweight, multi-tenant, scalable church management platform.
+**Objective:** Modernize Msabato CMS into a lightweight, multi-tenant, scalable church management platform.
 
 ---
 
@@ -32,7 +32,7 @@ This plan covers **all** major ChurchApp handoff functionalities and architectur
 
 ## Critical Finding from Codebase Review
 
-KMainCMS currently has **mixed primary key types**:
+Msabato CMS currently has **mixed primary key types**:
 - **UUID** tables: `users`, `roles`, `members` (from `001_auth_schema.sql`, `003_members_schema.sql`)
 - **INTEGER/SERIAL** tables: `departments`, `treasury` tables, `payments` (from `departments_schema.sql`, `treasury_schema.sql`, `payments_schema.sql`)
 
@@ -241,7 +241,7 @@ This is the primary blocker for multi-tenancy, zero-join queries, and clean repo
 
 ## Phase 6: Multi-Tenancy & Row-Level Security (Weeks 11–13)
 
-**Goal:** Enable multiple churches on a single KMainCMS instance.
+**Goal:** Enable multiple churches on a single Msabato CMS instance.
 
 ### Implementation Steps
 1. Create `churches` table:
@@ -716,4 +716,4 @@ Phase 15 (Final QA)
 
 **Prepared by:** Senior Developer Recommendation  
 **Source Reference:** `D:\VIbeCode\ChurchApp\handoff`  
-**Saved to:** `D:\Kiserian Main SDA Communications Department\KMainCMS\plans\KMainCMS_Upgrade_Plan_2026-06-22.md`
+**Saved to:** `D:\Kiserian Main SDA Communications Department\Msabato CMS\plans\Msabato CMS_Upgrade_Plan_2026-06-22.md`

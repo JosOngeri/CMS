@@ -1,7 +1,7 @@
-# KMainCMS Testing Guide
+# Msabato CMS Testing Guide
 
 ## Overview
-This document describes the testing infrastructure for KMainCMS, including unit tests, integration tests, and end-to-end (E2E) tests that simulate real user actions.
+This document describes the testing infrastructure for Msabato CMS, including unit tests, integration tests, and end-to-end (E2E) tests that simulate real user actions.
 
 ## Test Structure
 

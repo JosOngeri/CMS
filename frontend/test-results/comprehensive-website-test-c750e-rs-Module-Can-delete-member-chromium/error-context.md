@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Members Module >> Can delete member
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Members Module >> Can delete member
 - Location: e2e\comprehensive-website-test.spec.js:233:5
 
 # Error details

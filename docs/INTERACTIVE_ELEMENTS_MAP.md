@@ -1,7 +1,7 @@
-# KMainCMS Interactive Elements Comprehensive Map
+# Msabato CMS Interactive Elements Comprehensive Map
 
 ## Overview
-This document provides a complete mapping of all interactive elements, components, and text that can be made interactive across the KMainCMS website.
+This document provides a complete mapping of all interactive elements, components, and text that can be made interactive across the Msabato CMS website.
 
 ---
 

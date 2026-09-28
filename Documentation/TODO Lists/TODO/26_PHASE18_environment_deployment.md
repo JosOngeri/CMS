@@ -1,5 +1,5 @@
 # Phase 18 — ENVIRONMENT AND DEPLOYMENT
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ### 18.1 Environment Variables

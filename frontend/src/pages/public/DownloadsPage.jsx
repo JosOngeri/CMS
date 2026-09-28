@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Download, Smartphone, History, Tag, Calendar, FileText } from 'lucide-react';
 import axios from 'axios';
+import { useChurchBranding } from '../../hooks/useChurchBranding';
 
 function DownloadsPage() {
+  const { churchName } = useChurchBranding();
   const [manifest, setManifest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,9 +37,9 @@ function DownloadsPage() {
             <Smartphone className="w-12 h-12" />
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">KMainCMS Android App</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">{churchName} Android App</h1>
             <p className="text-white/90 max-w-2xl">
-              Download the official Kiserian Main SDA Church management app. Connect to your church, manage members, payments, events, and departments.
+              Download the official {churchName} management app. Connect to your church, manage members, payments, events, and departments.
             </p>
           </div>
           <div className="flex flex-col items-start md:items-end gap-2">
@@ -153,7 +155,7 @@ function DownloadsPage() {
 
         <section className="mt-16 text-center">
           <p className="text-[var(--color-textSecondary)] text-sm">
-            APKs are versioned, archived, and served from the KMainCMS server.
+            APKs are versioned, archived, and served from the {churchName} server.
             The latest build is always available at <code>/downloads</code>.
           </p>
         </section>

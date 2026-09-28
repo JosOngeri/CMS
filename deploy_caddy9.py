@@ -9,7 +9,7 @@ HOST = "173.249.17.180"
 USER = "deploy"
 PASSWORD = "Intellect"
 
-LOCAL_CADDY = "D:/VIbeCode/KMainCMS/Caddyfile.fixed9"
+LOCAL_CADDY = "D:/VIbeCode/Msabato CMS/Caddyfile.fixed9"
 REMOTE_TEMP = "/tmp/Caddyfile.fixed9"
 REMOTE_REAL = "/etc/caddy/Caddyfile"
 

@@ -77,7 +77,7 @@ function Sidebar({ isOpen, setIsOpen }) {
                 <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)]/20 flex items-center justify-center">
                   <span className="text-white font-bold text-lg">K</span>
                 </div>
-                <h1 className="text-xl font-bold text-white">KMainCMS</h1>
+                <h1 className="text-xl font-bold text-white">Msabato CMS</h1>
               </div>
               <button
                 onClick={() => setIsOpen(false)}

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# KMainCMS Deployment Script for VPS
+# Msabato CMS Deployment Script for VPS
 # This script deploys the latest changes from GitHub to cms.josongeri.co.ke
 
-echo "=== KMainCMS Deployment Script ==="
+echo "=== Msabato CMS Deployment Script ==="
 echo "Starting deployment process..."
 
 # Navigate to project directory

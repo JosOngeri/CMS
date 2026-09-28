@@ -1,7 +1,7 @@
 # GitHub Secrets Setup for VPS Deployment
 
 ## Overview
-This document provides instructions for setting up the required GitHub secrets for automated VPS deployment of KMainCMS to cms.josongeri.co.ke.
+This document provides instructions for setting up the required GitHub secrets for automated VPS deployment of Msabato CMS to cms.josongeri.co.ke.
 
 ## Required GitHub Secrets
 
@@ -108,7 +108,7 @@ sudo chown -R $USER:$USER /var/www/kmaincms
 
 ```bash
 cd /var/www/kmaincms
-git clone https://github.com/your-username/KMainCMS.git .
+git clone https://github.com/your-username/Msabato CMS.git .
 ```
 
 ### Step 5: Initial Setup on VPS (First Time Only)

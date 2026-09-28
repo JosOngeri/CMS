@@ -1,4 +1,4 @@
-# "My Departments" Workflow — KMainCMS
+# "My Departments" Workflow — Msabato CMS
 
 Scope: what happens when a member taps **My Departments** on the mobile app
 (or navigates the web equivalent), how membership requests get approved, and

@@ -1,4 +1,4 @@
-# KMainCMS Training Materials
+# Msabato CMS Training Materials
 
 ## Overview
 
@@ -22,7 +22,7 @@ This document provides training materials and tutorials for different user types
 #### Lesson 1: First-Time Login
 
 **Learning Objectives:**
-- Access the KMainCMS system
+- Access the Msabato CMS system
 - Complete initial setup
 - Navigate the dashboard
 
@@ -30,7 +30,7 @@ This document provides training materials and tutorials for different user types
 
 1. **Access the System**
    - Open your web browser
-   - Go to your church's KMainCMS URL
+   - Go to your church's Msabato CMS URL
    - Enter your email and password
    - Click "Sign In"
 
@@ -619,7 +619,7 @@ This document provides training materials and tutorials for different user types
 2. **Project Setup**
    ```bash
    git clone <repository-url>
-   cd KMainCMS
+   cd Msabato CMS
    
    # Backend
    cd backend
@@ -963,7 +963,7 @@ This document provides training materials and tutorials for different user types
 ## Additional Resources
 
 ### Video Tutorials
-- [Getting Started with KMainCMS](#)
+- [Getting Started with Msabato CMS](#)
 - [Member Management Tutorial](#)
 - [Event Creation Guide](#)
 - [Giving and Donations](#)
@@ -983,6 +983,6 @@ This document provides training materials and tutorials for different user types
 
 ## Conclusion
 
-These training materials provide comprehensive guidance for all user types. By following these lessons and completing the exercises, users will become proficient in using KMainCMS for their specific roles.
+These training materials provide comprehensive guidance for all user types. By following these lessons and completing the exercises, users will become proficient in using Msabato CMS for their specific roles.
 
 For additional support or questions, refer to the documentation or contact the training team.

@@ -1,4 +1,4 @@
-# KMainCMS Master Todo List — Hyper-Granular Implementation Tasks
+# Msabato CMS Master Todo List — Hyper-Granular Implementation Tasks
 **Generated:** 2026-07-09 (Deep Code Audit Edition)
 **Sources:** Live subagent analysis of actual source files — controllers, repositories, middleware, migrations, models, routes, frontend hooks, contexts, and components
 **Total Tasks:** 2000+
@@ -1101,7 +1101,7 @@ Each task is one checkbox. Tasks are grouped by file or subsystem. Do them top-t
 
 *Last updated: 2026-07-09 — Generated from deep live code analysis of actual source files (controllers, repositories, middleware, migrations, models, routes, hooks, contexts, components, and dashboard pages)*
 
-KMainCMS Master Todo List — Hyper-Granular Implementation Tasks
+Msabato CMS Master Todo List — Hyper-Granular Implementation Tasks
 Generated: 2026-07-08
 Sources: Master_Audit_map_refactored, GRANULAR_AUDIT_CLUSTERS.md, GRANULAR_AUDIT_CLUSTERS - Copy.md, GRANULAR_AUDIT_CLUSTERS - Copy (2).md, CODEBASE_AUDIT_PROTOCOL.md, LEAN_ARCHITECTURE_REPORT.md, DEEP_GAP_ANALYSIS.md, GRANULAR_TASK_LIST.md, IMPLEMENTATION_PLAN.md, AUDIT_RESULTS.md
 Total Tasks: 2000+

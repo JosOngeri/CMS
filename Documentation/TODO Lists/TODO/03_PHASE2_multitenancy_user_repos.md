@@ -1,5 +1,5 @@
 # Phase 2: Multi-Tenancy — UserRepository & UsersRepository
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ---

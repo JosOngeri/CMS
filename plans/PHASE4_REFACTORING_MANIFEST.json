@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "project": "KMainCMS",
+  "project": "Msabato CMS",
   "description": "Phase 4 Repository Layer Refactoring - Replace raw pool.query calls with repository methods",
   "source_mapping": "plans/COMPLETE_QUERY_REPLACEMENT_LIST.md",
   "phases": [

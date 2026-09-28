@@ -2,7 +2,7 @@
 
 ## Document Overview
 
-This document provides detailed technical specifications for each component of the SMS app integration between JOSms (Android) and KMainCMS (Web CMS).
+This document provides detailed technical specifications for each component of the SMS app integration between JOSms (Android) and Msabato CMS (Web CMS).
 
 ## Component Architecture
 

@@ -1,8 +1,8 @@
-# KMainCMS User Guide
+# Msabato CMS User Guide
 
-## Welcome to KMainCMS
+## Welcome to Msabato CMS
 
-KMainCMS (Kiserian Main Church Management System) is a comprehensive church management system designed to help manage members, events, finances, communications, and more.
+Msabato CMS (Kiserian Main Church Management System) is a comprehensive church management system designed to help manage members, events, finances, communications, and more.
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
@@ -24,7 +24,7 @@ KMainCMS (Kiserian Main Church Management System) is a comprehensive church mana
 
 1. **Access the System**
    - Open your web browser
-   - Navigate to your church's KMainCMS URL
+   - Navigate to your church's Msabato CMS URL
    - Example: `https://yourchurch.kmaincms.com`
 
 2. **Log In**
@@ -45,7 +45,7 @@ KMainCMS (Kiserian Main Church Management System) is a comprehensive church mana
 
 ### Mobile Access
 
-KMainCMS is fully responsive and works on:
+Msabato CMS is fully responsive and works on:
 - Smartphones (iOS and Android)
 - Tablets
 - Desktop computers
@@ -449,7 +449,7 @@ If you need additional help:
 
 ---
 
-## Tips for Using KMainCMS
+## Tips for Using Msabato CMS
 
 ### For Members
 
@@ -522,7 +522,7 @@ If you need additional help:
 
 ---
 
-## Getting the Most Out of KMainCMS
+## Getting the Most Out of Msabato CMS
 
 ### Regular Usage
 
@@ -542,7 +542,7 @@ If you need additional help:
 
 ## Conclusion
 
-KMainCMS is designed to make church management easier and more efficient. By following this guide and exploring the system, you'll be able to:
+Msabato CMS is designed to make church management easier and more efficient. By following this guide and exploring the system, you'll be able to:
 
 - Manage your membership information
 - Stay connected with church activities
@@ -552,4 +552,4 @@ KMainCMS is designed to make church management easier and more efficient. By fol
 
 For additional help or questions, don't hesitate to contact the church office or use the in-app help feature.
 
-**Welcome to KMainCMS - your tool for effective church management!**
+**Welcome to Msabato CMS - your tool for effective church management!**

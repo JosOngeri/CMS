@@ -12,7 +12,7 @@ import './index.css';
 // ── Server Connection Status Display ─────────────────────────────────────────
 const displayServerStatus = async () => {
   console.log('\n' + '='.repeat(60));
-  console.log('🚀 KMainCMS Frontend - Server Connection Check');
+  console.log('🚀 Msabato CMS Frontend - Server Connection Check');
   console.log('='.repeat(60));
   
   const API_BASE_URL = import.meta.env.VITE_API_URL || '';

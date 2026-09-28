@@ -1,5 +1,5 @@
 /**
- * Simple KMainCMS Work Continuation Script
+ * Simple Msabato CMS Work Continuation Script
  * 
  * This script reads the latest session log and shows what to work on next.
  * Usage: node continue-work-simple.js

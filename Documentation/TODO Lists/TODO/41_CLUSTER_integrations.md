@@ -1,5 +1,5 @@
 # CLUSTER — Integrations
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 > Collected from ALL phases. Every task that touches: Telegram integration (frontend page, context, backend routes/controller), SEO/SEOManager, SMS/SMS-hub, M-Pesa callbacks, AI content service (Gemini), notification service, WebSocket server (server.js).

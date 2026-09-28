@@ -1,7 +1,7 @@
 # VPS Deployment Guide for cms.josongeri.co.ke
 
 ## Overview
-This guide provides step-by-step instructions for deploying KMainCMS to a VPS at `cms.josongeri.co.ke`.
+This guide provides step-by-step instructions for deploying Msabato CMS to a VPS at `cms.josongeri.co.ke`.
 
 ## Prerequisites
 
@@ -109,7 +109,7 @@ cd /var/www/kmaincms
 **Option A: Using SCP (from local machine)**
 ```bash
 # From your local machine
-cd "D:/VIbeCode/KMainCMS/CMS Codebase"
+cd "D:/VIbeCode/Msabato CMS/CMS Codebase"
 scp -r . user@your-vps-ip:/var/www/kmaincms/
 ```
 

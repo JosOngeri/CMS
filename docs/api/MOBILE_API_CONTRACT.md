@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines the API contract for mobile app integration with KMainCMS. All endpoints follow RESTful principles and use standard HTTP methods.
+This document defines the API contract for mobile app integration with Msabato CMS. All endpoints follow RESTful principles and use standard HTTP methods.
 
 **Base URL**: `https://cms.kiserianchurch.org/api/mobile`  
 **API Version**: v1  

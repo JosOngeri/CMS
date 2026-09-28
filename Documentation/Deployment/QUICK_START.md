@@ -1,4 +1,4 @@
-# Quick Start Guide - KMainCMS VPS Deployment
+# Quick Start Guide - Msabato CMS VPS Deployment
 
 ## Prerequisites Checklist
 - [ ] VPS with Ubuntu 20.04+ 
@@ -37,7 +37,7 @@ sudo systemctl enable redis-server
 ### Step 2: Upload Application (5 minutes)
 ```bash
 # On local machine
-cd "D:/VIbeCode/KMainCMS/CMS Codebase"
+cd "D:/VIbeCode/Msabato CMS/CMS Codebase"
 
 # Upload using SCP
 scp -r . user@your-vps-ip:/var/www/kmaincms/

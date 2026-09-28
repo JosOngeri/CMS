@@ -1,8 +1,8 @@
-# KMainCMS Video Production Guide
+# Msabato CMS Video Production Guide
 
 ## Overview
 
-This guide provides scripts, storyboards, and production instructions for creating KMainCMS video walkthroughs and tutorials.
+This guide provides scripts, storyboards, and production instructions for creating Msabato CMS video walkthroughs and tutorials.
 
 ## Table of Contents
 1. [Video Production Overview](#video-production-overview)
@@ -18,7 +18,7 @@ This guide provides scripts, storyboards, and production instructions for creati
 ### Video Series Structure
 
 **Getting Started Series** (5 videos)
-1. Welcome to KMainCMS (3 min)
+1. Welcome to Msabato CMS (3 min)
 2. First-Time Login (4 min)
 3. Dashboard Tour (5 min)
 4. Profile Setup (4 min)
@@ -64,21 +64,21 @@ This guide provides scripts, storyboards, and production instructions for creati
 
 ## Video Scripts
 
-### Video 1: Welcome to KMainCMS
+### Video 1: Welcome to Msabato CMS
 
-**Title:** Welcome to KMainCMS
+**Title:** Welcome to Msabato CMS
 **Duration:** 3 minutes
 **Target Audience:** New users
 
 **Script:**
 
 **[0:00-0:15] Intro**
-- Visual: KMainCMS logo animation
-- Audio: "Welcome to KMainCMS, the comprehensive church management system designed to help your church thrive."
+- Visual: Msabato CMS logo animation
+- Audio: "Welcome to Msabato CMS, the comprehensive church management system designed to help your church thrive."
 
-**[0:15-0:45] What is KMainCMS?**
+**[0:15-0:45] What is Msabato CMS?**
 - Visual: System overview screenshots
-- Audio: "KMainCMS helps you manage members, events, finances, communications, and more—all in one easy-to-use system. Whether you're a member, leader, or administrator, KMainCMS has tools designed specifically for you."
+- Audio: "Msabato CMS helps you manage members, events, finances, communications, and more—all in one easy-to-use system. Whether you're a member, leader, or administrator, Msabato CMS has tools designed specifically for you."
 
 **[0:45-1:30] Key Features**
 - Visual: Feature highlights with icons
@@ -94,7 +94,7 @@ This guide provides scripts, storyboards, and production instructions for creati
 
 **[2:45-3:00] Outro**
 - Visual: Call to action
-- Audio: "Ready to get started? Let's dive into your first-time login in our next video. Welcome to KMainCMS!"
+- Audio: "Ready to get started? Let's dive into your first-time login in our next video. Welcome to Msabato CMS!"
 
 ### Video 2: First-Time Login
 
@@ -142,7 +142,7 @@ This guide provides scripts, storyboards, and production instructions for creati
 
 **[0:00-0:20] Intro**
 - Visual: Dashboard screen
-- Audio: "Let's explore the KMainCMS dashboard—your central hub for all church activities and information."
+- Audio: "Let's explore the Msabato CMS dashboard—your central hub for all church activities and information."
 
 **[0:20-1:00] Dashboard Layout**
 - Visual: Highlighting different sections
@@ -245,7 +245,7 @@ This guide provides scripts, storyboards, and production instructions for creati
 
 **Graphics & Branding:**
 - Use consistent branding
-- Include KMainCMS logo
+- Include Msabato CMS logo
 - Use brand colors
 - Add intro/outro sequences
 - Include chapter markers
@@ -286,24 +286,24 @@ Video Production/
 ### Intro Template
 
 **Visual:**
-- KMainCMS logo animation (2 seconds)
+- Msabato CMS logo animation (2 seconds)
 - Video title (1 second)
 - Presenter name (optional, 1 second)
 
 **Audio:**
 - Brand music (subtle)
-- Voiceover: "Welcome to KMainCMS"
+- Voiceover: "Welcome to Msabato CMS"
 
 ### Outro Template
 
 **Visual:**
 - Summary points (3 seconds)
 - Call to action (2 seconds)
-- KMainCMS logo (2 seconds)
+- Msabato CMS logo (2 seconds)
 
 **Audio:**
 - Brand music (subtle)
-- Voiceover: "Thanks for watching! Check out our other videos for more KMainCMS tutorials."
+- Voiceover: "Thanks for watching! Check out our other videos for more Msabato CMS tutorials."
 
 ### Transition Template
 
@@ -335,7 +335,7 @@ Video Production/
 ### SEO Optimization
 
 **Titles:**
-- Include "KMainCMS" in all titles
+- Include "Msabato CMS" in all titles
 - Use descriptive keywords
 - Keep titles under 60 characters
 
@@ -347,7 +347,7 @@ Video Production/
 
 **Tags:**
 - Church management software
-- KMainCMS
+- Msabato CMS
 - Member management
 - Church administration
 - Specific feature names
@@ -469,7 +469,7 @@ Video Production/
 
 ## Conclusion
 
-This video production guide provides everything needed to create professional KMainCMS tutorial videos. Follow the scripts, adhere to production guidelines, and maintain quality standards to create effective training materials.
+This video production guide provides everything needed to create professional Msabato CMS tutorial videos. Follow the scripts, adhere to production guidelines, and maintain quality standards to create effective training materials.
 
 For questions or support with video production, contact the documentation team.
 

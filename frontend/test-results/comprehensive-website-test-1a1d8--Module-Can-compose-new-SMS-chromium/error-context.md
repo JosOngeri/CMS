@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> SMS Module >> Can compose new SMS
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> SMS Module >> Can compose new SMS
 - Location: e2e\comprehensive-website-test.spec.js:391:5
 
 # Error details

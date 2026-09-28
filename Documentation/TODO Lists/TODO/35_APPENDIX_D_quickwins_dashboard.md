@@ -1,5 +1,5 @@
 # APPENDIX D — UPDATED QUICK-WIN LIST (From Dashboard Audit)
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 - [ ] 🔴 `AdminDashboard.jsx` line 26: change `/dashboard/stats` → `/api/dashboard/stats`

@@ -1,5 +1,5 @@
 # Phase 12 — M-Pesa and Payment Integration
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ## PHASE 12 — M-PESA AND PAYMENT INTEGRATION

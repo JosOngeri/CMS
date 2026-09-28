@@ -4,8 +4,10 @@ import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Church, Loader2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
+import { useChurchBranding } from '../../hooks/useChurchBranding'
 
 const Register = () => {
+  const { churchName } = useChurchBranding()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +55,7 @@ const Register = () => {
             Create Account
           </h2>
           <p className="mt-2 text-sm text-[var(--color-textSecondary)] ">
-            Join SDA Church Kiserian Main community
+            Join {churchName} community
           </p>
         </div>
 

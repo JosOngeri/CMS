@@ -1,4 +1,4 @@
-# KMainCMS - Routes and Database Calls Documentation
+# Msabato CMS - Routes and Database Calls Documentation
 
 **Generated:** 2026-06-20
 

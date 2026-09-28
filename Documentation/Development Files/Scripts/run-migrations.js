@@ -26,7 +26,7 @@ const migrationOrder = [
   'add_sda_content_tables.sql'
 ];
 
-console.log('🗄️  Running KMainCMS Database Migrations...\n');
+console.log('🗄️  Running Msabato CMS Database Migrations...\n');
 
 // Check if migrations directory exists
 if (!fs.existsSync(migrationsDir)) {

@@ -1,5 +1,5 @@
 # Phase 10 — Dashboard Pages (Stubbed / Incomplete)
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ## PHASE 10 — DASHBOARD PAGES (Stubbed / Incomplete)

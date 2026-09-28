@@ -1,4 +1,4 @@
-# KMainCMS Routing and Database Remediation Plan
+# Msabato CMS Routing and Database Remediation Plan
 
 **Author:** Software Testing Expert  
 **Date:** June 21, 2026  

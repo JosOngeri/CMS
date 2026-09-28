@@ -1,5 +1,5 @@
 # Phase 8 — Frontend Context Fixes
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ## PHASE 8 — FRONTEND CONTEXT FIXES

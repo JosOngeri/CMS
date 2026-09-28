@@ -1,11 +1,11 @@
 # SMS Platform Integration Plan
 
 ## Overview
-Integrate JOSms WebApp into KMainCMS to create a unified church management system with SMS capabilities.
+Integrate JOSms WebApp into Msabato CMS to create a unified church management system with SMS capabilities.
 
 ## Current Architecture Analysis
 
-### KMainCMS
+### Msabato CMS
 - **Backend**: Node.js/Express with modular architecture
 - **Frontend**: React/Vite
 - **Database**: PostgreSQL
@@ -22,15 +22,15 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 ## Integration Strategy
 
 ### Phase 1: Backend Integration
-**Objective**: Merge SMS functionality into KMainCMS backend as a new module
+**Objective**: Merge SMS functionality into Msabato CMS backend as a new module
 
 **Steps**:
 1. Create SMS module structure in `backend/modules/sms/`
-2. Migrate SMS database schema to KMainCMS database
-3. Port SMS controllers from JOSms to KMainCMS
-4. Integrate SMS routes with KMainCMS routing system
-5. Adapt SMS authentication to use KMainCMS JWT
-6. Update SMS API to follow KMainCMS modular architecture
+2. Migrate SMS database schema to Msabato CMS database
+3. Port SMS controllers from JOSms to Msabato CMS
+4. Integrate SMS routes with Msabato CMS routing system
+5. Adapt SMS authentication to use Msabato CMS JWT
+6. Update SMS API to follow Msabato CMS modular architecture
 
 **Files to Create**:
 - `backend/modules/sms/sms.controller.js`
@@ -44,7 +44,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 - `backend/modules/sms/import.controller.js`
 
 **Database Changes**:
-- Add SMS tables to KMainCMS database schema
+- Add SMS tables to Msabato CMS database schema
 - Create migration file for SMS tables
 - Add organization_id to existing users table if needed
 - Create indexes for SMS tables
@@ -56,15 +56,15 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 - Verify modular architecture compliance
 
 ### Phase 2: Frontend Integration
-**Objective**: Convert Next.js frontend to React/Vite and integrate with KMainCMS
+**Objective**: Convert Next.js frontend to React/Vite and integrate with Msabato CMS
 
 **Steps**:
 1. Convert Next.js app directory structure to React/Vite structure
-2. Port SMS components to KMainCMS frontend structure
-3. Integrate SMS pages into KMainCMS routing
-4. Adapt SMS API calls to use KMainCMS backend
-5. Replace NextAuth with KMainCMS authentication context
-6. Integrate SMS state management with KMainCMS context system
+2. Port SMS components to Msabato CMS frontend structure
+3. Integrate SMS pages into Msabato CMS routing
+4. Adapt SMS API calls to use Msabato CMS backend
+5. Replace NextAuth with Msabato CMS authentication context
+6. Integrate SMS state management with Msabato CMS context system
 
 **Files to Create**:
 - `frontend/src/modules/sms/pages/Dashboard.jsx`
@@ -90,10 +90,10 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 - Verify responsive design
 
 ### Phase 3: Database Schema Integration
-**Objective**: Merge SMS database schema with KMainCMS schema
+**Objective**: Merge SMS database schema with Msabato CMS schema
 
 **Steps**:
-1. Review existing KMainCMS database schema
+1. Review existing Msabato CMS database schema
 2. Identify any table conflicts
 3. Create migration file for SMS tables
 4. Add foreign key relationships to users table
@@ -123,10 +123,10 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 
 **Steps**:
 1. Remove NextAuth dependency from SMS frontend
-2. Use KMainCMS JWT authentication
-3. Add SMS-specific permissions to KMainCMS auth
+2. Use Msabato CMS JWT authentication
+3. Add SMS-specific permissions to Msabato CMS auth
 4. Update user roles to include SMS permissions
-5. Integrate SMS organization concept with KMainCMS church concept
+5. Integrate SMS organization concept with Msabato CMS church concept
 
 **Permission Changes**:
 - Add `sms:admin` permission
@@ -145,7 +145,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 
 **Steps**:
 1. Test all SMS functionality
-2. Test integration with existing KMainCMS features
+2. Test integration with existing Msabato CMS features
 3. Test user permissions
 4. Test data import/export
 5. Test message sending
@@ -161,7 +161,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 
 **Verification**:
 - All test cases pass
-- No breaking changes to existing KMainCMS
+- No breaking changes to existing Msabato CMS
 - Performance is acceptable
 - Mobile app still works
 
@@ -172,7 +172,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
   - Created SMS contact management controllers
   - Created SMS group management controllers
   - Added routes for SMS contacts and groups
-  - Integrated with existing KMainCMS middleware
+  - Integrated with existing Msabato CMS middleware
   - Added file upload middleware for imports
 
 - ✅ **Phase 3**: Database Schema Integration
@@ -182,7 +182,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
   - Added proper indexes and triggers
 
 - ✅ **Phase 4**: Authentication Integration
-  - Using existing KMainCMS JWT authentication
+  - Using existing Msabato CMS JWT authentication
   - Integrated with existing role-based access control
   - Added permission checks for SMS operations
 
@@ -211,7 +211,7 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 ## Risk Mitigation
 
 **Backup Strategy**:
-- Backup KMainCMS database before migration
+- Backup Msabato CMS database before migration
 - Backup JOSms database before migration
 - Create git branch for integration work
 
@@ -227,8 +227,8 @@ Integrate JOSms WebApp into KMainCMS to create a unified church management syste
 
 ## Success Criteria
 
-- SMS functionality fully integrated into KMainCMS
-- No breaking changes to existing KMainCMS features
+- SMS functionality fully integrated into Msabato CMS
+- No breaking changes to existing Msabato CMS features
 - Unified authentication system
 - Single database for all functionality
 - Mobile app compatibility maintained

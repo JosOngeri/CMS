@@ -1,7 +1,7 @@
 # Phase 16: Deployment & DevOps - Implementation Guide
 
 ## Overview
-This document provides comprehensive guidance for deploying and operating the KMainCMS system in production.
+This document provides comprehensive guidance for deploying and operating the Msabato CMS system in production.
 
 ## Table of Contents
 1. [Docker Deployment](#docker-deployment)
@@ -28,7 +28,7 @@ This document provides comprehensive guidance for deploying and operating the KM
 1. **Clone repository**
 ```bash
 git clone <repository-url>
-cd KMainCMS
+cd Msabato CMS
 ```
 
 2. **Configure environment**
@@ -499,6 +499,6 @@ docker-compose restart nginx
 
 ## Conclusion
 
-This deployment guide provides a comprehensive framework for deploying and operating KMainCMS in production. Follow the checklists and procedures to ensure reliable, secure, and maintainable operations.
+This deployment guide provides a comprehensive framework for deploying and operating Msabato CMS in production. Follow the checklists and procedures to ensure reliable, secure, and maintainable operations.
 
 For questions or issues, refer to the troubleshooting section or contact the support team.

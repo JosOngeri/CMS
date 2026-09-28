@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Treasury Module >> Can view financial reports
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Treasury Module >> Can view financial reports
 - Location: e2e\comprehensive-website-test.spec.js:351:5
 
 # Error details

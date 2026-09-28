@@ -2,10 +2,12 @@ import { Outlet, Link } from 'react-router-dom'
 import { useState } from 'react'
 import { Menu, X, Sun, Moon, Phone, Mail, MapPin, MessageCircle, Video, Share2, Globe, AtSign, Download } from 'lucide-react'
 import { useColorPalette } from '../contexts/ColorPaletteContext'
+import { useChurchBranding } from '../hooks/useChurchBranding'
 
 const PublicLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { isDark, toggleDarkMode } = useColorPalette()
+  const { churchName, shortName } = useChurchBranding()
 
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
@@ -19,8 +21,8 @@ const PublicLayout = () => {
                 <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
               </div>
               <div className="hidden sm:block">
-                <span className="font-bold text-xl">SDA Kiserian Main</span>
-                <p className="text-xs text-white/80">Seventh-day Adventist Church</p>
+                <span className="font-bold text-xl">{shortName}</span>
+                <p className="text-xs text-white/80">Church Management System</p>
               </div>
             </Link>
 
@@ -139,8 +141,8 @@ const PublicLayout = () => {
                   <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
                 </div>
                 <div>
-                  <span className="font-bold text-lg">SDA Kiserian Main</span>
-                  <p className="text-xs text-[var(--color-textSecondary)]">Seventh-day Adventist</p>
+                  <span className="font-bold text-lg">{shortName}</span>
+                  <p className="text-xs text-[var(--color-textSecondary)]">Church Management</p>
                 </div>
               </div>
               <p className="text-[var(--color-textSecondary)] text-sm leading-relaxed mb-6">
@@ -236,7 +238,7 @@ const PublicLayout = () => {
           <div className="border-t border-[var(--color-border)] mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-[var(--color-textSecondary)] text-sm">
-                © {new Date().getFullYear()} SDA Kiserian Main. All rights reserved.
+                © {new Date().getFullYear()} {churchName}. All rights reserved.
               </p>
               <div className="flex items-center gap-4">
                 <a href="https://wa.me/254700000000" target="_blank" rel="noopener noreferrer" className="text-[var(--color-textSecondary)] hover:text-green-400 transition-colors">

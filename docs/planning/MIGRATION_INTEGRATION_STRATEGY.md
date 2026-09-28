@@ -1,13 +1,13 @@
-# KMainCMS Migration & Integration Strategy
+# Msabato CMS Migration & Integration Strategy
 **Version:** 1.1  
 **Target:** Unified Church Management Platform  
-**Lead System:** KMainCMS (Modular/UUID)  
+**Lead System:** Msabato CMS (Modular/UUID)  
 **Source System:** Kiserian Main SDA Church Website (Legacy/Public)
 
 ---
 
 ## 1. Objective
-To consolidate the proven functionalities of the Legacy Website into the modern, modular architecture of KMainCMS. This migration prioritizes the **Gallery**, **Blessed Texts Messaging**, **Notifications**, and **M-Pesa Sandbox** which were fully operational in the legacy system.
+To consolidate the proven functionalities of the Legacy Website into the modern, modular architecture of Msabato CMS. This migration prioritizes the **Gallery**, **Blessed Texts Messaging**, **Notifications**, and **M-Pesa Sandbox** which were fully operational in the legacy system.
 
 ---
 

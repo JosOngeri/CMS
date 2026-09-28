@@ -1,7 +1,7 @@
-# KMainCMS Work Continuation Tool
+# Msabato CMS Work Continuation Tool
 
 ## Overview
-This tool helps you continue work on your KMainCMS project by analyzing session logs and suggesting next steps.
+This tool helps you continue work on your Msabato CMS project by analyzing session logs and suggesting next steps.
 
 ## Files Created
 

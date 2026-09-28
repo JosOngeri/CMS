@@ -1,4 +1,4 @@
-﻿# KMainCMS Master Audit Map (755 Files)
+﻿# Msabato CMS Master Audit Map (755 Files)
 
 ### Cluster 01: Core Backend Infrastructure ✅ FIXED
 **Prompt:** Audit for lean architecture, configuration integrity, and operational reliability. Focus on: (1) Eliminating redundant code patterns like duplicate static serving logic; (2) Ensuring proper error handling and process exit mechanisms to prevent zombie processes; (3) Implementing proper logging with PII redaction; (4) Validating environment variable fallback support; (5) Checking for aggressive timeout configurations; (6) Ensuring database connection resilience with appropriate timeouts and query logging; (7) Removing any global.io usage in favor of app.set patterns; (8) Verifying that all configuration files use standardized logging helpers rather than console.log.

@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Treasury Module >> Can manage budget
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Treasury Module >> Can manage budget
 - Location: e2e\comprehensive-website-test.spec.js:362:5
 
 # Error details

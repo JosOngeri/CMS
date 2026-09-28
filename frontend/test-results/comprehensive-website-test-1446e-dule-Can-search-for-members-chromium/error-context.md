@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Members Module >> Can search for members
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Members Module >> Can search for members
 - Location: e2e\comprehensive-website-test.spec.js:189:5
 
 # Error details

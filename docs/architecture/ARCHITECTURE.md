@@ -1,7 +1,7 @@
-# KMainCMS System Architecture
+# Msabato CMS System Architecture
 
 ## Overview
-KMainCMS is a modular church management system designed for scalability, security, and maintainability. This document describes the system architecture, design patterns, and technical decisions.
+Msabato CMS is a modular church management system designed for scalability, security, and maintainability. This document describes the system architecture, design patterns, and technical decisions.
 
 ## Technology Stack
 
@@ -33,7 +33,7 @@ KMainCMS is a modular church management system designed for scalability, securit
 The system follows a modular architecture where each functional area is a self-contained module:
 
 ```
-KMainCMS/
+Msabato CMS/
 ├── AUTH Module
 ├── TELEGRAM Module
 ├── CONTENT Module
@@ -281,4 +281,4 @@ User → Create Request → Route to Approver → Approver Action → Next Step 
 
 ## Conclusion
 
-KMainCMS is designed with a focus on modularity, security, and scalability. The architecture supports easy addition of new modules, maintains clean separation of concerns, and provides a solid foundation for future enhancements.
+Msabato CMS is designed with a focus on modularity, security, and scalability. The architecture supports easy addition of new modules, maintains clean separation of concerns, and provides a solid foundation for future enhancements.

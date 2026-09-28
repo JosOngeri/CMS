@@ -1,4 +1,4 @@
-# KMainCMS Deep Gap Analysis & Hyper-Granular Task List
+# Msabato CMS Deep Gap Analysis & Hyper-Granular Task List
 
 This document identifies "hidden" architectural and UX gaps discovered through deep code inspection and provides a surgical plan to resolve them.
 

@@ -1,4 +1,4 @@
-# KMainCMS Permission System Audit
+# Msabato CMS Permission System Audit
 
 **Date:** 2026-06-20
 **Phase:** Phase 3 - Advanced Features

@@ -3,7 +3,7 @@ REM Test Runner Script for Windows (Phase 15)
 REM Runs all tests with coverage reporting
 
 echo ========================================
-echo KMainCMS Test Suite
+echo Msabato CMS Test Suite
 echo ========================================
 echo.
 

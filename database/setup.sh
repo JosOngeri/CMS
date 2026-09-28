@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Database setup script for KMainCMS
+# Database setup script for Msabato CMS
 
-echo "Setting up KMainCMS database..."
+echo "Setting up Msabato CMS database..."
 
 # Check if PostgreSQL is running
 if ! command -v psql &> /dev/null; then

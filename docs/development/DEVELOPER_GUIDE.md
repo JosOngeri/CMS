@@ -1,7 +1,7 @@
-# KMainCMS Developer Guide
+# Msabato CMS Developer Guide
 
 ## Overview
-KMainCMS is a comprehensive church management system built with Node.js, Express, PostgreSQL, and React. This guide provides developers with the information needed to understand, extend, and maintain the system.
+Msabato CMS is a comprehensive church management system built with Node.js, Express, PostgreSQL, and React. This guide provides developers with the information needed to understand, extend, and maintain the system.
 
 ## Architecture
 

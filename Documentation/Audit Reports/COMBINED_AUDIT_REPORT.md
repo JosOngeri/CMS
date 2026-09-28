@@ -1,4 +1,4 @@
-# KMainCMS Combined Audit Report
+# Msabato CMS Combined Audit Report
 **Report Date:** 2026-07-08  
 **Audit Period:** May 2026 - July 2026  
 **Total Files Audited:** 755+  
@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This combined audit report consolidates findings from 8 separate audit sessions conducted between May and July 2026. The audits covered the entire KMainCMS codebase (755+ files) across backend, frontend, database, and infrastructure layers.
+This combined audit report consolidates findings from 8 separate audit sessions conducted between May and July 2026. The audits covered the entire Msabato CMS codebase (755+ files) across backend, frontend, database, and infrastructure layers.
 
 ### Overall Health Score: **65/100**
 

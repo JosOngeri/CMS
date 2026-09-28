@@ -11,6 +11,7 @@ import Card from '../../components/common/Card'
 import { FullPageLoading, InlineLoading } from '../../components/common/Loading'
 import { EmptyState, ErrorEmptyState, GalleryEmptyState } from '../../components/common/EmptyState'
 import { useDataFetch } from '../../hooks/useDataFetch'
+import { useChurchBranding } from '../../hooks/useChurchBranding'
 import MobileWrapper from '../../components/mobile/MobileWrapper'
 import MobileDashboard from '../../components/mobile/MobileDashboard'
 import SuperAdminDashboard from './SuperAdminDashboard'
@@ -22,6 +23,7 @@ import '../../styles/dashboard.css'
 
 const Dashboard = () => {
   const { user, loading } = useAuth()
+  const { churchName } = useChurchBranding()
   
   // Show loading while user data is being fetched
   if (loading) {
@@ -233,7 +235,7 @@ const DefaultDashboard = () => {
       <div className="page-header">
         <div>
           <h1 className="page-title">Church Dashboard</h1>
-          <p className="page-subtitle">Welcome back, {user?.first_name}! Here's what's happening at SDA Church Kiserian Main today.</p>
+          <p className="page-subtitle">Welcome back, {user?.first_name}! Here's what's happening at {churchName} today.</p>
         </div>
         {isAdmin && (
           <div className="flex gap-2">

@@ -3,7 +3,7 @@ REM Migration Runner Script for Windows
 REM Runs all database migrations in the correct order
 
 echo ========================================
-echo KMainCMS Database Migrations
+echo Msabato CMS Database Migrations
 echo ========================================
 echo.
 

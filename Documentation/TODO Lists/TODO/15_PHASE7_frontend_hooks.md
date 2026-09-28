@@ -1,5 +1,5 @@
 # Phase 7 — Frontend Hooks Fixes
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 ## PHASE 7 — FRONTEND HOOKS FIXES

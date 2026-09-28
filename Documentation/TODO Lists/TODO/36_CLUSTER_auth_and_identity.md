@@ -1,5 +1,5 @@
 # CLUSTER — Auth and Identity
-**Part of:** KMainCMS Master Todo List
+**Part of:** Msabato CMS Master Todo List
 **Priority:** 🔴 CRITICAL | 🟠 HIGH | 🟡 MEDIUM | 🟢 LOW
 
 > Collected from ALL phases. Every task that touches: auth.js middleware, IdentityService.js, passport.js, AuthContext.jsx, usePermission.js, ProtectedRoute.jsx, ProtectedComponent.jsx, login/logout/register flows, MFA, JWT, CSRF, session management.

@@ -66,7 +66,7 @@ BEGIN
     VALUES (
         NEW.id,
         NEW.church_id,
-        'Welcome to KMainCMS',
+        'Welcome to Msabato CMS',
         'Your account has been successfully created. Welcome to our church management system!',
         'welcome'
     );

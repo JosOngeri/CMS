@@ -12,10 +12,10 @@
 #### Task 13.1.1: Implement GET /api/treasury/reports/trial-balance with church_id filtering
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getTrialBalance method
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
-  - `D:\VIbeCode\KMainCMS\backend\routes\treasury.routes.js` - Updated to use modular financial report controller
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\routes\financialReport.routes.js` - Added authentication middleware
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getTrialBalance method
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
+  - `D:\VIbeCode\Msabato CMS\backend\routes\treasury.routes.js` - Updated to use modular financial report controller
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\routes\financialReport.routes.js` - Added authentication middleware
 - **Changes Made:**
   - Updated repository query to filter by church_id
   - Controller now passes church_id from authenticated user
@@ -25,8 +25,8 @@
 #### Task 13.1.2: Implement GET /api/treasury/reports/income-statement with church_id filtering
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getIncomeStatementAccounts
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getIncomeStatementAccounts
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
 - **Changes Made:**
   - Repository query filters by church_id
   - Groups income/expense by category for date range
@@ -35,8 +35,8 @@
 #### Task 13.1.3: Implement GET /api/treasury/reports/balance-sheet with church_id filtering
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getBalanceSheetAccounts
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\TreasuryRepository.js` - Added church_id parameter to getBalanceSheetAccounts
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added church_id from req.user.church_id
 - **Changes Made:**
   - Repository query filters by church_id
   - Shows assets, liabilities, and equity
@@ -45,8 +45,8 @@
 #### Task 13.1.4: Implement GET /api/treasury/reports/cash-flow with church_id filtering
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\TreasuryRepository.js` - Enhanced getCashFlowStatement with church_id and improved categorization
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added date validation
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\TreasuryRepository.js` - Enhanced getCashFlowStatement with church_id and improved categorization
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added date validation
 - **Changes Made:**
   - Repository query filters by church_id
   - Shows operating, investing, and financing cash flows
@@ -56,7 +56,7 @@
 #### Task 13.1.5: Implement GET /api/treasury/reports/fund-balance with church_id filtering
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added date validation
+  - `D:\VIbeCode\Msabato CMS\backend\modules\treasury\controllers\financialReport.controller.js` - Added date validation
 - **Changes Made:**
   - Repository already had church_id filtering
   - Shows fund balance per fund/campaign
@@ -67,9 +67,9 @@
 #### Task 13.2.1: Implement GET /api/reports/membership-growth with church_id filter
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\ReportsRepository.js` - Added getMembershipGrowth method
-  - `D:\VIbeCode\KMainCMS\backend\controllers\reports.controller.js` - Added getMembershipGrowth controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\reports.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\ReportsRepository.js` - Added getMembershipGrowth method
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\reports.controller.js` - Added getMembershipGrowth controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\reports.routes.js` - Added route
 - **Changes Made:**
   - Returns month-over-month member count
   - Filters by church_id
@@ -78,9 +78,9 @@
 #### Task 13.2.2: Implement GET /api/reports/attendance-trend for past 52 weeks
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\ReportsRepository.js` - Added getAttendanceTrend method
-  - `D:\VIbeCode\KMainCMS\backend\controllers\reports.controller.js` - Added getAttendanceTrend controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\reports.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\ReportsRepository.js` - Added getAttendanceTrend method
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\reports.controller.js` - Added getAttendanceTrend controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\reports.routes.js` - Added route
 - **Changes Made:**
   - Returns weekly attendance for past 52 weeks
   - Filters by church_id
@@ -89,9 +89,9 @@
 #### Task 13.2.3: Implement GET /api/reports/member-demographics with church_id filter
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\AnalyticsRepository.js` - Enhanced getMemberDemographics with age groups
-  - `D:\VIbeCode\KMainCMS\backend\controllers\reports.controller.js` - Added getMemberDemographics controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\reports.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\AnalyticsRepository.js` - Enhanced getMemberDemographics with age groups
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\reports.controller.js` - Added getMemberDemographics controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\reports.routes.js` - Added route
 - **Changes Made:**
   - Returns age group, gender, and location breakdowns
   - Filters by church_id
@@ -100,8 +100,8 @@
 #### Task 13.2.4: Implement GET /api/members?filter=birthday_this_month
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\MembersRepository.js` - Added birthday filter to getAll and count methods
-  - `D:\VIbeCode\KMainCMS\backend\controllers\members.controller.js` - Added filter parameter to getAllMembers
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\MembersRepository.js` - Added birthday filter to getAll and count methods
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\members.controller.js` - Added filter parameter to getAllMembers
 - **Changes Made:**
   - Filters members by birthday in current month
   - Supports church_id filtering
@@ -112,9 +112,9 @@
 #### Task 13.3.1: Implement GET /api/analytics/user-activity for past 30 days
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\AnalyticsRepository.js` - Added getUserActivity method
-  - `D:\VIbeCode\KMainCMS\backend\controllers\analytics.controller.js` - Added getUserActivity controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\analytics.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\AnalyticsRepository.js` - Added getUserActivity method
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\analytics.controller.js` - Added getUserActivity controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\analytics.routes.js` - Added route
 - **Changes Made:**
   - Returns daily active users for past 30 days
   - Filters by church_id
@@ -123,9 +123,9 @@
 #### Task 13.3.2: Implement GET /api/analytics/content-views per content item
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\AnalyticsRepository.js` - Added getContentViews method
-  - `D:\VIbeCode\KMainCMS\backend\controllers\analytics.controller.js` - Added getContentViews controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\analytics.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\AnalyticsRepository.js` - Added getContentViews method
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\analytics.controller.js` - Added getContentViews controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\analytics.routes.js` - Added route
 - **Changes Made:**
   - Returns page view counts per content item
   - Filters by church_id
@@ -134,9 +134,9 @@
 #### Task 13.3.3: Implement GET /api/analytics/heatmap?period=7d for hourly activity
 - **Status:** ✅ Completed
 - **Files Modified:**
-  - `D:\VIbeCode\KMainCMS\backend\repositories\AnalyticsRepository.js` - Added getHeatmapData method
-  - `D:\VIbeCode\KMainCMS\backend\controllers\analytics.controller.js` - Added getHeatmap controller method
-  - `D:\VIbeCode\KMainCMS\backend\routes\analytics.routes.js` - Added route
+  - `D:\VIbeCode\Msabato CMS\backend\repositories\AnalyticsRepository.js` - Added getHeatmapData method
+  - `D:\VIbeCode\Msabato CMS\backend\controllers\analytics.controller.js` - Added getHeatmap controller method
+  - `D:\VIbeCode\Msabato CMS\backend\routes\analytics.routes.js` - Added route
 - **Changes Made:**
   - Returns hourly activity counts for heatmap visualization
   - Supports 7d, 30d, 90d periods

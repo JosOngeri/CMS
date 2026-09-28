@@ -1,5 +1,5 @@
 /**
- * Comprehensive E2E Testing for KMainCMS
+ * Comprehensive E2E Testing for Msabato CMS
  * This test suite covers all major modules and takes screenshots.
  */
 
@@ -19,7 +19,7 @@ if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
-test.describe('KMainCMS Comprehensive Functional Test', () => {
+test.describe('Msabato CMS Comprehensive Functional Test', () => {
 
   test.beforeEach(async ({ page }) => {
     // Navigate to the login page

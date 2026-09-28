@@ -93,7 +93,7 @@ function updateManifest({ versionName, versionCode, filename, size, changes }) {
 function main() {
   try {
     const { versionName, versionCode } = parseArgs();
-    console.log(`🚀 Building KMainCMS Android app v${versionName}+${versionCode}`);
+    console.log(`🚀 Building Msabato CMS Android app v${versionName}+${versionCode}`);
     const { filename, size } = buildApk({ versionName });
     const changes = extractChangelog(versionName);
     updateManifest({ versionName, versionCode, filename, size, changes });

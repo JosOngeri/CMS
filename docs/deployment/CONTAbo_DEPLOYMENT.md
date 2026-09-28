@@ -1,4 +1,4 @@
-# KMainCMS Contabo Deployment Guide
+# Msabato CMS Contabo Deployment Guide
 
 ## Resource Requirements
 
@@ -66,7 +66,7 @@ chmod +x /usr/local/bin/docker-compose
 
 # Clone your repository
 git clone your-repo-url
-cd KMainCMS
+cd Msabato CMS
 
 # Start microservices
 docker-compose -f docker-compose.microservices.yml up -d
@@ -282,7 +282,7 @@ crontab -e
 
 ```bash
 # Backup configuration and data
-tar -czf /backups/kmaincms_$(date +%Y%m%d).tar.gz /root/KMainCMS
+tar -czf /backups/kmaincms_$(date +%Y%m%d).tar.gz /root/Msabato CMS
 ```
 
 ## Scaling Strategy
@@ -457,7 +457,7 @@ systemctl restart sshd
 7. **Clone Repository**
    ```bash
    git clone your-repo-url
-   cd KMainCMS
+   cd Msabato CMS
    ```
 
 8. **Configure Environment**

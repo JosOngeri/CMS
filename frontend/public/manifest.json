@@ -1,7 +1,7 @@
 {
-  "name": "KMainCMS",
-  "short_name": "KMainCMS",
-  "description": "Kiserian Main SDA Church Management System",
+  "name": "Msabato CMS",
+  "short_name": "Msabato CMS",
+  "description": "Msabato Church Management System",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FEFDFB",

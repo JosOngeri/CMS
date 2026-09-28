@@ -1,4 +1,4 @@
-# KMainCMS Module Integration Strategies
+# Msabato CMS Module Integration Strategies
 
 **Date:** 2026-06-22
 **Project:** Kiserian Main SDA Church Management System

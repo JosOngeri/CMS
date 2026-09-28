@@ -126,7 +126,7 @@ curl -X GET http://localhost:3000/api/treasury/data
 ---
 
 ## Files Modified
-- `D:\VIbeCode\KMainCMS\backend\middleware\treasurySecurity.js`
+- `D:\VIbeCode\Msabato CMS\backend\middleware\treasurySecurity.js`
 
 ## Dependencies
 - ipaddr.js (already installed)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the integration between the KMainCMS Android app (Msabato) and the CMS multi-tenancy system, including the efficient hybrid sync architecture with minimal data usage and VPS resource consumption.
+This document describes the integration between the Msabato CMS Android app (Msabato) and the CMS multi-tenancy system, including the efficient hybrid sync architecture with minimal data usage and VPS resource consumption.
 
 ## Architecture
 

@@ -1,12 +1,12 @@
-# KMainCMS Knowledge Base
+# Msabato CMS Knowledge Base
 
-## Welcome to the KMainCMS Knowledge Base
+## Welcome to the Msabato CMS Knowledge Base
 
-This knowledge base serves as a central repository for all KMainCMS documentation, guides, tutorials, and resources. It's organized to help you quickly find the information you need.
+This knowledge base serves as a central repository for all Msabato CMS documentation, guides, tutorials, and resources. It's organized to help you quickly find the information you need.
 
 ## Quick Navigation
 
-- **[Getting Started](#getting-started)** - New to KMainCMS? Start here
+- **[Getting Started](#getting-started)** - New to Msabato CMS? Start here
 - **[User Guides](#user-guides)** - Documentation for different user types
 - **[Administration](#administration)** - System administration resources
 - **[Development](#development)** - Developer resources and API documentation
@@ -231,7 +231,7 @@ This knowledge base serves as a central repository for all KMainCMS documentatio
 ## FAQ
 
 ### General FAQ
-- [What is KMainCMS?](./USER_GUIDE.md#welcome-to-kmaincms)
+- [What is Msabato CMS?](./USER_GUIDE.md#welcome-to-kmaincms)
 - [How do I get started?](./USER_GUIDE.md#getting-started)
 - [What are the system requirements?](./USER_GUIDE.md#system-requirements)
 
@@ -460,7 +460,7 @@ Contact: documentation@yourchurch.com
 
 ## Conclusion
 
-This knowledge base is your comprehensive resource for all things KMainCMS. Whether you're a new member, leader, administrator, or developer, you'll find the information you need here.
+This knowledge base is your comprehensive resource for all things Msabato CMS. Whether you're a new member, leader, administrator, or developer, you'll find the information you need here.
 
 If you can't find what you're looking for, use the search function or contact support for assistance.
 

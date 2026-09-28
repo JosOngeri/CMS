@@ -1,5 +1,5 @@
 /**
- * KMainCMS Work Continuation Script
+ * Msabato CMS Work Continuation Script
  * 
  * This script reads the latest session log and generates a prompt
  * to continue work based on pending tasks and recommendations.
@@ -107,7 +107,7 @@ function parseSessionLog(filePath) {
  * Generate continuation prompt
  */
 function generateContinuationPrompt(data) {
-  let prompt = `📋 KMainCMS Work Continuation Prompt\n`;
+  let prompt = `📋 Msabato CMS Work Continuation Prompt\n`;
   prompt += `================================\n\n`;
   prompt += `📅 Last Session: ${data.date}\n`;
   prompt += `🎯 Focus: ${data.focus}\n\n`;

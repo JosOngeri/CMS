@@ -1,4 +1,4 @@
--- Add SMS Contact Management Tables to KMainCMS
+-- Add SMS Contact Management Tables to Msabato CMS
 -- This migration adds the contact and group management features from JOSms WebApp
 
 -- Enable UUID extension if not already enabled

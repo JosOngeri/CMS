@@ -1,8 +1,8 @@
-# KMainCMS VPS Deployment Documentation Summary
+# Msabato CMS VPS Deployment Documentation Summary
 
 ## 📋 Documentation Overview
 
-This documentation package provides complete guidance for deploying KMainCMS to a VPS at `cms.josongeri.co.ke`. The documentation is organized to support both quick deployment and detailed setup.
+This documentation package provides complete guidance for deploying Msabato CMS to a VPS at `cms.josongeri.co.ke`. The documentation is organized to support both quick deployment and detailed setup.
 
 ## 📚 Documentation Files Created
 
@@ -317,5 +317,5 @@ This documentation package provides complete guidance for deploying KMainCMS to 
 
 **Documentation Version**: 1.0  
 **Last Updated**: July 12, 2026  
-**Maintained By**: KMainCMS Development Team  
+**Maintained By**: Msabato CMS Development Team  
 **Deployment Target**: cms.josongeri.co.ke

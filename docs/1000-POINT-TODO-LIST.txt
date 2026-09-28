@@ -1,4 +1,4 @@
-﻿KMainCMS 1000-Point To-Do List (Phase 2 Implementation)
+﻿Msabato CMS 1000-Point To-Do List (Phase 2 Implementation)
 ============================================================
 Extracted from PHASE_2_IMPLEMENTATION_PLAN.md
 Last Updated: June 18, 2025

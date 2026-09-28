@@ -1,4 +1,4 @@
-# KMainCMS Deployment Guide
+# Msabato CMS Deployment Guide
 
 ## Prerequisites
 
