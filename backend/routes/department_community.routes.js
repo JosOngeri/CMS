@@ -62,7 +62,7 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
     const existing = await pool.query(
-      `SELECT id, status, is_active FROM department_members
+      `SELECT status, is_active FROM department_members
        WHERE department_id = $1 AND user_id = $2`,
       [id, userId]
     );
@@ -73,8 +73,8 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
       // Re-request after rejection/removal
       await pool.query(
         `UPDATE department_members SET status = 'pending', is_active = false,
-         requested_at = NOW() WHERE id = $1`,
-        [row.id]
+         requested_at = NOW() WHERE department_id = $1 AND user_id = $2`,
+        [id, userId]
       );
     } else {
       const member = await pool.query('SELECT id FROM members WHERE user_id = $1', [userId]);
