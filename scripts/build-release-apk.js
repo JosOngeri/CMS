@@ -42,10 +42,19 @@ function extractChangelog(version) {
   const re = new RegExp(`## \\[${version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\]\\s*-\\s*[^\\n]*\\n([\\s\\S]*?)(?=\\n## |\\n---|$)`);
   const m = changelog.match(re);
   if (!m) return [];
-  return m[1]
-    .split('\n')
-    .filter(l => l.trim().startsWith('- '))
-    .map(l => l.trim().replace(/^-\\s+/, ''));
+  // Collapse multi-line bullets (indented continuation lines are appended to
+  // the previous bullet so the manifest contains complete sentences.)
+  const lines = m[1].split('\n');
+  const bullets = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- ')) {
+      bullets.push(trimmed.replace(/^-\\s+/, ''));
+    } else if (trimmed && bullets.length > 0) {
+      bullets[bullets.length - 1] += ' ' + trimmed;
+    }
+  }
+  return bullets;
 }
 
 function buildApk({ versionName }) {
@@ -77,11 +86,16 @@ function updateManifest({ versionName, versionCode, filename, size, changes }) {
     changes
   };
 
-  const previous = manifest.latest
-    ? manifest.archive.filter(a => a.version !== manifest.latest.version)
-    : manifest.archive;
+  let previous = manifest.archive || [];
 
-  if (manifest.latest) previous.unshift(manifest.latest);
+  if (manifest.latest) {
+    // Don't archive if it's the same version we're rebuilding; just overwrite.
+    if (manifest.latest.version !== versionName) {
+      previous = previous.filter(a => a.version !== manifest.latest.version);
+      previous.unshift(manifest.latest);
+    }
+  }
+
   manifest.latest = entry;
   manifest.archive = previous;
 
