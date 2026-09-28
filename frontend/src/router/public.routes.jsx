@@ -77,6 +77,6 @@ export const publicRoutes = [
   { path: 'downloads',                     element: <W C={DownloadsPage} /> },
   { path: 'terms',                         element: <W C={Terms} /> },
   { path: 'privacy',                       element: <W C={Privacy} /> },
-  { path: 'gallery',                       element: <W C={PhotoGalleryPage} /> },
+  { path: 'gallery',                       element: <AuthProvider><W C={PhotoGalleryPage} /></AuthProvider> },
   { path: 'platform/login',                element: <AuthProvider><W C={PlatformLogin} /></AuthProvider> },
 ];
