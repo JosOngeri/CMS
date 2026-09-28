@@ -1,9 +1,9 @@
-# Comprehensive Feature Import Plan: KMainCMS Unified Platform v2.0
+# Comprehensive Feature Import Plan: Msabato CMS Unified Platform v2.0
 
 This document provides a deep-dive technical roadmap for migrating and implementing the "Neutrino-Level" features specified in the Phase 2.7 Requirements.
 
 ## 1. Multi-Tenant Core Architecture (Isolation Shield)
-*Rationale: To transform KMainCMS from a single-church app to a scalable "Church-as-a-Service" platform (REQ-NFR-004).*
+*Rationale: To transform Msabato CMS from a single-church app to a scalable "Church-as-a-Service" platform (REQ-NFR-004).*
 
 ### 1.1 Database Evolution (Postgres RLS)
 *   **Tenant Registry**: Finalize the `churches` table with `slug` (unique) and `api_config` (JSONB).

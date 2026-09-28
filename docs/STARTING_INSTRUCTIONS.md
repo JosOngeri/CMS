@@ -1,6 +1,6 @@
-# KMainCMS - Starting Instructions Manual
+# Msabato CMS - Starting Instructions Manual
 
-This guide provides step-by-step instructions to get the KMainCMS web application up and running.
+This guide provides step-by-step instructions to get the Msabato CMS web application up and running.
 
 ## Prerequisites
 

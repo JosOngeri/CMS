@@ -1,10 +1,10 @@
-# KMainCMS Comprehensive Test Guide
+# Msabato CMS Comprehensive Test Guide
 **Version:** 1.0  
 **Last Updated:** June 21, 2026  
 **Target:** QA Engineers & Developers
 
 ## 1. Introduction
-This guide provides instructions for validating the KMainCMS system. Following the **June 2026 Remediation Plan**, the system has been standardized to use **UUIDs** across all modules, and an automated testing suite has been established to ensure stability across the frontend and backend.
+This guide provides instructions for validating the Msabato CMS system. Following the **June 2026 Remediation Plan**, the system has been standardized to use **UUIDs** across all modules, and an automated testing suite has been established to ensure stability across the frontend and backend.
 
 ---
 

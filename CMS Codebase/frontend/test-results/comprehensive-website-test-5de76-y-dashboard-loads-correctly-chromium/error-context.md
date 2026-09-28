@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Treasury Module >> Treasury dashboard loads correctly
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Treasury Module >> Treasury dashboard loads correctly
 - Location: e2e\comprehensive-website-test.spec.js:327:5
 
 # Error details

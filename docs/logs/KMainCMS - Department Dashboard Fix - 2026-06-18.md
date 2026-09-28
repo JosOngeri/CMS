@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Department Dashboard Fix
+﻿# Msabato CMS Session Log — Department Dashboard Fix
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Fixed department dashboard loading issues by updating backend routes to handle slug-based URLs and adding proper error handling to frontend components.

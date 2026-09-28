@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> SMS Module >> Can view SMS analytics
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> SMS Module >> Can view SMS analytics
 - Location: e2e\comprehensive-website-test.spec.js:418:5
 
 # Error details

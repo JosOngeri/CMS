@@ -1,4 +1,4 @@
-# KMainCMS TELEGRAM Module Completion - MTProto and Filtering Features
+# Msabato CMS TELEGRAM Module Completion - MTProto and Filtering Features
 
 **Date:** 2026-06-22
 **Session:** TELEGRAM Module Advanced Features

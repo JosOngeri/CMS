@@ -1,6 +1,6 @@
-# KMainCMS Session Log - Bug Fixes and Setup
+# Msabato CMS Session Log - Bug Fixes and Setup
 **Date:** 2026-06-21
-**Project:** Kiserian Main SDA Church Website (KMainCMS)
+**Project:** Kiserian Main SDA Church Website (Msabato CMS)
 **Session Focus:** Bug fixes, database setup, and admin user creation
 **Session Duration:** Multiple hours covering frontend errors, backend database issues, authentication problems, and system setup
 

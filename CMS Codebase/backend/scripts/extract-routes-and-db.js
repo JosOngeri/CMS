@@ -9,7 +9,7 @@ const repositoriesDir = path.join(__dirname, '../repositories');
 const servicesDir = path.join(__dirname, '../services');
 const modulesDir = path.join(__dirname, '../modules');
 
-let output = '# KMainCMS - Routes and Database Calls Documentation\n\n';
+let output = '# Msabato CMS - Routes and Database Calls Documentation\n\n';
 output += '**Generated:** ' + new Date().toISOString().split('T')[0] + '\n\n';
 output += '---\n\n';
 

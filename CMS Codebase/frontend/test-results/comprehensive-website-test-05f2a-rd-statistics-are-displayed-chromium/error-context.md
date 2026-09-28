@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Dashboard Module >> Dashboard statistics are displayed
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Dashboard Module >> Dashboard statistics are displayed
 - Location: e2e\comprehensive-website-test.spec.js:151:5
 
 # Error details
@@ -56,7 +56,7 @@ Call log:
   48  |   }
   49  | };
   50  | 
-  51  | test.describe('KMainCMS Comprehensive Website Tests', () => {
+  51  | test.describe('Msabato CMS Comprehensive Website Tests', () => {
   52  |   test.describe('Authentication System', () => {
   53  |     test('Super Admin login with valid credentials', async ({ page }) => {
   54  |       await page.goto(`${BASE_URL}/auth/login`);

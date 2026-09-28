@@ -1,7 +1,7 @@
-# KMainCMS Session Log - Treasury Module Completion
+# Msabato CMS Session Log - Treasury Module Completion
 
 **Date:** 2026-06-22
-**Project:** Kiserian Main SDA Church Management System (KMainCMS)
+**Project:** Kiserian Main SDA Church Management System (Msabato CMS)
 **Session Type:** Backend Implementation
 **Duration:** Single session
 

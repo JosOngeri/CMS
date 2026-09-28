@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Department Data Seeding
+﻿# Msabato CMS Session Log — Department Data Seeding
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Created department-related database tables and seeded them with sample data to demonstrate department page functionality.

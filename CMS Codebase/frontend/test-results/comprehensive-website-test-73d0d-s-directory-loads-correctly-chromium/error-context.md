@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Members Module >> Members directory loads correctly
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Members Module >> Members directory loads correctly
 - Location: e2e\comprehensive-website-test.spec.js:181:5
 
 # Error details

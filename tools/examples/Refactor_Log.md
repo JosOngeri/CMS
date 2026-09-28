@@ -6,7 +6,7 @@
 **Successful:** 3
 **Failed:** 0
 **Skipped:** 0
-**Snapshot:** D:/Kiserian Main SDA Communications Department/KMainCMS/pre_refactor_snapshot_KMainCMS_20260622_120000.tar.gz
+**Snapshot:** D:/Kiserian Main SDA Communications Department/Msabato CMS/pre_refactor_snapshot_Msabato CMS_20260622_120000.tar.gz
 
 ## Step Details
 

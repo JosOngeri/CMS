@@ -1,6 +1,6 @@
 # Offline-First Android App Implementation
 
-This document explains the offline-first architecture implemented for the KMainCMS mobile app.
+This document explains the offline-first architecture implemented for the Msabato CMS mobile app.
 
 ## Overview
 

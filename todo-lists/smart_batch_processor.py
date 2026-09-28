@@ -119,7 +119,7 @@ class SmartBatchProcessor:
         """Generate a combined prompt for the entire batch"""
         task_list = "\n".join([f"{i+1}. {task['description']}" for i, task in enumerate(batch['tasks'])])
         
-        prompt = f"""I need you to implement the following batch of UX improvement tasks for KMainCMS:
+        prompt = f"""I need you to implement the following batch of UX improvement tasks for Msabato CMS:
 
 **Batch:** {batch['section']}
 **Number of Tasks:** {batch['task_count']}
@@ -128,11 +128,11 @@ class SmartBatchProcessor:
 {task_list}
 
 **Context:**
-- This is part of the KMainCMS UX improvement project
+- This is part of the Msabato CMS UX improvement project
 - The project is located at: {self.project_path}
 - Frontend is in: frontend\\
 - Backend is in: backend\\
-- The UX design document is at: docs\\KMainCMS_UX_DESIGN_DOCUMENT.md
+- The UX design document is at: docs\\Msabato CMS_UX_DESIGN_DOCUMENT.md
 
 **Requirements:**
 1. Analyze the current implementation for each task
@@ -277,12 +277,12 @@ Let me know if you need any clarification about the task requirements."""
         return "\n".join(report)
 
 def main():
-    todo_file = "D:\\Kiserian Main SDA Communications Department\\KMainCMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
-    project_path = "D:\\Kiserian Main SDA Communications Department\\KMainCMS"
+    todo_file = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
+    project_path = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS"
     processor = SmartBatchProcessor(todo_file, project_path)
     
     print("\n" + "="*60)
-    print("KMainCMS UX Improvement - Smart Batch Processor")
+    print("Msabato CMS UX Improvement - Smart Batch Processor")
     print("="*60 + "\n")
     
     progress = processor.get_progress()

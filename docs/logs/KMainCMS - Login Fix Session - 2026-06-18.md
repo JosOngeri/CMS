@@ -1,4 +1,4 @@
-﻿# KMainCMS Session Log — 2026-06-18
+﻿# Msabato CMS Session Log — 2026-06-18
 
 ## Session Summary
 Diagnosed and fixed 4 bugs preventing login and breaking the public home page.

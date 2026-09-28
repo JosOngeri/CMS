@@ -96,7 +96,7 @@ class SettingsRepository extends BaseRepository {
     if (!churchId) {
       try {
         const churchRes = await this.pool.query(
-          `SELECT id, name, slug, theme_color, logo_url
+          `SELECT id, name, slug, created_at, is_active
            FROM churches
            WHERE is_active = true
            ORDER BY created_at ASC
@@ -107,8 +107,6 @@ class SettingsRepository extends BaseRepository {
           settings.church_name = church.name;
           settings.church_slug = church.slug;
           settings.church_id = church.id;
-          settings.theme_color = church.theme_color;
-          settings.logo_url = church.logo_url;
         } else {
           settings.church_name = 'Msabato CMS';
           settings.church_slug = 'default';

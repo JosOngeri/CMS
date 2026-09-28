@@ -1,7 +1,7 @@
-# KMainCMS - Phase 3.2 Advanced Features Session
+# Msabato CMS - Phase 3.2 Advanced Features Session
 
 **Date:** 2026-06-20
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Session Focus:** Complete Phase 3.2 Advanced Features (PDF Export, Scheduling, Templates, Real-time Updates)
 
 ---

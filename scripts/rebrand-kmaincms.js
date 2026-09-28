@@ -2,15 +2,15 @@
 /**
  * rebrand-kmaincms.js
  *
- * Replaces all occurrences of the old product name `KMainCMS` with the
+ * Replaces all occurrences of the old product name `Msabato CMS` with the
  * preferred new names in tracked source files.  Leaves build artifacts, logs,
  * and the git index untouched.
  *
  * New names:
- *   - KMainCMS            -> Msabato CMS
- *   - KMainCMS Android    -> Msabato CMS Android
- *   - KMainCMS Mobile     -> Msabato CMS Mobile
- *   - KMainCMS server     -> Msabato CMS server
+ *   - Msabato CMS            -> Msabato CMS
+ *   - Msabato CMS Android    -> Msabato CMS Android
+ *   - Msabato CMS Mobile     -> Msabato CMS Mobile
+ *   - Msabato CMS server     -> Msabato CMS server
  */
 const { execSync } = require('child_process');
 const fs = require('fs');
@@ -43,7 +43,7 @@ function shouldProcess(file) {
 function rebrandFile(file) {
   let text = fs.readFileSync(file, 'utf8');
   const original = text;
-  text = text.replace(/KMainCMS/g, 'Msabato CMS');
+  text = text.replace(/Msabato CMS/g, 'Msabato CMS');
   if (text !== original) {
     fs.writeFileSync(file, text, 'utf8');
     return true;

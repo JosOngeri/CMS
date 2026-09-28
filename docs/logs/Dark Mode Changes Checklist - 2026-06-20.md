@@ -1,7 +1,7 @@
 # Palette-Based Theme Implementation Changes Checklist
 
 **Date:** 2026-06-20  
-**Project:** KMainCMS  
+**Project:** Msabato CMS  
 **Core Principle:** Everything calls from palette - 11 colors per palette, no separate dark mode  
 **Total Changes Required:** ~4,547 individual changes across ~235 files
 

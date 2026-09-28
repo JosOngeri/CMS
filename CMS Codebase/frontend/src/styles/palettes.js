@@ -1,5 +1,5 @@
 /**
- * KMainCMS Semantic Color Palettes
+ * Msabato CMS Semantic Color Palettes
  */
 
 export const lightPalette = {

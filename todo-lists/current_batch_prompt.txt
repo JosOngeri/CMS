@@ -1,4 +1,4 @@
-I need you to implement the following batch of UX improvement tasks for KMainCMS:
+I need you to implement the following batch of UX improvement tasks for Msabato CMS:
 
 **Batch:** Phase 1: Foundation
 **Number of Tasks:** 10
@@ -16,11 +16,11 @@ I need you to implement the following batch of UX improvement tasks for KMainCMS
 10. 1.2.3 Create pastoral quick actions grid (Create Announcement, Review Approvals, View Department Reports, Manage Events)
 
 **Context:**
-- This is part of the KMainCMS UX improvement project
-- The project is located at: D:\Kiserian Main SDA Communications Department\KMainCMS
+- This is part of the Msabato CMS UX improvement project
+- The project is located at: D:\Kiserian Main SDA Communications Department\Msabato CMS
 - Frontend is in: frontend\
 - Backend is in: backend\
-- The UX design document is at: docs\KMainCMS_UX_DESIGN_DOCUMENT.md
+- The UX design document is at: docs\Msabato CMS_UX_DESIGN_DOCUMENT.md
 
 **Requirements:**
 1. Analyze the current implementation for each task

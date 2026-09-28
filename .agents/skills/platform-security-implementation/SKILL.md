@@ -1,6 +1,6 @@
 ---
 name: platform-security-implementation
-description: Implement secure platform-administration authentication, authorization, audit logging, and module-safe API boundaries in KMainCMS.
+description: Implement secure platform-administration authentication, authorization, audit logging, and module-safe API boundaries in Msabato CMS.
 ---
 
 # Platform Security Implementation

@@ -54,16 +54,16 @@ class SequentialTaskProcessor:
         # Generate prompt
         clean_desc = task['description'].rstrip('.')
         
-        prompt = f"""I need you to implement the following UX improvement task for KMainCMS:
+        prompt = f"""I need you to implement the following UX improvement task for Msabato CMS:
 
 **Task #{task_number}:** {clean_desc}
 
 **Context:**
-- This is part of the KMainCMS UX improvement project
+- This is part of the Msabato CMS UX improvement project
 - The project is located at: {self.project_path}
 - Frontend is in: frontend\\
 - Backend is in: backend\\
-- The UX design document is at: docs\\KMainCMS_UX_DESIGN_DOCUMENT.md
+- The UX design document is at: docs\\Msabato CMS_UX_DESIGN_DOCUMENT.md
 
 **Requirements:**
 1. Analyze the current implementation in the relevant files
@@ -195,12 +195,12 @@ Let me know if you need any clarification about the task requirements."""
         return "\n".join(report)
 
 def main():
-    todo_file = "D:\\Kiserian Main SDA Communications Department\\KMainCMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
-    project_path = "D:\\Kiserian Main SDA Communications Department\\KMainCMS"
+    todo_file = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
+    project_path = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS"
     processor = SequentialTaskProcessor(todo_file, project_path)
     
     print("\n" + "="*60)
-    print("KMainCMS UX Improvement - Sequential Task Processor")
+    print("Msabato CMS UX Improvement - Sequential Task Processor")
     print("="*60 + "\n")
     
     while True:

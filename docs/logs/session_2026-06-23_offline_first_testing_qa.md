@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-23
+# Msabato CMS Session Log - 2026-06-23
 
 ## Session Overview
 **Date:** 2026-06-23  
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)  
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)  
 **Focus:** Offline-First Android App, Testing & Quality Assurance, Performance Optimization
 
 ---

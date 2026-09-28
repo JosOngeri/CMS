@@ -36,7 +36,7 @@ async function seedDemoData() {
     const annCount = await pool.query('SELECT COUNT(*) as total FROM announcements');
     if (parseInt(annCount.rows[0].total) === 0) {
       const announcements = [
-        { title: 'Welcome to KMainCMS', content: 'We are now using the new church management system. Please update your profiles.', priority: 'high' },
+        { title: 'Welcome to Msabato CMS', content: 'We are now using the new church management system. Please update your profiles.', priority: 'high' },
         { title: 'Sabbath Service Schedule', content: 'Sabbath school begins at 8:30 AM, Divine service at 11:00 AM.', priority: 'normal' },
         { title: 'Youth Camp Registration', content: 'Register for the upcoming youth camp by end of the month.', priority: 'normal' },
       ];

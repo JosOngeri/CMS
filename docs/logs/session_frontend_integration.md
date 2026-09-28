@@ -1,7 +1,7 @@
 # Session Log: Frontend Integration
 
 **Date**: 2025-01-XX
-**Project**: KMainCMS
+**Project**: Msabato CMS
 **Objective**: Integrate all new backend API endpoints with the frontend
 
 ## Summary

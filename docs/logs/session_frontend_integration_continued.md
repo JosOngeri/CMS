@@ -1,7 +1,7 @@
 # Session Log: Frontend Integration Continued
 
 **Date**: 2025-01-XX
-**Project**: KMainCMS
+**Project**: Msabato CMS
 **Objective**: Continue frontend integration for remaining modules
 
 ## Summary

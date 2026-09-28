@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Events Module >> Can register for event
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Events Module >> Can register for event
 - Location: e2e\comprehensive-website-test.spec.js:515:5
 
 # Error details

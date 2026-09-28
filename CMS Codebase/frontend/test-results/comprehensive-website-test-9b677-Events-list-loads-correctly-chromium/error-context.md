@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Events Module >> Events list loads correctly
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Events Module >> Events list loads correctly
 - Location: e2e\comprehensive-website-test.spec.js:490:5
 
 # Error details

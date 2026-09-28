@@ -1,4 +1,4 @@
-# KMainCMS - API 404 Fixes and Backend Configuration
+# Msabato CMS - API 404 Fixes and Backend Configuration
 **Date**: 2026-06-20
 **Session**: Backend API fixes and configuration improvements
 

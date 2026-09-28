@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Permissions System and Additional Departments
+﻿# Msabato CMS Session Log — Permissions System and Additional Departments
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Created a comprehensive permissions system with granular role-based access control and added 26 additional departments to reach the target of 38 departments.

@@ -384,7 +384,7 @@ class TelegramController extends BaseController {
           const bot = new Telegram(botToken);
 
           await bot.sendMessage(phoneNumber || key, {
-            text: `Your KMainCMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
+            text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
             parse_mode: 'HTML'
           });
 
@@ -442,7 +442,7 @@ class TelegramController extends BaseController {
           const bot = new Telegram(botToken);
 
           await bot.sendMessage(phoneNumber || key, {
-            text: `Your KMainCMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
+            text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
             parse_mode: 'HTML'
           });
 

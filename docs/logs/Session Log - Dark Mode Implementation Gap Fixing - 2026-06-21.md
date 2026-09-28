@@ -1,6 +1,6 @@
 # Session Log - Dark Mode Implementation Gap Fixing
 **Date:** 2026-06-21
-**Project:** KMainCMS
+**Project:** Msabato CMS
 **Topic:** Fixing gaps in palette-based theme implementation
 
 ## Overview

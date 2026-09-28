@@ -52,9 +52,9 @@ This plan is divided into 5 Parts for parallel agent execution:
 #### Subsection 1.1: SMS-Specific Authentication Endpoints
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\routes\smsAuth.routes.js`
-- Modify: `D:\VIbeCode\KMainCMS\backend\controllers\auth.controller.js:27-126`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\api\sms-auth.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\routes\smsAuth.routes.js`
+- Modify: `D:\VIbeCode\Msabato CMS\backend\controllers\auth.controller.js:27-126`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\api\sms-auth.test.js`
 
 **Interfaces:**
 - Consumes: Existing UserRepository.findByIdentifier, IdentityService, ResponseHandler
@@ -107,9 +107,9 @@ Commit message: "Add SMS-specific authentication endpoint with organization meta
 #### Subsection 1.2: SMS Organization Discovery Endpoint
 
 **Files:**
-- Modify: `D:\VIbeCode\KMainCMS\backend\routes\smsAuth.routes.js`
-- Create: `D:\VIbeCode\KMainCMS\backend\controllers\smsOrganization.controller.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\api\sms-organization.test.js`
+- Modify: `D:\VIbeCode\Msabato CMS\backend\routes\smsAuth.routes.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\controllers\smsOrganization.controller.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\api\sms-organization.test.js`
 
 **Interfaces:**
 - Consumes: SMS authentication token, ChurchRepository, existing ResponseHandler
@@ -170,8 +170,8 @@ Commit message: "Add SMS organization discovery endpoint with scope validation"
 #### Subsection 2.1: Snapshot Database Schema
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\migrations\003_add_snapshot_tables.sql`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\migrations\003_snapshot_tables.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\migrations\003_add_snapshot_tables.sql`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\migrations\003_snapshot_tables.test.js`
 
 **Interfaces:**
 - Consumes: Existing database schema conventions, church_id foreign key pattern
@@ -221,9 +221,9 @@ Commit message: "Add snapshot and rolling update database tables with proper ind
 #### Subsection 2.2: Snapshot Generation Service
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\services\SnapshotService.js`
-- Create: `D:\VIbeCode\KMainCMS\backend\repositories\SnapshotRepository.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\services\SnapshotService.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\services\SnapshotService.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\repositories\SnapshotRepository.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\services\SnapshotService.test.js`
 
 **Interfaces:**
 - Consumes: Church database connection, existing data models (contacts, groups, messages), compression utilities
@@ -277,9 +277,9 @@ Commit message: "Implement daily snapshot generation service with compression an
 #### Subsection 2.3: Rolling Update Capture Service
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\services\RollingUpdateService.js`
-- Modify: `D:\VIbeCode\KMainCMS\backend\repositories\SnapshotRepository.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\services\RollingUpdateService.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\services\RollingUpdateService.js`
+- Modify: `D:\VIbeCode\Msabato CMS\backend\repositories\SnapshotRepository.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\services\RollingUpdateService.test.js`
 
 **Interfaces:**
 - Consumes: Database change events, entity CRUD operations, sequence number management
@@ -334,9 +334,9 @@ Commit message: "Implement rolling update capture service with sequence numberin
 #### Subsection 2.4: Scheduled Snapshot Jobs
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\jobs\SnapshotJob.js`
-- Create: `D:\VIbeCode\KMainCMS\backend\jobs\RollingUpdateJob.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\jobs\SnapshotJob.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\jobs\SnapshotJob.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\jobs\RollingUpdateJob.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\jobs\SnapshotJob.test.js`
 
 **Interfaces:**
 - Consumes: SnapshotService, RollingUpdateService, ChurchRepository, existing job scheduler
@@ -402,9 +402,9 @@ Commit message: "Implement scheduled snapshot and rolling update jobs"
 #### Subsection 3.1: Snapshot Download Endpoint
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\routes\smsSync.routes.js`
-- Create: `D:\VIbeCode\KMainCMS\backend\controllers\smsSync.controller.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\api\sms-sync.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\routes\smsSync.routes.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\controllers\smsSync.controller.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\api\sms-sync.test.js`
 
 **Interfaces:**
 - Consumes: SMS authentication token, SnapshotRepository, existing ResponseHandler
@@ -459,9 +459,9 @@ Commit message: "Add SMS snapshot download endpoint with delta support"
 #### Subsection 3.2: Rolling Updates Endpoint
 
 **Files:**
-- Modify: `D:\VIbeCode\KMainCMS\backend\routes\smsSync.routes.js`
-- Modify: `D:\VIbeCode\KMainCMS\backend\controllers\smsSync.controller.js`
-- Test: `D:\VIbeCode\KMainCMS\backend\tests\api\sms-sync.test.js`
+- Modify: `D:\VIbeCode\Msabato CMS\backend\routes\smsSync.routes.js`
+- Modify: `D:\VIbeCode\Msabato CMS\backend\controllers\smsSync.controller.js`
+- Test: `D:\VIbeCode\Msabato CMS\backend\tests\api\sms-sync.test.js`
 
 **Interfaces:**
 - Consumes: SMS authentication token, SnapshotRepository, existing ResponseHandler
@@ -658,9 +658,9 @@ Commit message: "Implement SMS web app sync client with snapshot and rolling upd
 #### Subsection 5.1: Android App Authentication Update
 
 **Files:**
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart:194-228`
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\login_screen.dart:243-260`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\services\api_service_test.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart:194-228`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\login_screen.dart:243-260`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\services\api_service_test.dart`
 
 **Interfaces:**
 - Consumes: CMS SMS authentication endpoint, existing login UI
@@ -711,9 +711,9 @@ Commit message: "Update Android app authentication to use CMS API with username/
 #### Subsection 5.2: Android SQLite Sync Storage Implementation
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\sync_storage_service.dart`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\models\sync_models.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\services\sync_storage_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\sync_storage_service.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\models\sync_models.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\services\sync_storage_service_test.dart`
 
 **Interfaces:**
 - Consumes: SQLite database, existing sqflite package
@@ -768,9 +768,9 @@ Commit message: "Implement Android SQLite sync storage service with compression 
 #### Subsection 5.3: Android Sync Service Implementation
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\sync_service.dart`
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\services\sync_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\sync_service.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\services\sync_service_test.dart`
 
 **Interfaces:**
 - Consumes: CMS sync API endpoints, sync storage service, existing API service
@@ -828,9 +828,9 @@ Commit message: "Implement Android sync service with snapshot and rolling update
 #### Subsection 5.4: End-to-End Integration Testing
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\backend\tests\e2e\sms-sync-integration.test.js`
+- Create: `D:\VIbeCode\Msabato CMS\backend\tests\e2e\sms-sync-integration.test.js`
 - Create: `D:\VIbeCode\SMS APP\1 JOSms WebApp\e2e\sync.spec.ts`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
 
 **Interfaces:**
 - Consumes: All implemented services and endpoints
@@ -884,10 +884,10 @@ Commit message: "Add end-to-end integration tests for SMS sync workflow"
 #### Subsection 5.5: Documentation and Deployment Guides
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\docs\sms-sync-architecture.md`
-- Create: `D:\VIbeCode\KMainCMS\docs\sms-sync-deployment.md`
+- Create: `D:\VIbeCode\Msabato CMS\docs\sms-sync-architecture.md`
+- Create: `D:\VIbeCode\Msabato CMS\docs\sms-sync-deployment.md`
 - Create: `D:\VIbeCode\SMS APP\1 JOSms WebApp\docs\cms-integration.md`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
 
 **Interfaces:**
 - Consumes: All implemented features and configurations

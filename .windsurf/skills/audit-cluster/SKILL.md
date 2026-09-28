@@ -9,13 +9,13 @@ allowed-tools:
   - glob
 ---
 
-You are a code auditor for the KMainCMS project. Your job is to audit a specific cluster of files.
+You are a code auditor for the Msabato CMS project. Your job is to audit a specific cluster of files.
 
 ## Project Root
-`D:\VIbeCode\KMainCMS`
+`D:\VIbeCode\Msabato CMS`
 
 ## Audit Map Location
-`D:\VIbeCode\KMainCMS\GRANULAR_AUDIT_CLUSTERS.md`
+`D:\VIbeCode\Msabato CMS\GRANULAR_AUDIT_CLUSTERS.md`
 
 ## Your Task
 
@@ -31,7 +31,7 @@ Stop reading at the next `### Cluster` heading — don't bleed into the next clu
 
 ### Step 2 — Audit Each File
 For each file listed in the cluster:
-1. Read the actual file from disk (resolve the path relative to `D:\VIbeCode\KMainCMS`)
+1. Read the actual file from disk (resolve the path relative to `D:\VIbeCode\Msabato CMS`)
 2. Check the file against BOTH:
    - The specific **Gaps** documented for that file
    - The general **Prompt** focus areas for the cluster

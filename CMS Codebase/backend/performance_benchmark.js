@@ -1,5 +1,5 @@
 /**
- * Performance Benchmark Script for KMainCMS Backend
+ * Performance Benchmark Script for Msabato CMS Backend
  * 
  * This script benchmarks critical API endpoints and services
  * to ensure performance meets requirements.
@@ -63,7 +63,7 @@ async function benchmark(name, fn, threshold) {
 }
 
 async function runBenchmarks() {
-  console.log('🚀 Starting Performance Benchmarks for KMainCMS Backend\n');
+  console.log('🚀 Starting Performance Benchmarks for Msabato CMS Backend\n');
   console.log('=' .repeat(60));
 
   // Mock app for benchmarking

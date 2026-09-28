@@ -1,6 +1,6 @@
-# KMainCMS UX Improvement To-Do List
+# Msabato CMS UX Improvement To-Do List
 
-**Based on:** KMainCMS UX Design Document  
+**Based on:** Msabato CMS UX Design Document  
 **Created:** June 20, 2026  
 **Status:** Ready for Implementation
 

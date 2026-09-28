@@ -1,4 +1,4 @@
-# KMainCMS - Parallel Tab Structure Implementation
+# Msabato CMS - Parallel Tab Structure Implementation
 **Date:** 2026-06-21
 **Session:** Parallel Tab Structure Implementation and Gap Fixing
 

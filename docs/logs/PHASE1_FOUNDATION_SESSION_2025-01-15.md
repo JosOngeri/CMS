@@ -1,7 +1,7 @@
 # Phase 1 Foundation Session Log
 
 **Date**: 2025-01-15  
-**Project**: KMainCMS - SMS App Integration  
+**Project**: Msabato CMS - SMS App Integration  
 **Session Type**: Phase 1 Foundation Implementation  
 **Duration**: Foundation Setup and Documentation
 

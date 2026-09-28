@@ -1,7 +1,7 @@
-# KMainCMS - Shared Components Implementation Session
+# Msabato CMS - Shared Components Implementation Session
 
 **Date:** 2026-06-20
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Session Focus:** Implement Shared Components from UX Design Document
 
 ---

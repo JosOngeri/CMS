@@ -1,4 +1,4 @@
-# KMainCMS Complete File Inventory
+# Msabato CMS Complete File Inventory
 Date: 2026-06-21
 Purpose: Comprehensive static analysis coverage
 

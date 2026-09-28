@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-23
+# Msabato CMS Session Log - 2026-06-23
 
 ## Session Overview
 **Date:** 2026-06-23  
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)  
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)  
 **Focus:** Phase 6 Implementation - Multi-Tenancy & Row-Level Security
 
 ---
@@ -141,7 +141,7 @@
 
 ### Summary of Completed Work
 Phase 6 (Multi-Tenancy & Row-Level Security) has been successfully completed. The system now supports:
-- Multiple churches on a single KMainCMS instance
+- Multiple churches on a single Msabato CMS instance
 - Database-level tenant isolation via PostgreSQL RLS
 - Subdomain-based tenant routing (e.g., kiserian-main-sda.kmaincms.org)
 - Zero-join query optimization with church_slug redundant keys

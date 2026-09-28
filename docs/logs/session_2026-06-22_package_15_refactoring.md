@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-22 Package 15 Refactoring
+# Msabato CMS Session Log - 2026-06-22 Package 15 Refactoring
 
 ## Session Overview
 **Date:** 2026-06-22
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Focus:** Refactor PACKAGE_15 - socialAuth.controller.js (3) + sync.controller.js (1) + taxStatement.controller.js (5) + telegramAuth.controller.js (10) + testing.controller.js (2) + userSettings.controller.js (8) + vendors.controller.js (1)
 
 ## Package Details
@@ -108,12 +108,12 @@ All controllers in PACKAGE_15 are now fully refactored:
 - **vendors.controller.js:** 100% complete (already done)
 
 ## Files Modified
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/TelegramAuthRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/telegramAuth.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/UserSettingsRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/userSettings.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/query_packages/PACKAGE_15.md" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/logs/session_2026-06-22_package_15_refactoring.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/TelegramAuthRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/telegramAuth.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/UserSettingsRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/userSettings.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/query_packages/PACKAGE_15.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/logs/session_2026-06-22_package_15_refactoring.md" />
 
 ## Next Steps
 1. Continue with remaining packages (PACKAGE_16 through PACKAGE_22)

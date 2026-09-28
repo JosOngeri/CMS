@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Treasury Module >> Can add new payment
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Treasury Module >> Can add new payment
 - Location: e2e\comprehensive-website-test.spec.js:335:5
 
 # Error details

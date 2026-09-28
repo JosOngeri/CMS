@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fully Automated KMainCMS UX Improvement Executor
+Fully Automated Msabato CMS UX Improvement Executor
 Processes tasks sequentially with automatic completion detection and feedback
 """
 
@@ -51,16 +51,16 @@ class AutomatedTodoExecutor:
         """Generate a specific prompt for executing a task"""
         clean_desc = task_description.rstrip('.')
         
-        prompt = f"""I need you to implement the following UX improvement task for KMainCMS:
+        prompt = f"""I need you to implement the following UX improvement task for Msabato CMS:
 
 **Task:** {clean_desc}
 
 **Context:**
-- This is part of the KMainCMS UX improvement project
+- This is part of the Msabato CMS UX improvement project
 - The project is located at: {self.project_path}
 - Frontend is in: frontend\\
 - Backend is in: backend\\
-- The UX design document is at: docs\\KMainCMS_UX_DESIGN_DOCUMENT.md
+- The UX design document is at: docs\\Msabato CMS_UX_DESIGN_DOCUMENT.md
 
 **Requirements:**
 1. Analyze the current implementation in the relevant files
@@ -539,12 +539,12 @@ Let me know if you need any clarification about the task requirements."""
 
 def main():
     # Initialize executor
-    todo_file = "D:\\Kiserian Main SDA Communications Department\\KMainCMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
-    project_path = "D:\\Kiserian Main SDA Communications Department\\KMainCMS"
+    todo_file = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
+    project_path = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS"
     executor = AutomatedTodoExecutor(todo_file, project_path)
     
     print("\n" + "="*60)
-    print("KMainCMS UX Improvement - Automated Executor")
+    print("Msabato CMS UX Improvement - Automated Executor")
     print("="*60 + "\n")
     
     # Show initial progress

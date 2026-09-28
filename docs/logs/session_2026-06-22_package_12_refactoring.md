@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-22 Package 12 Refactoring
+# Msabato CMS Session Log - 2026-06-22 Package 12 Refactoring
 
 ## Session Overview
 **Date:** 2026-06-22
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Focus:** Refactor PACKAGE_12 - collection.controller.js (4) + memberGiving.controller.js (6) + comments.controller.js (7) + ai.controller.js (6) + accountingExport.controller.js (7)
 
 ## Package Details
@@ -112,16 +112,16 @@ All controllers in PACKAGE_12 are now fully refactored:
 - **accountingExport.controller.js:** 100% complete (7/7 queries)
 
 ## Files Modified
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/MemberGivingRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/memberGiving.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/CommentsRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/comments.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/AIRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/ai.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/AccountingExportRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/accountingExport.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/query_packages/PACKAGE_12.md" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/logs/session_2026-06-22_package_12_refactoring.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/MemberGivingRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/memberGiving.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/CommentsRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/comments.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/AIRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/ai.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/AccountingExportRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/accountingExport.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/query_packages/PACKAGE_12.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/logs/session_2026-06-22_package_12_refactoring.md" />
 
 ## Next Steps
 1. Continue with remaining packages (PACKAGE_13 through PACKAGE_22)

@@ -1,4 +1,4 @@
-# KMainCMS — Session Implementation Plan
+# Msabato CMS — Session Implementation Plan
 **Kiserian Main SDA Church Content Management System**
 **Document Type:** Development Session Planning & Tracking
 **Last Updated:** June 2026
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document is the master session plan for implementing and completing the KMainCMS system. It maps every item defined in the 16 modular-architecture CSV files against what is currently implemented, what is partially done, and what needs to be built — and organises all of that work into prioritised sessions.
+This document is the master session plan for implementing and completing the Msabato CMS system. It maps every item defined in the 16 modular-architecture CSV files against what is currently implemented, what is partially done, and what needs to be built — and organises all of that work into prioritised sessions.
 
 The architecture is divided into three layers:
 - **Core Modules** (foundation): AUTH, TELEGRAM
@@ -954,7 +954,7 @@ Examples:
 ## File Structure Reference (Target State)
 
 ```
-KMainCMS/
+Msabato CMS/
 ├── backend/
 │   ├── controllers/
 │   │   ├── auth.controller.js          ✅

@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: comprehensive-website-test.spec.js >> KMainCMS Comprehensive Website Tests >> Departments Module >> Can create new department
+- Name: comprehensive-website-test.spec.js >> Msabato CMS Comprehensive Website Tests >> Departments Module >> Can create new department
 - Location: e2e\comprehensive-website-test.spec.js:276:5
 
 # Error details

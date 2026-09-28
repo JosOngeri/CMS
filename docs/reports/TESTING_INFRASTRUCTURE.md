@@ -1,10 +1,10 @@
-# KMainCMS Testing Infrastructure Report
+# Msabato CMS Testing Infrastructure Report
 
 **Date:** June 21, 2026  
 **Author:** Software Testing Expert
 
 ## 1. Overview
-A comprehensive End-to-End (E2E) testing suite has been established for KMainCMS using **Playwright** and **Cypress**. These tests are designed to validate the integration between the React frontend and the UUID-standardized Node.js backend.
+A comprehensive End-to-End (E2E) testing suite has been established for Msabato CMS using **Playwright** and **Cypress**. These tests are designed to validate the integration between the React frontend and the UUID-standardized Node.js backend.
 
 ## 2. Test Suites Created
 

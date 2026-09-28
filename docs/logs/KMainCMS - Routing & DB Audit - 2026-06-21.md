@@ -1,4 +1,4 @@
-# KMainCMS - Routing & DB Call Audit
+# Msabato CMS - Routing & DB Call Audit
 **Date:** 2026-06-21  
 **Session Type:** Full codebase audit — routing, DB calls, endpoint alignment
 

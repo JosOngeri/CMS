@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-22 Package 11 Refactoring
+# Msabato CMS Session Log - 2026-06-22 Package 11 Refactoring
 
 ## Session Overview
 **Date:** 2026-06-22
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Focus:** Refactor PACKAGE_11 - recurringPayments.controller.js (7) + pledges.controller.js (7) + projects.controller.js (5) + collection.controller.js (11)
 
 ## Package Details
@@ -65,10 +65,10 @@ All controllers in PACKAGE_11 are now fully refactored:
 - **collection.controller.js:** 100% complete (10/10 queries)
 
 ## Files Modified
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/CollectionRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/collection.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/query_packages/PACKAGE_11.md" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/logs/session_2026-06-22_package_11_refactoring.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/CollectionRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/collection.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/query_packages/PACKAGE_11.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/logs/session_2026-06-22_package_11_refactoring.md" />
 
 ## Next Steps
 1. Continue with PACKAGE_12 for the next controller in the refactoring plan

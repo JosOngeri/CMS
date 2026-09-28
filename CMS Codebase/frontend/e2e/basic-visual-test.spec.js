@@ -1,5 +1,5 @@
 /**
- * Basic Visual Test for KMainCMS
+ * Basic Visual Test for Msabato CMS
  * Takes screenshots of key pages
  */
 
@@ -19,7 +19,7 @@ if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
-test.describe('KMainCMS Basic Visual Tests', () => {
+test.describe('Msabato CMS Basic Visual Tests', () => {
   test('Homepage loads', async ({ page }) => {
     await page.goto(BASE_URL);
     await page.waitForLoadState('networkidle');

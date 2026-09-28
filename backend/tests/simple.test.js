@@ -5,7 +5,7 @@ const express = require('express');
 const app = express();
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'KMainCMS API is running' });
+  res.json({ status: 'ok', message: 'Msabato CMS API is running' });
 });
 
 app.post('/api/auth/login', (req, res) => {

@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-22  
 **Method:** Actual file reading and code inspection  
-**Reference:** `KMainCMS_Upgrade_TodoList_2026-06-22.md`  
+**Reference:** `Msabato CMS_Upgrade_TodoList_2026-06-22.md`  
 **Compliance:** Follows `.windsurfrules` documentation completeness verification
 
 ---

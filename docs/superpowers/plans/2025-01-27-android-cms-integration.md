@@ -1,8 +1,8 @@
-# KMainCMS Android App CMS Integration Plan
+# Msabato CMS Android App CMS Integration Plan
 
 > **For agentic workers:** This plan is structured for 3-agent parallel execution. Each Part can be assigned to a different agent. REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development for coordinated multi-agent execution. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Integrate the KMainCMS Android app (Msabato) with the CMS multi-tenancy system to support username/email/phone login, user-specific data sync for offline access, and implement an efficient hybrid sync architecture with minimal data usage and VPS resource consumption.
+**Goal:** Integrate the Msabato CMS Android app (Msabato) with the CMS multi-tenancy system to support username/email/phone login, user-specific data sync for offline access, and implement an efficient hybrid sync architecture with minimal data usage and VPS resource consumption.
 
 **Architecture:** The CMS acts as the central authentication and database discovery service. Each church has its own database. The Android app connects to CMS for authentication, then syncs user-specific data using an efficient hybrid approach: (1) Pull mechanism - app polls every 5 minutes when online to check for updates and downloads only delta changes, (2) Push mechanism - server immediately pushes updates to relevant users when changes occur (e.g., department head updates → members get immediate push). Users always have their data available offline, with popup prompts for online-required features. System optimized for minimal data transfer and VPS resource usage through delta compression, efficient caching, and connection pooling.
 
@@ -58,8 +58,8 @@ This plan is divided into 4 Parts for parallel agent execution:
 #### Subsection 1.1: Update Login API Service
 
 **Files:**
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart:194-228`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\api_service_test.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart:194-228`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\api_service_test.dart`
 
 **Interfaces:**
 - Consumes: CMS SMS authentication endpoint, existing login UI
@@ -110,7 +110,7 @@ Commit message: "Update Android app authentication to use CMS API with username/
 #### Subsection 1.2: Update Login Screen UI
 
 **Files:**
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\login_screen.dart:243-260`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\login_screen.dart:243-260`
 
 **Interfaces:**
 - Consumes: Updated API service with identifier parameter
@@ -169,9 +169,9 @@ Commit message: "Update login screen to accept username, email, or phone as iden
 #### Subsection 2.1: Create Sync Storage Service
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\sync_storage_service.dart`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\models\sync_models.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\sync_storage_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\sync_storage_service.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\models\sync_models.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\sync_storage_service_test.dart`
 
 **Interfaces:**
 - Consumes: SQLite database, existing sqflite package
@@ -243,9 +243,9 @@ Commit message: "Implement Android SQLite sync storage service with compression 
 #### Subsection 3.1: Implement Pull Sync Service (5-Minute Polling)
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\pull_sync_service.dart`
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\pull_sync_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\pull_sync_service.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\pull_sync_service_test.dart`
 
 **Interfaces:**
 - Consumes: CMS sync API endpoints, sync storage service, existing API service
@@ -302,8 +302,8 @@ Commit message: "Implement efficient pull sync service with 5-minute polling and
 #### Subsection 3.2: Implement Push Sync Service (WebSocket/FCM)
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\push_sync_service.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\push_sync_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\push_sync_service.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\push_sync_service_test.dart`
 
 **Interfaces:**
 - Consumes: WebSocket/FCM connections, sync storage service
@@ -375,10 +375,10 @@ Commit message: "Implement push sync service with WebSocket for immediate update
 #### Subsection 4.1: Online Requirement Detection and Popup Prompts
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\network_service.dart`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\widgets\online_requirement_dialog.dart`
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\messages_screen.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\network_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\network_service.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\widgets\online_requirement_dialog.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\messages_screen.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\network_service_test.dart`
 
 **Interfaces:**
 - Consumes: Connectivity monitoring, existing UI components
@@ -432,7 +432,7 @@ Commit message: "Implement online requirement detection with popup prompts for o
 #### Subsection 4.2: Create Integration Tests
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
 
 **Interfaces:**
 - Consumes: All implemented services and endpoints
@@ -497,7 +497,7 @@ Commit message: "Add end-to-end integration tests for efficient hybrid sync work
 #### Subsection 4.3: Create Documentation
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
 
 **Interfaces:**
 - Consumes: All implemented features and configurations
@@ -579,10 +579,10 @@ Commit message: "Add comprehensive documentation for efficient hybrid sync CMS i
 #### Subsection 3.2: Online Requirement Detection and Popup Prompts
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\network_service.dart`
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\widgets\online_requirement_dialog.dart`
-- Modify: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\messages_screen.dart`
-- Test: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\test\unit\services\network_service_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\network_service.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\widgets\online_requirement_dialog.dart`
+- Modify: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\messages_screen.dart`
+- Test: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\test\unit\services\network_service_test.dart`
 
 **Interfaces:**
 - Consumes: Connectivity monitoring, existing UI components
@@ -636,7 +636,7 @@ Commit message: "Implement online requirement detection with popup prompts for o
 #### Subsection 3.2: Create Integration Tests
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\integration_test\sync_test.dart`
 
 **Interfaces:**
 - Consumes: All implemented services and endpoints
@@ -691,7 +691,7 @@ Commit message: "Add end-to-end integration tests for Android sync workflow"
 #### Subsection 3.3: Create Documentation
 
 **Files:**
-- Create: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
+- Create: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\docs\cms-integration.md`
 
 **Interfaces:**
 - Consumes: All implemented features and configurations

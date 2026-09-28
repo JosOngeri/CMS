@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Member Financial Access
+﻿# Msabato CMS Session Log — Member Financial Access
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Added Payments and Collections sidebar items for members to view their financial information, created member-specific financial view components, and updated permissions to allow members to access their own financial data.

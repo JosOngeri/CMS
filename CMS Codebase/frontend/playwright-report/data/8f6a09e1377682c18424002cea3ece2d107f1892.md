@@ -6,7 +6,7 @@
 
 # Test info
 
-- Name: basic-visual-test.spec.js >> KMainCMS Basic Visual Tests >> Homepage loads
+- Name: basic-visual-test.spec.js >> Msabato CMS Basic Visual Tests >> Homepage loads
 - Location: e2e\basic-visual-test.spec.js:23:3
 
 # Error details
@@ -51,7 +51,7 @@ Call log:
 
 ```ts
   1  | /**
-  2  |  * Basic Visual Test for KMainCMS
+  2  |  * Basic Visual Test for Msabato CMS
   3  |  * Takes screenshots of key pages
   4  |  */
   5  | 
@@ -71,7 +71,7 @@ Call log:
   19 |   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
   20 | }
   21 | 
-  22 | test.describe('KMainCMS Basic Visual Tests', () => {
+  22 | test.describe('Msabato CMS Basic Visual Tests', () => {
   23 |   test('Homepage loads', async ({ page }) => {
   24 |     await page.goto(BASE_URL);
   25 |     await page.waitForLoadState('networkidle');

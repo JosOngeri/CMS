@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-23 (Startup & Bug Fixes)
+# Msabato CMS Session Log - 2026-06-23 (Startup & Bug Fixes)
 
 ## Session Overview
 **Date:** 2026-06-23  
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)  
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)  
 **Focus:** Application startup with PM2, fixing startup errors, and resolving frontend glitching
 
 ---

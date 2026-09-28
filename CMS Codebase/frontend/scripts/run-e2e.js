@@ -10,7 +10,7 @@ const SCREENSHOT_DIR = path.join(__dirname, '../screenshots');
 const REPORT_FILE = path.join(__dirname, '../../docs/reports/E2E_TEST_REPORT.md');
 
 async function runTests() {
-  console.log('🚀 Starting KMainCMS E2E Test Suite...');
+  console.log('🚀 Starting Msabato CMS E2E Test Suite...');
 
   try {
     // 1. Run Playwright Tests
@@ -26,7 +26,7 @@ async function runTests() {
     console.log('Generating report...');
     const screenshots = fs.readdirSync(SCREENSHOT_DIR).filter(f => f.endsWith('.png'));
 
-    let reportContent = `# KMainCMS E2E Functional Test Report\n\n`;
+    let reportContent = `# Msabato CMS E2E Functional Test Report\n\n`;
     reportContent += `**Date:** ${new Date().toLocaleString()}\n`;
     reportContent += `**Status:** ✅ SUCCESS\n\n`;
     reportContent += `## Visual Verification (Screenshots)\n\n`;
@@ -43,7 +43,7 @@ async function runTests() {
   } catch (error) {
     console.error('❌ E2E tests failed:', error.message);
 
-    let reportContent = `# KMainCMS E2E Functional Test Report\n\n`;
+    let reportContent = `# Msabato CMS E2E Functional Test Report\n\n`;
     reportContent += `**Date:** ${new Date().toLocaleString()}\n`;
     reportContent += `**Status:** ❌ FAILED\n\n`;
     reportContent += `### Error Details:\n\`\`\`\n${error.message}\n\`\`\`\n`;

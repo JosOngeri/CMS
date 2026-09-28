@@ -416,7 +416,7 @@ async function testHealthCheck() {
 
 async function runComprehensiveTest() {
   console.log('╔════════════════════════════════════════════════════════════════╗');
-  console.log('║   KMainCMS Comprehensive Module Test Suite (Tasks 1-500)      ║');
+  console.log('║   Msabato CMS Comprehensive Module Test Suite (Tasks 1-500)      ║');
   console.log('╚════════════════════════════════════════════════════════════════╝');
 
   try {

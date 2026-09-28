@@ -108,7 +108,7 @@ jobs:
       if: success()
       run: |
         echo "✅ Deployment to VPS successful!"
-        echo "🚀 KMainCMS is now live at https://cms.josongeri.co.ke"
+        echo "🚀 Msabato CMS is now live at https://cms.josongeri.co.ke"
         echo "📱 Mobile API integration is active"
     
     - name: Notify deployment failure

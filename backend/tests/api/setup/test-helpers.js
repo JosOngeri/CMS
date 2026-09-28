@@ -1,7 +1,7 @@
 /**
  * test-helpers.js
  *
- * Shared utilities for the KMainCMS API test suite.
+ * Shared utilities for the Msabato CMS API test suite.
  *
  * Exported helpers
  * ─────────────────

@@ -29,9 +29,9 @@ describe('Health Check – GET /health', () => {
     expect(res.status).toBe(200);
   });
 
-  it('returns JSON body { status: "ok", message: "KMainCMS API is running" }', async () => {
+  it('returns JSON body { status: "ok", message: "Msabato CMS API is running" }', async () => {
     const res = await request(app).get('/health');
-    expect(res.body).toEqual({ status: 'ok', message: 'KMainCMS API is running' });
+    expect(res.body).toEqual({ status: 'ok', message: 'Msabato CMS API is running' });
   });
 
   it('responds with Content-Type application/json', async () => {

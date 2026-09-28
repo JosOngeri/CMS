@@ -1,7 +1,7 @@
-# KMainCMS - UX Issues Fix Session
+# Msabato CMS - UX Issues Fix Session
 
 **Date:** 2026-06-20
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Session Focus:** Fix Identified UX Issues from Design Document
 
 ---

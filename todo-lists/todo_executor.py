@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KMainCMS UX Improvement To-Do Executor
+Msabato CMS UX Improvement To-Do Executor
 Imports to-do list and generates prompts for sequential task execution
 """
 
@@ -46,16 +46,16 @@ class TodoExecutor:
         # Clean up the task description
         clean_desc = task_description.rstrip('.')
         
-        prompt = f"""I need you to implement the following UX improvement task for KMainCMS:
+        prompt = f"""I need you to implement the following UX improvement task for Msabato CMS:
 
 **Task:** {clean_desc}
 
 **Context:**
-- This is part of the KMainCMS UX improvement project
-- The project is located at: D:\\Kiserian Main SDA Communications Department\\KMainCMS
+- This is part of the Msabato CMS UX improvement project
+- The project is located at: D:\\Kiserian Main SDA Communications Department\\Msabato CMS
 - Frontend is in: frontend\\
 - Backend is in: backend\\
-- The UX design document is at: docs\\KMainCMS_UX_DESIGN_DOCUMENT.md
+- The UX design document is at: docs\\Msabato CMS_UX_DESIGN_DOCUMENT.md
 
 **Requirements:**
 1. Analyze the current implementation in the relevant files
@@ -144,11 +144,11 @@ Let me know if you need any clarification about the task requirements."""
 
 def main():
     # Initialize executor
-    todo_file = "D:\\Kiserian Main SDA Communications Department\\KMainCMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
+    todo_file = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS\\todo-lists\\UX_IMPROVEMENT_TODO.md"
     executor = TodoExecutor(todo_file)
     
     print("\n" + "="*60)
-    print("KMainCMS UX Improvement To-Do Executor")
+    print("Msabato CMS UX Improvement To-Do Executor")
     print("="*60 + "\n")
     
     while True:
@@ -192,7 +192,7 @@ def main():
             executor.current_index += 1
             print("⏭️  Task skipped (not recommended)")
         elif choice == '3':
-            output_file = "D:\\Kiserian Main SDA Communications Department\\KMainCMS\\todo-lists\\remaining_prompts.json"
+            output_file = "D:\\Kiserian Main SDA Communications Department\\Msabato CMS\\todo-lists\\remaining_prompts.json"
             executor.export_prompts(output_file)
         elif choice == '4':
             print("\nProgress Details:")

@@ -416,7 +416,7 @@ describe('E2E User Workflows', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           settings: [
-            { key: 'site_name', value: 'KMainCMS Test' }
+            { key: 'site_name', value: 'Msabato CMS Test' }
           ]
         });
 

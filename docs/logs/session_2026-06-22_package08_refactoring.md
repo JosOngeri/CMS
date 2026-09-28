@@ -1,5 +1,5 @@
 # Session Log - 2026-06-22 Package 08 Refactoring
-**Project:** KMainCMS
+**Project:** Msabato CMS
 **Date:** 2026-06-22
 **Session Type:** Query Refactoring - Package 08
 **Status:** ✅ COMPLETED

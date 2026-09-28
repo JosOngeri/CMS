@@ -1,5 +1,5 @@
 /**
- * Security Audit Script for KMainCMS Backend
+ * Security Audit Script for Msabato CMS Backend
  * 
  * This script performs security checks on the codebase
  * to identify potential vulnerabilities and security issues.
@@ -94,7 +94,7 @@ function checkForHardcodedCredentials(content) {
 }
 
 async function runSecurityAudit() {
-  console.log('🔒 Starting Security Audit for KMainCMS Backend\n');
+  console.log('🔒 Starting Security Audit for Msabato CMS Backend\n');
   console.log('='.repeat(60));
 
   const backendDir = path.join(__dirname);

@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-22 Package 03 Refactoring
+# Msabato CMS Session Log - 2026-06-22 Package 03 Refactoring
 
 ## Session Overview
 **Date:** 2026-06-22
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Focus:** Refactor PACKAGE_03 - treasury.controller.js (6 remaining) + department.controller.js (16 first)
 
 ## Package Details
@@ -111,11 +111,11 @@ Both controllers in PACKAGE_03 are now fully refactored:
 - department.controller.js: All 40 queries refactored
 
 ## Files Modified
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/TreasuryRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/treasury.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/repositories/DepartmentRepository.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/backend/controllers/department.controller.js" />
-- <ref_file file="d:/Kiserian Main SDA Communications Department/KMainCMS/docs/logs/session_2026-06-22_package_03_refactoring.md" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/TreasuryRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/treasury.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/repositories/DepartmentRepository.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/backend/controllers/department.controller.js" />
+- <ref_file file="d:/Kiserian Main SDA Communications Department/Msabato CMS/docs/logs/session_2026-06-22_package_03_refactoring.md" />
 
 ## Next Steps
 1. Continue with PACKAGE_04 for the next controller in the refactoring plan

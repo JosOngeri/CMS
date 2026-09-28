@@ -1,5 +1,5 @@
 /**
- * Comprehensive Unit Tests for KMainCMS
+ * Comprehensive Unit Tests for Msabato CMS
  * Tests all major components, hooks, and utilities
  */
 
@@ -23,7 +23,7 @@ vi.mock('axios', () => ({
   delete: vi.fn(() => Promise.resolve({ data: { success: true } }))
 }));
 
-describe('KMainCMS Comprehensive Unit Tests', () => {
+describe('Msabato CMS Comprehensive Unit Tests', () => {
   describe('Color Palette System', () => {
     it('should have all required CSS variables defined', () => {
       const requiredVariables = [

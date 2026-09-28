@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Server Startup & Login Issues Resolution
+﻿# Msabato CMS Session Log — Server Startup & Login Issues Resolution
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Started both backend and frontend servers, then resolved multiple issues preventing successful login and dashboard loading.

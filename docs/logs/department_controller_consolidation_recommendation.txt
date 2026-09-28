@@ -1,7 +1,7 @@
 DEPARTMENT CONTROLLER CONSOLIDATION RECOMMENDATION
 ================================================
 Date: June 21, 2025
-Project: KMainCMS
+Project: Msabato CMS
 
 CURRENT STATE
 -------------

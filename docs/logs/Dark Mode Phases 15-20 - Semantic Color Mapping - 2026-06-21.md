@@ -9,7 +9,7 @@
 
 ## Overview
 
-The KMainCMS project has a comprehensive color palette system defined in `config/colorPalettes.js` with 16 different palettes. The application is already well-architected with the palette system - most inline styles use the `useColorPalette` hook and `colors` object.
+The Msabato CMS project has a comprehensive color palette system defined in `config/colorPalettes.js` with 16 different palettes. The application is already well-architected with the palette system - most inline styles use the `useColorPalette` hook and `colors` object.
 
 **Current State Analysis:**
 - ✅ **Phases 1-14 Complete:** All neutral colors (gray, white, black, slate) replaced with CSS variables

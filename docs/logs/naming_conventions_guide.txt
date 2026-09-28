@@ -1,7 +1,7 @@
 NAMING CONVENTIONS GUIDE
 ==========================
 Date: June 21, 2025
-Project: KMainCMS
+Project: Msabato CMS
 
 CURRENT INCONSISTENCIES
 -----------------------

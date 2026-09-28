@@ -1,5 +1,5 @@
 /**
- * Comprehensive Seed Data Generator for KMainCMS
+ * Comprehensive Seed Data Generator for Msabato CMS
  * Generates:
  * - 300 adult members
  * - 250 children members

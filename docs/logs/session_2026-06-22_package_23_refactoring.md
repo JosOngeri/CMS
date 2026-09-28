@@ -1,6 +1,6 @@
 # Session Log: Package 23 Query Refactoring
 **Date:** 2026-06-22
-**Project:** KMainCMS
+**Project:** Msabato CMS
 **Task:** Refactor Package 23 - Migrate pool.query calls to repositories
 
 ## Overview

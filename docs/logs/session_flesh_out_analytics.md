@@ -1,7 +1,7 @@
 # Session Log: Flesh Out Analytics Module
 
 **Date**: 2025-01-XX
-**Project**: KMainCMS
+**Project**: Msabato CMS
 **Objective**: Flesh out all possible functions in the Analytics module and make them interactive
 
 ## Summary

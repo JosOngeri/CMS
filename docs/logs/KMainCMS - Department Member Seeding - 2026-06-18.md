@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — Department Member Seeding with Approval Workflow
+﻿# Msabato CMS Session Log — Department Member Seeding with Approval Workflow
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Created comprehensive department member assignments with approval workflow, allowing users to belong to multiple departments and admins to approve membership requests.

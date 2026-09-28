@@ -1,4 +1,4 @@
-# KMainCMS Server Restart Log
+# Msabato CMS Server Restart Log
 
 **Date:** 2026-06-23  
 **Branch:** `refactor/PHASE4_20260622_1931`  
@@ -23,7 +23,7 @@
 4. Restarted the servers:
    - Started backend from the `backend` directory with PM2:
      ```powershell
-     cd "D:\Kiserian Main SDA Communications Department\KMainCMS\backend"
+     cd "D:\Kiserian Main SDA Communications Department\Msabato CMS\backend"
      pm2 start ecosystem.config.cjs
      ```
    - Started frontend Vite dev server from the project root:

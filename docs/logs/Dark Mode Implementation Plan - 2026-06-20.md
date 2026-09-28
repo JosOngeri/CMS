@@ -1,7 +1,7 @@
 # Dark Mode Implementation Plan
 
 **Date:** 2026-06-20  
-**Project:** KMainCMS  
+**Project:** Msabato CMS  
 **Goal:** Implement palette-based dark mode across the entire frontend codebase
 
 ---

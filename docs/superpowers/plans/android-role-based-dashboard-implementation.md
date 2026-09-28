@@ -12,7 +12,7 @@ Make the Android app display the same data and functionality as the webapp based
 ## Implementation Tasks
 
 ### 1. Add Role-Based Routing to Android App
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\app\router.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\app\router.dart`
 - Add role-based route definitions
 - Create routes for each role-specific dashboard
 - Implement role-based navigation logic
@@ -22,11 +22,11 @@ Make the Android app display the same data and functionality as the webapp based
 
 ### 2. Create Role-Specific Dashboard Screens
 **Files**: 
-- `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\super_admin_dashboard.dart`
-- `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\pastor_dashboard.dart`
-- `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\department_head_dashboard.dart`
-- `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\treasurer_dashboard.dart`
-- `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\member_dashboard.dart`
+- `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\super_admin_dashboard.dart`
+- `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\pastor_dashboard.dart`
+- `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\department_head_dashboard.dart`
+- `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\treasurer_dashboard.dart`
+- `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\member_dashboard.dart`
 
 **Task**: Create role-specific dashboard screens matching webapp functionality
 - Super Admin: Platform management, tenant management, system stats
@@ -38,7 +38,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: Each dashboard screen exists and implements role-specific features
 
 ### 3. Update API Service for Role-Specific Data
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\api_service.dart`
 
 **Task**: Add API methods to fetch role-specific data
 - `getSuperAdminDashboardData()` - Platform stats, tenant list, system health
@@ -50,7 +50,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: API service has role-specific data fetching methods
 
 ### 4. Update Auth Service to Handle Roles
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\auth_service.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\auth_service.dart`
 
 **Task**: Enhance auth service to properly handle user roles
 - Add role parsing from JWT token
@@ -61,7 +61,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: Auth service properly extracts and manages user roles
 
 ### 5. Update Main Dashboard Screen for Role Routing
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\screens\dashboard_screen.dart`
 
 **Task**: Update main dashboard to route to role-specific screens
 - Check user roles from auth provider
@@ -72,7 +72,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: Dashboard screen routes to correct role-specific screen
 
 ### 6. Add Role-Based Navigation Components
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\widgets\role_based_navigation.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\widgets\role_based_navigation.dart`
 
 **Task**: Create navigation component that adapts to user roles
 - Show/hide navigation items based on roles
@@ -115,7 +115,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: UI components match webapp functionality and design
 
 ### 9. Update Color Scheme and Theme
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\app\theme.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\app\theme.dart`
 
 **Task**: Ensure color scheme matches webapp
 - Use same color palette as webapp
@@ -126,7 +126,7 @@ Make the Android app display the same data and functionality as the webapp based
 **Verification**: App theme matches webapp color scheme
 
 ### 10. Add Role-Based Permissions System
-**File**: `D:\VIbeCode\KMainCMS\mobile\flutter\flutter-mobile\lib\services\permission_service.dart`
+**File**: `D:\VIbeCode\Msabato CMS\mobile\flutter\flutter-mobile\lib\services\permission_service.dart`
 
 **Task**: Implement permission system matching webapp
 - Define role-based permissions

@@ -1,9 +1,9 @@
-﻿# KMainCMS Session Log — Departments Functionality Copy
+﻿# Msabato CMS Session Log — Departments Functionality Copy
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
-Copied departments page functionality from Kiserian Main SDA Church Website to KMainCMS, including navigation to individual department dashboards and all related components.
+Copied departments page functionality from Kiserian Main SDA Church Website to Msabato CMS, including navigation to individual department dashboards and all related components.
 
 ---
 
@@ -71,4 +71,4 @@ Additional tables referenced:
 - Verify all tabs work correctly
 - Check if additional database tables need to be created
 - Test role-based access control
-- Verify API endpoints work with KMainCMS database
+- Verify API endpoints work with Msabato CMS database

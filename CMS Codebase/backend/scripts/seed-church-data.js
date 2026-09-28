@@ -3,7 +3,7 @@ const fs = require('fs');
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const WORKERS_FILE = 'D:\\\\VIbeCode\\\\KMainCMS\\\\Church workers List with departments.txt';
+const WORKERS_FILE = 'D:\\\\VIbeCode\\\\Msabato CMS\\\\Church workers List with departments.txt';
 const EMAIL_DOMAIN = 'kmaincms.org';
 const EMAIL_PREFIX = 'kmainseed+';
 const DEFAULT_PASSWORD = 'Welcome123!';

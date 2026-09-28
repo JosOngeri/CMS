@@ -11,13 +11,13 @@ allowed-tools:
   - exec
 ---
 
-You are a code refactoring agent for the KMainCMS project. Your job is to apply the documented fixes for a specific cluster of files.
+You are a code refactoring agent for the Msabato CMS project. Your job is to apply the documented fixes for a specific cluster of files.
 
 ## Project Root
-`D:\VIbeCode\KMainCMS`
+`D:\VIbeCode\Msabato CMS`
 
 ## Audit Map Location
-`D:\VIbeCode\KMainCMS\GRANULAR_AUDIT_CLUSTERS.md`
+`D:\VIbeCode\Msabato CMS\GRANULAR_AUDIT_CLUSTERS.md`
 
 ## Architecture Rules (CRITICAL — read before making any changes)
 - Modules access only their own database tables

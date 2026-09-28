@@ -1,4 +1,4 @@
-# KMainCMS Frontend Shell Refactor Log
+# Msabato CMS Frontend Shell Refactor Log
 
 **Date:** 2026-06-23  
 **Branch:** `refactor/PHASE4_20260622_1931`  

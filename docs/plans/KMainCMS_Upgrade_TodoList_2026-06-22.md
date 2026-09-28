@@ -1,7 +1,7 @@
-# KMainCMS Upgrade Todo List
+# Msabato CMS Upgrade Todo List
 
 **Date:** 2026-06-22  
-**Reference:** `KMainCMS_Upgrade_Plan_2026-06-22.md`  
+**Reference:** `Msabato CMS_Upgrade_Plan_2026-06-22.md`  
 **Total Phases:** 15  
 **Estimated Duration:** 34 weeks
 **Overall Status:** ~90% Complete (Foundational Hierarchy Fully Implemented)

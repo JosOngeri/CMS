@@ -1,4 +1,4 @@
-name: KMainCMS CI/CD Pipeline
+name: Msabato CMS CI/CD Pipeline
 
 on:
   push:

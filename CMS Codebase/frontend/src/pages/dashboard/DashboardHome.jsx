@@ -43,7 +43,7 @@ function DashboardHome() {
             <div className="p-3 bg-[var(--color-surface)]/20 rounded-xl">
               <Church className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold">Welcome to KMainCMS</h1>
+            <h1 className="text-3xl font-bold">Welcome to Msabato CMS</h1>
           </div>
           <p className="text-xl text-white/90 max-w-2xl">
             Kiserian Main SDA Church Management System - Overview of your church administration dashboard

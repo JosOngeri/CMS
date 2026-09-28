@@ -2,7 +2,7 @@ import axios from 'axios';
 
 async function checkServerStatus() {
   console.log('\n' + '='.repeat(60));
-  console.log('🚀 KMainCMS Frontend - Server Connection Check');
+  console.log('🚀 Msabato CMS Frontend - Server Connection Check');
   console.log('='.repeat(60));
   
   console.log('📍 Target Server: http://localhost:5000 (via Vite proxy)');

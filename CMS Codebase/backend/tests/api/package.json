@@ -1,7 +1,7 @@
 {
   "name": "kmaincms-backend-tests",
   "version": "1.0.0",
-  "description": "Test suite for KMainCMS backend API",
+  "description": "Test suite for Msabato CMS backend API",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",

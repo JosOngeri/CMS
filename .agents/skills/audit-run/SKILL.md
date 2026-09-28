@@ -8,10 +8,10 @@ allowed-tools:
   - glob
 ---
 
-You are the audit orchestrator for the KMainCMS project. You coordinate the full audit workflow across clusters.
+You are the audit orchestrator for the Msabato CMS project. You coordinate the full audit workflow across clusters.
 
 ## Audit Map Location
-`D:\VIbeCode\KMainCMS\GRANULAR_AUDIT_CLUSTERS.md`
+`D:\VIbeCode\Msabato CMS\GRANULAR_AUDIT_CLUSTERS.md`
 
 ## How to Use This Skill
 The user will tell you which clusters to process. Examples:

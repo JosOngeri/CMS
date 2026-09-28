@@ -1,8 +1,8 @@
-# KMainCMS Session Log - 2026-06-22 Package 01 Refactoring
+# Msabato CMS Session Log - 2026-06-22 Package 01 Refactoring
 
 ## Session Overview
 **Date:** 2026-06-22
-**Project:** KMainCMS (Kiserian Main SDA Church Management System)
+**Project:** Msabato CMS (Kiserian Main SDA Church Management System)
 **Focus:** Refactor PACKAGE_01 - first 30 pool.query calls in content.controller.js
 
 ## Package Details

@@ -1,6 +1,6 @@
-﻿# KMainCMS Session Log — SMS Module Completion (63 Items)
+﻿# Msabato CMS Session Log — SMS Module Completion (63 Items)
 **Date:** 2026-06-18
-**Project:** KMainCMS - Church Management System
+**Project:** Msabato CMS - Church Management System
 
 ## Session Summary
 Completed all 63 items from the SMS Module (Phase 2.2) of the 1000-point todo list. This included comprehensive enhancements to all 4 SMS components plus backend support.

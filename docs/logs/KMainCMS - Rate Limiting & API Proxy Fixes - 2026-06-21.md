@@ -1,4 +1,4 @@
-# KMainCMS - Rate Limiting & API Proxy Fixes
+# Msabato CMS - Rate Limiting & API Proxy Fixes
 **Date:** 2026-06-21  
 **Session:** API Configuration and Rate Limiting Debugging
 
