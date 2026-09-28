@@ -17,7 +17,7 @@ async function migrate() {
     console.log('Connecting to PostgreSQL...');
 
     // Create database if it doesn't exist
-    const dbName = process.env.DB_NAME || 'kmaincms';
+    const dbName = process.env.DB_NAME || 'msabato';
     await pool.query(`DROP DATABASE IF EXISTS ${dbName}`);
     await pool.query(`CREATE DATABASE ${dbName}`);
     console.log(`Database ${dbName} created`);

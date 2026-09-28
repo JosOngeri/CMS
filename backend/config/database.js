@@ -7,7 +7,7 @@ const isLocalhost = dbHost === 'localhost' || dbHost === '127.0.0.1';
 const pool = new Pool({
   host: dbHost,
   port: parseInt(process.env.PGPORT || process.env.DB_PORT || '5432', 10),
-  database: process.env.PGDATABASE || process.env.DB_NAME || 'kmaincms',
+  database: process.env.PGDATABASE || process.env.DB_NAME || 'msabato',
   user: process.env.PGUSER || process.env.DB_USER || 'postgres',
   password: process.env.PGPASSWORD || process.env.DB_PASSWORD,
   max: 20,

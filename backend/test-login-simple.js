@@ -5,7 +5,7 @@ async function testLogin() {
   try {
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1',
-      ['admin@kmaincms.org']
+      ['admin@msabato.org']
     );
     
     if (result.rows.length === 0) {

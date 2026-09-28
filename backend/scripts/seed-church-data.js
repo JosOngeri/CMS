@@ -4,7 +4,7 @@ const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const WORKERS_FILE = 'D:\\\\VIbeCode\\\\Msabato CMS\\\\Church workers List with departments.txt';
-const EMAIL_DOMAIN = 'kmaincms.org';
+const EMAIL_DOMAIN = 'msabato.org';
 const EMAIL_PREFIX = 'kmainseed+';
 const DEFAULT_PASSWORD = 'Welcome123!';
 const ADULT_COUNT = 300;
@@ -458,7 +458,7 @@ async function seed() {
     if (!churchRes.rows.length) throw new Error('No church found');
     const churchId = churchRes.rows[0].id;
 
-    const adminRes = await client.query("SELECT id FROM users WHERE email = 'admin@kiseriansda.org' OR email = 'admin@kmaincms.org' ORDER BY created_at LIMIT 1");
+    const adminRes = await client.query("SELECT id FROM users WHERE email = 'admin@kiseriansda.org' OR email = 'admin@msabato.org' ORDER BY created_at LIMIT 1");
     const adminId = adminRes.rows[0]?.id;
 
     // Ensure extra roles exist

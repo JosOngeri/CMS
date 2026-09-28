@@ -8,7 +8,7 @@ async function checkMFAStatus() {
       `SELECT u.id, u.email, u.mfa_enabled, u.mfa_secret 
        FROM users u 
        WHERE u.email = $1`,
-      ['admin@kmaincms.org']
+      ['admin@msabato.org']
     );
     
     if (admin.rows.length === 0) {

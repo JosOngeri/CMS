@@ -53,7 +53,7 @@ const mockUserRow = (overrides = {}) =>
   seedTestUser({
     id:                  TEST_UUIDS.member,
     username:            'testuser',
-    email:               'testuser@kmaincms.co.ke',
+    email:               'testuser@msabato.co.ke',
     password:            TEST_PASSWORD_HASH,   // real hash of TEST_PASSWORD
     role:                'Member',
     status:              'active',
@@ -160,12 +160,12 @@ describe('POST /api/auth/register', () => {
     username: 'newuser',
     password: 'StrongPass1!',
     role:     'Member',
-    email:    'newuser@kmaincms.co.ke',
+    email:    'newuser@msabato.co.ke',
   };
 
   // -- happy path --------------------------------------------------------------
   it('returns 200 and a JWT token for valid registration', async () => {
-    const savedUser = mockUserRow({ id: 99, username: 'newuser', email: 'newuser@kmaincms.co.ke' });
+    const savedUser = mockUserRow({ id: 99, username: 'newuser', email: 'newuser@msabato.co.ke' });
     db.query
       .mockResolvedValueOnce({ rows: [], rowCount: 0 })                // findOne (no dup)
       .mockResolvedValueOnce({ rows: [savedUser], rowCount: 1 });      // INSERT RETURNING
@@ -213,7 +213,7 @@ describe('POST /api/auth/forgot-password', () => {
 
     const res = await request(app)
       .post('/api/auth/forgot-password')
-      .send({ email: 'testuser@kmaincms.co.ke' });
+      .send({ email: 'testuser@msabato.co.ke' });
 
     expect(res.status).toBe(200);
     expect(sendEmail).toHaveBeenCalled();
@@ -224,7 +224,7 @@ describe('POST /api/auth/forgot-password', () => {
 
     const res = await request(app)
       .post('/api/auth/forgot-password')
-      .send({ email: 'nonexistent@kmaincms.co.ke' });
+      .send({ email: 'nonexistent@msabato.co.ke' });
 
     expect(res.status).toBe(200);
   });

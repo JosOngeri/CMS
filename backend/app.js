@@ -112,7 +112,7 @@ const getBaseDomain = (origin) => {
   try {
     const url = new URL(origin);
     const hostname = url.hostname;
-    // Handle subdomains like kiserian-main-sda.kmaincms.org
+    // Handle subdomains like kiserian-main-sda.msabato.co.ke
     const parts = hostname.split('.');
     if (parts.length >= 3 && MULTI_PART_TLDS.has(parts.slice(-2).join('.'))) {
       return parts.slice(-3).join('.');
@@ -152,10 +152,9 @@ app.use(cors({
     }
 
     // Phase 6: Tenant-aware CORS - Allow church subdomains
-    // e.g., kiserian-main-sda.kmaincms.org, another-church.kmaincms.org
+    // e.g., kiserian-main-sda.msabato.co.ke, another-church.msabato.co.ke
     const baseDomain = getBaseDomain(origin);
     const allowedBaseDomains = [
-      'kmaincms.org',
       'josongeri.co.ke',
       'msabato.co.ke',
       process.env.BASE_DOMAIN,

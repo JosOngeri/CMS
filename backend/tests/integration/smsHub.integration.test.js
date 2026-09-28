@@ -20,7 +20,7 @@ describe('SMS Hub API Integration Tests', () => {
     const loginResponse = await request(app)
       .post('/api/auth/login')
       .send({
-        email: 'admin@kmaincms.test',
+        email: 'admin@msabato.test',
         password: 'TestPassword123!'
       });
 

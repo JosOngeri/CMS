@@ -21,7 +21,7 @@ describe('Critical User Workflows E2E Tests', () => {
       const registerResponse = await request(app)
         .post('/api/auth/register')
         .send({
-          email: 'newmember@kmaincms.test',
+          email: 'newmember@msabato.test',
           password: 'SecurePassword123!',
           first_name: 'John',
           last_name: 'Doe',
@@ -36,7 +36,7 @@ describe('Critical User Workflows E2E Tests', () => {
       const loginResponse = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'newmember@kmaincms.test',
+          email: 'newmember@msabato.test',
           password: 'SecurePassword123!'
         });
 
@@ -420,7 +420,7 @@ describe('Critical User Workflows E2E Tests', () => {
       const loginResponse = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'newmember@kmaincms.test',
+          email: 'newmember@msabato.test',
           password: 'SecurePassword123!'
         });
 

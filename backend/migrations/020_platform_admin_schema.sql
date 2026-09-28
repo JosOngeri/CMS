@@ -148,7 +148,7 @@ CREATE TRIGGER update_platform_users_updated_at
 -- Insert default platform owner user (password should be changed immediately)
 INSERT INTO platform_users (email, name, role, permissions, is_active)
 VALUES (
-  'admin@kmaincms.org',
+  'admin@msabato.org',
   'Platform Owner',
   'platform_owner',
   '["all"]'::jsonb,

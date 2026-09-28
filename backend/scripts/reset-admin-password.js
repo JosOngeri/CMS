@@ -4,7 +4,7 @@ const { Pool } = require('pg');
 const pool = new Pool({ 
   host: 'localhost', 
   port: 5432, 
-  database: 'kmaincms', 
+  database: 'msabato', 
   user: 'postgres', 
   password: 'postgres' 
 });
@@ -21,13 +21,13 @@ async function resetAdminPassword() {
     
     const result = await pool.query(
       'UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id, email',
-      [passwordHash, 'admin@kmaincms.org']
+      [passwordHash, 'admin@msabato.org']
     );
     
     if (result.rows.length > 0) {
       console.log('Password reset successfully for user:', result.rows[0]);
       console.log('You can now login with:');
-      console.log('Email: admin@kmaincms.org');
+      console.log('Email: admin@msabato.org');
       console.log('Password: admin123');
     } else {
       console.log('Admin user not found');

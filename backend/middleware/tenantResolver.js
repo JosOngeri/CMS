@@ -3,7 +3,7 @@ const { pool } = require('../config/database');
 /**
  * Tenant Resolver Middleware (Phase 6 - Enhanced)
  * Extracts the church tenant from subdomain, headers, or query parameters
- * Supports multi-tenancy via subdomain routing (e.g., kiserian-main-sda.kmaincms.org)
+ * Supports multi-tenancy via subdomain routing (e.g., kiserian-main-sda.msabato.org)
  *
  * SECURITY: In production, query parameter overrides are only allowed for whitelisted admin tools
  * to prevent "tenant-jumping" attacks
@@ -47,7 +47,7 @@ const tenantResolver = async (req, res, next) => {
   //    d. URL parameters
   let slug = null;
 
-  // Extract from subdomain (e.g., kiserian-main-sda.kmaincms.org)
+  // Extract from subdomain (e.g., kiserian-main-sda.msabato.org)
   const host = req.headers.host;
   if (host) {
     const hostname = host.split(':')[0]; // Remove port if present

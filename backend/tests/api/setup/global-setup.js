@@ -7,7 +7,7 @@
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-jwt-secret-for-kmaincms-testing';
-process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/kmaincms_test';
+process.env.JWT_SECRET = 'test-jwt-secret-for-msabato-testing';
+process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/msabato_test';
 
 console.log('Jest global setup complete');

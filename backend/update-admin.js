@@ -3,7 +3,7 @@ const { hashPassword } = require('./helpers/security');
 
 async function updateAdmin() {
   try {
-    const email = 'admin@kmaincms.org';
+    const email = 'admin@msabato.org';
     const password = 'Admin123';
 
     // Hash password

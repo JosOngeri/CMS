@@ -9,7 +9,7 @@
  *     so they never fail in CI environments that have no database.
  *
  * To run them locally:
- *   TEST_DATABASE_URL=postgres://user:pass@localhost:5432/kmaincms_test npx jest database.test.js
+ *   TEST_DATABASE_URL=postgres://user:pass@localhost:5432/msabato_test npx jest database.test.js
  *
  * The tests do NOT mock config/database – they use a real pool so they can query
  * information_schema and pg_constraint.
@@ -21,7 +21,7 @@ const { Pool } = require('pg');
 // Only run DB tests if TEST_DATABASE_URL is explicitly set to a non-default value
 // or if DATABASE_URL is set (for local development with real DB)
 const DB_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
-const DEFAULT_TEST_URL = 'postgres://postgres:postgres@127.0.0.1:5432/kmaincms_test';
+const DEFAULT_TEST_URL = 'postgres://postgres:postgres@127.0.0.1:5432/msabato_test';
 const RUN_DB_TESTS = Boolean(DB_URL && DB_URL !== DEFAULT_TEST_URL);
 const dbIt   = RUN_DB_TESTS ? it   : it.skip;
 const dbDesc = RUN_DB_TESTS ? describe : describe.skip;

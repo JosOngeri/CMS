@@ -3,7 +3,7 @@ const { hashPassword } = require('./helpers/security');
 
 async function createAdmin() {
   try {
-    const email = 'admin@kmaincms.org';
+    const email = 'admin@msabato.org';
     const password = 'Admin123';
     const firstName = 'Admin';
     const lastName = 'User';

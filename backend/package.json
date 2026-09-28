@@ -1,5 +1,5 @@
 {
-  "name": "kmaincms-backend",
+  "name": "msabato-backend",
   "version": "1.0.0",
   "description": "Kiserian Main SDA Church Website - Backend API",
   "main": "server.js",

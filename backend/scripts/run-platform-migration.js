@@ -25,7 +25,7 @@ async function runMigration() {
     console.log('  - platform_audit_logs');
     console.log('');
     console.log('Default platform user created:');
-    console.log('  Email: admin@kmaincms.org');
+    console.log('  Email: admin@msabato.org');
     console.log('  Role: platform_owner');
     console.log('  ⚠️  Please change the password immediately!');
     

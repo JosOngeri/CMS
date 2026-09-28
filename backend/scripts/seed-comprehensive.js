@@ -23,11 +23,11 @@ async function seed() {
     console.log('Creating users...');
     const users = [];
     const userData = [
-      { email: 'admin@kmaincms.org', first: 'Super', last: 'Admin', role: 'Super Admin', username: 'admin' },
-      { email: 'pastor@kmaincms.org', first: 'John', last: 'Pastor', role: 'Pastor', username: 'pastor' },
-      { email: 'treasurer@kmaincms.org', first: 'Jane', last: 'Treasurer', role: 'Treasurer', username: 'treasurer' },
-      { email: 'youth.head@kmaincms.org', first: 'David', last: 'Youth', role: 'Department Head', username: 'youthhead' },
-      { email: 'member@kmaincms.org', first: 'Samuel', last: 'Member', role: 'Member', username: 'member1' }
+      { email: 'admin@msabato.org', first: 'Super', last: 'Admin', role: 'Super Admin', username: 'admin' },
+      { email: 'pastor@msabato.org', first: 'John', last: 'Pastor', role: 'Pastor', username: 'pastor' },
+      { email: 'treasurer@msabato.org', first: 'Jane', last: 'Treasurer', role: 'Treasurer', username: 'treasurer' },
+      { email: 'youth.head@msabato.org', first: 'David', last: 'Youth', role: 'Department Head', username: 'youthhead' },
+      { email: 'member@msabato.org', first: 'Samuel', last: 'Member', role: 'Member', username: 'member1' }
     ];
 
     for (const u of userData) {

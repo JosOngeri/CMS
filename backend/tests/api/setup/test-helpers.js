@@ -21,7 +21,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const TEST_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-for-kmaincms-testing';
+const TEST_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-for-msabato-testing';
 
 // ── UUID Helpers ─────────────────────────────────────────────────────────────
 /**
@@ -67,7 +67,7 @@ const createAdminToken = () =>
     role:     'Super Admin',
     status:   'active',
     username: 'test_admin',
-    email:    'admin@kmaincms.co.ke',
+    email:    'admin@msabato.co.ke',
     name:     'Test Admin',
   });
 
@@ -81,7 +81,7 @@ const createMemberToken = (memberId = TEST_UUIDS.member) =>
     role:     'Member',
     status:   'active',
     username: 'test_member',
-    email:    'member@kmaincms.co.ke',
+    email:    'member@msabato.co.ke',
     name:     'Test Member',
   });
 
@@ -92,7 +92,7 @@ const createPastorToken = () =>
     role:     'Pastor',
     status:   'active',
     username: 'test_pastor',
-    email:    'pastor@kmaincms.co.ke',
+    email:    'pastor@msabato.co.ke',
     name:     'Test Pastor',
   });
 
@@ -103,7 +103,7 @@ const createDepartmentHeadToken = () =>
     role:     'Department Head',
     status:   'active',
     username: 'test_dept_head',
-    email:    'dept_head@kmaincms.co.ke',
+    email:    'dept_head@msabato.co.ke',
     name:     'Test Department Head',
   });
 
@@ -135,7 +135,7 @@ const seedTestMember = (overrides = {}) => ({
   user_id:                  TEST_UUIDS.member,
   first_name:               'John',
   last_name:                'Doe',
-  email:                    'john.doe@kmaincms.co.ke',
+  email:                    'john.doe@msabato.co.ke',
   phone:                    '+254700000001',
   membership_status:       'active',
   joined_date:              '2024-01-15',
@@ -154,7 +154,7 @@ const seedTestMember = (overrides = {}) => ({
 const seedTestUser = (overrides = {}) => ({
   id:                  TEST_UUIDS.member,
   username:            'john.doe',
-  email:               'john.doe@kmaincms.co.ke',
+  email:               'john.doe@msabato.co.ke',
   password:            '$2b$10$mockHashedPasswordValue',
   role:                'Member',
   status:              'active',

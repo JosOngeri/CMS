@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    name: 'kmaincms',
+    name: 'msabato',
     script: './server.js',
     instances: 1,
     exec_mode: 'fork',
