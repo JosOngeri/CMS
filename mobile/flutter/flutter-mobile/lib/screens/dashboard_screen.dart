@@ -16,6 +16,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   ApiService? _apiService;
   final PullSyncService _pullSyncService = PullSyncService();
   Map<String, dynamic>? _stats;
+  Map<String, dynamic>? _roleData;
+  List<dynamic>? _transactions;
   List<dynamic>? _activities;
   dynamic _unreadNotifications;
   dynamic _pendingApprovals;
@@ -80,6 +82,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               : null;
           _activities = data is Map ? data['activities'] : null;
         });
+
+        await _loadRoleData();
       } else {
         setState(() {
           _errorMessage = result['error'] ?? 'Failed to load dashboard data';
@@ -158,6 +162,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         _buildWelcomeHeader(user),
                         const SizedBox(height: 24),
                         if (_stats != null) _buildStatsCards(user),
+                        if (_primaryRole(user) == 'Treasurer' &&
+                            _transactions != null &&
+                            _transactions!.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          _buildRecentTransactions(),
+                        ],
                         const SizedBox(height: 24),
                         if (_activities != null && _activities!.isNotEmpty)
                           _buildRecentActivities()
@@ -237,104 +247,333 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  bool _isMemberOnly(Map<String, dynamic>? user) {
-    const privilegedRoles = [
+  /// The user's highest-privilege role determines which dashboard they see.
+  String _primaryRole(Map<String, dynamic>? user) {
+    const precedence = [
       'Super Admin',
-      'Pastor',
-      'First Elder',
       'Treasurer',
+      'Pastor',
       'Department Head',
+      'First Elder',
     ];
     final roles = (user?['roles'] as List?)?.map((e) => e.toString()).toList() ?? [];
-    return !roles.any(privilegedRoles.contains);
+    for (final role in precedence) {
+      if (roles.contains(role)) return role;
+    }
+    return 'Member';
+  }
+
+  /// Fetch the extra metrics this role's dashboard needs.
+  Future<void> _loadRoleData() async {
+    if (_apiService == null) return;
+    final role = _primaryRole(ref.read(userProvider));
+    try {
+      switch (role) {
+        case 'Super Admin':
+          final r = await _apiService!.dio.get('/dashboard/system-health');
+          _roleData = Map<String, dynamic>.from(r.data['data'] ?? {});
+          break;
+        case 'Pastor':
+        case 'First Elder':
+          final r = await _apiService!.dio.get('/dashboard/ministry-health');
+          _roleData = Map<String, dynamic>.from(r.data['data'] ?? {});
+          break;
+        case 'Treasurer':
+          final stats = await _apiService!.dio.get('/dashboard/financial-stats');
+          final health = await _apiService!.dio.get('/dashboard/financial-health');
+          final tx = await _apiService!.dio.get('/dashboard/transactions',
+              queryParameters: {'limit': 5});
+          _roleData = {
+            ...Map<String, dynamic>.from(stats.data['data'] ?? {}),
+            ...Map<String, dynamic>.from(health.data['data'] ?? {}),
+          };
+          _transactions = tx.data['data'] as List? ?? [];
+          break;
+        case 'Department Head':
+          final stats = await _apiService!.dio.get('/dashboard/department-stats');
+          final health = await _apiService!.dio.get('/dashboard/department-health');
+          _roleData = {
+            ...Map<String, dynamic>.from(stats.data['data'] ?? {}),
+            ...Map<String, dynamic>.from(health.data['data'] ?? {}),
+          };
+          break;
+      }
+    } catch (_) {
+      // Role metrics are additive — keep base stats even if they fail
+    }
+    if (mounted) setState(() {});
   }
 
   Widget _buildStatsCards(Map<String, dynamic>? user) {
-    final children = _isMemberOnly(user)
-        ? [
-            _buildStatCard(
-              'My Contributions',
-              'KES ${_stats!['personal_contributions'] ?? 0}',
-              Icons.volunteer_activism,
-              Colors.green,
-              onTap: () => context.go('/payments'),
-            ),
-            _buildStatCard(
-              'My Departments',
-              '${_stats!['my_departments'] ?? 0}',
-              Icons.groups,
-              Colors.teal,
-              onTap: () => context.push('/departments'),
-            ),
-            _buildStatCard(
-              'Upcoming Events',
-              '${_stats!['upcoming_events'] ?? 0}',
-              Icons.event,
-              Colors.blue,
-              onTap: () => context.go('/events'),
-            ),
-            _buildStatCard(
-              'Unread Notices',
-              '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
-              Icons.notifications,
-              Colors.orange,
-              onTap: () => context.go('/announcements'),
-            ),
-          ]
-        : [
-            _buildStatCard(
-              'Total Members',
-              '${_stats!['total_members'] ?? 0}',
-              Icons.people,
-              Colors.blue,
-              onTap: () => context.push('/members'),
-            ),
-            _buildStatCard(
-              'Departments',
-              '${_stats!['total_departments'] ?? 0}',
-              Icons.groups,
-              Colors.teal,
-              onTap: () => context.push('/departments'),
-            ),
-            _buildStatCard(
-              'Income (30d)',
-              'KES ${_stats!['monthly_income'] ?? 0}',
-              Icons.trending_up,
-              Colors.green,
-              onTap: () => context.go('/payments'),
-            ),
-            _buildStatCard(
-              'Expenses (30d)',
-              'KES ${_stats!['monthly_expense'] ?? 0}',
-              Icons.trending_down,
-              Colors.red,
-              onTap: () => context.go('/payments'),
-            ),
-            _buildStatCard(
-              'Unread Notices',
-              '${_unreadNotifications ?? 0}',
-              Icons.notifications,
-              Colors.orange,
-              onTap: () => context.go('/announcements'),
-            ),
-            _buildStatCard(
-              'Pending Approvals',
-              '${_pendingApprovals ?? 0}',
-              Icons.approval,
-              Colors.purple,
-              onTap: () => context.push('/approvals'),
-            ),
-          ];
+    final role = _primaryRole(user);
+    final children = _cardsForRole(role);
 
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 1.5,
-      children: children,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (role != 'Member')
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Text(
+              '$role Dashboard',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 1.5,
+          children: children,
+        ),
+      ],
     );
+  }
+
+  List<Widget> _cardsForRole(String role) {
+    switch (role) {
+      case 'Member':
+        return _memberCards();
+      case 'Super Admin':
+        return _superAdminCards();
+      case 'Pastor':
+      case 'First Elder':
+        return _pastorCards();
+      case 'Treasurer':
+        return _treasurerCards();
+      case 'Department Head':
+        return _departmentHeadCards();
+      default:
+        return _memberCards();
+    }
+  }
+
+  List<Widget> _memberCards() {
+    return [
+      _buildStatCard(
+        'My Contributions',
+        'KES ${_stats!['personal_contributions'] ?? 0}',
+        Icons.volunteer_activism,
+        Colors.green,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'My Departments',
+        '${_stats!['my_departments'] ?? 0}',
+        Icons.groups,
+        Colors.teal,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Upcoming Events',
+        '${_stats!['upcoming_events'] ?? 0}',
+        Icons.event,
+        Colors.blue,
+        onTap: () => context.go('/events'),
+      ),
+      _buildStatCard(
+        'Unread Notices',
+        '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
+        Icons.notifications,
+        Colors.orange,
+        onTap: () => context.go('/announcements'),
+      ),
+    ];
+  }
+
+  List<Widget> _superAdminCards() {
+    return [
+      _buildStatCard(
+        'Total Members',
+        '${_stats!['total_members'] ?? 0}',
+        Icons.people,
+        Colors.blue,
+        onTap: () => context.push('/members'),
+      ),
+      _buildStatCard(
+        'Departments',
+        '${_stats!['total_departments'] ?? 0}',
+        Icons.groups,
+        Colors.teal,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Financial Overview',
+        'KES ${_stats!['total_payments'] ?? _stats!['monthly_income'] ?? 0}',
+        Icons.account_balance,
+        Colors.green,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'Pending Approvals',
+        '${_pendingApprovals ?? 0}',
+        Icons.approval,
+        Colors.purple,
+        onTap: () => context.push('/approvals'),
+      ),
+      _buildStatCard(
+        'System Health',
+        (_roleData?['database'] == 'healthy' && _roleData?['api'] == 'healthy')
+            ? 'Healthy'
+            : 'Degraded',
+        Icons.monitor_heart,
+        (_roleData?['database'] == 'healthy') ? Colors.green : Colors.red,
+      ),
+      _buildStatCard(
+        'Active Users',
+        '${_roleData?['activeUsers'] ?? 0}',
+        Icons.people_alt,
+        Colors.indigo,
+        onTap: () => context.push('/members'),
+      ),
+    ];
+  }
+
+  List<Widget> _pastorCards() {
+    return [
+      _buildStatCard(
+        'Total Members',
+        '${_stats!['total_members'] ?? 0}',
+        Icons.people,
+        Colors.blue,
+        onTap: () => context.push('/members'),
+      ),
+      _buildStatCard(
+        'Member Engagement',
+        '${_roleData?['memberEngagement'] ?? 0}%',
+        Icons.volunteer_activism,
+        Colors.teal,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Spiritual Growth',
+        '${_roleData?['spiritualGrowth'] ?? 0}%',
+        Icons.self_improvement,
+        Colors.indigo,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Dept Activity',
+        '${_roleData?['departmentActivity'] ?? 0}%',
+        Icons.groups,
+        Colors.orange,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Upcoming Events',
+        '${_stats!['upcoming_events'] ?? 0}',
+        Icons.event,
+        Colors.blue,
+        onTap: () => context.go('/events'),
+      ),
+      _buildStatCard(
+        'Pending Approvals',
+        '${_pendingApprovals ?? 0}',
+        Icons.approval,
+        Colors.purple,
+        onTap: () => context.push('/approvals'),
+      ),
+    ];
+  }
+
+  List<Widget> _treasurerCards() {
+    return [
+      _buildStatCard(
+        'Total Balance',
+        'KES ${_roleData?['total_balance'] ?? 0}',
+        Icons.account_balance_wallet,
+        Colors.green,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'Income (Month)',
+        'KES ${_roleData?['monthly_income'] ?? 0}',
+        Icons.trending_up,
+        Colors.teal,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'Expenses (Month)',
+        'KES ${_roleData?['monthly_expenses'] ?? 0}',
+        Icons.trending_down,
+        Colors.red,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'Pending Payments',
+        '${_roleData?['pending_payments'] ?? 0}',
+        Icons.pending_actions,
+        Colors.orange,
+        onTap: () => context.go('/payments'),
+      ),
+      _buildStatCard(
+        'Budget Used',
+        '${_roleData?['budgetUtilization'] ?? 0}%',
+        Icons.pie_chart,
+        Colors.blue,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Collection Rate',
+        '${_roleData?['collectionRate'] ?? 0}%',
+        Icons.savings,
+        Colors.indigo,
+        onTap: () => context.go('/payments'),
+      ),
+    ];
+  }
+
+  List<Widget> _departmentHeadCards() {
+    return [
+      _buildStatCard(
+        'Dept Members',
+        '${_roleData?['department_members'] ?? 0}',
+        Icons.people,
+        Colors.blue,
+        onTap: () => context.push('/members'),
+      ),
+      _buildStatCard(
+        'Pending Tasks',
+        '${_roleData?['pending_tasks'] ?? 0}',
+        Icons.task_alt,
+        Colors.orange,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Dept Events',
+        '${_roleData?['department_events'] ?? 0}',
+        Icons.event,
+        Colors.teal,
+        onTap: () => context.go('/events'),
+      ),
+      _buildStatCard(
+        'Dept Budget',
+        'KES ${_roleData?['department_budget'] ?? 0}',
+        Icons.account_balance,
+        Colors.green,
+        onTap: () => context.push('/departments'),
+      ),
+      _buildStatCard(
+        'Task Completion',
+        '${_roleData?['taskCompletionRate'] ?? 0}%',
+        Icons.check_circle,
+        Colors.indigo,
+      ),
+      _buildStatCard(
+        'Participation',
+        '${_roleData?['memberParticipationCount'] ?? 0}',
+        Icons.how_to_reg,
+        Colors.teal,
+        onTap: () => context.push('/departments'),
+      ),
+    ];
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color,
@@ -387,6 +626,79 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildRecentTransactions() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Recent Transactions',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextButton(
+              onPressed: () => context.go('/payments'),
+              child: const Text('View all'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _transactions!.length,
+          itemBuilder: (context, index) {
+            final tx = _transactions![index];
+            final isIncome = tx['transaction_type'] == 'income';
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                dense: true,
+                leading: CircleAvatar(
+                  backgroundColor:
+                      isIncome ? Colors.green.shade50 : Colors.red.shade50,
+                  child: Icon(
+                    isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                    color: isIncome ? Colors.green : Colors.red,
+                    size: 18,
+                  ),
+                ),
+                title: Text(
+                  tx['description'] ??
+                      '${isIncome ? 'Income' : 'Expense'} transaction',
+                  style: const TextStyle(fontSize: 14),
+                ),
+                subtitle: Text(
+                  _formatTxDate(tx['transaction_date'] ?? tx['created_at']),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                ),
+                trailing: Text(
+                  '${isIncome ? '+' : '-'} KES ${tx['amount']}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: isIncome ? Colors.green : Colors.red,
+                  ),
+                ),
+                onTap: () => context.go('/payments'),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  String _formatTxDate(dynamic dateString) {
+    if (dateString == null) return '';
+    try {
+      final date = DateTime.parse(dateString.toString());
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (_) {
+      return dateString.toString();
+    }
   }
 
   Widget _buildRecentActivities() {
