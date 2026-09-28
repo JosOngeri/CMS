@@ -318,6 +318,26 @@ router.put('/:id/programs/:pid', authenticateToken, async (req, res) => {
 // ---------------------------------------------------------------------------
 // DEPT EVENTS (with RSVP request)
 // ---------------------------------------------------------------------------
+router.get('/:id/events', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartment(req.params.id, req.user.church_id);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const r = await pool.query(
+      `SELECT e.*,
+              (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id AND ea.rsvp_status = 'attending') AS rsvp_count,
+              (SELECT ea2.rsvp_status FROM event_attendance ea2 WHERE ea2.event_id = e.id AND ea2.member_id = $2) AS my_rsvp
+       FROM events e
+       WHERE e.department_id = $1 AND e.event_date >= CURRENT_DATE - INTERVAL '90 days'
+       ORDER BY e.event_date DESC`,
+      [dept.id, req.user.id]
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (e) {
+    logger.error('getDeptEvents', e);
+    res.status(500).json({ success: false, error: 'Failed to load events' });
+  }
+});
+
 router.post('/:id/events', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);

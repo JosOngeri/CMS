@@ -8,6 +8,7 @@ import '../screens/dashboard_screen.dart';
 import '../screens/announcements_screen.dart';
 import '../screens/events_screen.dart';
 import '../screens/departments_screen.dart';
+import '../screens/department_detail_screen.dart';
 import '../screens/documents_screen.dart';
 import '../screens/members_screen.dart';
 import '../screens/approvals_screen.dart';
@@ -126,6 +127,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/departments',
         builder: (context, state) => const DepartmentsScreen(),
+      ),
+      GoRoute(
+        path: '/departments/:id',
+        builder: (context, state) => DepartmentDetailScreen(
+          department: state.extra as Map<String, dynamic>,
+        ),
       ),
       GoRoute(
         path: '/documents',

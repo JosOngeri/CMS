@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
 
 class DepartmentsScreen extends StatefulWidget {
@@ -11,6 +12,8 @@ class DepartmentsScreen extends StatefulWidget {
 class _DepartmentsScreenState extends State<DepartmentsScreen> {
   ApiService? _apiService;
   List<dynamic>? _departments;
+  List<dynamic>? _allDepartments;
+  final Set<String> _requestedIds = {};
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -41,9 +44,11 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
 
     try {
       final result = await _apiService!.getMyDepartments();
+      final allResult = await _apiService!.getAllDepartments();
       if (result['success'] == true) {
         setState(() {
           _departments = result['departments'] ?? [];
+          _allDepartments = allResult['departments'] ?? [];
         });
       } else {
         setState(() {
@@ -84,24 +89,85 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             )
           : _errorMessage != null
               ? _buildErrorState()
-              : _departments == null || _departments!.isEmpty
-                  ? _buildEmptyState()
-                  : RefreshIndicator(
-                      onRefresh: _loadDepartments,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _departments!.length,
-                        itemBuilder: (context, index) =>
-                            _buildDepartmentCard(_departments![index]),
-                      ),
-                    ),
+              : RefreshIndicator(
+              onRefresh: _loadDepartments,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  const Text('My Departments',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  if (_departments == null || _departments!.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text('You have not joined any departments yet'),
+                    )
+                  else
+                    ..._departments!.map((d) => _buildDepartmentCard(d)),
+                  const SizedBox(height: 24),
+                  const Text('All Departments',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  if (_allDepartments != null)
+                    ..._allDepartments!.map((d) => _buildBrowseCard(d)),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Set<String> get _myDeptIds =>
+      {for (final d in _departments ?? []) '${d['id']}'};
+
+  Future<void> _requestJoin(Map<String, dynamic> dept) async {
+    final id = '${dept['id']}';
+    setState(() => _requestedIds.add(id));
+    final res = await _apiService!.joinDepartment(id);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(res['success'] == true
+            ? 'Join request sent to ${dept['name']}'
+            : (res['error'] ?? 'Request failed')),
+      ));
+      if (res['success'] != true) setState(() => _requestedIds.remove(id));
+    }
+  }
+
+  Widget _buildBrowseCard(Map<String, dynamic> dept) {
+    final id = '${dept['id']}';
+    final isMember = _myDeptIds.contains(id);
+    final requested = _requestedIds.contains(id);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: const Icon(Icons.groups_outlined),
+        title: Text(dept['name'] ?? 'Department'),
+        subtitle: Text(
+          [
+            if (dept['category'] != null) dept['category'],
+            if (dept['dept_type'] != null) dept['dept_type'],
+          ].join('  ·  '),
+        ),
+        trailing: isMember
+            ? const Chip(label: Text('Member'), visualDensity: VisualDensity.compact)
+            : requested
+                ? const Chip(label: Text('Pending'), visualDensity: VisualDensity.compact)
+                : TextButton(
+                    onPressed: () => _requestJoin(dept),
+                    child: const Text('Request to join'),
+                  ),
+        onTap: () => context.push('/departments/$id', extra: dept),
+      ),
     );
   }
 
   Widget _buildDepartmentCard(Map<String, dynamic> department) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
+      child: InkWell(
+        onTap: () =>
+            context.push('/departments/${department['id']}', extra: department),
+        child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,6 +228,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
             ],
           ],
         ),
+        ),
       ),
     );
   }
@@ -202,28 +269,4 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.groups_outlined, size: 64, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'No departments assigned',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Contact your church admin to join a department',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

@@ -617,6 +617,114 @@ class ApiService {
     }
   }
 
+  /// All active departments in the church (for browsing / join requests).
+  Future<Map<String, dynamic>> getAllDepartments() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/mobile/departments');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'departments': _unwrapData(response.data['data']) ?? []};
+      }
+      return {'success': false, 'error': 'Failed to load departments'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  // ---- Department community endpoints (join, subcommittees, programs,
+  // threads/messages, communications, contributions) ----
+
+  Future<Map<String, dynamic>> _deptGet(String path) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/departments$path');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'data': response.data['data']};
+      }
+      return {'success': false, 'error': response.data['error'] ?? 'Request failed'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  Future<Map<String, dynamic>> _deptSend(String method, String path, [Map<String, dynamic>? body]) async {
+    try {
+      final service = await getInstance();
+      final response = method == 'post'
+          ? await service._dio.post('/departments$path', data: body)
+          : await service._dio.put('/departments$path', data: body);
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data['success'] == true) {
+        return {'success': true, 'data': response.data['data'], 'message': response.data['message']};
+      }
+      return {'success': false, 'error': response.data['error'] ?? 'Request failed'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Pending join requests for a department (head view) — different response
+  /// shape ({pending_requests: [...]}), so it can't use _deptGet.
+  Future<Map<String, dynamic>> getDeptPendingRequests(String deptId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/departments/$deptId/pending-requests');
+      if (response.statusCode == 200) {
+        return {'success': true, 'requests': response.data['pending_requests'] ?? []};
+      }
+      return {'success': false, 'error': 'Failed to load requests'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  Future<Map<String, dynamic>> approveDeptMember(String deptId, String userId) =>
+      _deptSend('post', '/$deptId/approve/$userId');
+  Future<Map<String, dynamic>> rejectDeptMember(String deptId, String userId) =>
+      _deptSend('post', '/$deptId/reject/$userId');
+  Future<Map<String, dynamic>> joinDepartment(String deptId) =>
+      _deptSend('post', '/$deptId/join');
+  Future<Map<String, dynamic>> getSubcommittees(String deptId) =>
+      _deptGet('/$deptId/subcommittees');
+  Future<Map<String, dynamic>> createSubcommittee(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/subcommittees', data);
+  Future<Map<String, dynamic>> updateSubcommittee(String deptId, String subId, Map<String, dynamic> data) =>
+      _deptSend('put', '/$deptId/subcommittees/$subId', data);
+  Future<Map<String, dynamic>> getDeptPrograms(String deptId) =>
+      _deptGet('/$deptId/programs');
+  Future<Map<String, dynamic>> createDeptProgram(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/programs', data);
+  Future<Map<String, dynamic>> getDeptEvents(String deptId) =>
+      _deptGet('/$deptId/events');
+  Future<Map<String, dynamic>> createDeptEvent(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/events', data);
+  Future<Map<String, dynamic>> sendDeptCommunication(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/communications', data);
+  Future<Map<String, dynamic>> getDeptThreads(String deptId) =>
+      _deptGet('/$deptId/threads');
+  Future<Map<String, dynamic>> getMyDeptThread(String deptId) =>
+      _deptGet('/$deptId/threads/mine');
+  Future<Map<String, dynamic>> getThreadMessages(String deptId, String threadId) =>
+      _deptGet('/$deptId/threads/$threadId/messages');
+  Future<Map<String, dynamic>> postThreadMessage(String deptId, String threadId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/threads/$threadId/messages', data);
+  Future<Map<String, dynamic>> labelMessage(String deptId, String messageId, String label) =>
+      _deptSend('put', '/$deptId/messages/$messageId/label', {'label': label});
+  Future<Map<String, dynamic>> setDeptMemberRole(String deptId, String userId, String role) =>
+      _deptSend('put', '/$deptId/members/$userId/role', {'role': role});
+  Future<Map<String, dynamic>> contributeToProgram(String deptId, String programId, double amount) =>
+      _deptSend('post', '/$deptId/programs/$programId/contribute', {'amount': amount});
+  Future<Map<String, dynamic>> contributeToEvent(String deptId, String eventId, double amount) =>
+      _deptSend('post', '/$deptId/events/$eventId/contribute', {'amount': amount});
+
   /// Church member directory.
   Future<Map<String, dynamic>> getMembers({String? search, int page = 1, int limit = 50}) async {
     try {
