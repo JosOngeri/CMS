@@ -13,6 +13,7 @@ function Header({ onMenuClick }) {
   const navigate = useNavigate();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const useAlternative = useAlternativeTabStructure();
 
   const handleTabStructureToggle = () => {
@@ -53,7 +54,8 @@ function Header({ onMenuClick }) {
           >
             <Menu className="h-6 w-6" />
           </button>
-          <div className="relative flex-1 max-w-md">
+          {/* Desktop search */}
+          <div className="relative flex-1 max-w-md hidden md:block">
             <form onSubmit={handleSearch}>
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" aria-hidden="true" />
               <input
@@ -66,6 +68,15 @@ function Header({ onMenuClick }) {
               />
             </form>
           </div>
+          {/* Mobile search toggle */}
+          <button
+            onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+            className="md:hidden p-3 text-[var(--color-textSecondary)] hover:bg-[var(--color-background)] rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Toggle search"
+            aria-expanded={mobileSearchOpen}
+          >
+            <Search className="h-6 w-6" />
+          </button>
         </div>
 
         <div className="flex items-center space-x-2 md:space-x-4 ml-2 md:ml-4">
@@ -152,6 +163,24 @@ function Header({ onMenuClick }) {
           </div>
         </div>
       </div>
+
+      {/* Mobile search row */}
+      {mobileSearchOpen && (
+        <div className="md:hidden px-4 pb-3 border-t border-[var(--color-border)]">
+          <form onSubmit={handleSearch} className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="input pl-10 w-full"
+              aria-label="Search"
+              autoFocus
+            />
+          </form>
+        </div>
+      )}
     </header>
   );
 }

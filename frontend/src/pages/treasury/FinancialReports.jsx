@@ -99,8 +99,8 @@ const FinancialReports = () => {
     if (!reportData.accounts) return null
     
     return (
-      <div className="space-y-4">
-        <table className="w-full">
+      <div className="space-y-4 overflow-x-auto">
+        <table className="w-full min-w-[560px]">
           <thead>
             <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
               <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Account</th>
@@ -143,7 +143,7 @@ const FinancialReports = () => {
     if (!reportData.line_items) return null
     
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 overflow-x-auto">
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Revenue</h3>
           {reportData.line_items
@@ -266,8 +266,8 @@ const FinancialReports = () => {
     if (!reportData.funds) return null
     
     return (
-      <div className="space-y-4">
-        <table className="w-full">
+      <div className="space-y-4 overflow-x-auto">
+        <table className="w-full min-w-[560px]">
           <thead>
             <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
               <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Fund</th>

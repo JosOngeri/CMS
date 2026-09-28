@@ -2,81 +2,127 @@
 
 Goal: the React webapp should feel like the Flutter app on phones — same
 navigation model, same visual language — while keeping every feature web-based.
+Design reference: `mobile/flutter/flutter-mobile/lib/theme.dart` +
+`lib/widgets/main_shell.dart` (bottom `NavigationBar`: Home, Payments,
+Events, News, Profile; card layouts; off-white bg; `#3B82F6` primary).
 
-## Current state (audited)
+## Audit results
 
-| Area | Status |
-|---|---|
-| Public site (home, gallery, downloads) | Mostly responsive; mobile hamburger menu works |
-| Dashboard sidebar | Slide-in drawer `< lg` + hamburger — works but desktop-pattern |
-| Bottom navigation | **Missing** — Flutter uses Home / Payments / Events / News / Profile |
-| `MobileWrapper` + `MobileDashboard` | Exists, only used on dashboard home |
-| Tables (`<table>`) | **10 pages overflow on phones** (members, payments, treasury, users, docs, receipts) |
-| Pages with zero responsive classes | **23 files** |
-| PWA | `manifest.json` + `sw.js` exist; icons are just `logo.png`; install prompt not wired |
-| Touch targets | Header buttons already 44px; many list items/tables are not |
+**Already good**
+- Public pages (home, gallery, downloads, announcements) responsive
+- Sidebar collapses to drawer `< lg`; hamburger present; header buttons ≥44px
+- `MobileBottomNav` shipped (Phase 1) — mirrors the 5 Flutter destinations
+- `manifest.json` exists; `MobileWrapper`/`MobileDashboard` precedent exists
+- Theme CSS vars handle dark/light on the bottom nav automatically
 
-## Flutter design language to mirror (theme.dart / main_shell.dart)
+**Broken / missing**
+| # | Issue | Files / evidence |
+|---|---|---|
+| 1 | 10 `<table>` pages overflow on phones | `members/MemberDirectory`, `MembersList`, `payments/PaymentHistory`, `PaymentManagement`, `treasury/Contributions`, `FinancialReports`, `FixedAssets`, `Receipts`, `users/UserManagement`, `admin/Documents` |
+| 2 | 37 page files have zero responsive classes | list below |
+| 3 | `sw.js` never registered — PWA is dead code; cache name still `kmaincms-v1` | `public/sw.js`, no `navigator.serviceWorker.register` anywhere |
+| 4 | Header search input stays full-width on mobile | `components/common/Header.jsx` |
+| 5 | `MobileWrapper` wraps every role branch in `Dashboard.jsx` — duplicated pattern | `pages/dashboard/Dashboard.jsx` |
+| 6 | Stale duplicate pages inflate the audit | `*Alternative.jsx`, `pages/PublicHome.jsx` vs `pages/public/PublicHome.jsx` |
+| 7 | No real PWA icons — `logo.png` reused for 192/512 maskable | `public/manifest.json` |
 
-- Primary `#3B82F6` blue (web theme already close — `#4A6FA5`)
-- `NavigationBar` bottom nav: **Home, Payments, Events, News, Profile**
-- Card-based layouts, rounded corners, off-white background
-- Safe-area aware bottom UI, touch-friendly rows
+**Pages with zero responsive classes** (37):
 
-## Phase 1 — App shell parity (Flutter look)
+- Priority (real user pages): `announcements/Announcements`,
+  `approvals/ApprovalInbox`, `auth/ForgotPassword`, `content/Content`,
+  `departments/Departments`, `MyDepartments`, `CategoryManagement`,
+  `DepartmentSettings`, `DepartmentHeadAllocation`, `DepartmentBranding`,
+  `gallery/GalleryManagement`, `admin/SiteSettings`,
+  `administration/Administration`, `insights/Insights`, `mobile/Mobile`,
+  `monitoring/Monitoring`, `notifications/Notifications`,
+  `NotificationDashboard`, `public/Privacy`, `PublicAnnouncementDetail`,
+  `Terms`, `settings/Settings`, `telegram/Telegram`, `telegram/TelegramAuth`,
+  `accessibility/Accessibility`, `documentation/Documentation`,
+  `resources/Resources`, `security/Security`, `seo/SEO`,
+  `platform/PlatformLogin`, `testing/Testing`
+- Suspected dead code (verify usage, then delete): `AdministrationAlternative`,
+  `DepartmentsAlternative`, `InsightsAlternative`, `SettingsAlternative`,
+  `pages/PublicHome.jsx` (dup of `pages/public/PublicHome.jsx`)
 
-1. **`MobileBottomNav` component** (`components/common/MobileBottomNav.jsx`)
-   - Fixed bottom bar, visible `< lg` only, inside `DashboardLayout`
-   - 5 destinations matching Flutter: Home `/dashboard`, Payments
-     `/dashboard/payments`, Events `/dashboard/events`, News
-     `/dashboard/announcements`, Profile `/dashboard/profile`
-   - Active = filled icon + primary color; inactive = outline icon + secondary
-   - `padding-bottom: env(safe-area-inset-bottom)` for notched phones
-2. Sidebar keeps working as the "everything else" drawer (hamburger stays in
-   header; optionally a 6th "More" tab could open it later)
-3. `main` content gets `pb-20 lg:pb-6` so the bottom bar doesn't cover content
+## Phase 1 — App shell parity ✅ DONE (commit 6aefdba)
 
-## Phase 2 — Page responsiveness
+- `MobileBottomNav` (Home/Payments/Events/News/Profile), `pb-24` content
+  clearance, safe-area inset, dynamic church name in sidebar
 
-Convert the 10 table pages to a responsive pattern:
+**Follow-up worth doing:** role-aware tabs — members get the 5 tabs; users
+with admin roles could get a 6th "More" tab that opens the sidebar drawer
+directly (Sidebar already exposes `isOpen`/`setIsOpen` — lift the trigger
+into the nav).
 
+## Phase 2 — Responsive pages (biggest usability win)
+
+2a. **Table → card pattern** for the 10 table pages:
+
+```jsx
+<div className="hidden md:block overflow-x-auto"><table>…</table></div>
+<div className="md:hidden space-y-3">
+  {rows.map(r => <Card>{/* avatar/icon + title + subtitle + chevron */}</Card>)}
+</div>
 ```
-<div className="hidden md:block"><table>…</table></div>
-<div className="md:hidden">{rows.map(r => <Card …/>)}</div>
-```
 
-Pages: `MemberDirectory`, `MembersList`, `PaymentHistory`,
-`PaymentManagement`, `Contributions`, `FinancialReports`, `FixedAssets`,
-`Receipts`, `UserManagement`, `admin/Documents`.
+Pick the 2–3 most important fields per table for the card; the full row stays
+in the desktop table. Order: MemberDirectory → MyPayments/PaymentHistory →
+Contributions → Receipts → the rest.
 
-Then fix the 23 pages with no responsive classes: stat grids
-`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`, full-width forms, wrapped
-action buttons, `min-h-[44px]` touch targets.
+2b. **Stat grids & layouts** on the remaining priority pages:
+`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`, `flex-col sm:flex-row` toolbars,
+full-width forms, `min-h-[44px]` touch targets on list rows/buttons.
 
-## Phase 3 — Flutter-style details
+2c. **Header mobile fix** — collapse the search input to an icon-expandable
+field `< md`; move profile/notifications to compact icon buttons.
 
-- Modal → bottom-sheet pattern on `< sm` for forms
-- Sticky page headers collapse on scroll (optional)
-- List rows: avatar/icon left, title+subtitle, chevron right (Flutter ListTile
-  pattern) for member/event/department lists
+2d. **Delete stale duplicates** after a usage grep (the 5 `Alternative`/dup
+files) so the audit numbers stop lying.
 
-## Phase 4 — PWA polish
+## Phase 3 — Flutter-style interaction details
 
-- Generate real 192/512 + maskable icons from logo
-- Verify `sw.js` registers; add offline fallback for shell + `cache-first`
-  for static assets, `network-first` for `/api`
-- Wire `PWAInstaller` "Add to Home Screen" prompt
-- `theme_color` → match `--color-primary-strong`
+- List rows = Flutter `ListTile` look: leading icon/avatar in a tinted
+  rounded square, title + subtitle, trailing chevron
+- Forms/modals become **bottom sheets** on `< sm` (slide-up panel, drag
+  handle, `max-h-[85vh]`) — matches Material mobile patterns
+- Pull-to-refresh is out of scope (web), but add `LoadingButton`-style busy
+  states to match `lib/widgets/loading_button.dart`
+- Skeleton loaders instead of blank spinners where Flutter shows shimmer
 
-## Verification
+## Phase 4 — Real PWA
 
-- Chrome DevTools emulation (iPhone SE/14, Pixel) on every dashboard section
-- Lighthouse mobile score ≥ 90
-- Real phone test on `https://msabato.co.ke` after deploy
-- Parity check: same 5 destinations and iconography as the Flutter shell
+- Register the service worker in `main.jsx` (`if ('serviceWorker' in
+  navigator)` + production-only)
+- Update `sw.js`: rename cache `msabato-v1`, `cache-first` for
+  `/assets/*` + fonts, `network-first` for `/api/*`, offline fallback to a
+  cached shell page
+- Generate proper 192/512 + maskable icons from `logo.png`
+- `theme_color` → `#2A4F7F` (primary-strong, matches new brand surface)
+- Wire `PWAInstaller` "Add to Home Screen" banner on mobile after 2nd visit
 
-## Order of work
+## Phase 5 — Hardening & testing
 
-1. Phase 1 bottom nav (biggest visual win, self-contained)
-2. Phase 2 table-to-card conversions (biggest usability win)
-3. Phase 3 + 4 polish
+- Device matrix: iPhone SE (375px), Pixel 7 (412px), iPad (768px) — every
+  dashboard section, both light and dark themes
+- Lighthouse mobile ≥ 90; check CLS from the bottom nav
+- Playwright/RTL spot tests for nav presence `< lg` and table/card swap
+- Verify no horizontal scroll (`overflow-x`) on any page at 375px
+- Flutter parity checklist: same destinations, same labels, same icons,
+  same card styling
+
+## Sequencing
+
+1. ~~Phase 1~~ ✅
+2. Phase 2a tables (MemberDirectory first — most-used page)
+3. Phase 2b/2c/2d in one sweep
+4. Phase 3 + 4 polish
+5. Phase 5 test pass, then mark plan complete
+
+## Risks
+
+- `*Alternative` files may still be routed — confirm before deleting
+- Service worker caching `/api` incorrectly could show stale member data —
+  keep `network-first` with short TTL, never cache auth endpoints
+- Role-filtered sidebar items vs fixed bottom nav: bottom nav destinations
+  are all member-safe routes (overview, payments/my, events, announcements,
+  profile) so no permission gating needed

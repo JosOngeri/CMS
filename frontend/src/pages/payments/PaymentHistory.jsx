@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { FullPageLoading } from '../../components/common/Loading'
 import { PaymentsEmptyState } from '../../components/common/EmptyState'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { API_ENDPOINTS } from '../../constants/api'
 
 const PaymentHistory = () => {
@@ -156,7 +157,8 @@ const PaymentHistory = () => {
       {/* Payments Table */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm overflow-hidden">
         {filteredPayments.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead className="bg-[var(--color-background)] bg-[var(--color-surface)]">
                 <tr>
@@ -229,6 +231,33 @@ const PaymentHistory = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Payments card list (mobile) */}
+          <div className="md:hidden p-3 space-y-3">
+            {filteredPayments.map((payment) => (
+              <MobileCard
+                key={payment.id}
+                icon={DollarSign}
+                title={`KES ${parseFloat(payment?.amount ?? 0).toLocaleString()}`}
+                subtitle={`#${payment.id.slice(-8)} · ${formatDate(payment.created_at)}`}
+                badge={<span className={`badge ${getStatusColor(payment.status)}`}>{payment.status}</span>}
+                actions={
+                  payment.status === 'completed' ? (
+                    <button
+                      onClick={() => downloadReceipt(payment)}
+                      className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Receipt</span>
+                    </button>
+                  ) : null
+                }
+              >
+                <CardField label="Phone" value={payment.phone_number} />
+              </MobileCard>
+            ))}
+          </div>
+          </>
         ) : (
           <PaymentsEmptyState />
         )}

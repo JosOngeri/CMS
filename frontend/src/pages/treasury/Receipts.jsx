@@ -6,6 +6,7 @@ import {
   FileText, Eye, Calendar, DollarSign
 } from 'lucide-react'
 import Card from '../../components/common/Card'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -169,7 +170,8 @@ const Receipts = () => {
       {/* Receipts List */}
       <Card>
         {filteredReceipts.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
@@ -222,6 +224,29 @@ const Receipts = () => {
               </tbody>
             </table>
           </div>
+          <div className="md:hidden space-y-3">
+            {filteredReceipts.map((receipt) => (
+              <MobileCard
+                key={receipt.id}
+                icon={FileText}
+                title={receipt.receipt_number}
+                subtitle={`${receipt.description} · ${new Date(receipt.receipt_date).toLocaleDateString()}`}
+                onClick={() => handleViewReceipt(receipt)}
+                actions={
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDownloadPDF(receipt.id); }}
+                    className="flex items-center gap-1 text-sm text-green-600 font-medium min-h-[44px] px-2"
+                  >
+                    <Download className="h-4 w-4" /><span>Download PDF</span>
+                  </button>
+                }
+              >
+                <CardField label="Member" value={receipt.member_name || '—'} />
+                <CardField label="Amount" value={`KES ${parseFloat(receipt?.amount ?? 0).toLocaleString()}`} />
+              </MobileCard>
+            ))}
+          </div>
+          </>
         ) : (
           <EmptyState
             icon={FileText}

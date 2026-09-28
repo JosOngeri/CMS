@@ -287,7 +287,7 @@ const Documents = () => {
               )}
             </div>
 
-            <div className="bg-[var(--color-surface)] rounded-lg shadow overflow-hidden">
+            <div className="bg-[var(--color-surface)] rounded-lg shadow overflow-hidden overflow-x-auto">
               <table className="min-w-full divide-y divide-[var(--color-border)]">
                 <thead className="bg-[var(--color-background)]">
                   <tr>

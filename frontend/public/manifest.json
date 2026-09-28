@@ -1,11 +1,11 @@
 {
-  "name": "Msabato CMS",
-  "short_name": "Msabato CMS",
-  "description": "Msabato Church Management System",
-  "start_url": "/",
+  "name": "Msabato",
+  "short_name": "Msabato",
+  "description": "Msabato — Seventh-day Adventist Church",
+  "start_url": "/dashboard/overview",
   "display": "standalone",
   "background_color": "#FEFDFB",
-  "theme_color": "#3B82F6",
+  "theme_color": "#2A4F7F",
   "orientation": "portrait-primary",
   "icons": [
     {

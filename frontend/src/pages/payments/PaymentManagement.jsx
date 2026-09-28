@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt } from 'lucide-react'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { useAuth } from '../../contexts/AuthContext'
 
 const PaymentManagement = () => {
@@ -491,7 +492,7 @@ const PaymentManagement = () => {
 
       {/* Payments Table */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full">
             <thead className="bg-[var(--color-background)] bg-[var(--color-surface)]">
               <tr>
@@ -590,6 +591,37 @@ const PaymentManagement = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Payments card list (mobile) */}
+        <div className="md:hidden p-3 space-y-3">
+          {filteredPayments.map((payment) => (
+            <MobileCard
+              key={payment.id}
+              icon={Users}
+              title={payment.member_name}
+              subtitle={`${paymentTypes.find(t => t.value === payment.payment_type)?.label || payment.payment_type} · ${new Date(payment.date).toLocaleDateString()}`}
+              badge={
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${getPaymentStatusColor(payment.status)}`}>
+                  {paymentStatus.find(s => s.value === payment.status)?.label || payment.status}
+                </span>
+              }
+              onClick={() => setSelectedPayment(payment)}
+              actions={canManagePayments ? (
+                <>
+                  <button onClick={(e) => { e.stopPropagation(); handleEdit(payment); }} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
+                    <Edit className="w-4 h-4" /><span>Edit</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(payment.id); }} className="flex items-center gap-1 text-sm text-red-600 font-medium min-h-[44px] px-2">
+                    <Trash2 className="w-4 h-4" /><span>Delete</span>
+                  </button>
+                </>
+              ) : null}
+            >
+              <CardField label="Amount" value={`KES ${parseFloat(payment?.amount ?? 0).toLocaleString()}`} />
+              <CardField label="Method" value={paymentMethods.find(m => m.value === payment.payment_method)?.label || payment.payment_method} />
+            </MobileCard>
+          ))}
         </div>
       </div>
 

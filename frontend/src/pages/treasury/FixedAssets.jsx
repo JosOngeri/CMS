@@ -6,6 +6,7 @@ import {
   Building2, RefreshCw, TrendingDown, Calendar
 } from 'lucide-react'
 import Card from '../../components/common/Card'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -239,7 +240,8 @@ const FixedAssets = () => {
       {/* Assets List */}
       <Card>
         {filteredAssets.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
@@ -299,6 +301,31 @@ const FixedAssets = () => {
               </tbody>
             </table>
           </div>
+          <div className="md:hidden space-y-3">
+            {filteredAssets.map((asset) => (
+              <MobileCard
+                key={asset.id}
+                icon={Building2}
+                title={`${asset.asset_number} - ${asset.asset_name}`}
+                subtitle={`${asset.asset_type || 'Asset'} · Purchased ${asset.purchase_date || '—'}`}
+                actions={
+                  <>
+                    <button onClick={() => handleEdit(asset)} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
+                      <Edit className="w-4 h-4" /><span>Edit</span>
+                    </button>
+                    <button onClick={() => handleDelete(asset.id)} className="flex items-center gap-1 text-sm text-red-600 font-medium min-h-[44px] px-2">
+                      <Trash2 className="w-4 h-4" /><span>Delete</span>
+                    </button>
+                  </>
+                }
+              >
+                <CardField label="Purchase Cost" value={`KES ${parseFloat(asset?.purchase_cost ?? 0).toLocaleString()}`} />
+                <CardField label="Acc. Depreciation" value={`KES ${parseFloat(asset?.accumulated_depreciation ?? 0).toLocaleString()}`} />
+                <CardField label="Book Value" value={`KES ${(calculateBookValue(asset) ?? 0).toLocaleString()}`} />
+              </MobileCard>
+            ))}
+          </div>
+          </>
         ) : (
           <EmptyState
             icon={Building2}

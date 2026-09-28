@@ -6,6 +6,7 @@ import {
   User, Calendar, DollarSign, TrendingUp
 } from 'lucide-react'
 import Card from '../../components/common/Card'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -251,7 +252,8 @@ const Contributions = () => {
       {/* Contributions List */}
       <Card>
         {filteredContributions.length > 0 ? (
-          <div className="overflow-x-auto">
+          <>
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[var(--color-border)]">
@@ -285,6 +287,20 @@ const Contributions = () => {
               </tbody>
             </table>
           </div>
+          <div className="md:hidden space-y-3">
+            {filteredContributions.map((contribution) => (
+              <MobileCard
+                key={contribution.id}
+                icon={DollarSign}
+                title={contribution.member_name}
+                subtitle={`${contribution.category} · ${new Date(contribution.date).toLocaleDateString()}`}
+              >
+                <CardField label="Amount" value={`KES ${parseFloat(contribution?.amount ?? 0).toLocaleString()}`} />
+                <CardField label="Fund" value={contribution.fund_name || '—'} />
+              </MobileCard>
+            ))}
+          </div>
+          </>
         ) : (
           <EmptyState
             icon={DollarSign}

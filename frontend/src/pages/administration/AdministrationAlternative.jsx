@@ -134,7 +134,7 @@ const AdministrationAlternative = () => {
           {/* System Status */}
           <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
             <h3 className="font-semibold text-[var(--color-text)] mb-4">System Status</h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {systemStatus.map((item) => {
                 const ItemIcon = item.icon;
                 return (
@@ -156,7 +156,7 @@ const AdministrationAlternative = () => {
           {/* Quick Actions */}
           <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
             <h3 className="font-semibold text-[var(--color-text)] mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {quickActions.map((action) => {
                 const ActionIcon = action.icon;
                 return (

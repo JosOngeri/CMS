@@ -9,6 +9,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import TabNavigation from '../../components/common/TabNavigation'
 import ProtectedComponent from '../../components/common/ProtectedComponent'
 import PermissionButton from '../../components/common/PermissionButton'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { PermissionBadge } from '../../components/common/ProtectedComponent'
 import { ROLES, ADMIN_ROLES } from '../../constants/roles'
 import { PERMISSIONS } from '../../constants/permissions'
@@ -365,9 +366,9 @@ const MemberDirectory = () => {
         </div>
       </div>
 
-      {/* Members Table */}
+      {/* Members Table (desktop) */}
       <div className="bg-[var(--color-surface)]  rounded-lg shadow-sm border border-[var(--color-border)]  overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full">
             <thead className="bg-[var(--color-background)] ">
               <tr>
@@ -492,6 +493,46 @@ const MemberDirectory = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Members card list (mobile) */}
+        <div className="md:hidden p-3 space-y-3">
+          {filteredMembers.length > 0 ? (
+            filteredMembers.map((member) => (
+              <MobileCard
+                key={member.id}
+                icon={Users}
+                title={`${member.first_name} ${member.last_name}`}
+                subtitle={member.email}
+                badge={
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+                    member.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {member.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                }
+                onClick={() => setSelectedMember(member)}
+              >
+                <ProtectedComponent permission={PERMISSIONS.MEMBERS_VIEW}>
+                  {member.phone_number && <CardField label="Phone" value={member.phone_number} />}
+                </ProtectedComponent>
+                <CardField label="Department" value={member.department || 'Not assigned'} />
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[var(--color-textSecondary)]">Role</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
+                    {member.role}
+                  </span>
+                </div>
+                <CardField label="Joined" value={member.joined_date ? new Date(member.joined_date).toLocaleDateString() : '—'} />
+              </MobileCard>
+            ))
+          ) : (
+            searchTerm || filterRole !== 'all' || filterDepartment !== 'all' || filterStatus !== 'all' ? (
+              <SearchEmptyState searchTerm={searchTerm} />
+            ) : (
+              <MembersEmptyState />
+            )
+          )}
         </div>
       </div>
         </>

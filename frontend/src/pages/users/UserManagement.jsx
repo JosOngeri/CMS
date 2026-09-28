@@ -3,6 +3,7 @@ import { Users, Plus, Edit, Trash2, Search, Filter, Mail, Phone, Calendar, Shiel
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import PermissionButton from '../../components/common/PermissionButton'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { PERMISSIONS } from '../../constants/permissions'
 
 const UserManagement = () => {
@@ -411,7 +412,7 @@ const UserManagement = () => {
 
       {/* Users List */}
       <div className="bg-[var(--color-surface)]  rounded-lg shadow-sm border border-[var(--color-border)]  overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full">
             <thead className="bg-[var(--color-background)] ">
               <tr>
@@ -537,6 +538,50 @@ const UserManagement = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Users card list (mobile) */}
+        <div className="md:hidden p-3 space-y-3">
+          {filteredUsers.map((user) => (
+            <MobileCard
+              key={user.id}
+              icon={User}
+              title={`${user.first_name} ${user.last_name}`}
+              subtitle={`@${user.username} · ${user.email}`}
+              badge={
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
+                  user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {user.is_active ? 'Active' : 'Inactive'}
+                </span>
+              }
+              actions={canManageUsers ? (
+                <>
+                  <button onClick={() => handleEdit(user)} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
+                    <Edit className="w-4 h-4" /><span>Edit</span>
+                  </button>
+                  <button onClick={() => handleToggleStatus(user.id, user.is_active)} className={`flex items-center gap-1 text-sm font-medium min-h-[44px] px-2 ${user.is_active ? 'text-yellow-600' : 'text-green-600'}`}>
+                    {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                    <span>{user.is_active ? 'Deactivate' : 'Activate'}</span>
+                  </button>
+                  <button onClick={() => handleDelete(user.id)} className="flex items-center gap-1 text-sm text-red-600 font-medium min-h-[44px] px-2">
+                    <Trash2 className="w-4 h-4" /><span>Delete</span>
+                  </button>
+                </>
+              ) : null}
+            >
+              {user.phone_number && <CardField label="Phone" value={user.phone_number} />}
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="text-[var(--color-textSecondary)]">Roles</span>
+                <span className="flex flex-wrap gap-1 justify-end">
+                  {user.roles?.map(role => (
+                    <span key={role} className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(role)}`}>{role}</span>
+                  ))}
+                </span>
+              </div>
+              <CardField label="Joined" value={new Date(user.created_at).toLocaleDateString()} />
+            </MobileCard>
+          ))}
         </div>
       </div>
 
