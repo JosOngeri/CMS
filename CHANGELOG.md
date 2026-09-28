@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   database; public pages show `Kiserian Main SDA` (or the active tenant name).
 
 ### Changed
-- Removed remaining `Msabato CMS` references from visible UI text and docs;
+- Removed remaining `KMainCMS` references from visible UI text and docs;
   the product is now consistently `Msabato Church Management System` / `Msabato CMS`.
 
 ## [1.2.0] - 2026-09-28
