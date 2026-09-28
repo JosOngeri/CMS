@@ -75,7 +75,7 @@ const NewsletterSection = () => {
               </div>
 
               {/* Right Side - Form */}
-              <div className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)] p-8 md:p-12 flex flex-col justify-center">
+              <div className="bg-gradient-to-br from-[#2A4F7F] to-[#1B3252] p-8 md:p-12 flex flex-col justify-center">
                 <h3 className="text-2xl font-bold text-white mb-2">Subscribe Now</h3>
                 <p className="text-white/80 mb-6">Join our community of believers</p>
 
@@ -96,7 +96,7 @@ const NewsletterSection = () => {
                         placeholder="Enter your email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)]/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-white border border-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-all"
                         aria-label="Email address for newsletter"
                         required
                         disabled={isSubmitting}
