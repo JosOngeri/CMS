@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
+import MobileBottomNav from '../components/common/MobileBottomNav';
 import SkipNavigation from '../components/accessibility/SkipNavigation';
 
 function DashboardLayout() {
@@ -13,10 +14,11 @@ function DashboardLayout() {
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        <main id="main-content" className="flex-1 p-4 md:p-6 overflow-auto" tabIndex="-1">
+        <main id="main-content" className="flex-1 p-4 pb-24 md:p-6 lg:pb-6 overflow-auto" tabIndex="-1">
           <Outlet />
         </main>
       </div>
+      <MobileBottomNav />
     </div>
   );
 }

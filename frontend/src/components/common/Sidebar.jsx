@@ -22,10 +22,12 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../hooks/usePermission';
+import { useChurchBranding } from '../../hooks/useChurchBranding';
 import { MODULE_PERMISSIONS } from '../../constants/permissions';
 
 function Sidebar({ isOpen, setIsOpen }) {
   const { user, logout } = useAuth();
+  const { churchName } = useChurchBranding();
   const { canAccessModule } = usePermission();
   const location = useLocation();
 
@@ -75,9 +77,9 @@ function Sidebar({ isOpen, setIsOpen }) {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)]/20 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">K</span>
+                  <span className="text-white font-bold text-lg">{churchName?.charAt(0) || 'M'}</span>
                 </div>
-                <h1 className="text-xl font-bold text-white">Msabato CMS</h1>
+                <h1 className="text-lg font-bold text-white truncate">{churchName}</h1>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
