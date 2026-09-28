@@ -98,6 +98,7 @@ const Analytics            = lazy(() => import('../pages/analytics/Analytics'));
 const Security             = lazy(() => import('../pages/security/Security'));
 const Telegram             = lazy(() => import('../pages/telegram/Telegram'));
 const TelegramAuth         = lazy(() => import('../pages/telegram/TelegramAuth'));
+const TelegramChurchSettings = lazy(() => import('../pages/telegram/TelegramChurchSettings'));
 const Mobile               = lazy(() => import('../pages/mobile/Mobile'));
 const Monitoring           = lazy(() => import('../pages/monitoring/Monitoring'));
 const SEO                  = lazy(() => import('../pages/seo/SEO'));
@@ -193,6 +194,7 @@ export const dashboardRoutes = [
   { path: 'notifications',          element: <W C={NotificationDashboard} /> },
   { path: 'telegram',              element: <W C={Telegram} /> },
   { path: 'telegram/auth',         element: <W C={TelegramAuth} /> },
+  { path: 'telegram/church',       element: <W C={TelegramChurchSettings} /> },
   { path: 'gallery',                element: <W C={GalleryManagement} /> },
 
   // Other Modules

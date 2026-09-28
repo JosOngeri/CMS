@@ -13,7 +13,7 @@ const { TelegramClient } = require('telegram');
 const { StringSession } = require('telegram/sessions');
 const { pool } = require('../config/database');
 
-const CHANNEL = process.argv[2] || 'sdakiserianmain';
+let CHANNEL = process.argv[2] || 'sdakiserianmain';
 const CHURCH_SLUG = process.argv[3] || 'kiserian-main-sda';
 const LIMIT = parseInt(process.argv[4] || '100', 10);
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'gallery');
@@ -25,6 +25,13 @@ async function main() {
   if (!church.rows.length) throw new Error(`Church '${CHURCH_SLUG}' not found`);
   const churchId = church.rows[0].id;
   console.log(`Church: ${church.rows[0].name} (${churchId})`);
+
+  if (CHANNEL === 'auto') {
+    const cfg = await pool.query('SELECT channel_id, channel_username FROM telegram_channels WHERE church_id = $1 AND is_active = true', [churchId]);
+    if (!cfg.rows.length) throw new Error(`No Telegram channel configured for church ${CHURCH_SLUG}`);
+    CHANNEL = cfg.rows[0].channel_username || cfg.rows[0].channel_id;
+    console.log(`Using configured channel: ${CHANNEL}`);
+  }
 
   const session = fs.readFileSync(path.join(__dirname, '..', 'sessions', 'telegram.session'), 'utf8').trim();
   const client = new TelegramClient(new StringSession(session), parseInt(process.env.TELEGRAM_API_ID), process.env.TELEGRAM_API_HASH, { connectionRetries: 3 });
