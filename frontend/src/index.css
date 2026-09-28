@@ -243,7 +243,7 @@ input:-webkit-autofill:active {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .church-gradient {
-  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-primary) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #2563EB 100%);
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
