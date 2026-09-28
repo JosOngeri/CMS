@@ -16,6 +16,7 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final void Function(String?)? onSubmitted;
   final List<TextInputFormatter>? inputFormatters;
+  final List<String>? autofillHints;
   final bool enabled;
 
   const CustomTextField({
@@ -33,6 +34,7 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.onSubmitted,
     this.inputFormatters,
+    this.autofillHints,
     this.enabled = true,
   });
 
@@ -45,6 +47,7 @@ class CustomTextField extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       inputFormatters: inputFormatters,
+      autofillHints: autofillHints,
       onSubmitted: onSubmitted,
       validator: validator,
       enabled: enabled,

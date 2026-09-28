@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/biometric_service.dart';
-import '../services/update_service.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/custom_text_field.dart';
-import '../widgets/update_dialog.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -29,6 +27,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _rememberMe = false;
   bool _isBiometricAvailable = false;
   bool _isBiometricEnabled = false;
+  bool _enableBiometricNextTime = false;
   
   final BiometricService _biometricService = BiometricService();
 
@@ -86,16 +85,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _passwordController.text,
       );
 
+      // Let the OS password manager offer to save the credentials
+      TextInput.finishAutofillContext(shouldSave: result['success'] == true);
+
       if (result['success']) {
         // Update auth state using Riverpod
         if (mounted) {
           ref.read(authProvider.notifier).login(result['user'], result['token']);
-          
-          // Store credentials for biometric if remember me is checked
-          if (_rememberMe) {
+
+          // Store credentials for biometric if opted in
+          if (_rememberMe || _enableBiometricNextTime) {
             await _storeCredentialsForBiometric();
           }
-          
+
           // Navigate to dashboard
           context.go('/dashboard');
         }
@@ -117,13 +119,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _storeCredentialsForBiometric() async {
     try {
-      if (_rememberMe) {
-        final success = await _biometricService.enableBiometric(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
-        
-        if (success && mounted) {
+      final success = await _biometricService.enableBiometric(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (success) {
+        if (mounted) {
+          setState(() => _isBiometricEnabled = true);
           _showSuccessSnackBar('Biometric login enabled');
         }
       }
@@ -237,7 +240,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // Login Form
               FormBuilder(
                 key: _formKey,
-                child: Column(
+                child: AutofillGroup(
+                  child: Column(
                   children: [
                     // Email Field
                     Semantics(
@@ -250,6 +254,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         controller: _emailController,
                         label: 'Username, Email, or Phone',
                         prefixIcon: Icons.person_outline,
+                        autofillHints: const [AutofillHints.username, AutofillHints.email],
                         helperText: 'Enter your username, email address, or phone number',
                         validator: FormBuilderValidators.compose([
                           FormBuilderValidators.required(
@@ -272,6 +277,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         controller: _passwordController,
                         label: 'Password',
                         prefixIcon: Icons.lock_outline,
+                        autofillHints: const [AutofillHints.password],
                         obscureText: _obscurePassword,
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -312,7 +318,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
-                    
+
+                    // Fingerprint opt-in (shown when device supports biometrics)
+                    if (_isBiometricAvailable && !_isBiometricEnabled)
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _enableBiometricNextTime,
+                            onChanged: (value) {
+                              setState(() {
+                                _enableBiometricNextTime = value ?? false;
+                              });
+                            },
+                          ),
+                          const Expanded(
+                            child: Text('Sign in with fingerprint next time'),
+                          ),
+                        ],
+                      ),
+
                     const SizedBox(height: 24),
                     
                     // Login Button
@@ -339,8 +363,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                     const SizedBox(height: 16),
                     
-                    // Biometric Login Button (only show if available)
-                    if (_isBiometricAvailable)
+                    // Biometric Login Button (only when the user enabled it)
+                    if (_isBiometricEnabled)
                       OutlinedButton.icon(
                         onPressed: _isLoading ? null : _biometricLogin,
                         icon: const Icon(Icons.fingerprint),
@@ -351,6 +375,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                   ],
                 ),
+              ),
               ),
             ],
           ),
