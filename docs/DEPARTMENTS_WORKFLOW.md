@@ -248,11 +248,51 @@ Web equivalent endpoints (same tables, richer data):
 
 - **Verified live**: dashboard count, `my-departments` list, dept detail, pending-requests queue.
 - **Verified local (all in smoke test)**: member can see exactly 2 departments, correct `role_in_department`.
-- **Stubbed/not yet wired on mobile**: in-app "join department" button, pending-request badge, dept activity feed (endpoints exist — the Flutter screens don't call them yet).
+- **Community features live** (2026-09-28): join requests, subcommittees, programs, dept events, private member↔head threads, head communications fan-out (thread + notification + optional JOSms SMS), message labels, role elevation, program/event contributions — all on `/api/departments/*` via `department_community.routes.js`, migration 031.
+- **Wired in Flutter**: `departments_screen.dart` (browse-all + Request-to-join), `department_detail_screen.dart` (Overview / Subcommittees / Programs & Events / Messages / Requests tabs), route `/departments/:id`.
+- **Still not wired in mobile**: message label editing (head sets labels on replies — endpoint `PUT /:id/messages/:mid/label` exists, UI long-press not yet added); subcommittee member assignment UI (endpoint exists); dept event creation form (endpoint `POST /:id/events` exists).
 
-## 6. Improvement ideas
+## 6. Community feature endpoints (all under `/api/departments`)
 
-1. **Join/leave actions** on `departments_screen.dart` → `POST /departments/:id/members` + leave → `DELETE`
-2. **Pending-request badge** on the My Departments card
-3. **Dept detail sheet** — tap a card → members, upcoming events, activity feed (`/api/departments/:id/activity`)
-4. **Head contact** — show `head_id` name/phone on the card
+| Route | Who | Purpose |
+|---|---|---|
+| `POST /:id/join` | Member | Request entry → pending `department_members` row + dept-admins notification |
+| `GET/POST /:id/subcommittees` | members / head | list / create |
+| `PUT/DELETE /:id/subcommittees/:sid` | head | amend / dissolve |
+| `POST/DELETE /:id/subcommittees/:sid/members(/:uid)` | head (assign) / member (self) | membership |
+| `GET/POST /:id/programs` · `PUT /:id/programs/:pid` | members / head | dept programs with budget targets + raised totals |
+| `GET/POST /:id/events` | members / head | dept events; `rsvp_required`, `rsvp_deadline`, `program_id` |
+| `POST /:id/communications` | head | broadcast → comms row + per-member private thread message + in-app notification + SMS via `SmsHub` → JOSms (`send_sms` flag) |
+| `GET /:id/threads` | head | member threads w/ last message, unread count, labels |
+| `GET /:id/threads/mine` | member | own thread (auto-created) |
+| `GET/POST /:id/threads/:tid/messages` | thread member / head | private chat |
+| `PUT /:id/messages/:mid/label` | head | group/label a reply |
+| `PUT /:id/members/:uid/role` | head | elevate member (`role_in_department`) |
+| `POST /:id/programs/:pid/contribute` | member | money contribution |
+| `POST /:id/events/:eid/contribute` | member | money contribution |
+
+New tables (migration 031): `department_subcommittees`, `subcommittee_members`,
+`department_programs`, `department_communications`,
+`department_message_threads`, `department_messages`, `program_contributions`.
+New columns: `departments.dept_type`, `events.program_id/rsvp_required/rsvp_deadline`,
+`department_budgets.event_id/program_id/church_id`, `event_collections.event_id/program_id/department_id`.
+
+### Communications fan-out DFD
+
+```
+Head (mobile/web)
+   │ POST /departments/:id/communications {title, body, send_sms}
+   ▼
+department_communications row ──┬─> department_messages (each member thread, label="Announcement")
+                                ├─> notifications (per member, in-app bell)
+                                └─> if send_sms: SmsHub.sendSMS → Socket.io "process_bulk"
+                                              → relay:{church_id} room → JOSms app → SMS
+```
+
+## 7. Improvement ideas
+
+1. **Subcommittee member picker** in Flutter (head taps subcommittee → assign members)
+2. **Label-assign UI** — long-press a message → pick label
+3. **Dept event creation form** in the app (endpoint live)
+4. **Budget attach UI** — pick event/program when creating a `department_budgets` row
+5. **Unread-badge** on My Departments card driven by `threads` unread count
