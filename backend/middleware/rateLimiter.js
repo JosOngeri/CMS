@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
 const redisCache = require('../services/redisCache');
 const logger = require('../config/logging');
@@ -36,7 +36,7 @@ const createRateLimiter = (options) => {
 
   const finalOptions = {
     ...limiterOptions,
-    keyGenerator: clientIp,
+    keyGenerator: (req) => ipKeyGenerator(clientIp(req)),
     validate: { ip: false },
     store: isRedisAvailable ? new RedisStore({
       client: redisCache.client,

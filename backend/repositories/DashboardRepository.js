@@ -411,7 +411,7 @@ class DashboardRepository extends BaseRepository {
         UNION ALL
         (SELECT created_at FROM announcements ORDER BY created_at DESC LIMIT 1)
         UNION ALL
-        (SELECT created_at FROM event_attendance ORDER BY created_at DESC LIMIT 1)
+        (SELECT registered_at FROM event_attendance ORDER BY registered_at DESC LIMIT 1)
       ) t
     `);
 
