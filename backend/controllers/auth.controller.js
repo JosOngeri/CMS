@@ -70,7 +70,8 @@ class AuthController extends BaseController {
       // Reset failed login attempts on successful login
       await UserRepository.update(user.id, {
         failed_login_attempts: 0,
-        locked_until: null
+        locked_until: null,
+        last_login: new Date()
       }, user.church_id);
 
       // Get user identity to check roles and MFA status

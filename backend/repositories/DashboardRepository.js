@@ -141,7 +141,7 @@ class DashboardRepository extends BaseRepository {
     const query = `
       SELECT COUNT(*) as count
       FROM approval_requests
-      WHERE user_id = $1 AND status = 'pending' AND church_id = $2
+      WHERE requester_id = $1 AND status = 'pending' AND church_id = $2
     `;
     const params = [userId, churchId];
 
@@ -154,7 +154,7 @@ class DashboardRepository extends BaseRepository {
       SELECT COUNT(*) as count
       FROM event_attendance ea
       JOIN events e ON ea.event_id = e.id
-      WHERE ea.user_id = $1 AND e.event_date >= CURRENT_DATE AND e.church_id = $2
+      WHERE ea.member_id = $1 AND e.event_date >= CURRENT_DATE AND e.church_id = $2
     `;
     const params = [userId, churchId];
 
@@ -166,7 +166,7 @@ class DashboardRepository extends BaseRepository {
     const query = `
       SELECT COALESCE(SUM(amount), 0) as total
       FROM payments
-      WHERE user_id = $1 AND status = 'completed' AND church_id = $2
+      WHERE member_id = $1 AND status = 'completed' AND church_id = $2
     `;
     const params = [userId, churchId];
 
@@ -183,7 +183,7 @@ class DashboardRepository extends BaseRepository {
         ) as attendance_rate
       FROM event_attendance ea
       JOIN events e ON ea.event_id = e.id
-      WHERE ea.user_id = $1
+      WHERE ea.member_id = $1
         AND e.event_date >= CURRENT_DATE - INTERVAL '30 days'
         AND e.church_id = $2
     `;
@@ -201,7 +201,7 @@ class DashboardRepository extends BaseRepository {
           2
         ) as contribution_rate
       FROM payments p
-      WHERE p.user_id = $1
+      WHERE p.member_id = $1
         AND p.created_at >= CURRENT_DATE - INTERVAL '30 days'
         AND p.church_id = $2
     `;
@@ -220,9 +220,9 @@ class DashboardRepository extends BaseRepository {
           COUNT(DISTINCT CASE WHEN a.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN a.id END)
         ) as activity_count
       FROM users u
-      LEFT JOIN event_attendance ea ON u.id = ea.user_id
+      LEFT JOIN event_attendance ea ON u.id = ea.member_id
       LEFT JOIN events e ON ea.event_id = e.id
-      LEFT JOIN payments p ON u.id = p.user_id
+      LEFT JOIN payments p ON u.id = p.member_id
       LEFT JOIN announcements a ON u.id = a.author_id
       WHERE u.id = $1 AND u.church_id = $2
     `;
@@ -243,7 +243,7 @@ class DashboardRepository extends BaseRepository {
         CONCAT('Processed on ', p.payment_date) as description,
         p.created_at as timestamp
       FROM payments p
-      WHERE p.user_id = $1 AND p.status = 'completed'
+      WHERE p.member_id = $1 AND p.status = 'completed'
       
       UNION ALL
       
@@ -254,7 +254,7 @@ class DashboardRepository extends BaseRepository {
         ea.registered_at as timestamp
       FROM event_attendance ea
       JOIN events e ON ea.event_id = e.id
-      WHERE ea.user_id = $1
+      WHERE ea.member_id = $1
       
       UNION ALL
       
@@ -291,7 +291,7 @@ class DashboardRepository extends BaseRepository {
           CONCAT('Processed on ', p.payment_date) as description,
           p.created_at as timestamp
         FROM payments p
-        WHERE p.user_id = $1 AND p.status = 'completed' AND p.church_id = $2
+        WHERE p.member_id = $1 AND p.status = 'completed' AND p.church_id = $2
         
         UNION ALL
         
@@ -302,7 +302,7 @@ class DashboardRepository extends BaseRepository {
           ea.registered_at as timestamp
         FROM event_attendance ea
         JOIN events e ON ea.event_id = e.id
-        WHERE ea.user_id = $1 AND e.church_id = $2
+        WHERE ea.member_id = $1 AND e.church_id = $2
         
         UNION ALL
         
@@ -404,10 +404,15 @@ class DashboardRepository extends BaseRepository {
     const userParams = churchId ? [churchId] : [];
     const userResult = await this.pool.query(userQuery, userParams);
 
+    // "Last sync" = most recent write activity in the system
     const lastApiCall = await this.pool.query(`
-      SELECT MAX(created_at) as last_request
-      FROM api_logs
-      LIMIT 1
+      SELECT MAX(ts) as last_request FROM (
+        SELECT created_at ts FROM payments ORDER BY created_at DESC LIMIT 1
+        UNION ALL
+        SELECT created_at FROM announcements ORDER BY created_at DESC LIMIT 1
+        UNION ALL
+        SELECT created_at FROM event_attendance ORDER BY created_at DESC LIMIT 1
+      ) t
     `);
 
     return {
