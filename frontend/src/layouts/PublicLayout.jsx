@@ -1,6 +1,6 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useState } from 'react'
-import { Menu, X, Sun, Moon, Phone, Mail, MapPin, MessageCircle, Video, Share2, Globe, AtSign } from 'lucide-react'
+import { Menu, X, Sun, Moon, Phone, Mail, MapPin, MessageCircle, Video, Share2, Globe, AtSign, Download } from 'lucide-react'
 import { useColorPalette } from '../contexts/ColorPaletteContext'
 
 const PublicLayout = () => {
@@ -36,6 +36,13 @@ const PublicLayout = () => {
               </Link>
               <Link to="/gallery" className="text-white/90 hover:text-white font-medium transition-colors relative group">
                 Gallery
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
+              </Link>
+              <Link to="/downloads" className="text-white/90 hover:text-white font-medium transition-colors relative group">
+                <span className="inline-flex items-center gap-1">
+                  <Download className="w-4 h-4" />
+                  Download App
+                </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
               </Link>
               <Link to="/auth/login" className="bg-[var(--color-surface)]/10 hover:bg-[var(--color-surface)]/20 px-4 py-2 rounded-lg font-medium transition-colors">
@@ -84,6 +91,14 @@ const PublicLayout = () => {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Gallery
+                </Link>
+                <Link 
+                  to="/downloads" 
+                  className="text-white/90 hover:text-white font-medium transition-colors py-2 inline-flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Download className="w-4 h-4" />
+                  Download App
                 </Link>
                 <Link 
                   to="/auth/login" 

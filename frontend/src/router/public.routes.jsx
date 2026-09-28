@@ -66,6 +66,7 @@ const Terms                   = lazy(() => import('../pages/public/Terms'));
 const Privacy                 = lazy(() => import('../pages/public/Privacy'));
 const PhotoGalleryPage        = lazy(() => import('../pages/PhotoGalleryPage'));
 const PlatformLogin           = lazy(() => import('../pages/platform/PlatformLogin'));
+const DownloadsPage           = lazy(() => import('../pages/public/DownloadsPage'));
 
 const W = ({ C }) => <SafeRoute><C /></SafeRoute>;
 
@@ -73,6 +74,7 @@ export const publicRoutes = [
   { index: true,                           element: <W C={PublicHome} /> },
   { path: 'announcements/:announcementId', element: <W C={PublicAnnouncementDetail} /> },
   { path: 'announcements',                 element: <W C={Announcements} /> },
+  { path: 'downloads',                     element: <W C={DownloadsPage} /> },
   { path: 'terms',                         element: <W C={Terms} /> },
   { path: 'privacy',                       element: <W C={Privacy} /> },
   { path: 'gallery',                       element: <W C={PhotoGalleryPage} /> },

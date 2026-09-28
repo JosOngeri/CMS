@@ -72,6 +72,7 @@ router.use('/departments', generalLimiter, require('./department_community.route
 router.use('/department', generalLimiter, departmentRoutes);
 router.use('/department-features', generalLimiter, departmentFeaturesRoutes);
 router.use('/department-categories', generalLimiter, departmentCategoriesRoutes);
+router.use('/apk', generalLimiter, require('./apk.routes'));
 router.use('/payments', strictLimiter, paymentsRoutes);
 router.use('/payment', strictLimiter, paymentRoutes);
 router.use('/members', generalLimiter, membersRoutes);
