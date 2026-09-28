@@ -58,8 +58,8 @@ export function useChurchBranding() {
   const churchName = rawName || 'Msabato';
   const shortName = rawName || 'Msabato';
   const fullName = rawName
-    ? `${rawName} Church Management System`
-    : 'Msabato Church Management System';
+    ? `${rawName} Seventh-day Adventist Church`
+    : 'Msabato — Seventh-day Adventist Churches';
 
   return {
     product,

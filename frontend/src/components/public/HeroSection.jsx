@@ -33,7 +33,7 @@ const HeroSection = () => {
                   <h1 className="text-3xl md:text-5xl font-light text-white/90">Welcome to</h1>
                   <h2 className="text-4xl md:text-6xl font-bold text-white">{shortName}</h2>
                   <p className="text-xl md:text-2xl text-white/80 font-medium">
-                    {isMsabato ? 'Seventh-day Adventist Church Management Portal' : 'Church Management Portal'}
+                    Seventh-day Adventist Church
                   </p>
                 </div>
               </div>

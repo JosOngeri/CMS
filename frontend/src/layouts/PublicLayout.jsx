@@ -21,8 +21,8 @@ const PublicLayout = () => {
                 <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
               </div>
               <div className="hidden sm:block">
-                <span className="font-bold text-xl">{shortName}</span>
-                <p className="text-xs text-white/80">Church Management System</p>
+                <span className="font-bold text-xl">{churchName}</span>
+                <p className="text-xs text-white/80">Seventh-day Adventist Church</p>
               </div>
             </Link>
 
@@ -141,12 +141,12 @@ const PublicLayout = () => {
                   <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
                 </div>
                 <div>
-                  <span className="font-bold text-lg">{shortName}</span>
-                  <p className="text-xs text-[var(--color-textSecondary)]">Church Management</p>
+                  <span className="font-bold text-lg">{churchName}</span>
+                  <p className="text-xs text-[var(--color-textSecondary)]">Seventh-day Adventist Church</p>
                 </div>
               </div>
               <p className="text-[var(--color-textSecondary)] text-sm leading-relaxed mb-6">
-                Serving the Kiserian community with love, faith, and fellowship. A place where everyone is welcome.
+                Serving our community with love, faith, and fellowship. A place where everyone is welcome.
               </p>
               <div className="flex space-x-4">
                 <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)]-800 rounded-lg flex items-center justify-center transition-colors" title="Facebook">

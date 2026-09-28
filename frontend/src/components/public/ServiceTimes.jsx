@@ -46,7 +46,7 @@ const ServiceTimes = () => {
   const { getSetting } = useSettings();
 
   const serviceTimes = getSetting('service_times') || defaultServiceTimes;
-  const churchName = getSetting('church_name') || 'Msabato CMS';
+  const churchName = getSetting('church_name') || 'Msabato';
   const churchLocation = getSetting('church_location') || `${churchName}, Kenya`;
 
   const addToCalendar = (serviceName, time) => {
