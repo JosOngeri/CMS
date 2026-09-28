@@ -433,7 +433,7 @@ class DashboardRepository extends BaseRepository {
         COUNT(DISTINCT dm.user_id) as department_members,
         COUNT(DISTINCT CASE WHEN t.status = 'pending' THEN t.id END) as pending_tasks,
         COUNT(DISTINCT e.id) as department_events,
-        COALESCE(SUM(db.budget_amount), 0) as department_budget
+        COALESCE(SUM(db.total_amount), 0) as department_budget
       FROM department_members dm
       LEFT JOIN events e ON e.department_id = dm.department_id
       LEFT JOIN tasks t ON t.department_id = dm.department_id
