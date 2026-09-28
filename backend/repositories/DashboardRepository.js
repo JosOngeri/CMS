@@ -465,12 +465,13 @@ class DashboardRepository extends BaseRepository {
     const engagementQuery = `
       SELECT
         ROUND(
-          COALESCE(AVG(CASE WHEN attended = true THEN 100.0 ELSE 0.0 END), 0),
+          COALESCE(AVG(CASE WHEN ea.attended = true THEN 100.0 ELSE 0.0 END), 0),
           2
         ) as member_engagement
-      FROM event_attendance
-      WHERE event_date >= CURRENT_DATE - INTERVAL '30 days'
-      ${churchId ? 'AND church_id = $1' : ''}
+      FROM event_attendance ea
+      JOIN events e ON ea.event_id = e.id
+      WHERE e.event_date >= CURRENT_DATE - INTERVAL '30 days'
+      ${churchId ? 'AND ea.church_id = $1' : ''}
     `;
     const activityQuery = `
       SELECT
@@ -558,11 +559,12 @@ class DashboardRepository extends BaseRepository {
 
     const budgetQuery = `
       SELECT
-        COALESCE(SUM(budget_amount), 0) as total_budget,
-        COALESCE(SUM(actual_spend), 0) as total_spent
-      FROM department_budgets
+        COALESCE(SUM(db.total_amount), 0) as total_budget,
+        COALESCE(SUM(db.spent_amount), 0) as total_spent
+      FROM department_budgets db
+      LEFT JOIN departments d ON d.id = db.department_id
       WHERE 1=1
-      ${churchFilter}
+      ${churchId ? 'AND (d.church_id = $1 OR db.department_id IS NULL)' : ''}
     `;
 
     const collectionQuery = `
