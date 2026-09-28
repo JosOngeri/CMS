@@ -51,8 +51,10 @@ export function useChurchBranding() {
     };
   }, []);
 
-  const rawName = selectedChurch?.name || getSetting('church_name');
-  const slug = selectedChurch?.slug || getSetting('church_slug') || 'default';
+  // Prefer the backend-resolved church (authenticated user's church wins over
+  // a stale stored selection); fall back to the stored pick.
+  const rawName = getSetting('church_name') || selectedChurch?.name;
+  const slug = getSetting('church_slug') || selectedChurch?.slug || 'default';
   const product = 'Msabato CMS';
 
   const churchName = rawName || 'Msabato';

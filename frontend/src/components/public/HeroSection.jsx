@@ -53,7 +53,7 @@ const HeroSection = () => {
                     className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/60 backdrop-blur-sm"
                     onChange={(e) => {
                       const id = e.target.value;
-                      const church = availableChurches.find(c => c.id === id);
+                      const church = availableChurches.find(c => String(c.id) === String(id));
                       if (church) setChurch(church);
                     }}
                     defaultValue=""

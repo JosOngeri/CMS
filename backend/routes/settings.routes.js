@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const settingsController = require('../controllers/settings.controller');
 const { body } = require('express-validator');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken, requireRole, optionalAuth } = require('../middleware/auth');
 
 const settingValidation = [
   body('key').trim().notEmpty().withMessage('Key is required'),
@@ -13,7 +13,7 @@ const settingValidation = [
 ];
 
 // Public routes
-router.get('/public', settingsController.getPublicSettings);
+router.get('/public', optionalAuth, settingsController.getPublicSettings);
 
 // Admin routes
 router.get('/', authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder']), settingsController.getAllSettings);
