@@ -115,7 +115,7 @@ const DepartmentCommunityViz = ({ teamData, activityData, coordinationData, clas
             const Icon = metric.icon
             return (
               <div key={index} className="flex items-center gap-3 p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-                <div className="p-2 rounded-lg bg-[var(--color-primary)]-10 text-[var(--color-primary)]">
+                <div className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)]">
                   <Icon size={20} aria-hidden="true" />
                 </div>
                 <div>
@@ -150,7 +150,7 @@ const DepartmentCommunityViz = ({ teamData, activityData, coordinationData, clas
             const isHigh = value >= 80
             const isMedium = value >= 60 && value < 80
             const color = isHigh ? 'text-[var(--color-success)]' : isMedium ? 'text-[var(--color-warning)]' : 'text-[var(--color-error)]'
-            const bgColor = isHigh ? 'bg-[var(--color-success)]-10' : isMedium ? 'bg-[var(--color-warning)]-10' : 'bg-[var(--color-error)]-10'
+            const bgColor = isHigh ? 'bg-[var(--color-success-light)]' : isMedium ? 'bg-[var(--color-warning-light)]' : 'bg-[var(--color-error-light)]'
             
             return (
               <div key={index} className="flex items-center gap-3 p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
@@ -171,7 +171,7 @@ const DepartmentCommunityViz = ({ teamData, activityData, coordinationData, clas
           <h5 className="text-sm font-medium text-[var(--color-text)]">Recent Team Activity</h5>
           <div className="space-y-2">
             <div className="flex items-center gap-3 p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-              <div className="p-2 rounded-lg bg-[var(--color-success)]-10 text-[var(--color-success)]">
+              <div className="p-2 rounded-lg bg-[var(--color-success-light)] text-[var(--color-success)]">
                 <CheckCircle size={16} aria-hidden="true" />
               </div>
               <div className="flex-1">
@@ -180,7 +180,7 @@ const DepartmentCommunityViz = ({ teamData, activityData, coordinationData, clas
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-              <div className="p-2 rounded-lg bg-[var(--color-primary)]-10 text-[var(--color-primary)]">
+              <div className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)]">
                 <MessageCircle size={16} aria-hidden="true" />
               </div>
               <div className="flex-1">
@@ -189,7 +189,7 @@ const DepartmentCommunityViz = ({ teamData, activityData, coordinationData, clas
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-              <div className="p-2 rounded-lg bg-[var(--color-secondary)]-10 text-[var(--color-secondary)]">
+              <div className="p-2 rounded-lg bg-[var(--color-secondary-light)] text-[var(--color-secondary)]">
                 <Users size={16} aria-hidden="true" />
               </div>
               <div className="flex-1">

@@ -153,7 +153,7 @@ const Events = () => {
 
   const getCategoryColor = (category) => {
     switch (category) {
-      case 'service': return 'text-[var(--color-primary)]-600 bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20'
+      case 'service': return 'text-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20'
       case 'prayer': return 'text-purple-600 bg-purple-50 bg-purple-900/20'
       case 'music': return 'text-green-600 bg-green-50 bg-green-900/20'
       case 'youth': return 'text-orange-600 bg-orange-50 bg-orange-900/20'
@@ -213,7 +213,7 @@ const Events = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="px-3 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+              className="px-3 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             >
               {categories.map(category => (
                 <option key={category.value} value={category.value}>
@@ -229,7 +229,7 @@ const Events = () => {
                 type="checkbox"
                 checked={infiniteLoopMode}
                 onChange={(e) => setInfiniteLoopMode(e.target.checked)}
-                className="w-4 h-4 text-[var(--color-primary)]-600 rounded focus:ring-[var(--color-primary)]-500"
+                className="w-4 h-4 text-[var(--color-primary)] rounded focus:ring-[var(--color-primary)]"
               />
               <span className="text-sm text-[var(--color-text)] ">Infinite Loop (Yearly Plans)</span>
             </label>
@@ -240,7 +240,7 @@ const Events = () => {
           permission={PERMISSIONS.EVENTS_CREATE}
           buttonProps={{
             onClick: () => setShowForm(true),
-            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors",
+            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors",
           }}
         >
           <Plus size={16} />
@@ -265,7 +265,7 @@ const Events = () => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -277,7 +277,7 @@ const Events = () => {
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
                   {categories.filter(cat => cat.value !== 'all').map(category => (
                     <option key={category.value} value={category.value}>
@@ -295,7 +295,7 @@ const Events = () => {
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -308,7 +308,7 @@ const Events = () => {
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData({...formData, time: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -321,7 +321,7 @@ const Events = () => {
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -334,7 +334,7 @@ const Events = () => {
                   type="text"
                   value={formData.organizer}
                   onChange={(e) => setFormData({...formData, organizer: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -348,7 +348,7 @@ const Events = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={3}
-                className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
                 required
               />
             </div>
@@ -361,7 +361,7 @@ const Events = () => {
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 onChange={(e) => setFormData({...formData, poster: e.target.files[0]})}
-                className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
               <p className="text-xs text-[var(--color-textSecondary)]  mt-1">
                 Upload an image for the event poster (JPEG, PNG, WebP, max 10MB)
@@ -382,7 +382,7 @@ const Events = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {editingEvent ? 'Update' : 'Create'} Event
               </button>
@@ -517,7 +517,7 @@ const Events = () => {
                           permission={PERMISSIONS.EVENTS_EDIT}
                           buttonProps={{
                             onClick: () => handleEdit(event),
-                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm",
+                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm",
                           }}
                         >
                           <Edit size={14} />

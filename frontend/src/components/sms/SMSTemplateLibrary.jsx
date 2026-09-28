@@ -281,7 +281,7 @@ const SMSTemplateLibrary = () => {
           />
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             <Plus size={20} />
             New Template
@@ -328,7 +328,7 @@ const SMSTemplateLibrary = () => {
             <div key={template.id} className="bg-[var(--color-surface)] border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <FileText className="text-[var(--color-primary)]-600" size={20} />
+                  <FileText className="text-[var(--color-primary)]" size={20} />
                   <span className="font-semibold">{template.name}</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -456,7 +456,7 @@ const SMSTemplateLibrary = () => {
                 <tr key={template.id} className="border-t hover:bg-[var(--color-background)]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <FileText className="text-[var(--color-primary)]-600" size={16} />
+                      <FileText className="text-[var(--color-primary)]" size={16} />
                       <span className="font-medium">{template.name}</span>
                     </div>
                   </td>
@@ -549,7 +549,7 @@ const SMSTemplateLibrary = () => {
               </button>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="p-3 bg-[var(--color-primary)]-50 rounded-lg">
+              <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
                 <div className="text-sm text-[var(--color-textSecondary)]">Total Sends</div>
                 <div className="text-2xl font-bold">{analyticsData.totalSends || 0}</div>
               </div>
@@ -606,7 +606,7 @@ const SMSTemplateLibrary = () => {
             ) : (
               <div className="text-center py-4">
                 <p className="text-[var(--color-textSecondary)] mb-4">No A/B tests running</p>
-                <button className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700">
+                <button className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]">
                   Start New A/B Test
                 </button>
               </div>
@@ -636,7 +636,7 @@ const SMSTemplateLibrary = () => {
               </div>
               <button
                 onClick={() => handleShare(selectedTemplate?.id, [])}
-                className="w-full py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="w-full py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
               >
                 Share
               </button>
@@ -665,14 +665,14 @@ const SMSTemplateLibrary = () => {
             <div className="space-y-3">
               {suggestions.length > 0 ? (
                 suggestions.map((suggestion, idx) => (
-                  <div key={idx} className="p-3 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg">
+                  <div key={idx} className="p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-[var(--color-primary)]-700">{suggestion.field}</span>
-                      <span className="text-xs px-2 py-1 bg-[var(--color-primary)]-200 text-[var(--color-primary)]-800 rounded">
+                      <span className="font-medium text-[var(--color-primary)]">{suggestion.field}</span>
+                      <span className="text-xs px-2 py-1 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded">
                         {suggestion.type === 'merge_field' ? 'Merge Field' : 'Tip'}
                       </span>
                     </div>
-                    <div className="text-sm text-[var(--color-primary)]-600">{suggestion.reason}</div>
+                    <div className="text-sm text-[var(--color-primary)]">{suggestion.reason}</div>
                   </div>
                 ))
               ) : (

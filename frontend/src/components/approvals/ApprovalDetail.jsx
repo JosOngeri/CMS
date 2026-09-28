@@ -87,7 +87,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
     return (
       <Modal isOpen={true} onClose={onClose} title="Approval Details" size="lg">
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
         </div>
       </Modal>
     );
@@ -108,7 +108,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
     pending: 'bg-yellow-100 text-yellow-700',
     approved: 'bg-green-100 text-green-700',
     rejected: 'bg-red-100 text-red-700',
-    delegated: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+    delegated: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
   };
 
   const priorityColors = {
@@ -138,7 +138,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDelegate(true)}
-                className="p-2 text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded-lg"
+                className="p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded-lg"
                 aria-label="Delegate request"
               >
                 <User className="h-5 w-5" />
@@ -201,7 +201,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
                   <div className={`p-2 rounded-full ${
                     item.action === 'approved' ? 'bg-green-100 text-green-600' :
                     item.action === 'rejected' ? 'bg-red-100 text-red-600' :
-                    'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600'
+                    'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
                   }`}>
                     {item.action === 'approved' ? <Check className="h-4 w-4" /> :
                      item.action === 'rejected' ? <X className="h-4 w-4" /> :
@@ -236,7 +236,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Add a comment for this approval..."
-              className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent  text-[var(--color-text)]"
+              className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent  text-[var(--color-text)]"
               rows={3}
               aria-label="Approval comment"
             />
@@ -283,7 +283,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
                 <select
                   value={delegateTo}
                   onChange={(e) => setDelegateTo(e.target.value)}
-                  className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent  text-[var(--color-text)]"
+                  className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent  text-[var(--color-text)]"
                   aria-label="Select user to delegate to"
                 >
                   <option value="">Select a user...</option>
@@ -300,7 +300,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Add a comment for the delegation..."
-                  className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent  text-[var(--color-text)]"
+                  className="w-full p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent  text-[var(--color-text)]"
                   rows={3}
                   aria-label="Delegation comment"
                 />
@@ -309,7 +309,7 @@ const ApprovalDetail = ({ approvalId, onClose, onApprove, onReject, onDelegate }
                 <button
                   onClick={handleDelegate}
                   disabled={submitting || !delegateTo}
-                  className="flex-1 px-4 py-3 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed min-h-[44px]"
+                  className="flex-1 px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed min-h-[44px]"
                   aria-label="Confirm delegation"
                   aria-busy={submitting}
                 >

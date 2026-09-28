@@ -64,7 +64,7 @@ const PlatformShell = () => {
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
             <div className="flex items-center space-x-2">
-              <Building className="h-6 w-6 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400" />
+              <Building className="h-6 w-6 text-[var(--color-primary)] text-[var(--color-primary)]" />
               <span className="font-bold text-[var(--color-text)] text-white">Platform Admin</span>
             </div>
             <button
@@ -98,7 +98,7 @@ const PlatformShell = () => {
               <div className="mb-4">
                 <p className="text-sm font-medium text-[var(--color-text)] text-white">{platformUser.name}</p>
                 <p className="text-xs text-[var(--color-textSecondary)]">{platformUser.email}</p>
-                <p className="text-xs text-[var(--color-primary)]-600 text-[var(--color-primary)]-400 capitalize">{platformUser.role}</p>
+                <p className="text-xs text-[var(--color-primary)] text-[var(--color-primary)] capitalize">{platformUser.role}</p>
               </div>
             )}
             <button

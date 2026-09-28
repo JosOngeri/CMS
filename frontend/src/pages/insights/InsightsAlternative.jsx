@@ -79,7 +79,7 @@ const InsightsAlternative = () => {
         )}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <WidgetIcon className="w-5 h-5 text-[var(--color-primary)]-600" />
+            <WidgetIcon className="w-5 h-5 text-[var(--color-primary)]" />
             <h3 className="font-semibold text-[var(--color-text)]">{widget.title}</h3>
           </div>
           {!isCustomizing && (
@@ -123,7 +123,7 @@ const InsightsAlternative = () => {
         {widget.type === 'activity-feed' && (
           <div className="space-y-3">
             <div className="flex items-start gap-3 p-3 bg-[var(--color-background)] rounded-lg">
-              <Activity className="w-4 h-4 text-[var(--color-primary)]-600 mt-0.5" />
+              <Activity className="w-4 h-4 text-[var(--color-primary)] mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-[var(--color-text)]">No recent activities</p>
                 <p className="text-xs text-[var(--color-textSecondary)]">Activity feed will be displayed here</p>
@@ -158,7 +158,7 @@ const InsightsAlternative = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+            className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -173,7 +173,7 @@ const InsightsAlternative = () => {
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Download className="w-4 h-4" />
             Export
@@ -191,14 +191,14 @@ const InsightsAlternative = () => {
       </div>
 
       {isCustomizing && (
-        <div className="mb-4 p-4 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg flex items-center justify-between">
+        <div className="mb-4 p-4 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-[var(--color-primary)]-600" />
-            <span className="text-sm text-[var(--color-primary)]-800">Customization mode active - drag widgets to rearrange or click X to remove</span>
+            <Settings className="w-5 h-5 text-[var(--color-primary)]" />
+            <span className="text-sm text-[var(--color-primary)]">Customization mode active - drag widgets to rearrange or click X to remove</span>
           </div>
           <button
             onClick={handleAddWidget}
-            className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-600 text-white rounded hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary)] transition-colors text-sm"
           >
             <Plus className="w-4 h-4" />
             Add Widget
@@ -217,7 +217,7 @@ const InsightsAlternative = () => {
             <p className="text-[var(--color-textSecondary)] mb-4">No widgets added</p>
             <button
               onClick={handleAddWidget}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Your First Widget

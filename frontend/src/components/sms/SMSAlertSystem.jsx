@@ -91,7 +91,7 @@ const SMSAlertSystem = () => {
           </select>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             <Plus size={20} />
             New Alert Rule
@@ -123,7 +123,7 @@ const SMSAlertSystem = () => {
           <div className="text-2xl font-bold">{alerts.filter(a => a.triggered_today).length}</div>
         </div>
         <div className="bg-[var(--color-surface)] border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-[var(--color-primary)]-600 mb-2">
+          <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
             <Clock size={16} />
             <span className="text-sm">Avg Response Time</span>
           </div>
@@ -245,7 +245,7 @@ const SMSAlertSystem = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleCreateAlert}
-                  className="flex-1 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                  className="flex-1 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 >
                   Create Alert
                 </button>

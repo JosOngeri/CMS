@@ -312,7 +312,7 @@ function SettingsOriginal() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
       </div>
     );
   }
@@ -649,13 +649,13 @@ function SettingsOriginal() {
                 </div>
 
                 {/* Info Box */}
-                <div className="bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg p-4">
+                <div className="bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg p-4">
                   <div className="flex items-start gap-3">
-                    <Info className="h-5 w-5 text-[var(--color-primary)]-600 flex-shrink-0 mt-0.5" />
+                    <Info className="h-5 w-5 text-[var(--color-primary)] flex-shrink-0 mt-0.5" />
                     <div>
-                      <h5 className="font-medium text-[var(--color-primary)]-800 mb-1">How to Update Feature Flags</h5>
-                      <p className="text-sm text-[var(--color-primary)]-700">
-                        To update feature flags, edit the <code className="bg-[var(--color-primary)]-100 px-1 py-0.5 rounded">frontend/src/config/featureFlags.js</code> file. 
+                      <h5 className="font-medium text-[var(--color-primary)] mb-1">How to Update Feature Flags</h5>
+                      <p className="text-sm text-[var(--color-primary)]">
+                        To update feature flags, edit the <code className="bg-[var(--color-primary-light)] px-1 py-0.5 rounded">frontend/src/config/featureFlags.js</code> file. 
                         Changes require a redeploy to take effect. Users are assigned to test groups based on their user ID modulo 100.
                       </p>
                     </div>

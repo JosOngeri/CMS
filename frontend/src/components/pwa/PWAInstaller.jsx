@@ -48,7 +48,7 @@ const PWAInstaller = () => {
       <div className="bg-[var(--color-surface)] border rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Smartphone className="text-[var(--color-primary)]-600" size={24} />
+            <Smartphone className="text-[var(--color-primary)]" size={24} />
             <h3 className="font-semibold">PWA Status</h3>
           </div>
           <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ const PWAInstaller = () => {
         {!isInstalled && deferredPrompt && (
           <button
             onClick={handleInstall}
-            className="w-full py-3 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] flex items-center justify-center gap-2"
           >
             <Download size={20} />
             Install App

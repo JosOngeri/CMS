@@ -49,8 +49,8 @@ const NewsletterSection = () => {
             <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Left Side - Content */}
               <div className="p-8 md:p-12">
-                <div className="w-16 h-16 bg-[var(--color-primary)]-100 rounded-2xl flex items-center justify-center mb-6">
-                  <Mail className="h-8 w-8 text-[var(--color-primary)]-800" aria-hidden="true" />
+                <div className="w-16 h-16 bg-[var(--color-primary-light)] rounded-2xl flex items-center justify-center mb-6">
+                  <Mail className="h-8 w-8 text-[var(--color-primary)]" aria-hidden="true" />
                 </div>
                 
                 <h2 className="text-3xl font-bold text-[var(--color-text)] mb-4">Stay Connected</h2>
@@ -75,7 +75,7 @@ const NewsletterSection = () => {
               </div>
 
               {/* Right Side - Form */}
-              <div className="bg-gradient-to-br from-[var(--color-primary)]-800 to-[var(--color-primary)]-900 p-8 md:p-12 flex flex-col justify-center">
+              <div className="bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)] p-8 md:p-12 flex flex-col justify-center">
                 <h3 className="text-2xl font-bold text-white mb-2">Subscribe Now</h3>
                 <p className="text-white/80 mb-6">Join our community of believers</p>
 
@@ -106,7 +106,7 @@ const NewsletterSection = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn bg-[var(--color-surface)] text-[var(--color-primary)]-900 hover:bg-[var(--color-surface)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full btn bg-[var(--color-surface)] text-[var(--color-primary)] hover:bg-[var(--color-surface)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Subscribe to newsletter"
                     >
                       {isSubmitting ? (

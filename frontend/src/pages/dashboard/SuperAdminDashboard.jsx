@@ -150,7 +150,7 @@ const SuperAdminDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           {/* System Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)]-50 text-[var(--color-success)]-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success-light)] text-[var(--color-success)] rounded-lg">
             <Shield className="h-4 w-4" />
             <span className="text-sm font-medium">System Health: {systemHealth.database === 'healthy' && systemHealth.api === 'healthy' ? 'Excellent' : 'Degraded'}</span>
           </div>
@@ -226,7 +226,7 @@ const SuperAdminDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent System Activity</h2>
-          <Link to="/admin/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+          <Link to="/admin/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

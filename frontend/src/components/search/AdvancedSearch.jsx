@@ -76,7 +76,7 @@ const AdvancedSearch = () => {
           <button
             onClick={handleSearch}
             disabled={searching}
-            className="px-6 py-3 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)]"
+            className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)]"
             aria-label="Execute search"
             aria-busy={searching}
           >
@@ -205,7 +205,7 @@ const AdvancedSearch = () => {
         {results.map((result, index) => (
           <div key={index} className="bg-[var(--color-surface)] border rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600 rounded">
+              <div className="p-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded">
                 {result.type === 'document' && '📄'}
                 {result.type === 'member' && '👤'}
                 {result.type === 'event' && '📅'}

@@ -84,7 +84,7 @@ const TwoFactorAuth = () => {
           {!enabled ? (
             <button
               onClick={enable2FA}
-              className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
               aria-label="Enable two-factor authentication"
             >
               Enable 2FA
@@ -105,7 +105,7 @@ const TwoFactorAuth = () => {
       {qrCode && (
         <div className="bg-[var(--color-surface)] border rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
-            <QrCode className="text-[var(--color-primary)]-600" size={20} aria-hidden="true" />
+            <QrCode className="text-[var(--color-primary)]" size={20} aria-hidden="true" />
             <h3 className="font-semibold">Scan QR Code</h3>
           </div>
           <div className="flex flex-col items-center gap-4">

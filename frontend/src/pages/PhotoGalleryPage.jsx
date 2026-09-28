@@ -231,7 +231,7 @@ const PhotoGalleryPage = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
               Photo Gallery
             </h1>
-            <p className="text-lg text-[var(--color-primary)]-100 mb-6">
+            <p className="text-lg text-[var(--color-primary-light)] mb-6">
               Browse photos from our church events, sermons, and activities
             </p>
             <div className="flex items-center space-x-4">
@@ -242,7 +242,7 @@ const PhotoGalleryPage = () => {
                 <span>Join Our Community</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <span className="text-[var(--color-primary)]-200">
+              <span className="text-[var(--color-primary-light)]">
                 {totalCount.toLocaleString()} photos
               </span>
               {isAdmin && (

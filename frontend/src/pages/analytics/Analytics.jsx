@@ -261,7 +261,7 @@ const Analytics = () => {
           return (
             <div key={index} className="flex-1 flex flex-col items-center">
               <div 
-                className="w-full bg-[var(--color-primary)]-500 rounded-t transition-all hover:bg-[var(--color-primary)]-600"
+                className="w-full bg-[var(--color-primary)] rounded-t transition-all hover:bg-[var(--color-primary)]"
                 style={{ height: `${heightPercent}%` }}
               />
               <span className="text-xs mt-2 text-[var(--color-textSecondary)]">{item.date}</span>
@@ -273,7 +273,7 @@ const Analytics = () => {
   };
 
   const renderPieChart = (data) => {
-    const colors = ['bg-[var(--color-primary)]-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
+    const colors = ['bg-[var(--color-primary)]', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
     
     return (
       <div className="flex gap-4">
@@ -322,7 +322,7 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Visitors</p>
               <p className="text-2xl font-bold">{metrics.totalVisitors.toLocaleString()}</p>
             </div>
-            <Eye className="w-8 h-8 text-[var(--color-primary)]-600" />
+            <Eye className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
           <p className="text-sm text-green-600 mt-2">↑ 12.5% from last period</p>
         </div>

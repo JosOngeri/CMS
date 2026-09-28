@@ -226,7 +226,7 @@ const SMS = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600'
+                  ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                   : 'border-transparent text-[var(--color-textSecondary)]  hover:text-[var(--color-text)]'
               }`}
             >
@@ -244,7 +244,7 @@ const SMS = () => {
       {/* Send SMS Form */}
       <Card>
         <h3 className="text-lg font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-[var(--color-primary)]-500 rounded-full"></span>
+          <span className="w-1 h-5 bg-[var(--color-primary)] rounded-full"></span>
           Send New Message
         </h3>
         
@@ -256,7 +256,7 @@ const SMS = () => {
             <select
               value={recipients}
               onChange={(e) => setRecipients(e.target.value)}
-              className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             >
               <option value="all">All Members</option>
               <option value="elders">Elders</option>
@@ -290,7 +290,7 @@ const SMS = () => {
                   onChange={(e) => setManualNumbers(e.target.value)}
                   placeholder="Enter phone numbers separated by commas..."
                   rows={3}
-                  className="w-full px-3 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+                  className="w-full px-3 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
                 />
                 
                 <div className="text-xs text-[var(--color-textSecondary)] ">
@@ -298,7 +298,7 @@ const SMS = () => {
                 </div>
                 
                 {manualNumbers && (
-                  <div className="text-sm text-[var(--color-primary)]-600">
+                  <div className="text-sm text-[var(--color-primary)]">
                     📱 {manualNumbers.split(',').filter(n => n.trim()).length} phone numbers ready
                   </div>
                 )}
@@ -316,7 +316,7 @@ const SMS = () => {
                 <button
                   type="button"
                   onClick={downloadSampleCSV}
-                  className="flex items-center gap-1 text-xs text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+                  className="flex items-center gap-1 text-xs text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                 >
                   <Download size={12} />
                   Download Sample
@@ -334,7 +334,7 @@ const SMS = () => {
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 cursor-pointer transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] cursor-pointer transition-colors"
                   >
                     <Upload size={16} />
                     Choose CSV File
@@ -380,7 +380,7 @@ const SMS = () => {
               placeholder="Type your message here..."
               rows={4}
               maxLength={160}
-              className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
             />
             <div className="text-sm text-[var(--color-textSecondary)]  mt-1">
               {message.length}/160 characters
@@ -390,7 +390,7 @@ const SMS = () => {
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
             {sending ? 'Sending...' : 'Send SMS'}

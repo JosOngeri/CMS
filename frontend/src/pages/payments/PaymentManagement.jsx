@@ -27,7 +27,7 @@ const PaymentManagement = () => {
   )
 
   const paymentTypes = [
-    { value: 'tithe', label: 'Tithe', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800' },
+    { value: 'tithe', label: 'Tithe', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
     { value: 'offering', label: 'Offering', color: 'bg-green-100 text-green-800' },
     { value: 'mission', label: 'Mission', color: 'bg-purple-100 text-purple-800' },
     { value: 'building', label: 'Building Fund', color: 'bg-yellow-100 text-yellow-800' },
@@ -251,7 +251,7 @@ const PaymentManagement = () => {
         {canManagePayments && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             Record Payment
@@ -281,8 +281,8 @@ const PaymentManagement = () => {
               <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Completed</p>
               <p className="text-2xl font-bold text-[var(--color-text)] text-white">{stats.completed}</p>
             </div>
-            <div className="p-3 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400" />
+            <div className="p-3 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
+              <CheckCircle className="h-6 w-6 text-[var(--color-primary)] text-[var(--color-primary)]" />
             </div>
           </div>
         </div>
@@ -329,7 +329,7 @@ const PaymentManagement = () => {
                   type="text"
                   value={formData.member_id}
                   onChange={(e) => setFormData({...formData, member_id: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   placeholder="Enter member name"
                   required
                 />
@@ -343,7 +343,7 @@ const PaymentManagement = () => {
                   type="number"
                   value={formData.amount}
                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   min="0"
                   step="0.01"
                   required
@@ -357,7 +357,7 @@ const PaymentManagement = () => {
                 <select
                   value={formData.payment_type}
                   onChange={(e) => setFormData({...formData, payment_type: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
                   {paymentTypes.map(type => (
                     <option key={type.value} value={type.value}>{type.label}</option>
@@ -372,7 +372,7 @@ const PaymentManagement = () => {
                 <select
                   value={formData.payment_method}
                   onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
                   {paymentMethods.map(method => (
                     <option key={method.value} value={method.value}>{method.label}</option>
@@ -388,7 +388,7 @@ const PaymentManagement = () => {
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({...formData, date: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -402,7 +402,7 @@ const PaymentManagement = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={3}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
                 placeholder="Enter payment description or notes"
               />
             </div>
@@ -410,7 +410,7 @@ const PaymentManagement = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {editingPayment ? 'Update Payment' : 'Record Payment'}
               </button>
@@ -448,7 +448,7 @@ const PaymentManagement = () => {
                 placeholder="Search payments..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
             </div>
           </div>
@@ -456,7 +456,7 @@ const PaymentManagement = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Status</option>
             {paymentStatus.map(status => (
@@ -467,7 +467,7 @@ const PaymentManagement = () => {
           <select
             value={filterMethod}
             onChange={(e) => setFilterMethod(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Methods</option>
             {paymentMethods.map(method => (
@@ -478,7 +478,7 @@ const PaymentManagement = () => {
           <select
             value={filterPeriod}
             onChange={(e) => setFilterPeriod(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Time</option>
             <option value="today">Today</option>
@@ -528,8 +528,8 @@ const PaymentManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center">
-                        <Users className="w-4 h-4 text-[var(--color-primary)]-600" />
+                      <div className="w-8 h-8 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
+                        <Users className="w-4 h-4 text-[var(--color-primary)]" />
                       </div>
                       <div className="ml-3">
                         <div className="text-sm font-medium text-[var(--color-text)] text-white">
@@ -567,13 +567,13 @@ const PaymentManagement = () => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setSelectedPayment(payment)}
-                          className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-900 hover:text-[var(--color-primary)]-400"
+                          className="text-[var(--color-primary)] hover:text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleEdit(payment)}
-                          className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-900 hover:text-[var(--color-primary)]-400"
+                          className="text-[var(--color-primary)] hover:text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                         >
                           <Edit className="w-4 h-4" />
                         </button>

@@ -108,9 +108,9 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
 
     const getStatusColor = (status) => {
       switch (status) {
-        case 'healthy': return 'text-[var(--color-success)] bg-[var(--color-success)]-10'
-        case 'degraded': return 'text-[var(--color-warning)] bg-[var(--color-warning)]-10'
-        case 'critical': return 'text-[var(--color-error)] bg-[var(--color-error)]-10'
+        case 'healthy': return 'text-[var(--color-success)] bg-[var(--color-success-light)]'
+        case 'degraded': return 'text-[var(--color-warning)] bg-[var(--color-warning-light)]'
+        case 'critical': return 'text-[var(--color-error)] bg-[var(--color-error-light)]'
         default: return 'text-[var(--color-textSecondary)] bg-[var(--color-border)]'
       }
     }
@@ -171,7 +171,7 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
             const isCritical = value > metric.threshold
             const isWarning = value > metric.threshold * 0.8 && value <= metric.threshold
             const statusColor = isCritical ? 'text-[var(--color-error)]' : isWarning ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'
-            const bgColor = isCritical ? 'bg-[var(--color-error)]-10' : isWarning ? 'bg-[var(--color-warning)]-10' : 'bg-[var(--color-success)]-10'
+            const bgColor = isCritical ? 'bg-[var(--color-error-light)]' : isWarning ? 'bg-[var(--color-warning-light)]' : 'bg-[var(--color-success-light)]'
             
             return (
               <div key={index} className="p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">

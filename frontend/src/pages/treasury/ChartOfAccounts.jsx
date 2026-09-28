@@ -154,7 +154,7 @@ const ChartOfAccounts = () => {
 
   const getAccountTypeColor = (type) => {
     switch (type) {
-      case 'asset': return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+      case 'asset': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
       case 'liability': return 'bg-red-100 text-red-700'
       case 'equity': return 'bg-purple-100 text-purple-700'
       case 'income': return 'bg-green-100 text-green-700'
@@ -179,7 +179,7 @@ const ChartOfAccounts = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Account</span>
@@ -295,7 +295,7 @@ const ChartOfAccounts = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEdit(account)}
-                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-400 transition-colors"
+                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
@@ -430,7 +430,7 @@ const ChartOfAccounts = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingAccount ? 'Update' : 'Create'}
                   </button>

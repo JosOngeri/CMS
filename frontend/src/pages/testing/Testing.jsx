@@ -17,7 +17,7 @@ const Testing = () => {
       <h1 className="text-2xl font-bold mb-6">Testing</h1>
       <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg border p-6">
         <div className="flex items-center gap-4 mb-4">
-          <Settings className="w-8 h-8 text-[var(--color-primary)]-600" />
+          <Settings className="w-8 h-8 text-[var(--color-primary)]" />
           <div>
             <h2 className="font-semibold">Configuration</h2>
             <p className="text-sm text-[var(--color-textSecondary)]">Configure Testing settings</p>

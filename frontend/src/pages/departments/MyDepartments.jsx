@@ -110,7 +110,7 @@ const MyDepartments = () => {
         </div>
         <button
           onClick={handleOpenJoinModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="w-4 h-4" />
           Join Departments
@@ -125,11 +125,11 @@ const MyDepartments = () => {
             <li key={d.id}>
               <Link
                 to={`/dashboard/departments/${d.slug || d.id}`}
-                className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 hover:border-[var(--color-primary)]-300 hover:shadow-sm transition-all"
+                className="flex items-center justify-between rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-4 hover:border-[var(--color-primary-light)] hover:shadow-sm transition-all"
               >
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="p-2 rounded-lg bg-[var(--color-primary)]-100 shrink-0">
-                    <Building className="w-6 h-6 text-[var(--color-primary)]-600" />
+                  <div className="p-2 rounded-lg bg-[var(--color-primary-light)] shrink-0">
+                    <Building className="w-6 h-6 text-[var(--color-primary)]" />
                   </div>
                   <div className="min-w-0">
                     <h2 className="font-semibold text-[var(--color-text)] truncate">{d.name}</h2>
@@ -143,7 +143,7 @@ const MyDepartments = () => {
                         </span>
                       )}
                       {d.role && (
-                        <span className="text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-primary)]-50 text-[var(--color-primary)]-800">
+                        <span className="text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">
                           <Shield className="w-3 h-3" />
                           {d.role}
                         </span>
@@ -178,7 +178,7 @@ const MyDepartments = () => {
         <p className="text-sm text-[var(--color-textSecondary)]">
           <Users className="w-4 h-4 inline mr-1 align-text-bottom" />
           Need the full church directory?{' '}
-          <Link to="/dashboard/departments" className="text-[var(--color-primary)]-600 hover:underline">
+          <Link to="/dashboard/departments" className="text-[var(--color-primary)] hover:underline">
             All departments
           </Link>
         </p>
@@ -222,7 +222,7 @@ const MyDepartments = () => {
                         }}
                       >
                         {selectedDepartments.includes(dept.id) ? (
-                          <CheckSquare className="w-5 h-5 text-[var(--color-primary)]-600" />
+                          <CheckSquare className="w-5 h-5 text-[var(--color-primary)]" />
                         ) : (
                           <Square className="w-5 h-5 text-[var(--color-textSecondary)]" />
                         )}
@@ -249,7 +249,7 @@ const MyDepartments = () => {
                 {isAdmin && selectedDepartments.length > 0 && (
                   <button
                     onClick={selectedDepartments.length === availableDepartments.length ? handleDeselectAll : handleSelectAll}
-                    className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700 font-medium flex items-center gap-1"
+                    className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] font-medium flex items-center gap-1"
                   >
                     {selectedDepartments.length === availableDepartments.length ? (
                       <>
@@ -278,7 +278,7 @@ const MyDepartments = () => {
                 <button
                   onClick={handleJoinDepartments}
                   disabled={selectedDepartments.length === 0 || joinLoading}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed transition-colors"
                 >
                   {joinLoading ? 'Joining...' : 'Join Selected'}
                 </button>

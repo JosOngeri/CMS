@@ -167,7 +167,7 @@ function GalleryAlbums() {
                   onClick={() => navigate(`/dashboard/gallery/albums/${album.id}`)}
                   className="bg-[var(--color-surface)]  rounded-xl shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden group"
                 >
-                  <div className="h-40 bg-gradient-to-br from-pink-100 via-purple-100 to-[var(--color-primary)]-100 flex items-center justify-center">
+                  <div className="h-40 bg-gradient-to-br from-pink-100 via-purple-100 to-[var(--color-primary-light)] flex items-center justify-center">
                     {album.cover_photo_id ? (
                       <img
                         src="/placeholder.jpg"
@@ -192,7 +192,7 @@ function GalleryAlbums() {
                             e.stopPropagation();
                             navigate(`/dashboard/gallery/albums/${album.id}/edit`);
                           }}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-primary hover:bg-[var(--color-primary)]-50 rounded-lg transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-primary hover:bg-[var(--color-primary-light)] rounded-lg transition-colors"
                         >
                           <Edit className="h-4 w-4" />
                         </button>

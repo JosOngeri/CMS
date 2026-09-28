@@ -184,7 +184,7 @@ const FinancialReports = () => {
           </div>
         </div>
         
-        <div className="flex justify-between py-4 px-4 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900/30 rounded-lg">
+        <div className="flex justify-between py-4 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/30 rounded-lg">
           <span className="text-lg font-bold text-[var(--color-text)] text-white">Net Income</span>
           <span className={`text-lg font-bold ${reportData.net_income >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             KES {parseFloat(reportData?.net_income ?? 0).toLocaleString()}
@@ -204,14 +204,14 @@ const FinancialReports = () => {
           {reportData.line_items
             .filter(item => item.type === 'asset')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20 rounded">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 rounded">
                 <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
                 <span className="text-sm font-semibold text-[var(--color-text)] text-white">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900/30 rounded font-semibold">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/30 rounded font-semibold">
             <span className="text-[var(--color-text)] text-white">Total Assets</span>
             <span className="text-[var(--color-text)] text-white">
               KES {parseFloat(reportData?.total_assets ?? 0).toLocaleString()}
@@ -315,7 +315,7 @@ const FinancialReports = () => {
         </div>
         <button
           onClick={handleDownload}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Download className="h-4 w-4" />
           <span>Download PDF</span>
@@ -332,16 +332,16 @@ const FinancialReports = () => {
               onClick={() => setSelectedReport(report.value)}
               className={`p-4 rounded-lg border-2 transition-colors ${
                 selectedReport === report.value
-                  ? 'border-[var(--color-primary)]-500 bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20'
                   : 'border-[var(--color-border)] border-[var(--color-border)] hover:border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
             >
               <div className="flex flex-col items-center space-y-2">
                 <Icon className={`h-6 w-6 ${
-                  selectedReport === report.value ? 'text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'
+                  selectedReport === report.value ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'
                 }`} />
                 <span className={`text-sm font-medium ${
-                  selectedReport === report.value ? 'text-[var(--color-primary)]-600' : 'text-[var(--color-text)] text-white'
+                  selectedReport === report.value ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)] text-white'
                 }`}>
                   {report.label}
                 </span>

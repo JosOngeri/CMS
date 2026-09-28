@@ -214,7 +214,7 @@ const Announcements = () => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]"
                   required
                 />
               </div>
@@ -224,7 +224,7 @@ const Announcements = () => {
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   rows={4}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 resize-none"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] resize-none"
                   required
                 />
               </div>
@@ -233,7 +233,7 @@ const Announcements = () => {
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -243,7 +243,7 @@ const Announcements = () => {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   {editingAnnouncement ? 'Update' : 'Create'} Announcement
                 </button>

@@ -213,7 +213,7 @@ const JournalEntries = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>New Entry</span>
@@ -309,8 +309,8 @@ const JournalEntries = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900/20 rounded-lg">
-                      <FileText className="h-5 w-5 text-[var(--color-primary)]-600" />
+                    <div className="p-2 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 rounded-lg">
+                      <FileText className="h-5 w-5 text-[var(--color-primary)]" />
                     </div>
                     <div>
                       <p className="font-medium text-[var(--color-text)] text-white">
@@ -345,7 +345,7 @@ const JournalEntries = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEdit(entry)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-400 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -463,7 +463,7 @@ const JournalEntries = () => {
                     <button
                       type="button"
                       onClick={addLine}
-                      className="flex items-center space-x-1 text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+                      className="flex items-center space-x-1 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                     >
                       <Plus className="h-4 w-4" />
                       <span>Add Line</span>
@@ -535,7 +535,7 @@ const JournalEntries = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingEntry ? 'Update' : 'Create'}
                   </button>

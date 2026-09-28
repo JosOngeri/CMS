@@ -185,8 +185,8 @@ const PrivacySettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900 rounded-lg">
-                    <option.icon className="h-5 w-5 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400" />
+                  <div className="p-2 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-primary)] text-[var(--color-primary)]" />
                   </div>
                   <div>
                     <p className="font-medium text-[var(--color-text)] text-white">

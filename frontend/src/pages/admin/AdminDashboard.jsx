@@ -43,7 +43,7 @@ const AdminDashboard = () => {
       title: 'User Management',
       description: 'Manage church members and roles',
       icon: Users,
-      color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       link: '/dashboard/users',
       permissions: ['Super Admin', 'Pastor', 'First Elder']
     },
@@ -135,8 +135,8 @@ const AdminDashboard = () => {
                 {(stats?.totalUsers ?? 0).toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900 rounded-lg">
-              <Users className="h-6 w-6 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400" />
+            <div className="p-3 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
+              <Users className="h-6 w-6 text-[var(--color-primary)] text-[var(--color-primary)]" />
             </div>
           </div>
         </div>
@@ -230,7 +230,7 @@ const AdminDashboard = () => {
           </div>
           
           <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
-            <div className="w-2 h-2 bg-[var(--color-primary)]-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full"></div>
             <div className="flex-1">
               <p className="text-sm font-medium text-[var(--color-text)] text-white">
                 Payment received

@@ -123,7 +123,7 @@ const RichTextEditor = ({
         ref={editorRef}
         contentEditable
         onInput={handleContentChange}
-        className="min-h-[200px] p-4 border border-t-0 border-[var(--color-border)] rounded-b-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 prose max-w-none"
+        className="min-h-[200px] p-4 border border-t-0 border-[var(--color-border)] rounded-b-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] prose max-w-none"
         style={{ minHeight: `${minHeight}px` }}
         placeholder={placeholder}
         aria-label="Rich text editor"
@@ -150,13 +150,13 @@ const RichTextEditor = ({
               value={linkUrl}
               onChange={(e) => setLinkUrl(e.target.value)}
               placeholder="https://example.com"
-              className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 mb-4"
+              className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] mb-4"
               aria-label="Link URL"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleAddLink}
-                className="flex-1 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 aria-label="Add link"
               >
                 Add Link
@@ -192,13 +192,13 @@ const RichTextEditor = ({
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 mb-4"
+              className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] mb-4"
               aria-label="Image URL"
             />
             <div className="flex gap-2">
               <button
                 onClick={handleAddImage}
-                className="flex-1 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 aria-label="Add image"
               >
                 Add Image

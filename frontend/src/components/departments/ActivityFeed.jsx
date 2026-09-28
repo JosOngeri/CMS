@@ -88,7 +88,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
       case 'member_left':
         return <UserMinus className="w-4 h-4 text-red-600" aria-hidden="true" />;
       case 'communication':
-        return <MessageSquare className="w-4 h-4 text-[var(--color-primary)]-600" aria-hidden="true" />;
+        return <MessageSquare className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />;
       case 'meeting_created':
         return <Calendar className="w-4 h-4 text-purple-600" aria-hidden="true" />;
       case 'task_created':
@@ -102,7 +102,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
       case 'approval_rejected':
         return <X className="w-4 h-4 text-red-600" aria-hidden="true" />;
       case 'admin_granted':
-        return <Shield className="w-4 h-4 text-[var(--color-primary)]-600" aria-hidden="true" />;
+        return <Shield className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />;
       case 'admin_revoked':
         return <Shield className="w-4 h-4 text-[var(--color-textSecondary)]" aria-hidden="true" />;
       case 'resource_added':
@@ -121,7 +121,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
       case 'member_left':
         return 'bg-red-100';
       case 'communication':
-        return 'bg-[var(--color-primary)]-100';
+        return 'bg-[var(--color-primary-light)]';
       case 'meeting_created':
         return 'bg-purple-100';
       case 'task_created':
@@ -135,7 +135,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
       case 'approval_rejected':
         return 'bg-red-100';
       case 'admin_granted':
-        return 'bg-[var(--color-primary)]-100';
+        return 'bg-[var(--color-primary-light)]';
       case 'admin_revoked':
         return 'bg-[var(--color-surface)]';
       case 'resource_added':
@@ -219,7 +219,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
     return (
       <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-primary)]"></div>
         </div>
       </div>
     );
@@ -233,7 +233,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           <p className="text-sm text-[var(--color-textSecondary)]">{error}</p>
           <button
             onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors min-h-[44px]"
+            className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors min-h-[44px]"
             aria-label="Retry loading activities"
           >
             Retry
@@ -307,7 +307,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
                 onClick={() => handleFilterChange(option.id)}
                 className={`px-3 py-1.5 rounded-full text-sm transition-colors min-h-[36px] ${
                   filterType === option.id
-                    ? 'bg-[var(--color-primary)]-600 text-white'
+                    ? 'bg-[var(--color-primary)] text-white'
                     : 'bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
                 }`}
                 aria-label={`Filter by ${option.label}`}
@@ -374,7 +374,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           {showViewAll && onViewAllClick && (
             <button
               onClick={onViewAllClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700 transition-colors min-h-[44px]"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors min-h-[44px]"
               aria-label="View all activity"
             >
               View All Activity

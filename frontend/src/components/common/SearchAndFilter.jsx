@@ -71,7 +71,7 @@ const SearchAndFilter = ({
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+            className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             aria-label="Search"
           />
           {searchTerm && (
@@ -92,7 +92,7 @@ const SearchAndFilter = ({
               onClick={() => setShowFilterDropdown(!showFilterDropdown)}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors ${
                 Object.keys(activeFilters).length > 0
-                  ? 'border-[var(--color-primary)]-500 bg-[var(--color-primary)]-50 text-[var(--color-primary)]-700'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]'
                   : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
               aria-label="Open filters"
@@ -101,7 +101,7 @@ const SearchAndFilter = ({
               <Filter className="h-4 w-4" aria-hidden="true" />
               <span className="hidden sm:inline">Filters</span>
               {Object.keys(activeFilters).length > 0 && (
-                <span className="bg-[var(--color-primary)]-600 text-white text-xs px-2 py-0.5 rounded-full">
+                <span className="bg-[var(--color-primary)] text-white text-xs px-2 py-0.5 rounded-full">
                   {Object.keys(activeFilters).length}
                 </span>
               )}
@@ -131,7 +131,7 @@ const SearchAndFilter = ({
                       <select
                         value={activeFilters[filter.key] || ''}
                         onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                         aria-label={filter.label}
                       >
                         <option value="">All</option>
@@ -146,7 +146,7 @@ const SearchAndFilter = ({
                         type="date"
                         value={activeFilters[filter.key] || ''}
                         onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                         aria-label={filter.label}
                       />
                     ) : filter.type === 'multiselect' ? (
@@ -176,7 +176,7 @@ const SearchAndFilter = ({
                         type="text"
                         value={activeFilters[filter.key] || ''}
                         onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                        className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                         aria-label={filter.label}
                       />
                     )}
@@ -194,7 +194,7 @@ const SearchAndFilter = ({
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className={`px-4 py-2 border rounded-lg flex items-center gap-2 transition-colors ${
                 currentSort
-                  ? 'border-[var(--color-primary)]-500 bg-[var(--color-primary)]-50 text-[var(--color-primary)]-700'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] text-[var(--color-primary)]'
                   : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
               aria-label="Open sort options"
@@ -228,7 +228,7 @@ const SearchAndFilter = ({
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                       currentSort === option.value
-                        ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+                        ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
                         : 'hover:bg-[var(--color-surface)]'
                     }`}
                     aria-label={`Sort by ${option.label}`}

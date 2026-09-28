@@ -115,7 +115,7 @@ const MinistryHealthViz = ({ ministryData, congregationData, engagementData, cla
             const Icon = metric.icon
             return (
               <div key={index} className="flex items-center gap-3 p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-                <div className="p-2 rounded-lg bg-[var(--color-primary)]-10 text-[var(--color-primary)]">
+                <div className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)]">
                   <Icon size={20} aria-hidden="true" />
                 </div>
                 <div>
@@ -139,7 +139,7 @@ const MinistryHealthViz = ({ ministryData, congregationData, engagementData, cla
         <div className="space-y-3">
           <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--color-success)]-10 text-[var(--color-success)]">
+              <div className="p-2 rounded-lg bg-[var(--color-success-light)] text-[var(--color-success)]">
                 <CheckCircle size={16} aria-hidden="true" />
               </div>
               <div>
@@ -152,7 +152,7 @@ const MinistryHealthViz = ({ ministryData, congregationData, engagementData, cla
           
           <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--color-warning)]-10 text-[var(--color-warning)]">
+              <div className="p-2 rounded-lg bg-[var(--color-warning-light)] text-[var(--color-warning)]">
                 <AlertCircle size={16} aria-hidden="true" />
               </div>
               <div>
@@ -165,7 +165,7 @@ const MinistryHealthViz = ({ ministryData, congregationData, engagementData, cla
           
           <div className="flex items-center justify-between p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[var(--color-success)]-10 text-[var(--color-success)]">
+              <div className="p-2 rounded-lg bg-[var(--color-success-light)] text-[var(--color-success)]">
                 <CheckCircle size={16} aria-hidden="true" />
               </div>
               <div>

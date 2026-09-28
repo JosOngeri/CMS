@@ -70,7 +70,7 @@ const TestingDashboard = () => {
         <button
           onClick={runAllTests}
           disabled={running}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)]"
         >
           <Play size={16} />
           {running ? 'Running...' : 'Run All Tests'}
@@ -101,7 +101,7 @@ const TestingDashboard = () => {
           <div className="text-2xl font-bold">{totalFailed}</div>
         </div>
         <div className="bg-[var(--color-surface)] border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-[var(--color-primary)]-600 mb-2">
+          <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
             <TrendingUp size={16} />
             <span className="text-sm">Pass Rate</span>
           </div>

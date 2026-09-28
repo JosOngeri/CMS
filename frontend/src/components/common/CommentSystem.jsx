@@ -114,7 +114,7 @@ const CommentSystem = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-primary)]-600"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-primary)]"></div>
       </div>
     );
   }
@@ -136,14 +136,14 @@ const CommentSystem = ({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Add a comment..."
-                className="flex-1 p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent  resize-none"
+                className="flex-1 p-3 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent  resize-none"
                 rows={2}
                 aria-label="New comment"
               />
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !newComment.trim()}
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center gap-2 min-h-[44px]"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center gap-2 min-h-[44px]"
                 aria-label="Submit comment"
                 aria-busy={submitting}
               >
@@ -174,7 +174,7 @@ const CommentSystem = ({
                       <textarea
                         value={editText}
                         onChange={(e) => setEditText(e.target.value)}
-                        className="w-full p-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent  resize-none"
+                        className="w-full p-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent  resize-none"
                         rows={3}
                         aria-label="Edit comment"
                       />
@@ -182,7 +182,7 @@ const CommentSystem = ({
                         <button
                           onClick={() => handleEdit(comment.id)}
                           disabled={submitting}
-                          className="px-3 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed text-sm min-h-[36px]"
+                          className="px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed text-sm min-h-[36px]"
                           aria-label="Save edit"
                           aria-busy={submitting}
                         >
@@ -201,7 +201,7 @@ const CommentSystem = ({
                     <>
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-primary)]-500 to-violet-500 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-violet-500 flex items-center justify-center">
                             <User className="h-4 w-4 text-white" />
                           </div>
                           <div>
@@ -217,7 +217,7 @@ const CommentSystem = ({
                             {canEditComment(comment) && (
                               <button
                                 onClick={() => startEdit(comment)}
-                                className="p-1 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded"
+                                className="p-1 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded"
                                 aria-label="Edit comment"
                               >
                                 <Edit2 className="h-4 w-4" />
@@ -275,7 +275,7 @@ const CommentSystem = ({
                 setNewComment('💡 Suggestion: ');
                 document.querySelector('textarea')?.focus();
               }}
-              className="px-4 py-2 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700 rounded-lg hover:bg-[var(--color-primary)]-200 text-sm min-h-[36px]"
+              className="px-4 py-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary-light)] text-sm min-h-[36px]"
               aria-label="Add suggestion"
             >
               💡 Suggestion

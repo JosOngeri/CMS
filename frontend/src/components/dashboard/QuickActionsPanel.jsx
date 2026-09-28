@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const QuickActionsPanel = ({ pinnedActions = [] }) => {
   const allActions = [
     { id: 'payment', title: 'Make Payment', description: 'Pay tithe and offerings', icon: DollarSign, color: 'bg-green-100 text-green-600', link: '/dashboard/payments' },
-    { id: 'announcement', title: 'New Announcement', description: 'Create announcement', icon: Megaphone, color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600', link: '/dashboard/announcements/new' },
+    { id: 'announcement', title: 'New Announcement', description: 'Create announcement', icon: Megaphone, color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]', link: '/dashboard/announcements/new' },
     { id: 'event', title: 'Create Event', description: 'Schedule church event', icon: Calendar, color: 'bg-purple-100 text-purple-600', link: '/dashboard/events/new' },
     { id: 'member', title: 'Add Member', description: 'Register new member', icon: Users, color: 'bg-orange-100 text-orange-600', link: '/dashboard/members/new' },
     { id: 'document', title: 'Upload Document', description: 'Add to document library', icon: FileText, color: 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]', link: '/dashboard/documents/upload' },
@@ -19,7 +19,7 @@ const QuickActionsPanel = ({ pinnedActions = [] }) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lg">Quick Actions</h3>
-        <button className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700 flex items-center gap-1" aria-label="Customize quick actions">
+        <button className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center gap-1" aria-label="Customize quick actions">
           <Pin size={14} aria-hidden="true" />
           Customize
         </button>

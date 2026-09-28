@@ -111,9 +111,9 @@ const DatePicker = ({
           disabled={isDisabled}
           className={`p-2 rounded-lg transition-colors ${
             isSelected
-              ? 'bg-[var(--color-primary)]-600 text-white hover:bg-[var(--color-primary)]-700'
+              ? 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]'
               : isToday
-              ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+              ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
               : 'hover:bg-[var(--color-surface)]'
           } ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
           aria-label={`Select ${date.toLocaleDateString()}`}
@@ -143,7 +143,7 @@ const DatePicker = ({
 
       {/* Date Input */}
       <div className="relative">
-        <div className="flex items-center border border-[var(--color-border)] rounded-lg focus-within focus:ring-2 focus:ring-[var(--color-primary)]-500">
+        <div className="flex items-center border border-[var(--color-border)] rounded-lg focus-within focus:ring-2 focus:ring-[var(--color-primary)]">
           <Calendar className="h-5 w-5 text-[var(--color-textSecondary)] ml-3" aria-hidden="true" />
           <input
             type="text"
@@ -192,7 +192,7 @@ const DatePicker = ({
                   onChange={(e) => handleTimeChange('hours', e.target.value)}
                   min="0"
                   max="23"
-                  className="w-16 px-2 py-1 border border-[var(--color-border)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                  className="w-16 px-2 py-1 border border-[var(--color-border)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   aria-label="Hours"
                 />
                 <span className="text-[var(--color-textSecondary)]">:</span>
@@ -202,7 +202,7 @@ const DatePicker = ({
                   onChange={(e) => handleTimeChange('minutes', e.target.value)}
                   min="0"
                   max="59"
-                  className="w-16 px-2 py-1 border border-[var(--color-border)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                  className="w-16 px-2 py-1 border border-[var(--color-border)] rounded focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   aria-label="Minutes"
                 />
               </div>
@@ -227,7 +227,7 @@ const DatePicker = ({
                 onChange(today.toISOString());
                 setIsOpen(false);
               }}
-              className="w-full mt-4 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+              className="w-full mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               aria-label="Select today"
             >
               Today

@@ -71,7 +71,7 @@ const SMSAutomationRules = () => {
         <h2 className="text-2xl font-bold">SMS Automation Rules</h2>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
         >
           <Plus size={20} />
           New Rule
@@ -226,7 +226,7 @@ const SMSAutomationRules = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleCreateRule}
-                  className="flex-1 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 flex items-center justify-center gap-2"
+                  className="flex-1 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] flex items-center justify-center gap-2"
                 >
                   <Save size={16} />
                   Create Rule

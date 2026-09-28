@@ -7,7 +7,7 @@ function DashboardHome() {
   const { stats: memberStats, fetchStats } = useMembers();
   const { churchName, fullName } = useChurchBranding();
   const [stats, setStats] = useState([
-    { label: 'Total Members', value: '0', icon: Users, color: 'from-[var(--color-primary)]-800 to-[var(--color-primary)]-900', iconBg: 'bg-[var(--color-primary)]-100', iconColor: 'text-[var(--color-primary)]-800' },
+    { label: 'Total Members', value: '0', icon: Users, color: 'from-[var(--color-primary)] to-[var(--color-primary)]', iconBg: 'bg-[var(--color-primary-light)]', iconColor: 'text-[var(--color-primary)]' },
     { label: 'Gallery Photos', value: '0', icon: ImageIcon, color: 'from-emerald-500 to-emerald-600', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
     { label: 'Documents', value: '0', icon: FileText, color: 'from-violet-500 to-violet-600', iconBg: 'bg-violet-100', iconColor: 'text-violet-600' },
     { label: 'Treasury Balance', value: 'KES 0', icon: DollarSign, color: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
@@ -83,15 +83,15 @@ function DashboardHome() {
       {/* Quick Actions with Church-Themed Cards */}
       <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-6">
         <h2 className="text-xl font-bold text-[var(--color-text)] mb-6 flex items-center">
-          <Activity className="h-6 w-6 mr-3 text-[var(--color-primary)]-800" />
+          <Activity className="h-6 w-6 mr-3 text-[var(--color-primary)]" />
           Quick Actions
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          <button className="group flex flex-col items-center p-6 rounded-2xl bg-gradient-to-br from-[var(--color-primary)]-50 to-[var(--color-primary)]-100 border border-[var(--color-primary)]-200 hover:from-[var(--color-primary)]-100 hover:to-[var(--color-primary)]-200 transition-all hover:scale-105 hover:shadow-lg">
-            <div className="p-4 rounded-2xl bg-[var(--color-primary)]-800 shadow-md group-hover:shadow-xl transition-all">
+          <button className="group flex flex-col items-center p-6 rounded-2xl bg-gradient-to-br from-[var(--color-primary-light)] to-[var(--color-primary-light)] border border-[var(--color-primary-light)] hover:from-[var(--color-primary-light)] hover:to-[var(--color-primary-light)] transition-all hover:scale-105 hover:shadow-lg">
+            <div className="p-4 rounded-2xl bg-[var(--color-primary)] shadow-md group-hover:shadow-xl transition-all">
               <Users className="h-7 w-7 text-white" />
             </div>
-            <span className="text-sm font-semibold text-[var(--color-primary)]-800 mt-4">Add Member</span>
+            <span className="text-sm font-semibold text-[var(--color-primary)] mt-4">Add Member</span>
           </button>
           <button className="group flex flex-col items-center p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 hover:from-emerald-100 hover:to-emerald-200 transition-all hover:scale-105 hover:shadow-lg">
             <div className="p-4 rounded-2xl bg-emerald-600 shadow-md group-hover:shadow-xl transition-all">
@@ -135,18 +135,18 @@ function DashboardHome() {
       {/* Recent Activity */}
       <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-6">
         <h2 className="text-xl font-bold text-[var(--color-text)] mb-6 flex items-center">
-          <Activity className="h-6 w-6 mr-3 text-[var(--color-primary)]-800" />
+          <Activity className="h-6 w-6 mr-3 text-[var(--color-primary)]" />
           Recent Activity
         </h2>
         <div className="space-y-4">
           {recentActivity.map((activity, index) => (
-            <div key={index} className="flex items-center space-x-4 p-4 bg-gradient-to-r from-[var(--color-primary)]-50 to-transparent rounded-xl border border-[var(--color-primary)]-100">
-              <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]-800 flex items-center justify-center shadow-md">
+            <div key={index} className="flex items-center space-x-4 p-4 bg-gradient-to-r from-[var(--color-primary-light)] to-transparent rounded-xl border border-[var(--color-primary-light)]">
+              <div className="w-12 h-12 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-md">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-[var(--color-text)]">{activity.action}</p>
-                <p className="text-xs text-[var(--color-primary)]-800 font-medium">{activity.time}</p>
+                <p className="text-xs text-[var(--color-primary)] font-medium">{activity.time}</p>
               </div>
             </div>
           ))}
@@ -172,13 +172,13 @@ function DashboardHome() {
               <p className="text-xs text-green-600 font-medium">Connected</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-[var(--color-primary)]-50 to-cyan-50 rounded-xl border border-[var(--color-primary)]-200">
-            <div className="w-12 h-12 rounded-full bg-[var(--color-primary)]-600 flex items-center justify-center shadow-md">
+          <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-[var(--color-primary-light)] to-cyan-50 rounded-xl border border-[var(--color-primary-light)]">
+            <div className="w-12 h-12 rounded-full bg-[var(--color-primary)] flex items-center justify-center shadow-md">
               <TrendingUp className="h-6 w-6 text-white" />
             </div>
             <div>
               <p className="text-sm font-semibold text-[var(--color-text)]">API</p>
-              <p className="text-xs text-[var(--color-primary)]-600 font-medium">Running</p>
+              <p className="text-xs text-[var(--color-primary)] font-medium">Running</p>
             </div>
           </div>
           <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">

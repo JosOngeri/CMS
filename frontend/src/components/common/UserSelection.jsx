@@ -93,13 +93,13 @@ const UserSelection = ({
           {selectedUsers.map(user => (
             <div
               key={user.id}
-              className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700 rounded-full"
+              className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-full"
             >
               <Users className="h-4 w-4" aria-hidden="true" />
               <span className="text-sm font-medium">{user.first_name} {user.last_name}</span>
               <button
                 onClick={() => removeUser(user.id)}
-                className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-800"
+                className="text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                 aria-label={`Remove ${user.first_name} ${user.last_name}`}
               >
                 <X className="h-4 w-4" aria-hidden="true" />
@@ -116,7 +116,7 @@ const UserSelection = ({
             <select
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
-              className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+              className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
               aria-label="Filter by department"
             >
               {departments.map(dept => (
@@ -125,7 +125,7 @@ const UserSelection = ({
             </select>
           )}
           <div className="relative flex-1">
-            <div className="flex items-center border border-[var(--color-border)] rounded-lg focus-within focus:ring-2 focus:ring-[var(--color-primary)]-500">
+            <div className="flex items-center border border-[var(--color-border)] rounded-lg focus-within focus:ring-2 focus:ring-[var(--color-primary)]">
               <Search className="h-5 w-5 text-[var(--color-textSecondary)] ml-3" aria-hidden="true" />
               <input
                 type="text"
@@ -164,7 +164,7 @@ const UserSelection = ({
                     onClick={() => toggleUser(user)}
                     className="flex items-center gap-3 px-4 py-2 hover:bg-[var(--color-surface)] cursor-pointer"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-primary)]-500 to-violet-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-violet-500 flex items-center justify-center">
                       <span className="text-white font-semibold text-sm">
                         {user.first_name?.[0]}{user.last_name?.[0]}
                       </span>
@@ -178,7 +178,7 @@ const UserSelection = ({
                       </div>
                     </div>
                     {selectedUsers.find(u => u.id === user.id) && (
-                      <div className="text-[var(--color-primary)]-600">
+                      <div className="text-[var(--color-primary)]">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                       </div>
                     )}

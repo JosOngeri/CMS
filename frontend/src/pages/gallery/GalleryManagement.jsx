@@ -345,14 +345,14 @@ const GalleryManagement = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
-            <Shield className="h-6 w-6 text-[var(--color-primary)]-600" />
+            <Shield className="h-6 w-6 text-[var(--color-primary)]" />
             <h2 className="text-lg font-semibold text-[var(--color-text)] ">
               Telegram Authentication Status
             </h2>
           </div>
           <button
             onClick={() => navigate('/dashboard/telegram/auth')}
-            className="flex items-center space-x-2 text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+            className="flex items-center space-x-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]"
           >
             <Settings className="h-4 w-4" />
             <span>Configure</span>
@@ -394,7 +394,7 @@ const GalleryManagement = () => {
               {authStatus.primary !== 'authenticated' && (
                 <button
                   onClick={() => { setAuthTarget('primary'); setShowAuthModal(true); }}
-                  className="px-3 py-1 bg-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-700 text-white text-sm rounded-lg"
+                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white text-sm rounded-lg"
                 >
                   Authenticate
                 </button>
@@ -416,7 +416,7 @@ const GalleryManagement = () => {
               {authStatus.fallback !== 'authenticated' && (
                 <button
                   onClick={() => { setAuthTarget('fallback'); setShowAuthModal(true); }}
-                  className="px-3 py-1 bg-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-700 text-white text-sm rounded-lg"
+                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white text-sm rounded-lg"
                 >
                   Authenticate
                 </button>
@@ -513,7 +513,7 @@ const GalleryManagement = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center space-x-2 bg-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
             <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
             <span>{syncing ? 'Syncing...' : 'Sync from Channel'}</span>
@@ -557,8 +557,8 @@ const GalleryManagement = () => {
             </div>
 
             {!canUpload && (
-              <div className="mb-4 p-3 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg">
-                <p className="text-sm text-[var(--color-primary)]-800">
+              <div className="mb-4 p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg">
+                <p className="text-sm text-[var(--color-primary)]">
                   <Info className="h-4 w-4 inline mr-1" />
                   Your photos will be submitted for approval by the communications department before being published to the public gallery.
                 </p>
@@ -797,7 +797,7 @@ const GalleryManagement = () => {
               </p>
               <button
                 onClick={() => handleStartAuth(authTarget)}
-                className="w-full px-4 py-2 bg-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-700 text-white rounded-lg"
+                className="w-full px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white rounded-lg"
               >
                 Send Verification Code
               </button>

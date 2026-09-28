@@ -50,8 +50,8 @@ const PlatformLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex p-4 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900 rounded-full mb-4">
-            <Building className="h-8 w-8 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400" />
+          <div className="inline-flex p-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-full mb-4">
+            <Building className="h-8 w-8 text-[var(--color-primary)] text-[var(--color-primary)]" />
           </div>
           <h1 className="text-2xl font-bold text-[var(--color-text)] text-white mb-2">
             Platform Admin
@@ -98,7 +98,7 @@ const PlatformLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 'Signing in...'

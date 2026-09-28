@@ -29,7 +29,7 @@ const AdminDatabase = () => {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl border border-[var(--color-border)] border-[var(--color-border)] bg-[var(--color-surface)] bg-[var(--color-surface)] p-5">
-          <Database className="w-8 h-8 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400 mb-3" />
+          <Database className="w-8 h-8 text-[var(--color-primary)] text-[var(--color-primary)] mb-3" />
           <h2 className="font-semibold text-[var(--color-text)] text-white mb-2">Backups</h2>
           <ul className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] space-y-2 list-disc pl-4">
             <li>Schedule automated dumps (e.g. <code className="text-xs bg-[var(--color-surface)] px-1 rounded">pg_dump</code>) on the host.</li>

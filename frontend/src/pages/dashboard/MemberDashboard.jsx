@@ -108,7 +108,7 @@ const MemberDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           {/* Personal Status Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-50 text-[var(--color-primary)]-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-lg">
             <Heart className="h-4 w-4" />
             <span className="text-sm font-medium">Personal Status: {Math.round((personalStatus.attendanceRate + personalStatus.contributionRate + personalStatus.activityLevel) / 3)}%</span>
           </div>
@@ -184,7 +184,7 @@ const MemberDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Activity</h2>
-          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

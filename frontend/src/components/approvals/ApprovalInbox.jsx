@@ -78,7 +78,7 @@ const ApprovalInbox = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Approval Inbox</h2>
         <div className="flex gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700" aria-label="Bulk approve all pending requests">
+          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]" aria-label="Bulk approve all pending requests">
             <Check size={16} aria-hidden="true" />
             Bulk Approve
           </button>

@@ -60,7 +60,7 @@ const Notifications = () => {
       case 'high': return <AlertTriangle className="w-5 h-5 text-red-500" />;
       case 'medium': return <Info className="w-5 h-5 text-yellow-500" />;
       case 'low': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
-      default: return <Bell className="w-5 h-5 text-[var(--color-primary)]-500" />;
+      default: return <Bell className="w-5 h-5 text-[var(--color-primary)]" />;
     }
   };
 
@@ -98,7 +98,7 @@ const Notifications = () => {
         <div className="flex gap-2">
           <button
             onClick={markAllAsRead}
-            className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             Mark All as Read
           </button>
@@ -143,7 +143,7 @@ const Notifications = () => {
             <div
               key={notification.id}
               className={`p-4 bg-[var(--color-surface)]  rounded-lg border-l-4 ${
-                notification.is_read ? 'border-[var(--color-border)] ' : 'border-[var(--color-primary)]-500'
+                notification.is_read ? 'border-[var(--color-border)] ' : 'border-[var(--color-primary)]'
               } ${getPriorityColor(notification.priority)}`}
             >
               <div className="flex items-start justify-between">
@@ -152,7 +152,7 @@ const Notifications = () => {
                     {getPriorityIcon(notification.priority)}
                     <h3 className="font-semibold">{notification.title}</h3>
                     {!notification.is_read && (
-                      <span className="px-2 py-0.5 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800 text-xs rounded-full">New</span>
+                      <span className="px-2 py-0.5 bg-[var(--color-primary-light)] text-[var(--color-primary)] text-xs rounded-full">New</span>
                     )}
                   </div>
                   <p className="text-[var(--color-textSecondary)] ">{notification.message}</p>

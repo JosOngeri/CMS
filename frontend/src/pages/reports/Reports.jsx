@@ -322,10 +322,10 @@ const Reports = () => {
             permission={PERMISSIONS.REPORTS_GENERATE}
             buttonProps={{
               onClick: () => generateReport(report.type),
-              className: "p-4 bg-[var(--color-surface)]  rounded-lg border hover:border-[var(--color-primary)]-500 transition-colors text-left",
+              className: "p-4 bg-[var(--color-surface)]  rounded-lg border hover:border-[var(--color-primary)] transition-colors text-left",
             }}
           >
-            <FileText className="w-8 h-8 text-[var(--color-primary)]-600 mb-2" />
+            <FileText className="w-8 h-8 text-[var(--color-primary)] mb-2" />
             <h3 className="font-semibold">{report.name}</h3>
             <p className="text-sm text-[var(--color-textSecondary)]">{report.description}</p>
           </PermissionButton>
@@ -379,7 +379,7 @@ const Reports = () => {
                       permission={PERMISSIONS.REPORTS_EXPORT}
                       buttonProps={{
                         onClick: () => downloadReport(report.id, 'csv'),
-                        className: "p-2 text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded",
+                        className: "p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded",
                         title: "Download as CSV",
                       }}
                     >

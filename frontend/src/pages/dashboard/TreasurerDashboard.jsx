@@ -107,7 +107,7 @@ const TreasurerDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           {/* Financial Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)]-50 text-[var(--color-success)]-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success-light)] text-[var(--color-success)] rounded-lg">
             <Wallet className="h-4 w-4" />
             <span className="text-sm font-medium">Financial Health: {Math.round((financialHealth.budgetUtilization + financialHealth.collectionRate + financialHealth.expenseRatio) / 3)}%</span>
           </div>
@@ -187,7 +187,7 @@ const TreasurerDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Financial Activity</h2>
-          <Link to="/treasury/transactions" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+          <Link to="/treasury/transactions" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

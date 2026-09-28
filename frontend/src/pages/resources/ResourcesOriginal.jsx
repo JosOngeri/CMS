@@ -65,7 +65,7 @@ const ResourcesOriginal = () => {
         </div>
         <button
           onClick={handleUpload}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Upload className="w-4 h-4" />
           Upload
@@ -89,7 +89,7 @@ const ResourcesOriginal = () => {
                   <p className="text-sm text-[var(--color-textSecondary)]">Total Documents</p>
                   <p className="text-2xl font-bold text-[var(--color-text)]">0</p>
                 </div>
-                <FileText className="w-8 h-8 text-[var(--color-primary)]-600" />
+                <FileText className="w-8 h-8 text-[var(--color-primary)]" />
               </div>
             </div>
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
@@ -118,7 +118,7 @@ const ResourcesOriginal = () => {
                 onClick={() => setActiveTab('documents')}
                 className="flex items-center gap-3 p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
               >
-                <FileText className="w-5 h-5 text-[var(--color-primary)]-600" />
+                <FileText className="w-5 h-5 text-[var(--color-primary)]" />
                 <span className="text-[var(--color-text)]">View Documents</span>
               </button>
               <button
@@ -152,19 +152,19 @@ const ResourcesOriginal = () => {
                   placeholder="Search documents..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
               <div className="flex items-center gap-2 border border-[var(--color-border)] rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -172,7 +172,7 @@ const ResourcesOriginal = () => {
             </div>
             <button
               onClick={handleUpload}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               Add Document
@@ -197,19 +197,19 @@ const ResourcesOriginal = () => {
                   placeholder="Search media..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
               <div className="flex items-center gap-2 border border-[var(--color-border)] rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -217,7 +217,7 @@ const ResourcesOriginal = () => {
             </div>
             <button
               onClick={handleUpload}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               Add Media
@@ -242,13 +242,13 @@ const ResourcesOriginal = () => {
                   placeholder="Search sermons..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>
             <button
               onClick={handleUpload}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               Add Sermon
@@ -273,13 +273,13 @@ const ResourcesOriginal = () => {
                   placeholder="Search gallery..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>
             <button
               onClick={handleUpload}
-              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
             >
               <Plus className="w-4 h-4" />
               Add to Gallery
@@ -304,7 +304,7 @@ const ResourcesOriginal = () => {
                   placeholder="Search downloads..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>

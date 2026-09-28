@@ -139,7 +139,7 @@ const Content = () => {
           permission={PERMISSIONS.CONTENT_CREATE}
           buttonProps={{
             onClick: () => openEditor(),
-            className: "px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700",
+            className: "px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]",
           }}
         >
           <Plus className="w-4 h-4 inline mr-2" />
@@ -222,9 +222,9 @@ const Content = () => {
                 <label className="block text-sm font-medium mb-1">Tags</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-1 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800 rounded-full text-sm flex items-center gap-1">
+                    <span key={tag} className="px-2 py-1 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-full text-sm flex items-center gap-1">
                       {tag}
-                      <button onClick={() => removeTag(tag)} className="hover:text-[var(--color-primary)]-600">×</button>
+                      <button onClick={() => removeTag(tag)} className="hover:text-[var(--color-primary)]">×</button>
                     </span>
                   ))}
                 </div>
@@ -265,7 +265,7 @@ const Content = () => {
               </button>
               <button
                 onClick={saveContent}
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
               >
                 <Save className="w-4 h-4 inline mr-2" />
                 Save
@@ -326,7 +326,7 @@ const Content = () => {
                       permission={PERMISSIONS.CONTENT_EDIT}
                       buttonProps={{
                         onClick: () => openEditor(item),
-                        className: "p-2 text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded",
+                        className: "p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded",
                         title: "Edit",
                       }}
                     >

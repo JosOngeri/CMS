@@ -116,7 +116,7 @@ const ProfileManagement = () => {
 
   const getActivityColor = (type) => {
     switch (type) {
-      case 'login': return 'text-[var(--color-primary)]-600 bg-[var(--color-primary)]-100'
+      case 'login': return 'text-[var(--color-primary)] bg-[var(--color-primary-light)]'
       case 'profile_update': return 'text-green-600 bg-green-100'
       case 'password_change': return 'text-yellow-600 bg-yellow-100'
       case 'payment': return 'text-purple-600 bg-purple-100'
@@ -154,7 +154,7 @@ const ProfileManagement = () => {
               onClick={() => setActiveTab(tab)}
               className={`py-2 px-1 border-b-2 font-medium text-sm capitalize whitespace-nowrap ${
                 activeTab === tab
-                  ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600'
+                  ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                   : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
               }`}
             >
@@ -197,10 +197,10 @@ const ProfileManagement = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-[var(--color-primary)]-600" />
+                  <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
+                    <User className="w-10 h-10 text-[var(--color-primary)]" />
                   </div>
-                  <button className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)]-600 text-white rounded-full hover:bg-[var(--color-primary)]-700">
+                  <button className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)] text-white rounded-full hover:bg-[var(--color-primary)]">
                     <Camera className="w-3 h-3" />
                   </button>
                 </div>
@@ -211,7 +211,7 @@ const ProfileManagement = () => {
                   <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">@{user.username}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {user.roles?.map(role => (
-                      <span key={role} className="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800">
+                      <span key={role} className="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)]">
                         {role}
                       </span>
                     ))}
@@ -220,7 +220,7 @@ const ProfileManagement = () => {
               </div>
               <button
                 onClick={() => setShowEditForm(!showEditForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {showEditForm ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
                 {showEditForm ? 'Cancel' : 'Edit Profile'}
@@ -296,7 +296,7 @@ const ProfileManagement = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
                   >
                     {loading ? (
                       <>
@@ -359,7 +359,7 @@ const ProfileManagement = () => {
               </div>
               <button
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {showPasswordForm ? <X className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 {showPasswordForm ? 'Cancel' : 'Change Password'}
@@ -453,7 +453,7 @@ const ProfileManagement = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
                   >
                     {loading ? (
                       <>
@@ -473,12 +473,12 @@ const ProfileManagement = () => {
           </div>
 
           {/* Security Info */}
-          <div className="bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20 border border-[var(--color-primary)]-200 border-[var(--color-primary)]-800 rounded-lg p-4">
+          <div className="bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 border border-[var(--color-primary-light)] border-[var(--color-primary)] rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-[var(--color-primary)]-600 text-[var(--color-primary)]-400 mt-0.5" />
+              <Shield className="w-5 h-5 text-[var(--color-primary)] text-[var(--color-primary)] mt-0.5" />
               <div>
-                <h4 className="font-medium text-[var(--color-primary)]-900 text-[var(--color-primary)]-100">Security Tips</h4>
-                <ul className="text-sm text-[var(--color-primary)]-700 text-[var(--color-primary)]-300 mt-2 space-y-1">
+                <h4 className="font-medium text-[var(--color-primary)] text-[var(--color-primary-light)]">Security Tips</h4>
+                <ul className="text-sm text-[var(--color-primary)] text-[var(--color-primary-light)] mt-2 space-y-1">
                   <li>• Use a strong password with at least 8 characters</li>
                   <li>• Include a mix of letters, numbers, and special characters</li>
                   <li>• Don't reuse passwords from other sites</li>

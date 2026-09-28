@@ -49,9 +49,9 @@ const ConfirmationDialog = ({
     },
     info: {
       icon: AlertTriangle,
-      iconColor: 'text-[var(--color-primary)]-500',
-      iconBg: 'bg-[var(--color-primary)]-100',
-      confirmColor: 'bg-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-700'
+      iconColor: 'text-[var(--color-primary)]',
+      iconBg: 'bg-[var(--color-primary-light)]',
+      confirmColor: 'bg-[var(--color-primary)] hover:bg-[var(--color-primary)]'
     }
   };
 

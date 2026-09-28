@@ -121,7 +121,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           {/* User Profile Summary & Logout */}
           <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-background)]/50">
             <div className="flex items-center space-x-3 mb-4 px-2">
-              <div className="w-10 h-10 rounded-full bg-[var(--color-primary)]-100 flex items-center justify-center text-[var(--color-primary)]-700 font-bold">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center text-[var(--color-primary)] font-bold">
                 {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
               </div>
               <div className="flex-1 min-w-0">

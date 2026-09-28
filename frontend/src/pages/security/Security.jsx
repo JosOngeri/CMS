@@ -50,7 +50,7 @@ const Security = () => {
     switch (action) {
       case 'LOGIN_SUCCESS': return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'LOGIN_FAILED': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'PASSWORD_CHANGE': return <Lock className="w-4 h-4 text-[var(--color-primary)]-500" />;
+      case 'PASSWORD_CHANGE': return <Lock className="w-4 h-4 text-[var(--color-primary)]" />;
       case 'ROLE_UPDATE': return <User className="w-4 h-4 text-purple-500" />;
       case 'UNAUTHORIZED_ACCESS': return <AlertTriangle className="w-4 h-4 text-red-500" />;
       default: return <Activity className="w-4 h-4 text-[var(--color-textSecondary)]" />;
@@ -75,14 +75,14 @@ const Security = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('logs')}
-            className={`px-4 py-2 rounded-lg ${activeTab === 'logs' ? 'bg-[var(--color-primary)]-600 text-white' : 'bg-[var(--color-surface)] '}`}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'logs' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] '}`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
             Activity Logs
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-lg ${activeTab === 'settings' ? 'bg-[var(--color-primary)]-600 text-white' : 'bg-[var(--color-surface)] '}`}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'settings' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] '}`}
           >
             <Settings className="w-4 h-4 inline mr-2" />
             Settings
@@ -110,7 +110,7 @@ const Security = () => {
           <div className="bg-[var(--color-surface)]  rounded-lg border">
             <div className="p-4 border-b flex justify-between items-center">
               <h2 className="font-semibold">Security Events ({filteredLogs.length})</h2>
-              <button className="text-sm text-[var(--color-primary)]-600 hover:underline">Export Logs</button>
+              <button className="text-sm text-[var(--color-primary)] hover:underline">Export Logs</button>
             </div>
             <div className="p-4">
               {filteredLogs.length === 0 ? (
@@ -170,7 +170,7 @@ const Security = () => {
                     onChange={(e) => setSecuritySettings({ ...securitySettings, twoFactorAuth: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                 </label>
               </div>
               <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ const Security = () => {
                     onChange={(e) => setSecuritySettings({ ...securitySettings, requireMfaForAdmin: e.target.checked })}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                 </label>
               </div>
               <div>
@@ -263,7 +263,7 @@ const Security = () => {
                   onChange={(e) => setSecuritySettings({ ...securitySettings, enforceStrongPassword: e.target.checked })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
               </label>
             </div>
           </div>
@@ -271,7 +271,7 @@ const Security = () => {
           <div className="flex justify-end">
             <button
               onClick={saveSettings}
-              className="px-6 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+              className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
             >
               Save Settings
             </button>

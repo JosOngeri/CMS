@@ -33,7 +33,7 @@ const PerformanceMetrics = () => {
   };
 
   const metricCards = [
-    { label: 'API Response Time', value: `${metrics.apiResponseTime}ms`, icon: Clock, color: 'text-[var(--color-primary)]-600', threshold: 500 },
+    { label: 'API Response Time', value: `${metrics.apiResponseTime}ms`, icon: Clock, color: 'text-[var(--color-primary)]', threshold: 500 },
     { label: 'Server Load', value: `${metrics.serverLoad}%`, icon: Activity, color: 'text-purple-600', threshold: 80 },
     { label: 'CPU Usage', value: `${metrics.cpuUsage}%`, icon: Cpu, color: 'text-green-600', threshold: 80 },
     { label: 'Memory Usage', value: `${metrics.memoryUsage}%`, icon: HardDrive, color: 'text-orange-600', threshold: 85 },

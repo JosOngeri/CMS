@@ -332,21 +332,21 @@ const SMSComposer = () => {
             <label className="block text-sm font-medium mb-2">Recipients</label>
             <div className="flex gap-2">
               <button
-                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'all' ? 'bg-[var(--color-primary)]-600 text-white' : 'bg-[var(--color-surface)]'}`}
+                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'all' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)]'}`}
                 onClick={() => setFormData({ ...formData, recipients: 'all' })}
               >
                 <Users size={16} className="inline mr-2" />
                 All Members
               </button>
               <button
-                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'group' ? 'bg-[var(--color-primary)]-600 text-white' : 'bg-[var(--color-surface)]'}`}
+                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'group' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)]'}`}
                 onClick={() => setFormData({ ...formData, recipients: 'group' })}
               >
                 <Hash size={16} className="inline mr-2" />
                 Groups
               </button>
               <button
-                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'individual' ? 'bg-[var(--color-primary)]-600 text-white' : 'bg-[var(--color-surface)]'}`}
+                className={`flex-1 py-2 px-4 rounded-lg ${formData.recipients === 'individual' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)]'}`}
                 onClick={() => setFormData({ ...formData, recipients: 'individual' })}
               >
                 <Users size={16} className="inline mr-2" />
@@ -361,7 +361,7 @@ const SMSComposer = () => {
               <label className="block text-sm font-medium">Message</label>
               <button
                 onClick={() => setShowMergeFields(!showMergeFields)}
-                className="flex items-center gap-1 text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+                className="flex items-center gap-1 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]"
               >
                 <Sparkles size={14} />
                 {showMergeFields ? 'Hide' : 'Show'} Merge Fields
@@ -369,14 +369,14 @@ const SMSComposer = () => {
             </div>
             
             {showMergeFields && (
-              <div className="mb-2 p-2 bg-[var(--color-primary)]-50 rounded-lg">
-                <div className="text-xs text-[var(--color-primary)]-600 mb-1">Click to insert:</div>
+              <div className="mb-2 p-2 bg-[var(--color-primary-light)] rounded-lg">
+                <div className="text-xs text-[var(--color-primary)] mb-1">Click to insert:</div>
                 <div className="flex flex-wrap gap-1">
                   {mergeFields.map(field => (
                     <button
                       key={field.key}
                       onClick={() => insertMergeField(field)}
-                      className="px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-primary)]-200 rounded text-xs hover:bg-[var(--color-primary)]-100"
+                      className="px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-primary-light)] rounded text-xs hover:bg-[var(--color-primary-light)]"
                     >
                       {field.label}
                     </button>
@@ -447,7 +447,7 @@ const SMSComposer = () => {
           <button
             onClick={handleSend}
             disabled={sending || !formData.message.trim() || rateLimitInfo.remaining <= 0}
-            className="w-full py-3 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <Send size={20} />
             {sending ? 'Sending...' : 'Send SMS'}

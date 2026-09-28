@@ -106,7 +106,7 @@ const iconMap = {
 
 const categoryColors = {
   'Leadership': 'from-purple-500 to-purple-600',
-  'Ministry': 'from-[var(--color-primary)]-500 to-[var(--color-primary)]-600',
+  'Ministry': 'from-[var(--color-primary)] to-[var(--color-primary)]',
   'Worship': 'from-pink-500 to-pink-600',
   'Education': 'from-green-500 to-green-600',
   'Youth': 'from-yellow-500 to-yellow-600',
@@ -186,13 +186,13 @@ const MinistriesCarousel = () => {
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4`}>
                     <Icon className="h-7 w-7 text-white" />
                   </div>
-                  <h3 className="font-bold text-lg text-[var(--color-text)] mb-2 group-hover:text-[var(--color-primary)]-800 transition-colors">{ministry.name}</h3>
+                  <h3 className="font-bold text-lg text-[var(--color-text)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">{ministry.name}</h3>
                   <p className="text-[var(--color-textSecondary)] text-sm leading-relaxed">{ministry.description}</p>
                   <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex items-center justify-between">
                     <span className="text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                       {ministry.category}
                     </span>
-                    <ArrowRight className="h-4 w-4 text-[var(--color-primary)]-800 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="h-4 w-4 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </Link>
               );
@@ -213,7 +213,7 @@ const MinistriesCarousel = () => {
         <div className="text-center mt-12">
           <Link
             to="/departments"
-            className="inline-flex items-center gap-2 text-[var(--color-primary)]-800 hover:text-[var(--color-primary)]-900 font-semibold transition-colors group"
+            className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary)] font-semibold transition-colors group"
             aria-label="View all departments"
           >
             <span>View All Departments</span>

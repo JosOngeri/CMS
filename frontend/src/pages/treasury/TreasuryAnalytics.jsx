@@ -137,8 +137,8 @@ const TreasuryAnalytics = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-[var(--color-primary)]-100 bg-[var(--color-primary)]-900/20 rounded-lg">
-                <Wallet className="h-6 w-6 text-[var(--color-primary)]-600" />
+              <div className="p-3 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 rounded-lg">
+                <Wallet className="h-6 w-6 text-[var(--color-primary)]" />
               </div>
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Net Income</p>

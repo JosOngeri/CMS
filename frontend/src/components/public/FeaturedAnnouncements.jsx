@@ -45,9 +45,9 @@ const FeaturedAnnouncements = () => {
       default: 
         return { 
           icon: CheckCircle, 
-          bg: 'bg-[var(--color-primary)]-50', 
-          text: 'text-[var(--color-primary)]-700', 
-          border: 'border-[var(--color-primary)]-200',
+          bg: 'bg-[var(--color-primary-light)]', 
+          text: 'text-[var(--color-primary)]', 
+          border: 'border-[var(--color-primary-light)]',
           label: 'Normal'
         };
     }
@@ -63,7 +63,7 @@ const FeaturedAnnouncements = () => {
           </div>
           <Link
             to="/announcements"
-            className="inline-flex items-center gap-2 text-[var(--color-primary)]-800 hover:text-[var(--color-primary)]-900 font-semibold transition-colors group"
+            className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary)] font-semibold transition-colors group"
             aria-label="View all announcements"
           >
             <span>View All</span>
@@ -103,7 +103,7 @@ const FeaturedAnnouncements = () => {
 
                   {/* Content */}
                   <div className="p-6">
-                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)]-800 transition-colors">
+                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] transition-colors">
                       {announcement.title}
                     </h3>
                     <p className="text-[var(--color-textSecondary)] mb-4 line-clamp-3">
@@ -112,7 +112,7 @@ const FeaturedAnnouncements = () => {
                     
                     <Link
                       to={`/announcements/${announcement.id}`}
-                      className="inline-flex items-center gap-2 text-[var(--color-primary)]-800 hover:text-[var(--color-primary)]-900 font-medium transition-colors group"
+                      className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary)] font-medium transition-colors group"
                       aria-label={`Read more about ${announcement.title}`}
                     >
                       <span>Read more</span>

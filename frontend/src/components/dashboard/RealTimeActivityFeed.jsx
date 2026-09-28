@@ -48,7 +48,7 @@ const RealTimeActivityFeed = ({ limit = 20, autoRefresh = true, refreshInterval 
 
   const colorMap = {
     payment: 'text-green-600',
-    announcement: 'text-[var(--color-primary)]-600',
+    announcement: 'text-[var(--color-primary)]',
     event: 'text-purple-600',
     member: 'text-orange-600',
     approval: 'text-red-600',
@@ -64,7 +64,7 @@ const RealTimeActivityFeed = ({ limit = 20, autoRefresh = true, refreshInterval 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-primary)]-600"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-primary)]"></div>
       </div>
     );
   }
@@ -85,7 +85,7 @@ const RealTimeActivityFeed = ({ limit = 20, autoRefresh = true, refreshInterval 
           )}
           <button
             onClick={handleRefresh}
-            className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded-lg transition-colors"
+            className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded-lg transition-colors"
             aria-label="Refresh activities"
           >
             <RefreshCw className="h-4 w-4" />
@@ -103,7 +103,7 @@ const RealTimeActivityFeed = ({ limit = 20, autoRefresh = true, refreshInterval 
               onClick={() => setFilter(type)}
               className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                 filter === type
-                  ? 'bg-[var(--color-primary)]-600 text-white'
+                  ? 'bg-[var(--color-primary)] text-white'
                   : 'bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
               }`}
               aria-label={`Filter by ${type}`}

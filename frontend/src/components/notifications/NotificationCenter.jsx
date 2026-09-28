@@ -56,7 +56,7 @@ const NotificationCenter = () => {
 
   const colorMap = {
     alert: 'text-red-600 bg-red-100',
-    info: 'text-[var(--color-primary)]-600 bg-[var(--color-primary)]-100',
+    info: 'text-[var(--color-primary)] bg-[var(--color-primary-light)]',
     success: 'text-green-600 bg-green-100',
     system: 'text-[var(--color-textSecondary)] bg-[var(--color-surface)]'
   };
@@ -147,7 +147,7 @@ const NotificationCenter = () => {
                   </div>
                   <p className="text-sm text-[var(--color-textSecondary)] mt-1">{notification.message}</p>
                   {notification.action_url && (
-                    <button className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700 mt-2">
+                    <button className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] mt-2">
                       View Details →
                     </button>
                   )}

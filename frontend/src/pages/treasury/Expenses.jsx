@@ -225,7 +225,7 @@ const Expenses = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-700'
-      case 'approved': return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+      case 'approved': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
       case 'rejected': return 'bg-red-100 text-red-700'
       case 'paid': return 'bg-green-100 text-green-700'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
@@ -258,7 +258,7 @@ const Expenses = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Expense</span>
@@ -382,7 +382,7 @@ const Expenses = () => {
                         )}
                         <button
                           onClick={() => handleEdit(expense)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-400 transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
@@ -567,7 +567,7 @@ const Expenses = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingExpense ? 'Update' : 'Create'}
                   </button>

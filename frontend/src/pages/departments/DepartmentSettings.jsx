@@ -101,7 +101,7 @@ const DepartmentSettings = () => {
             onClick={() => setActiveTab('global')}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'global'
-                ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                 : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
             }`}
           >
@@ -112,7 +112,7 @@ const DepartmentSettings = () => {
             onClick={() => setActiveTab('departments')}
             className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               activeTab === 'departments'
-                ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600'
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                 : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
             }`}
           >
@@ -129,7 +129,7 @@ const DepartmentSettings = () => {
               <h2 className="text-lg font-semibold text-[var(--color-text)]">Global Department Settings</h2>
               <button
                 onClick={handleSaveGlobalSettings}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 <Save className="w-4 h-4" />
                 Save Settings
@@ -149,7 +149,7 @@ const DepartmentSettings = () => {
                     onChange={(e) => handleGlobalSettingChange('allow_self_join', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                 </label>
               </div>
 
@@ -165,7 +165,7 @@ const DepartmentSettings = () => {
                     onChange={(e) => handleGlobalSettingChange('require_approval', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                  <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                 </label>
               </div>
 
@@ -178,7 +178,7 @@ const DepartmentSettings = () => {
                   value={globalSettings.max_members_per_department || ''}
                   onChange={(e) => handleGlobalSettingChange('max_members_per_department', e.target.value ? parseInt(e.target.value) : null)}
                   placeholder="No limit"
-                  className="w-full max-w-xs px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full max-w-xs px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 />
                 <p className="text-sm text-[var(--color-textSecondary)] mt-1">Leave empty for no limit</p>
               </div>
@@ -190,7 +190,7 @@ const DepartmentSettings = () => {
                 <select
                   value={globalSettings.default_category}
                   onChange={(e) => handleGlobalSettingChange('default_category', e.target.value)}
-                  className="w-full max-w-xs px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full max-w-xs px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
                   <option value="Leadership">Leadership</option>
                   <option value="Ministry">Ministry</option>
@@ -211,8 +211,8 @@ const DepartmentSettings = () => {
             <div key={department.id} className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[var(--color-primary)]-100">
-                    <Building className="w-5 h-5 text-[var(--color-primary)]-600" />
+                  <div className="p-2 rounded-lg bg-[var(--color-primary-light)]">
+                    <Building className="w-5 h-5 text-[var(--color-primary)]" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-[var(--color-text)]">{department.name}</h3>
@@ -240,7 +240,7 @@ const DepartmentSettings = () => {
                       onChange={(e) => handleDepartmentSettingChange(department.id, 'is_public', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                   </label>
                 </div>
 
@@ -256,7 +256,7 @@ const DepartmentSettings = () => {
                       onChange={(e) => handleDepartmentSettingChange(department.id, 'allow_member_communication', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                   </label>
                 </div>
 
@@ -272,7 +272,7 @@ const DepartmentSettings = () => {
                       onChange={(e) => handleDepartmentSettingChange(department.id, 'auto_approve_members', e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600"></div>
+                    <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]"></div>
                   </label>
                 </div>
               </div>

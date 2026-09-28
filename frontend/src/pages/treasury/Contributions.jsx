@@ -118,7 +118,7 @@ const Contributions = () => {
         </div>
         <button
           onClick={handleDownload}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Download className="h-4 w-4" />
           <span>Export CSV</span>
@@ -146,8 +146,8 @@ const Contributions = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-[var(--color-primary)]-100  rounded-lg">
-                <User className="h-6 w-6 text-[var(--color-primary)]-600" />
+              <div className="p-3 bg-[var(--color-primary-light)]  rounded-lg">
+                <User className="h-6 w-6 text-[var(--color-primary)]" />
               </div>
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Contributors</p>

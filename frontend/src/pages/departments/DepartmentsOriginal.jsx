@@ -259,7 +259,7 @@ const DepartmentsOriginal = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case 'Leadership': return 'bg-purple-100 text-purple-800';
-      case 'Ministry': return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800';
+      case 'Ministry': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]';
       case 'Education': return 'bg-green-100 text-green-800';
       case 'Youth': return 'bg-orange-100 text-orange-800';
       case 'Support': return 'bg-[var(--color-surface)] text-[var(--color-text)]';
@@ -326,7 +326,7 @@ const DepartmentsOriginal = () => {
         {canManageDepartments && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Department
@@ -351,7 +351,7 @@ const DepartmentsOriginal = () => {
                   <p className="text-sm text-[var(--color-textSecondary)]">Total Departments</p>
                   <p className="text-2xl font-bold text-[var(--color-text)]">{departments.length}</p>
                 </div>
-                <Building className="w-8 h-8 text-[var(--color-primary)]-600" />
+                <Building className="w-8 h-8 text-[var(--color-primary)]" />
               </div>
             </div>
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
@@ -382,7 +382,7 @@ const DepartmentsOriginal = () => {
                 onClick={() => setActiveTab('all-departments')}
                 className="flex items-center gap-3 p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
               >
-                <LayoutGrid className="w-5 h-5 text-[var(--color-primary)]-600" />
+                <LayoutGrid className="w-5 h-5 text-[var(--color-primary)]" />
                 <span className="text-[var(--color-text)]">View All Departments</span>
               </button>
               <button
@@ -410,24 +410,24 @@ const DepartmentsOriginal = () => {
       {activeTab === 'all-departments' && (
         <div className="space-y-6">
           {selectedDepartments.length > 0 && (
-            <div className="bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg p-3 flex items-center justify-between">
+            <div className="bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg p-3 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleSelectAll}
-                  className="flex items-center gap-2 text-[var(--color-primary)]-700 hover:text-[var(--color-primary)]-900"
+                  className="flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                 >
                   {selectAll ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                   <span className="text-sm font-medium">
                     {selectAll ? 'Deselect All' : 'Select All'}
                   </span>
                 </button>
-                <div className="h-6 w-px bg-[var(--color-primary)]-300"></div>
-                <span className="text-sm text-[var(--color-primary)]-700 font-medium">
+                <div className="h-6 w-px bg-[var(--color-primary-light)]"></div>
+                <span className="text-sm text-[var(--color-primary)] font-medium">
                   {selectedDepartments.length} {selectedDepartments.length === 1 ? 'department' : 'departments'} selected
                 </span>
                 {canManageDepartments && (
                   <>
-                    <div className="h-6 w-px bg-[var(--color-primary)]-300"></div>
+                    <div className="h-6 w-px bg-[var(--color-primary-light)]"></div>
                     <div className="flex items-center gap-2">
                       <PermissionButton
                         permission={PERMISSIONS.DEPARTMENTS_EDIT}
@@ -468,7 +468,7 @@ const DepartmentsOriginal = () => {
                   setSelectedDepartments([]);
                   setSelectAll(false);
                 }}
-                className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-800 text-sm font-medium"
+                className="text-[var(--color-primary)] hover:text-[var(--color-primary)] text-sm font-medium"
               >
                 Cancel
               </button>
@@ -491,7 +491,7 @@ const DepartmentsOriginal = () => {
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                       required
                     />
                   </div>
@@ -503,7 +503,7 @@ const DepartmentsOriginal = () => {
                     <select
                       value={formData.head_id}
                       onChange={(e) => setFormData({...formData, head_id: e.target.value})}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     >
                       <option value="">No Department Head</option>
                       <option value="1">Pastor John</option>
@@ -520,7 +520,7 @@ const DepartmentsOriginal = () => {
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({...formData, category: e.target.value})}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     >
                       <option value="">Select Category</option>
                       <option value="Leadership">Leadership</option>
@@ -539,7 +539,7 @@ const DepartmentsOriginal = () => {
                     <select
                       value={formData.parent_department_id}
                       onChange={(e) => setFormData({...formData, parent_department_id: e.target.value})}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     >
                       <option value="">No Parent Department</option>
                       {departments.filter(d => d.id !== editingDepartment?.id).map((dept) => (
@@ -557,7 +557,7 @@ const DepartmentsOriginal = () => {
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                     rows={3}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
                     required
                   />
                 </div>
@@ -569,7 +569,7 @@ const DepartmentsOriginal = () => {
                       id="is_committee"
                       checked={formData.is_committee}
                       onChange={(e) => setFormData({...formData, is_committee: e.target.checked})}
-                      className="w-4 h-4 text-[var(--color-primary)]-600 border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]-500"
+                      className="w-4 h-4 text-[var(--color-primary)] border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]"
                     />
                     <label htmlFor="is_committee" className="ml-2 text-sm text-[var(--color-text)]">
                       This is a committee/subcommittee
@@ -582,7 +582,7 @@ const DepartmentsOriginal = () => {
                       id="is_active"
                       checked={formData.is_active}
                       onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                      className="w-4 h-4 text-[var(--color-primary)]-600 border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]-500"
+                      className="w-4 h-4 text-[var(--color-primary)] border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]"
                     />
                     <label htmlFor="is_active" className="ml-2 text-sm text-[var(--color-text)]">
                       Department is active
@@ -593,7 +593,7 @@ const DepartmentsOriginal = () => {
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingDepartment ? 'Update Department' : 'Create Department'}
                   </button>
@@ -618,7 +618,7 @@ const DepartmentsOriginal = () => {
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             >
               <option value="all">All Departments</option>
               <option value="leadership">Leadership Roles</option>
@@ -634,7 +634,7 @@ const DepartmentsOriginal = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             >
               <option value="name">Name</option>
               <option value="members">Member Count</option>
@@ -661,13 +661,13 @@ const DepartmentsOriginal = () => {
                               className="shrink-0"
                             >
                               {selectedDepartments.includes(department.id) ? (
-                                <CheckSquare className="w-5 h-5 text-[var(--color-primary)]-600" />
+                                <CheckSquare className="w-5 h-5 text-[var(--color-primary)]" />
                               ) : (
                                 <Square className="w-5 h-5 text-[var(--color-textSecondary)]" />
                               )}
                             </button>
                           )}
-                          <Building className={`w-5 h-5 ${department.is_active ? 'text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'} shrink-0`} />
+                          <Building className={`w-5 h-5 ${department.is_active ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'} shrink-0`} />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h3 className="font-medium text-[var(--color-text)] truncate">{department.name}</h3>
@@ -689,7 +689,7 @@ const DepartmentsOriginal = () => {
                           <span className="text-xs text-[var(--color-textSecondary)]">{department.member_count || 0} members</span>
                           <button
                             onClick={() => handleDepartmentClick(department)}
-                            className="px-3 py-1.5 text-sm bg-[var(--color-primary)]-600 text-white rounded hover:bg-[var(--color-primary)]-700 transition-colors"
+                            className="px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary)] transition-colors"
                           >
                             Open
                           </button>
@@ -697,7 +697,7 @@ const DepartmentsOriginal = () => {
                             <PermissionButton
                               permission={PERMISSIONS.DEPARTMENTS_EDIT}
                               buttonProps={{
-                                className: "p-1.5 text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded transition-colors",
+                                className: "p-1.5 text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded transition-colors",
                                 title: "Edit",
                               }}
                               onClick={() => handleEdit(department)}
@@ -732,8 +732,8 @@ const DepartmentsOriginal = () => {
                   className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6 hover:shadow-md transition-shadow cursor-pointer"
                 >
                   <div className="flex items-start gap-3 mb-4">
-                    <div className="p-2 rounded-lg bg-[var(--color-primary)]-100 shrink-0">
-                      <Building className="w-6 h-6 text-[var(--color-primary)]-600" />
+                    <div className="p-2 rounded-lg bg-[var(--color-primary-light)] shrink-0">
+                      <Building className="w-6 h-6 text-[var(--color-primary)]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-[var(--color-text)] truncate">{department.name}</h3>

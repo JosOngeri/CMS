@@ -56,7 +56,7 @@ const InsightsOriginal = () => {
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
-            className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+            className="px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
           >
             <option value="7">Last 7 days</option>
             <option value="30">Last 30 days</option>
@@ -71,7 +71,7 @@ const InsightsOriginal = () => {
           </button>
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Download className="w-4 h-4" />
             Export
@@ -97,7 +97,7 @@ const InsightsOriginal = () => {
                   <p className="text-2xl font-bold text-[var(--color-text)]">0</p>
                   <p className="text-xs text-green-600 mt-1">+0% from last period</p>
                 </div>
-                <Users className="w-8 h-8 text-[var(--color-primary)]-600" />
+                <Users className="w-8 h-8 text-[var(--color-primary)]" />
               </div>
             </div>
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
@@ -157,7 +157,7 @@ const InsightsOriginal = () => {
               <input
                 type="text"
                 placeholder="Search analytics..."
-                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
               />
             </div>
             <button className="flex items-center gap-2 px-3 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm">
@@ -182,11 +182,11 @@ const InsightsOriginal = () => {
                 <input
                   type="text"
                   placeholder="Search reports..."
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
               <FileText className="w-4 h-4" />
               Generate Report
             </button>
@@ -207,7 +207,7 @@ const InsightsOriginal = () => {
               <input
                 type="text"
                 placeholder="Search trends..."
-                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
               />
             </div>
             <button className="flex items-center gap-2 px-3 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm">
@@ -231,7 +231,7 @@ const InsightsOriginal = () => {
               <input
                 type="text"
                 placeholder="Search comparisons..."
-                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
               />
             </div>
             <button className="flex items-center gap-2 px-3 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm">

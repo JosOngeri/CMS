@@ -97,7 +97,7 @@ const TreasuryDashboard = () => {
       title: 'Submit Expense',
       description: 'Create expense request',
       icon: DollarSign,
-      color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       link: '/dashboard/payments/expenses'
     },
     {
@@ -166,8 +166,8 @@ const TreasuryDashboard = () => {
                         KES {stats.netIncome.toLocaleString()}
                       </p>
                     </div>
-                    <div className="p-3 bg-[var(--color-primary)]-100 rounded-lg">
-                      <Wallet className="h-6 w-6 text-[var(--color-primary)]-600" />
+                    <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
+                      <Wallet className="h-6 w-6 text-[var(--color-primary)]" />
                     </div>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ const TreasuryDashboard = () => {
                   {[
                     { title: 'Record Income', icon: TrendingUp, link: '/dashboard/treasury/income', color: 'bg-green-100 text-green-600' },
                     { title: 'Record Expense', icon: TrendingDown, link: '/dashboard/treasury/expenses', color: 'bg-red-100 text-red-600' },
-                    { title: 'View History', icon: FileText, link: '/dashboard/treasury/history', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' }
+                    { title: 'View History', icon: FileText, link: '/dashboard/treasury/history', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -271,7 +271,7 @@ const TreasuryDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
                     { title: 'Create Budget', icon: Plus, link: '/dashboard/treasury/budgets/create', color: 'bg-green-100 text-green-600' },
-                    { title: 'View Budgets', icon: Wallet, link: '/dashboard/treasury/budgets', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' },
+                    { title: 'View Budgets', icon: Wallet, link: '/dashboard/treasury/budgets', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
                     { title: 'Budget Reports', icon: BarChart3, link: '/dashboard/treasury/budgets/reports', color: 'bg-purple-100 text-purple-600' }
                   ].map((action, index) => (
                     <Link
@@ -302,7 +302,7 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Collections Management</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { title: 'My Collections', icon: Wallet, link: '/dashboard/collections', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' },
+                    { title: 'My Collections', icon: Wallet, link: '/dashboard/collections', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
                     { title: 'Payment History', icon: FileText, link: '/dashboard/payment-history', color: 'bg-green-100 text-green-600' },
                     { title: 'Payment Management', icon: DollarSign, link: '/dashboard/payment-management', color: 'bg-purple-100 text-purple-600' },
                     { title: 'Contribution Reports', icon: BarChart3, link: '/dashboard/payments/contributions', color: 'bg-orange-100 text-orange-600' }
@@ -345,8 +345,8 @@ const TreasuryDashboard = () => {
                       to={report.link}
                       className="flex items-center gap-4 p-4 bg-[var(--color-background)]  rounded-lg hover:bg-[var(--color-surface)] transition-colors"
                     >
-                      <div className="p-3 bg-[var(--color-primary)]-100 rounded-lg">
-                        <report.icon className="h-6 w-6 text-[var(--color-primary)]-600" />
+                      <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
+                        <report.icon className="h-6 w-6 text-[var(--color-primary)]" />
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-[var(--color-text)] ">{report.title}</p>
@@ -370,7 +370,7 @@ const TreasuryDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { title: 'Currency Settings', icon: DollarSign, link: '/settings/treasury/currency', color: 'bg-green-100 text-green-600' },
-                    { title: 'Account Settings', icon: Wallet, link: '/settings/treasury/accounts', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' },
+                    { title: 'Account Settings', icon: Wallet, link: '/settings/treasury/accounts', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
                     { title: 'Tax Settings', icon: FileText, link: '/settings/treasury/tax', color: 'bg-purple-100 text-purple-600' },
                     { title: 'Approval Settings', icon: CheckCircle, link: '/settings/treasury/approvals', color: 'bg-orange-100 text-orange-600' }
                   ].map((setting, index) => (

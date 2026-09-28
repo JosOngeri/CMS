@@ -82,7 +82,7 @@ const DocumentationManager = () => {
         <h2 className="text-2xl font-bold">Documentation Manager</h2>
         <button
           onClick={() => setSelectedDoc({ title: '', content: '', category: 'user-guide' })}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
         >
           <Plus size={16} />
           New Document
@@ -110,11 +110,11 @@ const DocumentationManager = () => {
               key={doc.id}
               onClick={() => setSelectedDoc(doc)}
               className={`p-3 border rounded-lg cursor-pointer hover:bg-[var(--color-background)] ${
-                selectedDoc?.id === doc.id ? 'bg-[var(--color-primary)]-50 border-[var(--color-primary)]-500' : ''
+                selectedDoc?.id === doc.id ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)]' : ''
               }`}
             >
               <div className="flex items-center gap-2">
-                <Book size={16} className="text-[var(--color-primary)]-600" />
+                <Book size={16} className="text-[var(--color-primary)]" />
                 <div className="font-medium">{doc.title}</div>
               </div>
               <div className="text-sm text-[var(--color-textSecondary)] mt-1">{doc.category}</div>
@@ -170,7 +170,7 @@ const DocumentationManager = () => {
               </div>
               <button
                 onClick={() => handleSave(selectedDoc)}
-                className="w-full py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="w-full py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
               >
                 Save Document
               </button>

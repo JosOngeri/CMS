@@ -26,7 +26,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
   const getStatusColor = () => {
     if (isCompleted) return 'bg-green-100 text-green-800 bg-green-900 text-green-200';
     if (isCancelled) return 'bg-red-100 text-red-800 bg-red-900 text-red-200';
-    return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800 bg-[var(--color-primary)]-900 text-[var(--color-primary)]-200';
+    return 'bg-[var(--color-primary-light)] text-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-light)]';
   };
 
   const getStatusIcon = () => {
@@ -123,7 +123,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
         <div className="w-full bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all duration-300 ${
-              isCompleted ? 'bg-green-600' : 'bg-[var(--color-primary)]-600'
+              isCompleted ? 'bg-green-600' : 'bg-[var(--color-primary)]'
             }`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           />

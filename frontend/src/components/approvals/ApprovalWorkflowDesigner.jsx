@@ -62,7 +62,7 @@ const ApprovalWorkflowDesigner = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)]"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)]"
             aria-label="Save workflow"
             aria-busy={saving}
           >
@@ -109,7 +109,7 @@ const ApprovalWorkflowDesigner = () => {
         {workflow.steps.map((step, index) => (
           <div key={step.id} className="bg-[var(--color-surface)] border rounded-lg p-4">
             <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600 rounded-full flex items-center justify-center font-bold" aria-label={`Step ${index + 1}`}>
+              <div className="w-8 h-8 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-full flex items-center justify-center font-bold" aria-label={`Step ${index + 1}`}>
                 {index + 1}
               </div>
               {index < workflow.steps.length - 1 && (
@@ -170,7 +170,7 @@ const ApprovalWorkflowDesigner = () => {
         ))}
         <button
           onClick={addStep}
-          className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-[var(--color-border)] rounded-lg hover:border-[var(--color-primary)]-500 hover:text-[var(--color-primary)]-500"
+          className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-[var(--color-border)] rounded-lg hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
           aria-label="Add new workflow step"
         >
           <Plus size={20} aria-hidden="true" />

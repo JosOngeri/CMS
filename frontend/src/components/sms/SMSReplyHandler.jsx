@@ -112,7 +112,7 @@ const SMSReplyHandler = () => {
           <div className="text-2xl font-bold">{replies.length}</div>
         </div>
         <div className="bg-[var(--color-surface)] border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-[var(--color-primary)]-600 mb-2">
+          <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
             <AlertTriangle size={16} />
             <span className="text-sm">Unread</span>
           </div>
@@ -140,7 +140,7 @@ const SMSReplyHandler = () => {
           <div key={reply.id} className="bg-[var(--color-surface)] border rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center text-[var(--color-primary)]-600 font-bold">
+                <div className="w-10 h-10 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center text-[var(--color-primary)] font-bold">
                   {reply.sender.charAt(0)}
                 </div>
                 <div>
@@ -150,7 +150,7 @@ const SMSReplyHandler = () => {
               </div>
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  reply.status === 'unread' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700' :
+                  reply.status === 'unread' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' :
                   reply.status === 'read' ? 'bg-[var(--color-surface)] text-[var(--color-text)]' :
                   reply.status === 'replied' ? 'bg-green-100 text-green-700' :
                   'bg-[var(--color-surface)] text-[var(--color-text)]'
@@ -173,7 +173,7 @@ const SMSReplyHandler = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => { setSelectedReply(reply); setShowReplyModal(true); }}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700 rounded hover:bg-[var(--color-primary)]-200"
+                className="flex items-center gap-1 px-3 py-1 text-sm bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded hover:bg-[var(--color-primary-light)]"
               >
                 <Reply size={14} />
                 Reply
@@ -230,7 +230,7 @@ const SMSReplyHandler = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleReply(selectedReply.originalMessageId, '')}
-                  className="flex-1 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                  className="flex-1 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 >
                   Send Reply
                 </button>

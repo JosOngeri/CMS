@@ -288,7 +288,7 @@ const Projects = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-700'
-      case 'completed': return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700'
+      case 'completed': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
       case 'on_hold': return 'bg-yellow-100 text-yellow-700'
       case 'cancelled': return 'bg-red-100 text-red-700'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
@@ -311,7 +311,7 @@ const Projects = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Project</span>
@@ -421,7 +421,7 @@ const Projects = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEdit(project)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -595,7 +595,7 @@ const Projects = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingProject ? 'Update' : 'Create'}
                   </button>

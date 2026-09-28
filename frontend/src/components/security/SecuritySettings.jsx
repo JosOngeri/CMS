@@ -53,7 +53,7 @@ const SecuritySettings = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)]"
         >
           <Save size={20} />
           {saving ? 'Saving...' : 'Save Settings'}
@@ -63,7 +63,7 @@ const SecuritySettings = () => {
       {/* Password Policy */}
       <div className="bg-[var(--color-surface)] border rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Lock className="text-[var(--color-primary)]-600" size={20} />
+          <Lock className="text-[var(--color-primary)]" size={20} />
           <h3 className="font-semibold">Password Policy</h3>
         </div>
         <div className="space-y-4">
@@ -159,7 +159,7 @@ const SecuritySettings = () => {
               onChange={(e) => setSettings({ ...settings, mfaEnabled: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary)]-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]-600" />
+            <div className="w-11 h-6 bg-[var(--color-surface)] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[var(--color-primary-light)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-[var(--color-surface)] after:border-[var(--color-border)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)]" />
           </label>
         </div>
         <p className="text-sm text-[var(--color-textSecondary)] mt-2">

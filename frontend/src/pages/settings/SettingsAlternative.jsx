@@ -116,7 +116,7 @@ const SettingsAlternative = () => {
                 type="text"
                 value={localSettings.site_name || ''}
                 onChange={(e) => handleInputChange('site_name', e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 bg-[var(--color-surface)] text-[var(--color-text)]"
+                className="w-full px-4 py-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
             <div>
@@ -125,7 +125,7 @@ const SettingsAlternative = () => {
                 value={localSettings.site_description || ''}
                 onChange={(e) => handleInputChange('site_description', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 bg-[var(--color-surface)] text-[var(--color-text)]"
+                className="w-full px-4 py-2 rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ const SettingsAlternative = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-[var(--color-primary)]" />
       </div>
     );
   }
@@ -165,7 +165,7 @@ const SettingsAlternative = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors disabled:opacity-50"
         >
           {saving ? (
             <>
@@ -189,7 +189,7 @@ const SettingsAlternative = () => {
           placeholder="Search settings..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500 bg-[var(--color-surface)] text-[var(--color-text)]"
+          className="w-full pl-10 pr-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] bg-[var(--color-surface)] text-[var(--color-text)]"
         />
       </div>
 
@@ -209,7 +209,7 @@ const SettingsAlternative = () => {
                 className="w-full flex items-center justify-between p-4 hover:bg-[var(--color-background)] transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <SectionIcon className="w-5 h-5 text-[var(--color-primary)]-600" />
+                  <SectionIcon className="w-5 h-5 text-[var(--color-primary)]" />
                   <span className="font-medium text-[var(--color-text)]">{section.label}</span>
                 </div>
                 {isExpanded ? (

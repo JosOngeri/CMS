@@ -393,13 +393,13 @@ const Payments = () => {
           </div>
 
           {/* Payment Info */}
-          <div className="bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20 p-6 rounded-lg">
+          <div className="bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 p-6 rounded-lg">
             <div className="flex items-center space-x-3 mb-4">
-              <CheckCircle className="h-6 w-6 text-[var(--color-primary)]-600" />
-              <h3 className="font-semibold text-[var(--color-primary)]-900 text-[var(--color-primary)]-100">Secure Payment</h3>
+              <CheckCircle className="h-6 w-6 text-[var(--color-primary)]" />
+              <h3 className="font-semibold text-[var(--color-primary)] text-[var(--color-primary-light)]">Secure Payment</h3>
             </div>
             
-            <div className="space-y-2 text-sm text-[var(--color-primary)]-800 text-[var(--color-primary)]-200">
+            <div className="space-y-2 text-sm text-[var(--color-primary)] text-[var(--color-primary-light)]">
               <p>• All payments are processed securely via M-Pesa</p>
               <p>• You will receive an STK push on your phone</p>
               <p>• Payment confirmation will be sent automatically</p>

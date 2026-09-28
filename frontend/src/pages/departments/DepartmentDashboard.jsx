@@ -673,7 +673,7 @@ const DepartmentDashboard = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => navigate('/dashboard/my-departments')}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   View My Departments
                 </button>
@@ -697,9 +697,9 @@ const DepartmentDashboard = () => {
               <p className="text-[var(--color-textSecondary)]  text-center max-w-md mb-6">
                 {error || 'The department you are looking for does not exist or has been deleted.'}
               </p>
-              <div className="bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg p-4 max-w-md mb-6">
-                <h3 className="font-medium text-[var(--color-primary)]-800 mb-2">To resolve this issue:</h3>
-                <ul className="text-sm text-[var(--color-primary)]-700 space-y-1 list-disc list-inside">
+              <div className="bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg p-4 max-w-md mb-6">
+                <h3 className="font-medium text-[var(--color-primary)] mb-2">To resolve this issue:</h3>
+                <ul className="text-sm text-[var(--color-primary)] space-y-1 list-disc list-inside">
                   <li>Check the department ID in the URL</li>
                   <li>Browse the list of available departments</li>
                   <li>Contact the church administrator if you believe this is an error</li>
@@ -708,7 +708,7 @@ const DepartmentDashboard = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => navigate('/dashboard/departments')}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Browse Departments
                 </button>
@@ -746,7 +746,7 @@ const DepartmentDashboard = () => {
                     localStorage.removeItem('token');
                     navigate('/login');
                   }}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Log In Again
                 </button>
@@ -781,7 +781,7 @@ const DepartmentDashboard = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Refresh Page
                 </button>
@@ -817,7 +817,7 @@ const DepartmentDashboard = () => {
               <div className="flex gap-3">
                 <button
                   onClick={() => fetchDepartmentDashboard()}
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Try Again
                 </button>
@@ -943,7 +943,7 @@ const DepartmentDashboard = () => {
               <select
                 value={membersSort}
                 onChange={(e) => setMembersSort(e.target.value)}
-                className="px-3 py-1.5 text-sm border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="px-3 py-1.5 text-sm border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               >
                 <option value="name">Sort by Name</option>
                 <option value="role">Sort by Role</option>
@@ -1017,8 +1017,8 @@ const DepartmentDashboard = () => {
               }).map((member) => (
                 <div key={member.id} className="bg-[var(--color-surface)]  rounded-lg shadow p-4 sm:p-6">
                   <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-base sm:text-lg font-semibold text-[var(--color-primary)]-600">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-base sm:text-lg font-semibold text-[var(--color-primary)]">
                         {member.first_name?.[0] || 'U'}
                       </span>
                     </div>
@@ -1214,7 +1214,7 @@ const DepartmentDashboard = () => {
                       </span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                         task.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        task.status === 'in_progress' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800' :
+                        task.status === 'in_progress' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' :
                         'bg-[var(--color-surface)] text-[var(--color-text)] '
                       }`}>
                         {task.status}
@@ -1240,7 +1240,7 @@ const DepartmentDashboard = () => {
                     {task.status === 'pending' && (
                       <button
                         onClick={() => updateTaskStatus(task.id, 'in_progress')}
-                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                       >
                         <Play className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Start</span>
@@ -1316,7 +1316,7 @@ const DepartmentDashboard = () => {
               <button
                 type="button"
                 onClick={() => navigate('/dashboard/gallery')}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
               >
                 <Image className="w-4 h-4" />
                 <span className="hidden sm:inline">View Full Gallery</span>
@@ -1357,7 +1357,7 @@ const DepartmentDashboard = () => {
                     <button
                       type="button"
                       onClick={() => navigate('/dashboard/gallery')}
-                      className="px-3 sm:px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                      className="px-3 sm:px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
                     >
                       Upload Photos
                     </button>
@@ -1392,9 +1392,9 @@ const DepartmentDashboard = () => {
                   <p className="text-sm text-[var(--color-textSecondary)] ">Total Collections</p>
                   <p className="text-2xl font-bold text-green-600">KES 0</p>
                 </div>
-                <div className="p-4 bg-[var(--color-primary)]-50 rounded-lg">
+                <div className="p-4 bg-[var(--color-primary-light)] rounded-lg">
                   <p className="text-sm text-[var(--color-textSecondary)] ">Budget Used</p>
-                  <p className="text-2xl font-bold text-[var(--color-primary)]-600">0%</p>
+                  <p className="text-2xl font-bold text-[var(--color-primary)]">0%</p>
                 </div>
                 <div className="p-4 bg-purple-50 rounded-lg">
                   <p className="text-sm text-[var(--color-textSecondary)] ">Pending Expenses</p>
@@ -1459,7 +1459,7 @@ const DepartmentDashboard = () => {
           <p className="text-[var(--color-textSecondary)] mb-4">{error}</p>
           <button
             onClick={() => navigate('/dashboard/departments')}
-            className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             Back to Departments
           </button>
@@ -1525,7 +1525,7 @@ const DepartmentDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowCommModal(true)}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span className="hidden sm:inline">New Message</span>
@@ -1565,7 +1565,7 @@ const DepartmentDashboard = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                       activeTab === tab.id
-                        ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-700'
+                        ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                         : 'border-transparent text-[var(--color-textSecondary)]  hover:text-[var(--color-text)]'
                     }`}
                   >
@@ -1608,7 +1608,7 @@ const DepartmentDashboard = () => {
                   required
                   value={commForm.title}
                   onChange={(e) => setCommForm({ ...commForm, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 />
               </div>
               <div>
@@ -1616,7 +1616,7 @@ const DepartmentDashboard = () => {
                 <select
                   value={commForm.type}
                   onChange={(e) => setCommForm({ ...commForm, type: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 >
                   <option value="Announcement">Announcement</option>
                   <option value="Notice">Notice</option>
@@ -1629,7 +1629,7 @@ const DepartmentDashboard = () => {
                 <select
                   value={commForm.priority}
                   onChange={(e) => setCommForm({ ...commForm, priority: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 >
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
@@ -1644,7 +1644,7 @@ const DepartmentDashboard = () => {
                   rows={4}
                   value={commForm.message}
                   onChange={(e) => setCommForm({ ...commForm, message: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -1657,7 +1657,7 @@ const DepartmentDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Post Communication
                 </button>
@@ -1923,7 +1923,7 @@ const DepartmentDashboard = () => {
                   required
                   value={editFormData.name}
                   onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 />
               </div>
               <div>
@@ -1933,7 +1933,7 @@ const DepartmentDashboard = () => {
                   required
                   value={editFormData.category}
                   onChange={(e) => setEditFormData({ ...editFormData, category: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 />
               </div>
               <div>
@@ -1942,7 +1942,7 @@ const DepartmentDashboard = () => {
                   rows={3}
                   value={editFormData.description}
                   onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -1955,7 +1955,7 @@ const DepartmentDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >
                   Save Changes
                 </button>

@@ -110,7 +110,7 @@ const PastorDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           {/* Ministry Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-50 text-[var(--color-primary)]-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-lg">
             <Heart className="h-4 w-4" />
             <span className="text-sm font-medium">Ministry Health: {Math.round((ministryHealth.memberEngagement + ministryHealth.departmentActivity + ministryHealth.spiritualGrowth) / 3)}%</span>
           </div>
@@ -186,7 +186,7 @@ const PastorDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Ministry Activity</h2>
-          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

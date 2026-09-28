@@ -32,7 +32,7 @@ const MemberDirectory = () => {
   const roles = [
     { value: 'Super Admin', label: 'Super Admin', color: 'bg-red-100 text-red-800' },
     { value: 'Pastor', label: 'Pastor', color: 'bg-purple-100 text-purple-800' },
-    { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800' },
+    { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
     { value: 'Department Head', label: 'Department Head', color: 'bg-green-100 text-green-800' },
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ]
@@ -178,7 +178,7 @@ const MemberDirectory = () => {
         <PermissionButton
           permission={PERMISSIONS.MEMBERS_EXPORT}
           buttonProps={{
-            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors",
+            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors",
           }}
           onClick={() => setShowExportModal(true)}
         >
@@ -202,8 +202,8 @@ const MemberDirectory = () => {
             {departments.map((dept) => (
               <div key={dept.value} className="bg-[var(--color-surface)]  p-6 rounded-lg border border-[var(--color-border)] ">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-[var(--color-primary)]-100  rounded-lg">
-                    <Building className="h-6 w-6 text-[var(--color-primary)]-600 " />
+                  <div className="p-3 bg-[var(--color-primary-light)]  rounded-lg">
+                    <Building className="h-6 w-6 text-[var(--color-primary)] " />
                   </div>
                   <div>
                     <h3 className="font-semibold text-[var(--color-text)] ">{dept.label}</h3>
@@ -254,8 +254,8 @@ const MemberDirectory = () => {
               <p className="text-sm text-[var(--color-textSecondary)] ">Total Members</p>
               <p className="text-2xl font-bold text-[var(--color-text)] ">{members.length}</p>
             </div>
-            <div className="p-3 bg-[var(--color-primary)]-100  rounded-lg">
-              <Users className="h-6 w-6 text-[var(--color-primary)]-600 " />
+            <div className="p-3 bg-[var(--color-primary-light)]  rounded-lg">
+              <Users className="h-6 w-6 text-[var(--color-primary)] " />
             </div>
           </div>
         </div>
@@ -314,7 +314,7 @@ const MemberDirectory = () => {
                 placeholder="Search members by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
             </div>
           </div>
@@ -322,7 +322,7 @@ const MemberDirectory = () => {
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Roles</option>
             {roles.map(role => (
@@ -333,7 +333,7 @@ const MemberDirectory = () => {
           <select
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Departments</option>
             {departments.map(dept => (
@@ -344,7 +344,7 @@ const MemberDirectory = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -354,7 +354,7 @@ const MemberDirectory = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="name">Sort by Name</option>
             <option value="role">Sort by Role</option>
@@ -397,8 +397,8 @@ const MemberDirectory = () => {
                   <tr key={member.id} className="hover:bg-[var(--color-background)] ">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center">
-                          <Users className="w-5 h-5 text-[var(--color-primary)]-600" />
+                        <div className="w-10 h-10 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
+                          <Users className="w-5 h-5 text-[var(--color-primary)]" />
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-[var(--color-text)] ">
@@ -462,14 +462,14 @@ const MemberDirectory = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedMember(member)}
-                        className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-900"
+                        className="text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
                       <PermissionButton
                         permission={PERMISSIONS.MEMBERS_EDIT}
                         buttonProps={{
-                          className: "text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-900",
+                          className: "text-[var(--color-primary)] hover:text-[var(--color-primary)]",
                         }}
                         onClick={() => {/* Edit functionality */}}
                       >
@@ -519,7 +519,7 @@ const MemberDirectory = () => {
                 <div className="space-y-2">
                   <button
                     onClick={() => handleExport('csv')}
-                    className="w-full px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-left"
+                    className="w-full px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-left"
                   >
                     Export as CSV
                   </button>
@@ -552,8 +552,8 @@ const MemberDirectory = () => {
             
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center">
-                  <Users className="w-8 h-8 text-[var(--color-primary)]-600" />
+                <div className="w-16 h-16 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
+                  <Users className="w-8 h-8 text-[var(--color-primary)]" />
                 </div>
                 <div>
                   <h4 className="text-lg font-medium text-[var(--color-text)] ">

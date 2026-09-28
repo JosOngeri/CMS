@@ -60,7 +60,7 @@ const ResourcesAlternative = () => {
   const getFileIcon = (type) => {
     switch (type) {
       case 'pdf': return <FileText className="w-8 h-8 text-red-500" />;
-      case 'doc': return <FileText className="w-8 h-8 text-[var(--color-primary)]-500" />;
+      case 'doc': return <FileText className="w-8 h-8 text-[var(--color-primary)]" />;
       case 'image': return <Image className="w-8 h-8 text-green-500" />;
       case 'audio': return <Mic className="w-8 h-8 text-purple-500" />;
       case 'video': return <Video className="w-8 h-8 text-orange-500" />;
@@ -107,7 +107,7 @@ const ResourcesAlternative = () => {
         </div>
         <button
           onClick={handleUpload}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Upload className="w-4 h-4" />
           Upload
@@ -126,7 +126,7 @@ const ResourcesAlternative = () => {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
               />
             </div>
           </div>
@@ -137,7 +137,7 @@ const ResourcesAlternative = () => {
                 onClick={() => handleFolderClick(folder)}
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors text-left"
               >
-                <Folder className="w-5 h-5 text-[var(--color-primary)]-500" />
+                <Folder className="w-5 h-5 text-[var(--color-primary)]" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--color-text)] truncate">{folder.name}</p>
                   <p className="text-xs text-[var(--color-textSecondary)]">{folder.itemCount} items</p>
@@ -162,7 +162,7 @@ const ResourcesAlternative = () => {
                 <ChevronRight className="w-4 h-4 text-[var(--color-textSecondary)]" />
                 <button
                   onClick={() => handleBreadcrumbClick(index)}
-                  className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-800"
+                  className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                 >
                   {folder.name}
                 </button>
@@ -180,20 +180,20 @@ const ResourcesAlternative = () => {
                   placeholder="Search files..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm w-64"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm w-64"
                 />
               </div>
             </div>
             <div className="flex items-center gap-2 border border-[var(--color-border)] rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
               >
                 <Grid className="w-4 h-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'}`}
+                className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`}
               >
                 <List className="w-4 h-4" />
               </button>
@@ -210,7 +210,7 @@ const ResourcesAlternative = () => {
                     onClick={() => handleFolderClick(folder)}
                     className="p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-left"
                   >
-                    <Folder className="w-12 h-12 text-[var(--color-primary)]-500 mb-2" />
+                    <Folder className="w-12 h-12 text-[var(--color-primary)] mb-2" />
                     <p className="text-sm font-medium text-[var(--color-text)] truncate">{folder.name}</p>
                     <p className="text-xs text-[var(--color-textSecondary)]">{folder.itemCount} items</p>
                   </button>
@@ -220,7 +220,7 @@ const ResourcesAlternative = () => {
                     key={file.id}
                     onClick={() => handleFileClick(file)}
                     className={`p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-left ${
-                      selectedFile?.id === file.id ? 'ring-2 ring-[var(--color-primary)]-500' : ''
+                      selectedFile?.id === file.id ? 'ring-2 ring-[var(--color-primary)]' : ''
                     }`}
                   >
                     {getFileIcon(file.type)}
@@ -237,7 +237,7 @@ const ResourcesAlternative = () => {
                     onClick={() => handleFolderClick(folder)}
                     className="w-full flex items-center gap-3 p-3 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-left"
                   >
-                    <Folder className="w-5 h-5 text-[var(--color-primary)]-500" />
+                    <Folder className="w-5 h-5 text-[var(--color-primary)]" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--color-text)] truncate">{folder.name}</p>
                       <p className="text-xs text-[var(--color-textSecondary)]">{folder.itemCount} items</p>
@@ -250,7 +250,7 @@ const ResourcesAlternative = () => {
                     key={file.id}
                     onClick={() => handleFileClick(file)}
                     className={`w-full flex items-center gap-3 p-3 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-left ${
-                      selectedFile?.id === file.id ? 'ring-2 ring-[var(--color-primary)]-500' : ''
+                      selectedFile?.id === file.id ? 'ring-2 ring-[var(--color-primary)]' : ''
                     }`}
                   >
                     {getFileIcon(file.type)}
@@ -311,7 +311,7 @@ const ResourcesAlternative = () => {
               <div className="p-4 border-t border-[var(--color-border)] flex gap-2">
                 <button
                   onClick={() => toast.info('Download functionality will be implemented')}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
                 >
                   <Download className="w-4 h-4" />
                   Download

@@ -278,7 +278,7 @@ const DepartmentsList = () => {
         {canManageDepartments && (
           <button
             onClick={() => { setEditingDepartment(null); setFormData({ name: '', description: '', head_id: '', category: '', parent_department_id: '', is_committee: false, is_active: true }); setShowCreateForm(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Department

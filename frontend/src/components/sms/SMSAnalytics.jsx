@@ -130,7 +130,7 @@ const SMSAnalytics = () => {
 
       {/* Executive Summary */}
       {showExecutiveSummary && (
-        <div className="bg-gradient-to-r from-[var(--color-primary)]-50 to-purple-50 border rounded-lg p-6">
+        <div className="bg-gradient-to-r from-[var(--color-primary-light)] to-purple-50 border rounded-lg p-6">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
             <Activity size={20} />
             Executive Summary
@@ -138,7 +138,7 @@ const SMSAnalytics = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-[var(--color-surface)] p-4 rounded-lg shadow-sm">
               <div className="text-sm text-[var(--color-textSecondary)] mb-1">Key Insight</div>
-              <div className="font-medium text-[var(--color-primary)]-600">Delivery rate up 5.2% vs last period</div>
+              <div className="font-medium text-[var(--color-primary)]">Delivery rate up 5.2% vs last period</div>
             </div>
             <div className="bg-[var(--color-surface)] p-4 rounded-lg shadow-sm">
               <div className="text-sm text-[var(--color-textSecondary)] mb-1">Top Performer</div>
@@ -179,7 +179,7 @@ const SMSAnalytics = () => {
           </div>
         </div>
         <div className="bg-[var(--color-surface)] border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-[var(--color-primary)]-600 mb-2">
+          <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
             <TrendingUp size={16} />
             <span className="text-sm">Response Rate</span>
           </div>
@@ -236,8 +236,8 @@ const SMSAnalytics = () => {
           onClick={() => { fetchBenchmarks(); setShowBenchmarks(!showBenchmarks); }}
           className="p-4 bg-[var(--color-surface)] border rounded-lg hover:shadow-md transition-shadow flex items-center gap-3"
         >
-          <div className="p-3 bg-[var(--color-primary)]-100 rounded-lg">
-            <Award size={24} className="text-[var(--color-primary)]-600" />
+          <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
+            <Award size={24} className="text-[var(--color-primary)]" />
           </div>
           <div className="text-left">
             <div className="font-semibold">Benchmarks</div>
@@ -309,12 +309,12 @@ const SMSAnalytics = () => {
                   </div>
                   <p className="text-sm text-yellow-600 mt-1">Delivery rate dropping for messages over 160 characters</p>
                 </div>
-                <div className="p-3 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg">
-                  <div className="flex items-center gap-2 text-[var(--color-primary)]-700">
+                <div className="p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg">
+                  <div className="flex items-center gap-2 text-[var(--color-primary)]">
                     <TrendingUp size={16} />
                     <span className="font-medium">Opportunity</span>
                   </div>
-                  <p className="text-sm text-[var(--color-primary)]-600 mt-1">Personalized messages show 15% higher engagement</p>
+                  <p className="text-sm text-[var(--color-primary)] mt-1">Personalized messages show 15% higher engagement</p>
                 </div>
               </div>
             </div>
@@ -389,7 +389,7 @@ const SMSAnalytics = () => {
                 {analytics.collaborationInsights?.topContributors?.map((user, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 bg-[var(--color-background)] rounded">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center text-[var(--color-primary)]-600 font-bold text-sm">
+                      <div className="w-8 h-8 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center text-[var(--color-primary)] font-bold text-sm">
                         {user.name.charAt(0)}
                       </div>
                       <span className="text-sm">{user.name}</span>
@@ -418,9 +418,9 @@ const SMSAnalytics = () => {
                   <div className="font-medium text-green-700 text-sm">Template Standardization</div>
                   <div className="text-xs text-green-600 mt-1">Reduced errors by 40%</div>
                 </div>
-                <div className="p-3 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg">
-                  <div className="font-medium text-[var(--color-primary)]-700 text-sm">Approval Workflow</div>
-                  <div className="text-xs text-[var(--color-primary)]-600 mt-1">Faster approvals by 25%</div>
+                <div className="p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg">
+                  <div className="font-medium text-[var(--color-primary)] text-sm">Approval Workflow</div>
+                  <div className="text-xs text-[var(--color-primary)] mt-1">Faster approvals by 25%</div>
                 </div>
                 <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
                   <div className="font-medium text-purple-700 text-sm">Knowledge Sharing</div>
@@ -456,7 +456,7 @@ const SMSAnalytics = () => {
                     </div>
                     <div className="w-full bg-[var(--color-surface)] rounded-full h-2">
                       <div
-                        className="bg-[var(--color-primary)]-600 h-2 rounded-full"
+                        className="bg-[var(--color-primary)] h-2 rounded-full"
                         style={{ width: `${Math.min((item.current / item.target) * 100, 100)}%` }}
                       />
                     </div>
@@ -522,7 +522,7 @@ const SMSAnalytics = () => {
           {analytics.topRecipients.map((recipient, index) => (
             <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center text-[var(--color-primary)]-600 font-bold">
+                <div className="w-10 h-10 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center text-[var(--color-primary)] font-bold">
                   {recipient.name.charAt(0)}
                 </div>
                 <div>

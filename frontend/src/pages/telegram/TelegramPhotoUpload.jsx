@@ -147,7 +147,7 @@ const TelegramPhotoUpload = () => {
                         <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
                           <div className="h-1 bg-[var(--color-surface)] rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-[var(--color-primary)]-500 transition-all"
+                              className="h-full bg-[var(--color-primary)] transition-all"
                               style={{ width: `${uploadProgress[index]}%` }}
                             />
                           </div>

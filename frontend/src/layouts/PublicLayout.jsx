@@ -149,13 +149,13 @@ const PublicLayout = () => {
                 Serving our community with love, faith, and fellowship. A place where everyone is welcome.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)]-800 rounded-lg flex items-center justify-center transition-colors" title="Facebook">
+                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Facebook">
                   <Share2 className="h-5 w-5" />
                 </a>
                 <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-pink-600 rounded-lg flex items-center justify-center transition-colors" title="Instagram">
                   <AtSign className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)]-400 rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
+                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
                   <Globe className="h-5 w-5" />
                 </a>
               </div>
@@ -166,21 +166,21 @@ const PublicLayout = () => {
               <h3 className="font-bold text-lg mb-6">Contact Us</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Phone className="h-5 w-5 text-[var(--color-primary)]-400 mt-0.5" />
+                  <Phone className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
                     <p className="text-white font-medium">Phone</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">+254 700 000 000</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-[var(--color-primary)]-400 mt-0.5" />
+                  <Mail className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
                     <p className="text-white font-medium">Email</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">info@sda-kiserian.org</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-[var(--color-primary)]-400 mt-0.5" />
+                  <MapPin className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
                     <p className="text-white font-medium">Location</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">Kiserian, Kenya</p>
@@ -244,7 +244,7 @@ const PublicLayout = () => {
                 <a href="https://wa.me/254700000000" target="_blank" rel="noopener noreferrer" className="text-[var(--color-textSecondary)] hover:text-green-400 transition-colors">
                   <MessageCircle className="h-5 w-5" />
                 </a>
-                <a href="mailto:info@sda-kiserian.org" className="text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-400 transition-colors">
+                <a href="mailto:info@sda-kiserian.org" className="text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors">
                   <Mail className="h-5 w-5" />
                 </a>
                 <a href="https://www.youtube.com/results?search_query=Seventh-day+Adventist+sermon" target="_blank" rel="noopener noreferrer" className="text-[var(--color-textSecondary)] hover:text-red-500 transition-colors">

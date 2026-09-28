@@ -108,7 +108,7 @@ const DepartmentHeadDashboard = () => {
         </div>
         <div className="flex items-center gap-4">
           {/* Department Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-accent)]-50 text-[var(--color-accent)]-700 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-accent-light)] text-[var(--color-accent)] rounded-lg">
             <Users className="h-4 w-4" />
             <span className="text-sm font-medium">Department Health: {Math.round((departmentHealth.memberParticipation + departmentHealth.taskCompletion + departmentHealth.budgetUtilization) / 3)}%</span>
           </div>
@@ -184,7 +184,7 @@ const DepartmentHeadDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Department Activity</h2>
-          <Link to="/department/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700">
+          <Link to="/department/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

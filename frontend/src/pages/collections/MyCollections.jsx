@@ -135,7 +135,7 @@ const MyCollections = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             <Plus className="w-4 h-4 inline mr-2" />
             Add Collection
@@ -169,7 +169,7 @@ const MyCollections = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Contributions</p>
               <p className="text-2xl font-bold">{collections.length}</p>
             </div>
-            <TrendingUp className="w-8 h-8 text-[var(--color-primary)]-600" />
+            <TrendingUp className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg border p-4">
@@ -291,7 +291,7 @@ const MyCollections = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 >
                   Add
                 </button>

@@ -92,7 +92,7 @@ const DepartmentOverview = () => {
         <button
           type="button"
           onClick={() => navigate('/dashboard/departments/new')}
-          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Department
@@ -107,7 +107,7 @@ const DepartmentOverview = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Departments</p>
               <p className="text-2xl font-bold text-[var(--color-text)]">{stats?.total_departments || 0}</p>
             </div>
-            <Building2 className="w-8 h-8 text-[var(--color-primary)]-600" />
+            <Building2 className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
@@ -150,7 +150,7 @@ const DepartmentOverview = () => {
                 placeholder="Search departments..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]"
               />
             </div>
           </div>
@@ -158,7 +158,7 @@ const DepartmentOverview = () => {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500"
+              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]"
             >
               <option value="">All Categories</option>
               {categories.map(cat => (
@@ -168,7 +168,7 @@ const DepartmentOverview = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500"
+              className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
@@ -226,7 +226,7 @@ const DepartmentOverview = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/dashboard/departments/${dept.slug || dept.id}`)}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
               >
                 View Dashboard
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -259,11 +259,11 @@ const DepartmentOverview = () => {
           {recentActivity?.map((activity, index) => (
             <div key={index} className="flex items-start gap-3 p-3 bg-[var(--color-background)] rounded-lg">
               <div className={`p-2 rounded-lg ${
-                activity.type === 'communication' ? 'bg-[var(--color-primary)]-100' :
+                activity.type === 'communication' ? 'bg-[var(--color-primary-light)]' :
                 activity.type === 'meeting' ? 'bg-green-100' :
                 'bg-[var(--color-surface)]'
               }`}>
-                {activity.type === 'communication' && <MessageSquare className="w-4 h-4 text-[var(--color-primary)]-600" />}
+                {activity.type === 'communication' && <MessageSquare className="w-4 h-4 text-[var(--color-primary)]" />}
                 {activity.type === 'meeting' && <Calendar className="w-4 h-4 text-green-600" />}
                 {activity.type !== 'communication' && activity.type !== 'meeting' && <FileText className="w-4 h-4 text-[var(--color-textSecondary)]" />}
               </div>

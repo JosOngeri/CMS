@@ -62,13 +62,13 @@ const DocumentLibrary = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'bg-[var(--color-surface)]'}`}
+            className={`p-2 rounded ${viewMode === 'grid' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'bg-[var(--color-surface)]'}`}
           >
             <Grid size={20} />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600' : 'bg-[var(--color-surface)]'}`}
+            className={`p-2 rounded ${viewMode === 'list' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'bg-[var(--color-surface)]'}`}
           >
             <List size={20} />
           </button>
@@ -108,7 +108,7 @@ const DocumentLibrary = () => {
             <div key={doc.id} className="bg-[var(--color-surface)] border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <FileText className="text-[var(--color-primary)]-600" size={24} />
+                  <FileText className="text-[var(--color-primary)]" size={24} />
                   <span className="font-semibold truncate">{doc.name}</span>
                 </div>
                 <button className="p-1 hover:bg-[var(--color-surface)] rounded">
@@ -131,7 +131,7 @@ const DocumentLibrary = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleDownload(doc.id)}
-                  className="flex-1 py-2 text-sm bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600 rounded hover:bg-[var(--color-primary)]-200 flex items-center justify-center gap-1"
+                  className="flex-1 py-2 text-sm bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded hover:bg-[var(--color-primary-light)] flex items-center justify-center gap-1"
                 >
                   <Download size={14} />
                   Download
@@ -161,7 +161,7 @@ const DocumentLibrary = () => {
                 <tr key={doc.id} className="border-t hover:bg-[var(--color-background)]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <FileText className="text-[var(--color-primary)]-600" size={16} />
+                      <FileText className="text-[var(--color-primary)]" size={16} />
                       <span className="font-medium">{doc.name}</span>
                     </div>
                   </td>

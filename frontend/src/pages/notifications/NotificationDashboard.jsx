@@ -101,7 +101,7 @@ const NotificationDashboard = () => {
 
   const getNotificationColor = (type) => {
     const colors = {
-      approval_request: 'bg-[var(--color-primary)]-50 bg-[var(--color-primary)]-900/20 border-[var(--color-primary)]-200 border-[var(--color-primary)]-800',
+      approval_request: 'bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 border-[var(--color-primary-light)] border-[var(--color-primary)]',
       membership_approved: 'bg-green-50 bg-green-900/20 border-green-200 border-green-800',
       membership_rejected: 'bg-red-50 bg-red-900/20 border-red-200 border-red-800',
       admin_granted: 'bg-purple-50 bg-purple-900/20 border-purple-200 border-purple-800',
@@ -138,7 +138,7 @@ const NotificationDashboard = () => {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <CheckCheck className="w-4 h-4" />
             Mark all as read
@@ -152,7 +152,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'all'
-              ? 'bg-[var(--color-primary)]-600 text-white'
+              ? 'bg-[var(--color-primary)] text-white'
               : 'bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:bg-[var(--color-surface)]'
           }`}
         >
@@ -162,7 +162,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('unread')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'unread'
-              ? 'bg-[var(--color-primary)]-600 text-white'
+              ? 'bg-[var(--color-primary)] text-white'
               : 'bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:bg-[var(--color-surface)]'
           }`}
         >
@@ -172,7 +172,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('read')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'read'
-              ? 'bg-[var(--color-primary)]-600 text-white'
+              ? 'bg-[var(--color-primary)] text-white'
               : 'bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:bg-[var(--color-surface)]'
           }`}
         >
@@ -234,7 +234,7 @@ const NotificationDashboard = () => {
                   {notification.link && (
                     <Link
                       to={notification.link}
-                      className="inline-flex items-center gap-1 mt-3 text-sm text-[var(--color-primary)]-600 text-[var(--color-primary)]-400 hover:underline"
+                      className="inline-flex items-center gap-1 mt-3 text-sm text-[var(--color-primary)] text-[var(--color-primary)] hover:underline"
                     >
                       View details
                     </Link>

@@ -189,7 +189,7 @@ const RecurringPayments = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Payment</span>
@@ -315,7 +315,7 @@ const RecurringPayments = () => {
                       )}
                       <button
                         onClick={() => handleEdit(payment)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-600 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)]-400 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
@@ -465,7 +465,7 @@ const RecurringPayments = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingPayment ? 'Update' : 'Create'}
                   </button>

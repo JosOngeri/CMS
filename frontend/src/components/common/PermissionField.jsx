@@ -53,7 +53,7 @@ const PermissionField = ({
           value={value}
           onChange={onChange}
           rows={rows}
-          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           {...props}
         />
       </div>
@@ -75,7 +75,7 @@ const PermissionField = ({
           name={field}
           value={value}
           onChange={onChange}
-          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           {...props}
         >
           {children}

@@ -25,35 +25,35 @@ const ChurchStatsCard = ({
     const styles = {
       // Member count - community/gathering metaphor
       members: {
-        iconBg: 'bg-[var(--color-secondary)]-10',
+        iconBg: 'bg-[var(--color-secondary-light)]',
         iconColor: 'text-[var(--color-secondary)]',
-        cardBorder: 'border-[var(--color-secondary)]-20',
-        hoverShadow: 'hover:shadow-[var(--color-secondary)]-20'
+        cardBorder: 'border-[var(--color-secondary-light)]',
+        hoverShadow: 'hover:shadow-[var(--color-secondary-light)]'
       },
       // Financial metrics - stewardship/growth metaphor
       financial: {
-        iconBg: 'bg-[var(--color-success)]-10',
+        iconBg: 'bg-[var(--color-success-light)]',
         iconColor: 'text-[var(--color-success)]',
-        cardBorder: 'border-[var(--color-success)]-20',
-        hoverShadow: 'hover:shadow-[var(--color-success)]-20'
+        cardBorder: 'border-[var(--color-success-light)]',
+        hoverShadow: 'hover:shadow-[var(--color-success-light)]'
       },
       // Event attendance - spiritual journey metaphor
       events: {
-        iconBg: 'bg-[var(--color-primary)]-10',
+        iconBg: 'bg-[var(--color-primary-light)]',
         iconColor: 'text-[var(--color-primary)]',
-        cardBorder: 'border-[var(--color-primary)]-20',
-        hoverShadow: 'hover:shadow-[var(--color-primary)]-20'
+        cardBorder: 'border-[var(--color-primary-light)]',
+        hoverShadow: 'hover:shadow-[var(--color-primary-light)]'
       },
       // Engagement metrics - growth/illumination metaphor
       engagement: {
-        iconBg: 'bg-[var(--color-accent)]-10',
+        iconBg: 'bg-[var(--color-accent-light)]',
         iconColor: 'text-[var(--color-accent)]',
-        cardBorder: 'border-[var(--color-accent)]-20',
-        hoverShadow: 'hover:shadow-[var(--color-accent)]-20'
+        cardBorder: 'border-[var(--color-accent-light)]',
+        hoverShadow: 'hover:shadow-[var(--color-accent-light)]'
       },
       // Default style
       default: {
-        iconBg: 'bg-[var(--color-primary)]-10',
+        iconBg: 'bg-[var(--color-primary-light)]',
         iconColor: 'text-[var(--color-primary)]',
         cardBorder: 'border-[var(--color-border)]',
         hoverShadow: 'hover:shadow-lg'
@@ -111,7 +111,7 @@ const ChurchStatsCard = ({
                 e.stopPropagation()
                 onRetry()
               }}
-              className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700 flex items-center gap-1 mt-2"
+              className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center gap-1 mt-2"
               aria-label="Retry loading data"
             >
               <RefreshCw className="h-4 w-4" aria-hidden="true" />

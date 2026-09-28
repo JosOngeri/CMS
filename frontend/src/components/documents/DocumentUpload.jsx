@@ -95,7 +95,7 @@ const DocumentUpload = () => {
       {/* Drag & Drop Zone */}
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive ? 'border-[var(--color-primary)]-500 bg-[var(--color-primary)]-50' : 'border-[var(--color-border)]'
+          dragActive ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' : 'border-[var(--color-border)]'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -105,7 +105,7 @@ const DocumentUpload = () => {
         <Upload size={48} className="mx-auto mb-4 text-[var(--color-textSecondary)]" />
         <p className="text-lg font-medium mb-2">Drag and drop files here</p>
         <p className="text-sm text-[var(--color-textSecondary)] mb-4">or</p>
-        <label className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 cursor-pointer">
+        <label className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] cursor-pointer">
           <FolderOpen size={20} />
           Browse Files
           <input
@@ -125,7 +125,7 @@ const DocumentUpload = () => {
           {files.map((file, index) => (
             <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded-lg">
               <div className="flex items-center gap-3">
-                <FileText className="text-[var(--color-primary)]-600" size={20} />
+                <FileText className="text-[var(--color-primary)]" size={20} />
                 <div>
                   <div className="font-medium">{file.name}</div>
                   <div className="text-sm text-[var(--color-textSecondary)]">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
@@ -185,14 +185,14 @@ const DocumentUpload = () => {
 
       {/* Upload Progress */}
       {uploading && (
-        <div className="bg-[var(--color-primary)]-50 p-4 rounded-lg">
+        <div className="bg-[var(--color-primary-light)] p-4 rounded-lg">
           <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="text-[var(--color-primary)]-600" size={16} />
+            <AlertCircle className="text-[var(--color-primary)]" size={16} />
             <span className="text-sm font-medium">Uploading...</span>
           </div>
-          <div className="w-full bg-[var(--color-primary)]-200 rounded-full h-2">
+          <div className="w-full bg-[var(--color-primary-light)] rounded-full h-2">
             <div
-              className="bg-[var(--color-primary)]-600 h-2 rounded-full transition-all"
+              className="bg-[var(--color-primary)] h-2 rounded-full transition-all"
               style={{ width: `${uploadProgress.percent || 0}%` }}
             />
           </div>
@@ -204,7 +204,7 @@ const DocumentUpload = () => {
       <button
         onClick={handleUpload}
         disabled={uploading || files.length === 0}
-        className="w-full py-3 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {uploading ? (
           <>

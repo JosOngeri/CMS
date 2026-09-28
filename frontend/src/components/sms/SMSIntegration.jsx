@@ -127,7 +127,7 @@ const SMSIntegration = () => {
           <div className="text-2xl font-bold">{integrations.filter(i => !i.enabled).length}</div>
         </div>
         <div className="bg-[var(--color-surface)] border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-[var(--color-primary)]-600 mb-2">
+          <div className="flex items-center gap-2 text-[var(--color-primary)] mb-2">
             <Zap size={16} />
             <span className="text-sm">Active Features</span>
           </div>
@@ -145,8 +145,8 @@ const SMSIntegration = () => {
             <div key={integration.id} className="bg-[var(--color-surface)] border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${integration.enabled ? 'bg-[var(--color-primary)]-100' : 'bg-[var(--color-surface)]'}`}>
-                    <Icon size={20} className={integration.enabled ? 'text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'} />
+                  <div className={`p-2 rounded-lg ${integration.enabled ? 'bg-[var(--color-primary-light)]' : 'bg-[var(--color-surface)]'}`}>
+                    <Icon size={20} className={integration.enabled ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'} />
                   </div>
                   <div>
                     <h3 className="font-semibold">{integration.name}</h3>
@@ -249,7 +249,7 @@ const SMSIntegration = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => handleSaveConfig({})}
-                  className="flex-1 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+                  className="flex-1 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
                 >
                   Save Configuration
                 </button>

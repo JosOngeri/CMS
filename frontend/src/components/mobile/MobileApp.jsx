@@ -16,7 +16,7 @@ const MobileApp = () => {
   return (
     <div className="max-w-md mx-auto bg-[var(--color-surface)] min-h-screen">
       {/* Mobile Header */}
-      <div className="bg-[var(--color-primary)]-600 text-white p-4">
+      <div className="bg-[var(--color-primary)] text-white p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">Msabato CMS</h1>
           <Smartphone size={24} />
@@ -33,7 +33,7 @@ const MobileApp = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-[var(--color-surface)] rounded-lg p-4 shadow">
-                <Users className="text-[var(--color-primary)]-600 mb-2" size={24} />
+                <Users className="text-[var(--color-primary)] mb-2" size={24} />
                 <div className="font-semibold">Members</div>
                 <div className="text-sm text-[var(--color-textSecondary)]">View directory</div>
               </div>
@@ -87,7 +87,7 @@ const MobileApp = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex flex-col items-center p-2 ${
-                  activeTab === tab.id ? 'text-[var(--color-primary)]-600' : 'text-[var(--color-textSecondary)]'
+                  activeTab === tab.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'
                 }`}
               >
                 <Icon size={20} />

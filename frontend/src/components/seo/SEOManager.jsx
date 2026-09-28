@@ -62,7 +62,7 @@ const SEOManager = () => {
       {/* Meta Tags */}
       <div className="bg-[var(--color-surface)] border rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Globe className="text-[var(--color-primary)]-600" size={20} />
+          <Globe className="text-[var(--color-primary)]" size={20} />
           <h3 className="font-semibold">Meta Tags</h3>
         </div>
         <div className="space-y-4">
@@ -176,7 +176,7 @@ const SEOManager = () => {
         </button>
         <button
           onClick={saveSEO}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
         >
           <Check size={16} />
           Save Settings

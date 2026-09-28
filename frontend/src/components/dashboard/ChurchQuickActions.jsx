@@ -93,14 +93,14 @@ const ChurchQuickActions = ({ pinnedActions = [] }) => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      stewardship: 'bg-[var(--color-success)]-10 text-[var(--color-success)]',
-      communication: 'bg-[var(--color-primary)]-10 text-[var(--color-primary)]',
-      community: 'bg-[var(--color-accent)]-10 text-[var(--color-accent)]',
+      stewardship: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+      communication: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+      community: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
       resources: 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]',
-      ministry: 'bg-[var(--color-secondary)]-10 text-[var(--color-secondary)]',
-      governance: 'bg-[var(--color-warning)]-10 text-[var(--color-warning)]',
+      ministry: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
+      governance: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
       system: 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]',
-      general: 'bg-[var(--color-primary)]-10 text-[var(--color-primary)]'
+      general: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
     };
     return colors[category] || colors.general;
   };
@@ -110,7 +110,7 @@ const ChurchQuickActions = ({ pinnedActions = [] }) => {
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-lg text-[var(--color-text)]">Quick Actions</h3>
         <button 
-          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]-700 flex items-center gap-1 transition-colors"
+          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center gap-1 transition-colors"
           aria-label="Customize quick actions"
         >
           <Pin size={14} aria-hidden="true" />
@@ -128,7 +128,7 @@ const ChurchQuickActions = ({ pinnedActions = [] }) => {
             <Link
               key={action.id}
               to={action.link}
-              className="group flex flex-col items-center p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl hover:shadow-lg hover:border-[var(--color-primary)]-30 transition-all duration-300"
+              className="group flex flex-col items-center p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl hover:shadow-lg hover:border-[var(--color-primary-light)] transition-all duration-300"
               aria-label={`${action.title}: ${action.description}`}
             >
               {/* Icon with warm interaction */}

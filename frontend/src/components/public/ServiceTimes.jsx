@@ -66,7 +66,7 @@ const ServiceTimes = () => {
   };
 
   return (
-    <section className="py-20 bg-[var(--color-surface)]">
+    <section className="py-20 bg-[var(--color-background)]">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-[var(--color-text)] mb-4">Service Times</h2>
@@ -83,8 +83,8 @@ const ServiceTimes = () => {
                 key={index}
                 className={`group relative p-8 rounded-2xl transition-all duration-300 cursor-pointer ${
                   service.highlight
-                    ? 'bg-gradient-to-br from-[var(--color-primary)]-800 to-[var(--color-primary)]-900 text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
-                    : 'bg-[var(--color-background)] hover:bg-[var(--color-surface)] border border-[var(--color-border)]'
+                    ? 'bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-primary)] text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                    : 'bg-[var(--color-surface)] hover:shadow-lg border border-[var(--color-border)] shadow-sm'
                 }`}
                 onClick={() => addToCalendar(service.day, service.time)}
                 role="button"
@@ -96,7 +96,7 @@ const ServiceTimes = () => {
                   </div>
                 )}
 
-                <div className={`mb-4 ${service.highlight ? 'text-white/90' : 'text-[var(--color-primary)]-800'}`}>
+                <div className={`mb-4 ${service.highlight ? 'text-white/90' : 'text-[var(--color-primary)]'}`}>
                   <Icon className="h-10 w-10" aria-hidden="true" />
                 </div>
 
@@ -128,7 +128,7 @@ const ServiceTimes = () => {
         <div className="mt-12 text-center">
           <button
             onClick={openMap}
-            className="inline-flex items-center gap-2 bg-[var(--color-primary)]-50 text-[var(--color-primary)]-800 px-6 py-3 rounded-full hover:bg-[var(--color-primary)]-100 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] px-6 py-3 rounded-full hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"
             aria-label="Open map location"
           >
             <MapPin className="h-5 w-5" aria-hidden="true" />

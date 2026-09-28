@@ -121,7 +121,7 @@ const RequestAccessButton = ({
   };
 
   const variantClasses = {
-    primary: 'bg-[var(--color-primary)]-600 text-white hover:bg-[var(--color-primary)]-700',
+    primary: 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]',
     secondary: 'bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface)]',
     outline: 'border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-background)]'
   };

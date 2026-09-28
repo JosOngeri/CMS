@@ -195,7 +195,7 @@ const DefaultDashboard = () => {
       title: 'View Announcements',
       description: 'Latest church news',
       icon: Megaphone,
-      color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-600',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       link: '/dashboard/announcements'
     },
     {
@@ -248,7 +248,7 @@ const DefaultDashboard = () => {
             </Link>
             <Link
               to="/dashboard/sms"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
             >
               <Megaphone className="h-4 w-4" />
               Send SMS

@@ -164,7 +164,7 @@ const GmailMessageList = ({
 
       {/* Bulk Action Bar */}
       {selectedItems.size > 0 && (
-        <div className="flex items-center justify-between px-4 py-2 bg-[var(--color-primary)]-50 border-b border-[var(--color-primary)]-200">
+        <div className="flex items-center justify-between px-4 py-2 bg-[var(--color-primary-light)] border-b border-[var(--color-primary-light)]">
           <div className="flex items-center gap-3">
             <button
               onClick={() => onBulkAction('archive')}
@@ -224,7 +224,7 @@ const GmailMessageList = ({
                 onMouseLeave={() => setHoveredRow(null)}
                 className={`
                   flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors
-                  ${isSelected ? 'bg-[var(--color-primary)]-50' : 'hover:bg-[var(--color-background)] /50'}
+                  ${isSelected ? 'bg-[var(--color-primary-light)]' : 'hover:bg-[var(--color-background)] /50'}
                   ${isUnread ? 'bg-[var(--color-surface)] ' : 'bg-[var(--color-background)]/50 /50'}
                 `}
                 onClick={() => onRowAction && onRowAction('view', item)}
@@ -237,7 +237,7 @@ const GmailMessageList = ({
                     e.stopPropagation();
                     onToggleSelect(item.id);
                   }}
-                  className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)]-600 focus:ring-[var(--color-primary)]-500"
+                  className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                   onClick={(e) => e.stopPropagation()}
                 />
 
@@ -343,7 +343,7 @@ const GmailMessageList = ({
       {onCompose && (
         <button
           onClick={onCompose}
-          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)]-600 text-white rounded-full shadow-lg hover:bg-[var(--color-primary)]-700 transition-colors z-10"
+          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full shadow-lg hover:bg-[var(--color-primary)] transition-colors z-10"
           aria-label="Compose new message"
         >
           <span className="font-medium">Compose</span>

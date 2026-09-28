@@ -30,7 +30,7 @@ const StatusBadge = ({ status, type = 'default', size = 'md' }) => {
     },
     processing: {
       label: 'Processing',
-      color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       icon: AlertCircle
     },
     completed: {

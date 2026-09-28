@@ -118,7 +118,7 @@ const PersonalGrowthViz = ({ growthData, engagementData, journeyData, className 
             const Icon = metric.icon
             return (
               <div key={index} className="flex items-center gap-3 p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-                <div className="p-2 rounded-lg bg-[var(--color-accent)]-10 text-[var(--color-accent)]">
+                <div className="p-2 rounded-lg bg-[var(--color-accent-light)] text-[var(--color-accent)]">
                   <Icon size={20} aria-hidden="true" />
                 </div>
                 <div>

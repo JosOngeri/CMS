@@ -9,7 +9,7 @@ import { Navigate } from 'react-router-dom';
 // Spinner shown while a lazy chunk loads
 const Loader = () => (
   <div className="flex items-center justify-center min-h-64 p-8">
-    <div className="w-8 h-8 border-4 border-[var(--color-primary)]-800 border-t-transparent rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
   </div>
 );
 

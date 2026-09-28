@@ -61,7 +61,7 @@ const CampaignWizard = ({ onComplete, onCancel }) => {
         {steps.map((s, idx) => (
           <div key={s.id} className="flex items-center">
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              step === s.id ? 'bg-[var(--color-primary)]-600 text-white' :
+              step === s.id ? 'bg-[var(--color-primary)] text-white' :
               step > s.id ? 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]' :
               'bg-green-600 text-white'
             }`}>
@@ -189,9 +189,9 @@ const CampaignWizard = ({ onComplete, onCancel }) => {
                 />
               </div>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[var(--color-primary)]-50 rounded-lg">
-              <Clock size={16} className="text-[var(--color-primary)]-600" />
-              <span className="text-sm text-[var(--color-primary)]-700">Best send time: 10:00 AM - 12:00 PM (based on analytics)</span>
+            <div className="flex items-center gap-2 p-3 bg-[var(--color-primary-light)] rounded-lg">
+              <Clock size={16} className="text-[var(--color-primary)]" />
+              <span className="text-sm text-[var(--color-primary)]">Best send time: 10:00 AM - 12:00 PM (based on analytics)</span>
             </div>
           </div>
         )}
@@ -278,7 +278,7 @@ const CampaignWizard = ({ onComplete, onCancel }) => {
         {step === steps.length ? (
           <button
             onClick={handleSubmit}
-            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             <CheckCircle size={16} />
             Create Campaign
@@ -286,7 +286,7 @@ const CampaignWizard = ({ onComplete, onCancel }) => {
         ) : (
           <button
             onClick={handleNext}
-            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
           >
             Next
             <ChevronRight size={16} />

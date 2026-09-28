@@ -63,7 +63,7 @@ const Pagination = ({
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
-            className="px-3 py-1.5 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]-500"
+            className="px-3 py-1.5 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             aria-label="Items per page"
           >
             {pageSizes.map(size => (
@@ -118,7 +118,7 @@ const Pagination = ({
                 onClick={() => handlePageChange(page)}
                 className={`px-3 py-2 border rounded-lg transition-colors min-h-[36px] min-w-[36px] ${
                   currentPage === page
-                    ? 'bg-[var(--color-primary)]-600 text-white border-[var(--color-primary)]-600'
+                    ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
                     : 'border-[var(--color-border)] hover:bg-[var(--color-surface)]'
                 }`}
                 aria-label={`Go to page ${page}`}

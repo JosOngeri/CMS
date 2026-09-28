@@ -352,7 +352,7 @@ const Documents = () => {
                                 </button>
                                 <button
                                   onClick={() => handleEdit(doc)}
-                                  className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-900"
+                                  className="text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                                   title="Edit"
                                 >
                                   <Edit className="w-4 h-4" />
@@ -389,8 +389,8 @@ const Documents = () => {
                 to="/dashboard/content"
                 className="flex items-center gap-4 p-6 bg-[var(--color-surface)] rounded-lg shadow hover:shadow-md transition-shadow border border-[var(--color-border)]"
               >
-                <div className="p-3 bg-[var(--color-primary)]-100 rounded-lg">
-                  <Layout className="h-6 w-6 text-[var(--color-primary)]-600" />
+                <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
+                  <Layout className="h-6 w-6 text-[var(--color-primary)]" />
                 </div>
                 <div className="flex-1">
                   <p className="font-medium text-[var(--color-text)]">Content Management</p>
@@ -418,7 +418,7 @@ const Documents = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
                 activeTab === tab.id
-                  ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600'
+                  ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
                   : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)]'
               }`}
             >

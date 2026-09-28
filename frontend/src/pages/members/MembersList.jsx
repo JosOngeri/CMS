@@ -188,7 +188,7 @@ function MembersList() {
   const roles = [
     { value: 'Super Admin', label: 'Super Admin', color: 'bg-red-100 text-red-800' },
     { value: 'Pastor', label: 'Pastor', color: 'bg-purple-100 text-purple-800' },
-    { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800' },
+    { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
     { value: 'Department Head', label: 'Department Head', color: 'bg-green-100 text-green-800' },
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ];
@@ -471,7 +471,7 @@ function UserManagementTab({
         {canManageUsers && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add User
@@ -496,7 +496,7 @@ function UserManagementTab({
                   type="text"
                   value={formData.first_name}
                   onChange={(e) => setFormData({...formData, first_name: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -509,7 +509,7 @@ function UserManagementTab({
                   type="text"
                   value={formData.last_name}
                   onChange={(e) => setFormData({...formData, last_name: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -522,7 +522,7 @@ function UserManagementTab({
                   type="text"
                   value={formData.username}
                   onChange={(e) => setFormData({...formData, username: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -535,7 +535,7 @@ function UserManagementTab({
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
               </div>
@@ -548,7 +548,7 @@ function UserManagementTab({
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 />
               </div>
 
@@ -561,7 +561,7 @@ function UserManagementTab({
                     type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent pr-10"
+                    className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent pr-10"
                     required={!editingUser}
                   />
                   <button
@@ -603,7 +603,7 @@ function UserManagementTab({
                 id="is_active"
                 checked={formData.is_active}
                 onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                className="w-4 h-4 text-[var(--color-primary)]-600 border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]-500"
+                className="w-4 h-4 text-[var(--color-primary)] border-[var(--color-border)] rounded focus:ring-[var(--color-primary)]"
               />
               <label htmlFor="is_active" className="ml-2 text-sm text-[var(--color-text)] ">
                 User is active
@@ -613,7 +613,7 @@ function UserManagementTab({
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {editingUser ? 'Update User' : 'Create User'}
               </button>
@@ -653,7 +653,7 @@ function UserManagementTab({
                 placeholder="Search users..."
                 value={userSearchTerm}
                 onChange={(e) => setUserSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
             </div>
           </div>
@@ -661,7 +661,7 @@ function UserManagementTab({
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Roles</option>
             {roles.map(role => (
@@ -672,7 +672,7 @@ function UserManagementTab({
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -682,7 +682,7 @@ function UserManagementTab({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+            className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="name">Sort by Name</option>
             <option value="email">Sort by Email</option>
@@ -725,8 +725,8 @@ function UserManagementTab({
                 <tr key={user.id} className="hover:bg-[var(--color-background)] ">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="w-10 h-10 bg-[var(--color-primary)]-100 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-[var(--color-primary)]-600" />
+                      <div className="w-10 h-10 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-[var(--color-primary)]" />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-[var(--color-text)] ">
@@ -788,7 +788,7 @@ function UserManagementTab({
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleUserEdit(user)}
-                          className="text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+                          className="text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                         >
                           <Edit className="w-4 h-4" />
                         </button>

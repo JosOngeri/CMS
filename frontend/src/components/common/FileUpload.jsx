@@ -146,7 +146,7 @@ const FileUpload = ({
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           dragActive
-            ? 'border-[var(--color-primary)]-500 bg-[var(--color-primary)]-50'
+            ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]'
             : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
         }`}
         onDragEnter={handleDrag}
@@ -169,7 +169,7 @@ const FileUpload = ({
         </p>
         <button
           onClick={() => inputRef.current?.click()}
-          className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           aria-label="Select files"
         >
           Browse Files
@@ -199,7 +199,7 @@ const FileUpload = ({
                   <div className="flex items-center gap-2">
                     <div className="w-24 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[var(--color-primary)]-600 transition-all"
+                        className="h-full bg-[var(--color-primary)] transition-all"
                         style={{ width: `${uploadProgress[file.name]}%` }}
                       />
                     </div>

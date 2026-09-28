@@ -178,7 +178,7 @@ const StewardshipViz = ({ financialData, budgetData, growthData, className = '' 
           {trustMetrics.map((metric, index) => {
             const Icon = metric.icon
             const statusColor = metric.status === 'positive' ? 'text-[var(--color-success)]' : 'text-[var(--color-warning)]'
-            const bgColor = metric.status === 'positive' ? 'bg-[var(--color-success)]-10' : 'bg-[var(--color-warning)]-10'
+            const bgColor = metric.status === 'positive' ? 'bg-[var(--color-success-light)]' : 'bg-[var(--color-warning-light)]'
             
             return (
               <div key={index} className="flex items-center gap-3 p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
@@ -197,7 +197,7 @@ const StewardshipViz = ({ financialData, budgetData, growthData, className = '' 
         {/* Audit trail indicator */}
         <div className="p-4 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[var(--color-primary)]-10 text-[var(--color-primary)]">
+            <div className="p-2 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)]">
               <Shield size={20} aria-hidden="true" />
             </div>
             <div>

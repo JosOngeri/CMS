@@ -282,7 +282,7 @@ const TelegramAuth = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
       </div>
     );
   }
@@ -323,7 +323,7 @@ const TelegramAuth = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleVerifyCode}
-                    className="flex-1 bg-[var(--color-primary)]-600 text-white rounded-lg p-3 hover:bg-[var(--color-primary)]-700"
+                    className="flex-1 bg-[var(--color-primary)] text-white rounded-lg p-3 hover:bg-[var(--color-primary)]"
                   >
                     Verify
                   </button>
@@ -354,7 +354,7 @@ const TelegramAuth = () => {
 
             {verificationState.step === 'phone_sent' && (
               <div className="flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]-600" />
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
               </div>
             )}
           </div>
@@ -372,7 +372,7 @@ const TelegramAuth = () => {
             </p>
             <button
               onClick={() => setVerificationState({ phoneNumber: '', code: '', password: '', step: 'idle', methodId: null, error: null })}
-              className="w-full bg-[var(--color-primary)]-600 text-white rounded-lg p-3 hover:bg-[var(--color-primary)]-700"
+              className="w-full bg-[var(--color-primary)] text-white rounded-lg p-3 hover:bg-[var(--color-primary)]"
             >
               Done
             </button>
@@ -385,7 +385,7 @@ const TelegramAuth = () => {
         {!showAddMethod ? (
           <button
             onClick={() => setShowAddMethod(true)}
-            className="flex items-center gap-2 bg-[var(--color-primary)]-600 text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]-700"
+            className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
           >
             <Plus className="w-5 h-5" />
             Add Authentication Method
@@ -398,11 +398,11 @@ const TelegramAuth = () => {
                 onClick={() => setNewMethodType('bot')}
                 className={`flex-1 p-4 rounded-lg border-2 ${
                   newMethodType === 'bot' 
-                    ? 'border-[var(--color-primary)]-600 bg-[var(--color-primary)]-50' 
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' 
                     : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
                 }`}
               >
-                <Bot className="w-8 h-8 mx-auto mb-2 text-[var(--color-primary)]-600" />
+                <Bot className="w-8 h-8 mx-auto mb-2 text-[var(--color-primary)]" />
                 <p className="font-semibold">Bot API</p>
                 <p className="text-sm text-[var(--color-textSecondary)]">For bot operations</p>
               </button>
@@ -410,7 +410,7 @@ const TelegramAuth = () => {
                 onClick={() => setNewMethodType('mtproto')}
                 className={`flex-1 p-4 rounded-lg border-2 ${
                   newMethodType === 'mtproto' 
-                    ? 'border-[var(--color-primary)]-600 bg-[var(--color-primary)]-50' 
+                    ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)]' 
                     : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
                 }`}
               >
@@ -422,7 +422,7 @@ const TelegramAuth = () => {
             <div className="flex gap-2">
               <button
                 onClick={handleAddMethod}
-                className="bg-[var(--color-primary)]-600 text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]-700"
+                className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
               >
                 Add Method
               </button>
@@ -447,7 +447,7 @@ const TelegramAuth = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 {method.type === 'bot' ? (
-                  <Bot className="w-8 h-8 text-[var(--color-primary)]-600" />
+                  <Bot className="w-8 h-8 text-[var(--color-primary)]" />
                 ) : (
                   <Smartphone className="w-8 h-8 text-green-600" />
                 )}
@@ -455,7 +455,7 @@ const TelegramAuth = () => {
                   <h3 className="font-semibold text-lg">{method.name}</h3>
                   <div className="flex items-center gap-2 text-sm text-[var(--color-textSecondary)]">
                     {method.isDefault && (
-                      <span className="bg-[var(--color-primary)]-100 text-[var(--color-primary)]-700 px-2 py-0.5 rounded-full text-xs">
+                      <span className="bg-[var(--color-primary-light)] text-[var(--color-primary)] px-2 py-0.5 rounded-full text-xs">
                         Default
                       </span>
                     )}
@@ -479,7 +479,7 @@ const TelegramAuth = () => {
                 ) : (
                   <button
                     onClick={() => handleSetDefault(method.id)}
-                    className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700"
+                    className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]"
                   >
                     Set as Default
                   </button>
@@ -533,7 +533,7 @@ const TelegramAuth = () => {
                       </button>
                     </div>
                     <p className="text-xs text-[var(--color-textSecondary)] mt-1">
-                      Get your bot token from <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)]-600 hover:underline">@BotFather</a>
+                      Get your bot token from <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">@BotFather</a>
                     </p>
                   </div>
                 </>
@@ -587,7 +587,7 @@ const TelegramAuth = () => {
                     />
                   </div>
                   <p className="text-xs text-[var(--color-textSecondary)]">
-                    Get your API credentials from <a href="https://my.telegram.org" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)]-600 hover:underline">my.telegram.org</a>
+                    Get your API credentials from <a href="https://my.telegram.org" target="_blank" rel="noopener noreferrer" className="text-[var(--color-primary)] hover:underline">my.telegram.org</a>
                   </p>
                 </>
               )}
@@ -619,7 +619,7 @@ const TelegramAuth = () => {
                 <button
                   onClick={() => handleSaveMethod(method.id)}
                   disabled={saving}
-                  className="flex items-center gap-2 bg-[var(--color-primary)]-600 text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]-700 disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save
@@ -655,7 +655,7 @@ const TelegramAuth = () => {
             </p>
             <button
               onClick={() => setShowAddMethod(true)}
-              className="bg-[var(--color-primary)]-600 text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]-700"
+              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
             >
               Add Authentication Method
             </button>
@@ -664,12 +664,12 @@ const TelegramAuth = () => {
       </div>
 
       {/* Help Section */}
-      <div className="mt-8 bg-[var(--color-primary)]-50 border border-[var(--color-primary)]-200 rounded-lg p-6">
+      <div className="mt-8 bg-[var(--color-primary-light)] border border-[var(--color-primary-light)] rounded-lg p-6">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-[var(--color-primary)]-600 mt-0.5" />
+          <Info className="w-5 h-5 text-[var(--color-primary)] mt-0.5" />
           <div>
-            <h3 className="font-semibold text-[var(--color-primary)]-900 mb-2">How to Configure Telegram</h3>
-            <div className="space-y-2 text-sm text-[var(--color-primary)]-800">
+            <h3 className="font-semibold text-[var(--color-primary)] mb-2">How to Configure Telegram</h3>
+            <div className="space-y-2 text-sm text-[var(--color-primary)]">
               <p><strong>Bot API:</strong> Create a bot via @BotFather on Telegram to get a bot token. Use this for bot operations like sending messages.</p>
               <p><strong>MTProto:</strong> Get API credentials from my.telegram.org. Use this for user operations like accessing channels and groups.</p>
               <p className="flex items-center gap-2">

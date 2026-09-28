@@ -68,9 +68,9 @@ const Announcements = () => {
       default: 
         return { 
           icon: CheckCircle, 
-          bg: 'bg-[var(--color-primary)]-50', 
-          text: 'text-[var(--color-primary)]-700', 
-          border: 'border-[var(--color-primary)]-200',
+          bg: 'bg-[var(--color-primary-light)]', 
+          text: 'text-[var(--color-primary)]', 
+          border: 'border-[var(--color-primary-light)]',
           label: 'Normal'
         };
     }
@@ -170,7 +170,7 @@ const Announcements = () => {
 
                   {/* Content */}
                   <div className="p-6">
-                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)]-800 transition-colors line-clamp-2">
+                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
                       {announcement.title}
                     </h3>
                     <p className="text-[var(--color-textSecondary)] mb-4 line-clamp-3">

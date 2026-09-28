@@ -73,7 +73,7 @@ const DepartmentsAlternative = () => {
   const getCategoryColor = (category) => {
     switch (category) {
       case 'Leadership': return 'bg-purple-100 text-purple-800';
-      case 'Ministry': return 'bg-[var(--color-primary)]-100 text-[var(--color-primary)]-800';
+      case 'Ministry': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]';
       case 'Education': return 'bg-green-100 text-green-800';
       case 'Youth': return 'bg-orange-100 text-orange-800';
       case 'Support': return 'bg-[var(--color-surface)] text-[var(--color-text)]';
@@ -105,7 +105,7 @@ const DepartmentsAlternative = () => {
         </div>
         <button
           onClick={() => navigate('/dashboard/departments/create')}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Department
@@ -124,13 +124,13 @@ const DepartmentsAlternative = () => {
                 placeholder="Search departments..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
               />
             </div>
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
             >
               <option value="all">All Categories</option>
               <option value="Leadership">Leadership</option>
@@ -156,12 +156,12 @@ const DepartmentsAlternative = () => {
                     key={department.id}
                     onClick={() => handleDepartmentClick(department)}
                     className={`w-full p-4 text-left hover:bg-[var(--color-background)] transition-colors ${
-                      selectedDepartment?.id === department.id ? 'bg-[var(--color-primary)]-50 border-l-4 border-[var(--color-primary)]-600' : ''
+                      selectedDepartment?.id === department.id ? 'bg-[var(--color-primary-light)] border-l-4 border-[var(--color-primary)]' : ''
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="p-2 rounded-lg bg-[var(--color-primary)]-100 shrink-0">
-                        <Building className="w-5 h-5 text-[var(--color-primary)]-600" />
+                      <div className="p-2 rounded-lg bg-[var(--color-primary-light)] shrink-0">
+                        <Building className="w-5 h-5 text-[var(--color-primary)]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-[var(--color-text)] truncate">{department.name}</h3>
@@ -190,8 +190,8 @@ const DepartmentsAlternative = () => {
               <div className="p-6 border-b border-[var(--color-border)]">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-lg bg-[var(--color-primary)]-100">
-                      <Building className="w-8 h-8 text-[var(--color-primary)]-600" />
+                    <div className="p-3 rounded-lg bg-[var(--color-primary-light)]">
+                      <Building className="w-8 h-8 text-[var(--color-primary)]" />
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-[var(--color-text)]">{selectedDepartment.name}</h2>
@@ -212,7 +212,7 @@ const DepartmentsAlternative = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleOpenDepartment}
-                      className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm"
+                      className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
                     >
                       Open Department
                       <ChevronRight className="w-4 h-4" />
@@ -237,7 +237,7 @@ const DepartmentsAlternative = () => {
                       onClick={() => setActiveSubTab(tab.id)}
                       className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors ${
                         activeSubTab === tab.id
-                          ? 'border-[var(--color-primary)]-500 text-[var(--color-primary)]-600 bg-[var(--color-primary)]-50'
+                          ? 'border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--color-primary-light)]'
                           : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)] hover:border-[var(--color-border)]'
                       }`}
                     >
@@ -292,7 +292,7 @@ const DepartmentsAlternative = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-[var(--color-text)]">Department Members</h3>
-                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
                         <Plus className="w-4 h-4" />
                         Add Member
                       </button>
@@ -308,7 +308,7 @@ const DepartmentsAlternative = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-[var(--color-text)]">Department Activities</h3>
-                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
                         <Plus className="w-4 h-4" />
                         Add Activity
                       </button>
@@ -324,7 +324,7 @@ const DepartmentsAlternative = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-[var(--color-text)]">Department Budget</h3>
-                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
                         <Edit className="w-4 h-4" />
                         Edit Budget
                       </button>
@@ -340,7 +340,7 @@ const DepartmentsAlternative = () => {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="text-lg font-semibold text-[var(--color-text)]">Department Reports</h3>
-                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+                      <button className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
                         <Plus className="w-4 h-4" />
                         Generate Report
                       </button>

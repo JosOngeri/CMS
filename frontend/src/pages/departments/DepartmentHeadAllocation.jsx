@@ -93,7 +93,7 @@ const DepartmentHeadAllocation = () => {
         </div>
         <button
           onClick={handleSaveAll}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Save className="w-4 h-4" />
           Save All Changes
@@ -109,7 +109,7 @@ const DepartmentHeadAllocation = () => {
               placeholder="Search users by name or username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             />
           </div>
         </div>
@@ -118,8 +118,8 @@ const DepartmentHeadAllocation = () => {
           {departments.map((department) => (
             <div key={department.id} className="p-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-[var(--color-primary)]-100 shrink-0">
-                  <Building className="w-6 h-6 text-[var(--color-primary)]-600" />
+                <div className="p-2 rounded-lg bg-[var(--color-primary-light)] shrink-0">
+                  <Building className="w-6 h-6 text-[var(--color-primary)]" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
@@ -139,7 +139,7 @@ const DepartmentHeadAllocation = () => {
                     <select
                       value={allocations[department.id] || ''}
                       onChange={(e) => handleAllocationChange(department.id, e.target.value)}
-                      className="flex-1 max-w-md px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                      className="flex-1 max-w-md px-3 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                     >
                       <option value="">No Department Head</option>
                       {filteredUsers.map((user) => (

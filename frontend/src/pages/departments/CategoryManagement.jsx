@@ -102,7 +102,7 @@ const CategoryManagement = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="w-4 h-4" />
           New Category
@@ -124,7 +124,7 @@ const CategoryManagement = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 required
               />
             </div>
@@ -137,7 +137,7 @@ const CategoryManagement = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={3}
-                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
               />
             </div>
 
@@ -163,7 +163,7 @@ const CategoryManagement = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 <Save className="w-4 h-4 inline mr-2" />
                 {editingCategory ? 'Update Category' : 'Create Category'}
@@ -206,7 +206,7 @@ const CategoryManagement = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleEdit(category)}
-                  className="p-2 text-[var(--color-primary)]-600 hover:bg-[var(--color-primary)]-50 rounded-lg transition-colors"
+                  className="p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] rounded-lg transition-colors"
                   title="Edit Category"
                 >
                   <Edit className="w-4 h-4" />

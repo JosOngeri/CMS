@@ -92,7 +92,7 @@ const AdministrationAlternative = () => {
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm w-64"
+              className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm w-64"
             />
           </div>
         </div>
@@ -112,7 +112,7 @@ const AdministrationAlternative = () => {
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left ${
-                    activeSection === item.id ? 'bg-[var(--color-primary)]-50 text-[var(--color-primary)]-600' : 'hover:bg-[var(--color-background)] text-[var(--color-text)]'
+                    activeSection === item.id ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' : 'hover:bg-[var(--color-background)] text-[var(--color-text)]'
                   }`}
                 >
                   <ItemIcon className="w-5 h-5" />
@@ -165,7 +165,7 @@ const AdministrationAlternative = () => {
                     onClick={() => toast.info(`${action.label} functionality will be implemented`)}
                     className="p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-left"
                   >
-                    <ActionIcon className="w-6 h-6 text-[var(--color-primary)]-600 mb-2" />
+                    <ActionIcon className="w-6 h-6 text-[var(--color-primary)] mb-2" />
                     <p className="text-sm font-medium text-[var(--color-text)]">{action.label}</p>
                     <p className="text-xs text-[var(--color-textSecondary)] mt-1">{action.description}</p>
                   </button>
@@ -178,12 +178,12 @@ const AdministrationAlternative = () => {
           <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6 flex-1">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-[var(--color-text)]">Recent Activity</h3>
-              <button className="text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-800">View All</button>
+              <button className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">View All</button>
             </div>
             <div className="space-y-3">
               {recentActivities.map((activity, index) => (
                 <div key={index} className="flex items-center gap-4 p-3 bg-[var(--color-background)] rounded-lg">
-                  <Activity className="w-4 h-4 text-[var(--color-primary)]-600" />
+                  <Activity className="w-4 h-4 text-[var(--color-primary)]" />
                   <div className="flex-1">
                     <p className="text-sm text-[var(--color-text)]">{activity.action}</p>
                     <p className="text-xs text-[var(--color-textSecondary)]">by {activity.user} • {activity.time}</p>

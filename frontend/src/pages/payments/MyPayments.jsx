@@ -125,7 +125,7 @@ const MyPayments = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Transactions</p>
               <p className="text-2xl font-bold">{payments.length}</p>
             </div>
-            <Calendar className="w-8 h-8 text-[var(--color-primary)]-600" />
+            <Calendar className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
         </div>
       </div>
@@ -162,7 +162,7 @@ const MyPayments = () => {
                     {payment.status === 'completed' && (
                       <button
                         onClick={() => downloadReceipt(payment.id)}
-                        className="mt-2 text-sm text-[var(--color-primary)]-600 hover:text-[var(--color-primary)]-700 flex items-center gap-1"
+                        className="mt-2 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center gap-1"
                       >
                         <Download className="w-4 h-4" />
                         Receipt

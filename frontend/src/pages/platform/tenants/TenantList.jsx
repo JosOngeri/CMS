@@ -91,7 +91,7 @@ const TenantList = () => {
         </div>
         <button
           onClick={() => navigate('/platform/tenants/create')}
-          className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]-600 transition-colors"
+          className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Church

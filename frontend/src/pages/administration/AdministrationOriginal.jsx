@@ -49,7 +49,7 @@ const AdministrationOriginal = () => {
         </div>
         <button
           onClick={handleExport}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Download className="w-4 h-4" />
           Export
@@ -73,7 +73,7 @@ const AdministrationOriginal = () => {
                   <p className="text-sm text-[var(--color-textSecondary)]">Total Users</p>
                   <p className="text-2xl font-bold text-[var(--color-text)]">0</p>
                 </div>
-                <Users className="w-8 h-8 text-[var(--color-primary)]-600" />
+                <Users className="w-8 h-8 text-[var(--color-primary)]" />
               </div>
             </div>
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
@@ -111,7 +111,7 @@ const AdministrationOriginal = () => {
                 onClick={() => setActiveTab('users')}
                 className="flex items-center gap-3 p-4 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
               >
-                <Users className="w-5 h-5 text-[var(--color-primary)]-600" />
+                <Users className="w-5 h-5 text-[var(--color-primary)]" />
                 <span className="text-[var(--color-text)]">Manage Users</span>
               </button>
               <button
@@ -143,7 +143,7 @@ const AdministrationOriginal = () => {
                 <input
                   type="text"
                   placeholder="Search users..."
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
               <button className="flex items-center gap-2 px-3 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm">
@@ -151,7 +151,7 @@ const AdministrationOriginal = () => {
                 Filters
               </button>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
               <Plus className="w-4 h-4" />
               Add User
             </button>
@@ -173,11 +173,11 @@ const AdministrationOriginal = () => {
                 <input
                   type="text"
                   placeholder="Search roles..."
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
               <Plus className="w-4 h-4" />
               Add Role
             </button>
@@ -199,11 +199,11 @@ const AdministrationOriginal = () => {
                 <input
                   type="text"
                   placeholder="Search permissions..."
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
               <Plus className="w-4 h-4" />
               Add Permission
             </button>
@@ -235,7 +235,7 @@ const AdministrationOriginal = () => {
                 <input
                   type="text"
                   placeholder="Search logs..."
-                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]-500 focus:border-transparent text-sm"
+                  className="pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent text-sm"
                 />
               </div>
               <button className="flex items-center gap-2 px-3 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm">
@@ -243,7 +243,7 @@ const AdministrationOriginal = () => {
                 Filters
               </button>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)]-600 text-white rounded-lg hover:bg-[var(--color-primary)]-700 transition-colors text-sm">
+            <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm">
               <Download className="w-4 h-4" />
               Export Logs
             </button>
