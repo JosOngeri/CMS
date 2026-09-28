@@ -373,6 +373,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                       ),
+
                   ],
                 ),
               ),
