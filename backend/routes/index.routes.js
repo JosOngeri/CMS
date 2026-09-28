@@ -68,6 +68,7 @@ router.use('/users', generalLimiter, usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);
 router.use('/announcements', generalLimiter, announcementsRoutes);
 router.use('/departments', generalLimiter, departmentsRoutes);
+router.use('/departments', generalLimiter, require('./department_community.routes'));
 router.use('/department', generalLimiter, departmentRoutes);
 router.use('/department-features', generalLimiter, departmentFeaturesRoutes);
 router.use('/department-categories', generalLimiter, departmentCategoriesRoutes);
