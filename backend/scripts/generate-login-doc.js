@@ -28,6 +28,23 @@ md += `**Generated:** ${new Date().toISOString().slice(0, 10)}  \n`;
 md += `**Password for every account:** \`right123\`\n\n`;
 md += '> Member phone numbers were randomly generated (+2547...) during seeding and are not real numbers.\n\n';
 
+// --- Quick reference: one account per role per church ---
+md += '## Quick Reference - Role Logins Per Church\n\n';
+const roleOrder = ['Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'Department Head'];
+const memberLabel = 'Member (sample)';
+Object.keys(byChurch).sort().forEach(slug => {
+  if (slug === '-') return;
+  const users = byChurch[slug];
+  md += `### ${churchNames[slug] || slug}\n\n`;
+  md += '| Role | Login | Password |\n|---|---|---|\n';
+  roleOrder.forEach(role => {
+    const u = users.find(x => (x.roles || '').includes(role));
+    md += `| ${role} | ${u ? u.email : '—'} | right123 |\n`;
+  });
+  const member = users.find(x => /^member1@/.test(x.username)) || users.find(x => /^member\d+@/.test(x.username));
+  md += `| ${memberLabel} | ${member ? member.email : '—'} | right123 |\n\n`;
+});
+
 // Admin / staff (non memberN@ accounts)
 const staff = [];
 Object.keys(byChurch).forEach(slug => {

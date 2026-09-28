@@ -17,7 +17,7 @@ const bcrypt = require('bcryptjs');
 
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const CHURCHES = ['newlife', 'mount-horeb', 'kiserian-dam'];
+const CHURCHES = ['newlife', 'mount-horeb', 'kiserian-dam', 'kiserian-main-sda'];
 
 const ROLE_ACCOUNTS = [
   { prefix: 'pastor', role: 'Pastor', first: 'Church', last: 'Pastor' },
