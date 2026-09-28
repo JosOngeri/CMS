@@ -328,7 +328,7 @@ class DashboardRepository extends BaseRepository {
         ORDER BY timestamp DESC
         LIMIT $3
       `;
-      params.push(churchId, limit);
+      params.splice(0, params.length, userId, churchId, limit);
     }
 
     const result = await this.pool.query(query, params);
@@ -407,11 +407,11 @@ class DashboardRepository extends BaseRepository {
     // "Last sync" = most recent write activity in the system
     const lastApiCall = await this.pool.query(`
       SELECT MAX(ts) as last_request FROM (
-        SELECT created_at ts FROM payments ORDER BY created_at DESC LIMIT 1
+        (SELECT created_at ts FROM payments ORDER BY created_at DESC LIMIT 1)
         UNION ALL
-        SELECT created_at FROM announcements ORDER BY created_at DESC LIMIT 1
+        (SELECT created_at FROM announcements ORDER BY created_at DESC LIMIT 1)
         UNION ALL
-        SELECT created_at FROM event_attendance ORDER BY created_at DESC LIMIT 1
+        (SELECT created_at FROM event_attendance ORDER BY created_at DESC LIMIT 1)
       ) t
     `);
 
