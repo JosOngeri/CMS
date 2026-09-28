@@ -72,7 +72,7 @@ class SettingsRepository extends BaseRepository {
     return result.rowCount;
   }
 
-  async getPublicSettings(churchId = null) {
+  async getPublicSettings(churchId = null, churchSlug = null) {
     let query = `SELECT key, value, value_type FROM ${this.tableName} WHERE is_public = true`;
     const params = [];
 
@@ -90,35 +90,52 @@ class SettingsRepository extends BaseRepository {
       settings[row.key] = this.parseValue(row.value, row.value_type);
     });
 
-    // If the caller is unauthenticated, pick the first active church as the
-    // default tenant and expose its name/slug so public pages can brand
-    // themselves correctly.
-    if (!churchId) {
+    // Resolve church branding when a church is explicitly identified
+    // (authenticated user's church_id or a ?church=<slug> query param).
+    // Otherwise expose the list of active churches so the client can prompt
+    // the visitor to choose one.
+    if (churchId || churchSlug) {
       try {
-        const churchRes = await this.pool.query(
-          `SELECT id, name, slug, created_at, is_active
-           FROM churches
-           WHERE is_active = true
-           ORDER BY created_at ASC
-           LIMIT 1`
-        );
+        let churchRes;
+        if (churchId) {
+          churchRes = await this.pool.query(
+            `SELECT id, name, slug FROM churches WHERE id = $1`,
+            [churchId]
+          );
+        } else {
+          churchRes = await this.pool.query(
+            `SELECT id, name, slug FROM churches WHERE slug = $1`,
+            [churchSlug]
+          );
+        }
         if (churchRes.rows[0]) {
           const church = churchRes.rows[0];
           settings.church_name = church.name;
           settings.church_slug = church.slug;
           settings.church_id = church.id;
-        } else {
-          settings.church_name = 'Msabato CMS';
-          settings.church_slug = 'default';
         }
       } catch (e) {
-        settings.church_name = 'Msabato CMS';
-        settings.church_slug = 'default';
+        // Keep product fallback below.
       }
     }
 
-    // Provide a neutral product name as a fallback/constant
+    // Always expose the list of active churches so the public UI can let the
+    // visitor pick a congregation. The selected church is driven by
+    // churchId/churchSlug above; otherwise `church_name` stays unset.
+    try {
+      const churchRes = await this.pool.query(
+        `SELECT id, name, slug FROM churches
+         WHERE is_active = true
+         ORDER BY created_at ASC`
+      );
+      settings.available_churches = churchRes.rows;
+    } catch (e) {
+      settings.available_churches = [];
+    }
+
+    // Neutral product name
     settings.product_name = 'Msabato CMS';
+    settings.product_short_name = 'Msabato';
 
     return settings;
   }

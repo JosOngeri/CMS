@@ -40,8 +40,9 @@ class SettingsController extends BaseController {
   async getPublicSettings(req, res) {
     try {
       const churchId = req.user?.church_id;
+      const churchSlug = req.query.church;
 
-      const settings = await SettingsRepository.getPublicSettings(churchId);
+      const settings = await SettingsRepository.getPublicSettings(churchId, churchSlug);
 
       this.success(res, { settings });
     } catch (error) {

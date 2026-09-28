@@ -8,7 +8,7 @@ import { ArrowRight, Play, Calendar, Users } from 'lucide-react';
 import { useChurchBranding } from '../../hooks/useChurchBranding';
 
 const HeroSection = () => {
-  const { churchName, shortName } = useChurchBranding();
+  const { shortName, isMsabato, availableChurches, setChurch } = useChurchBranding();
   return (
     <section className="church-gradient text-white relative overflow-hidden">
       {/* Decorative background pattern */}
@@ -32,13 +32,41 @@ const HeroSection = () => {
                 <div className="text-left">
                   <h1 className="text-3xl md:text-5xl font-light text-white/90">Welcome to</h1>
                   <h2 className="text-4xl md:text-6xl font-bold text-white">{shortName}</h2>
-                  <p className="text-xl md:text-2xl text-white/80 font-medium">Church Management Portal</p>
+                  <p className="text-xl md:text-2xl text-white/80 font-medium">
+                    {isMsabato ? 'Seventh-day Adventist Church Management Portal' : 'Church Management Portal'}
+                  </p>
                 </div>
               </div>
 
               <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0">
                 Join us for worship, fellowship, and spiritual growth. A place where faith comes alive and community thrives.
               </p>
+
+              {/* Church chooser */}
+              {isMsabato && availableChurches.length > 0 && (
+                <div className="mb-8 max-w-md mx-auto lg:mx-0">
+                  <label className="block text-sm font-medium text-white/80 mb-2" htmlFor="church-picker">
+                    Choose your church
+                  </label>
+                  <select
+                    id="church-picker"
+                    className="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/60 backdrop-blur-sm"
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      const church = availableChurches.find(c => c.id === id);
+                      if (church) setChurch(church);
+                    }}
+                    defaultValue=""
+                  >
+                    <option value="">Select your church</option>
+                    {availableChurches.map(church => (
+                      <option key={church.id} value={church.id} className="text-black">
+                        {church.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Quick Info Cards */}
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-8">

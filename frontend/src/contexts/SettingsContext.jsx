@@ -9,11 +9,24 @@ export const SettingsProvider = ({ children }) => {
 
   useEffect(() => {
     fetchPublicSettings();
+    const handler = () => fetchPublicSettings();
+    window.addEventListener('msabato:church-changed', handler);
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('msabato:church-changed', handler);
+      window.removeEventListener('storage', handler);
+    };
   }, []);
 
   const fetchPublicSettings = async () => {
     try {
-      const response = await axios.get('/api/settings/public');
+      let url = '/api/settings/public';
+      const stored = localStorage.getItem('msabato_church');
+      if (stored) {
+        const church = JSON.parse(stored);
+        if (church?.slug) url += `?church=${encodeURIComponent(church.slug)}`;
+      }
+      const response = await axios.get(url);
       setSettings(response.data.data?.settings || {});
     } catch (error) {
       console.error('Error fetching settings:', error);
