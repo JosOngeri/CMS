@@ -28,7 +28,7 @@
 | First Elder | elder@kiserian-main-sda.com | right123 |
 | Treasurer | treasurer@kiserian-main-sda.com | right123 |
 | Department Head | depthead@kiserian-main-sda.com | right123 |
-| Member (sample) | — | right123 |
+| Member (sample) | member1@kiserian-main-sda.com | right123 |
 
 ### Mount Horeb
 
@@ -1587,6 +1587,12 @@
 | 1498 | member1498@kiserian-dam.com | +254712343167 | KI-1498 |
 | 1499 | member1499@kiserian-dam.com | +254755292501 | KI-1499 |
 | 1500 | member1500@kiserian-dam.com | +254723038948 | KI-1500 |
+
+## Kiserian Main SDA (`kiserian-main-sda`) - 1 members
+
+| # | Username / Email | Phone | Membership No. |
+|---|---|---|---|
+| 1 | member1@kiserian-main-sda.com | - | KI-0001 |
 
 ## Mount Horeb (`mount-horeb`) - 600 members
 

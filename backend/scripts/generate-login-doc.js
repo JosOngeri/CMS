@@ -41,7 +41,7 @@ Object.keys(byChurch).sort().forEach(slug => {
     const u = users.find(x => (x.roles || '').includes(role));
     md += `| ${role} | ${u ? u.email : '—'} | right123 |\n`;
   });
-  const member = users.find(x => /^member1@/.test(x.username)) || users.find(x => /^member\d+@/.test(x.username));
+  const member = users.find(x => /^member1@/.test(x.email)) || users.find(x => /^member\d+@/.test(x.email));
   md += `| ${memberLabel} | ${member ? member.email : '—'} | right123 |\n\n`;
 });
 
@@ -60,14 +60,14 @@ md += '\n';
 
 // Members per church
 Object.keys(byChurch).sort().forEach(slug => {
-  const members = byChurch[slug].filter(u => /^member\d+@/.test(u.username));
+  const members = byChurch[slug].filter(u => /^member\d+@/.test(u.email));
   if (!members.length) return;
-  members.sort((a, b) => parseInt(a.username.match(/\d+/)[0]) - parseInt(b.username.match(/\d+/)[0]));
+  members.sort((a, b) => parseInt(a.email.match(/\d+/)[0]) - parseInt(b.email.match(/\d+/)[0]));
   const prefix = slug.slice(0, 2).toUpperCase();
   md += `## ${churchNames[slug] || slug} (\`${slug}\`) - ${members.length} members\n\n`;
   md += '| # | Username / Email | Phone | Membership No. |\n|---|---|---|---|\n';
   members.forEach(u => {
-    const num = u.username.match(/\d+/)[0];
+    const num = u.email.match(/\d+/)[0];
     md += `| ${num} | ${u.email} | ${u.phone} | ${prefix}-${num.padStart(4, '0')} |\n`;
   });
   md += '\n';
