@@ -31,6 +31,7 @@ import PermissionManagement from './components/PermissionManagement';
 import DepartmentBranding from './components/DepartmentBranding';
 import GmailMessageList from '../../components/common/GmailMessageList';
 import ActivityFeed from '../../components/departments/ActivityFeed';
+import DepartmentCollections from '../../components/departments/DepartmentCollections';
 import CollectionTracker from '../../components/events/CollectionTracker';
 import ApplePhotoGrid from '../../components/gallery/ApplePhotoGrid';
 import PhotoLightbox from '../../components/gallery/PhotoLightbox';
@@ -636,10 +637,11 @@ const DepartmentDashboard = () => {
     { id: 'gallery', label: 'Gallery', shortLabel: 'Gallery', icon: Image },
     { id: 'tasks', label: 'Tasks', shortLabel: 'Tasks', icon: CheckSquare },
     { id: 'resources', label: 'Resources', shortLabel: 'Resources', icon: FolderOpen },
-    { id: 'treasury', label: 'Treasury', shortLabel: 'Treasury', icon: DollarSign },
+    { id: 'treasury', label: 'Collections', shortLabel: 'Collections', icon: DollarSign },
     { id: 'settings', label: 'Settings', shortLabel: 'Settings', icon: Settings },
   ] : [
     { id: 'overview', label: 'Overview', shortLabel: 'Overview', icon: FileText },
+    { id: 'treasury', label: 'Collections', shortLabel: 'Collections', icon: DollarSign },
     { id: 'events', label: 'Events', shortLabel: 'Events', icon: Calendar },
     { id: 'gallery', label: 'Gallery', shortLabel: 'Gallery', icon: Image },
     { id: 'resources', label: 'Resources', shortLabel: 'Resources', icon: FolderOpen },
@@ -1381,28 +1383,10 @@ const DepartmentDashboard = () => {
 
       case 'treasury':
         return (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="bg-[var(--color-surface)]  rounded-lg shadow p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text)]  mb-3 sm:mb-4">Department Treasury</h2>
-              <p className="text-sm sm:text-base text-[var(--color-textSecondary)] ">
-                Manage department finances, budgets, and collections.
-              </p>
-              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 bg-green-50/20 rounded-lg">
-                  <p className="text-sm text-[var(--color-textSecondary)] ">Total Collections</p>
-                  <p className="text-2xl font-bold text-green-600">KES 0</p>
-                </div>
-                <div className="p-4 bg-[var(--color-primary-light)] rounded-lg">
-                  <p className="text-sm text-[var(--color-textSecondary)] ">Budget Used</p>
-                  <p className="text-2xl font-bold text-[var(--color-primary)]">0%</p>
-                </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <p className="text-sm text-[var(--color-textSecondary)] ">Pending Expenses</p>
-                  <p className="text-2xl font-bold text-purple-600">0</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <DepartmentCollections
+            departmentId={department?.id}
+            canManage={isAdmin || /head|leader/i.test(department?.userRole || '')}
+          />
         );
 
       case 'settings':

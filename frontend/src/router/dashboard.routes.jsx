@@ -125,6 +125,7 @@ const TreasuryAnalytics    = lazy(() => import('../pages/treasury/TreasuryAnalyt
 const GalleryManagement    = lazy(() => import('../pages/gallery/GalleryManagement'));
 const NotificationDashboard = lazy(() => import('../pages/notifications/NotificationDashboard'));
 const Documents            = lazy(() => import('../pages/admin/Documents'));
+const MyObligations        = lazy(() => import('../pages/obligations/MyObligations'));
 
 // Platform Admin Routes
 // const PlatformDashboard    = lazy(() => import('../pages/platform/PlatformDashboard'));
@@ -146,6 +147,7 @@ export const dashboardRoutes = [
   // Treasury & Payments
   { path: 'treasury',               element: <W C={TreasuryDashboard} /> },
   { path: 'payments/my',            element: <W C={MyPayments} /> },
+  { path: 'obligations',            element: <W C={MyObligations} /> },
   { path: 'payments/history',       element: <W C={PaymentHistory} /> },
   { path: 'payments/management',    element: <W C={PaymentManagement} /> },
   { path: 'collections',            element: <W C={MyCollections} /> },
