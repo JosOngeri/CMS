@@ -844,4 +844,96 @@ class ApiService {
       return {'success': false, 'error': 'Network error: ${e.toString()}'};
     }
   }
+
+  // ---- Department finance: budgets, obligations, collections ----
+
+  /// Obligations assigned to the current user across all departments.
+  Future<Map<String, dynamic>> getMyObligations() => _deptGet('/me/obligations');
+
+  Future<Map<String, dynamic>> getDeptBudgets(String deptId) =>
+      _deptGet('/$deptId/budgets');
+  Future<Map<String, dynamic>> proposeDeptBudget(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/budgets', data);
+  Future<Map<String, dynamic>> allocateDeptBudget(String deptId, String budgetId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/budgets/$budgetId/allocate', data);
+  Future<Map<String, dynamic>> getDeptCollections(String deptId) =>
+      _deptGet('/$deptId/collections');
+  Future<Map<String, dynamic>> waiveObligation(String deptId, String obligationId) =>
+      _deptSend('put', '/$deptId/obligations/$obligationId/waive');
+
+  // ---- M-Pesa reconciliation ----
+
+  Future<Map<String, dynamic>> postReconciliation(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/reconciliations', data);
+  Future<Map<String, dynamic>> getReconciliations(String deptId) =>
+      _deptGet('/$deptId/reconciliations');
+  Future<Map<String, dynamic>> assignReconciliation(String deptId, String reconId, Map<String, dynamic> data) =>
+      _deptSend('put', '/$deptId/reconciliations/$reconId/assign', data);
+
+  // ---- Parser profiles (AI calibration) ----
+
+  Future<Map<String, dynamic>> calibrateParser(String scopeId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$scopeId/parser/calibrate', data);
+  Future<Map<String, dynamic>> getParserProfile(String scopeId, {String? subcommitteeId}) =>
+      _deptGet('/$scopeId/parser/profiles${subcommitteeId != null ? '?subcommittee_id=$subcommitteeId' : ''}');
+  Future<Map<String, dynamic>> activateParserProfile(String scopeId, String profileId) =>
+      _deptSend('post', '/$scopeId/parser/profiles/$profileId/activate');
+
+  // ---- Department leadership & handovers ----
+
+  Future<Map<String, dynamic>> getDeptLeadership(String deptId) =>
+      _deptGet('/$deptId/leadership');
+  Future<Map<String, dynamic>> appointLeader(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/leadership', data);
+  Future<Map<String, dynamic>> revokeLeader(String deptId, String leadershipId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.delete('/departments/$deptId/leadership/$leadershipId');
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': response.data};
+      }
+      return {'success': false, 'error': response.data['error'] ?? 'Request failed'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Handovers involving the current user (incoming or outgoing).
+  Future<Map<String, dynamic>> getMyHandovers() => _deptGet('/handovers/mine');
+  Future<Map<String, dynamic>> getDeptHandovers(String deptId) =>
+      _deptGet('/$deptId/handovers');
+  Future<Map<String, dynamic>> handoverAction(String handoverId, String action, [Map<String, dynamic>? body]) =>
+      _deptSend('put', '/handovers/$handoverId/$action', body);
+  Future<Map<String, dynamic>> getExpiringGrants() =>
+      _deptGet('/leadership/expiring');
+
+  // ---- Notifications inbox ----
+
+  Future<Map<String, dynamic>> getNotifications({int page = 1}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/notifications', queryParameters: {'page': page, 'limit': 50});
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = _unwrapData(response.data['data']);
+        return {'success': true, 'notifications': data is List ? data : (data?['notifications'] ?? [])};
+      }
+      return {'success': false, 'error': 'Failed to load notifications'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  Future<Map<String, dynamic>> markNotificationRead(String notificationId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post('/notifications/$notificationId/read');
+      return {'success': response.statusCode == 200};
+    } catch (e) {
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }

@@ -126,20 +126,20 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 
 ### Blocking gaps (P0)
 
-- [ ] Flutter handover screen — incoming accept/decline + outgoing checklist (`/departments/handovers/*`)
-- [ ] Flutter notifications inbox + Home-tab badge (`/api/notifications`)
+- [x] Flutter handover screen — incoming accept/decline + outgoing checklist (`handovers_screen.dart`, `/handovers`)
+- [x] Flutter notifications inbox + Home-tab badge (`notifications_screen.dart`, bell w/ unread badge)
 
 ### Department & finance parity (P1 — from `department-centric-redesign-plan.md`)
 
 - [ ] Flutter subcommittee spend request + budget view (`/subcommittees/:id/spend`, `/budget`)
 - [ ] Flutter subcommittee collector role UI — "Collect & Reconcile" (SMS scan, tx picker, assign to obligation)
-- [ ] Flutter "Parser Setup" screen for treasurers (`POST /parser/calibrate` → activate ruleset)
+- [x] Flutter "Parser Setup" — AI calibrate dialog in dept Collections tab (`POST /parser/calibrate`)
 - [ ] Web: reconciliation unassigned queue + remittance + ledger (dept Collections tab)
-- [ ] Migration 035 — `member_obligations`, `mpesa_reconciliations`, `mpesa_parser_profiles`
-- [ ] Budget→obligation flow — propose → approve → allocate (target|voluntary) → milestones
-- [ ] Departments center-stage — Flutter nav reorder + dept hero cards + Collections tab
-- [ ] My Obligations page/screen (web + Flutter)
-- [ ] Payment tagging — `obligation_id` on `POST /payments/initiate`
+- [x] Migration 035 — `member_obligations`, `mpesa_reconciliations`, `mpesa_parser_profiles` (applied on prod)
+- [x] Budget→obligation flow — propose → approve → allocate (target|voluntary) → milestones
+- [x] Departments center-stage — Flutter nav reordered (Depts center tab) + dept hero strip + Collections/Leadership tabs
+- [x] My Obligations page/screen (web `/dashboard/obligations` + Flutter `/obligations`)
+- [x] Payment tagging — `obligation_id`/`obligationId` on `POST /payments/initiate` + status recalc
 
 ### Minor parity (P2)
 
@@ -162,7 +162,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 
 - [ ] Ollama self-hosted AI on VPS (`qwen2.5:3b`) — optional fallback
 - [ ] `AI_PROVIDER` env switch (gemini | ollama)
-- [ ] PII redaction in `/parser/calibrate` (names/phones stripped before AI call)
+- [x] PII redaction in `/parser/calibrate` — format-preserving dummies (`0700000000`, `JANE DOE`) so generated regexes still match real messages
 
 ---
 
@@ -184,19 +184,21 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 | 10 | Kiserian Main real workers — 550 users, 43 depts, 111 leadership rows | DB |
 | 11 | Departments header links — Leadership + Handovers discoverable | Web |
 | 12 | AI live on VPS — `gemini-3.8-flash` via `aiContentService` | Backend |
+| 13 | Departments center-stage — Flutter nav reordered (Home·Events·Depts·Payments·Profile), dept hero strip, Collections/Leadership tabs | Flutter |
+| 14 | Budget → member obligations — propose → approve → allocate as `target` or `voluntary` | API + Web + Flutter |
+| 15 | Milestone/collection tracker — target vs collected, 25/50/75/100% milestones, per-member progress | API + Web + Flutter |
+| 16 | M-Pesa/bank SMS reconciliation — `mpesa_reconciliations`, tx-code dedupe, obligation matching | API (device scan pending) |
+| 17 | Collector role — `collector` leadership position, scoped reconcile rights | API |
+| 18 | AI parser calibration — treasurer pastes sample → ruleset per scope, PII-redacted | API + Web + Flutter UI |
+| 19 | Flutter handover screen + notifications inbox (P0 gaps closed) | Flutter |
 
 ### In plan — not yet built ⬜
 
 | # | Feature | Doc ref |
 |---|---|---|
-| 13 | Departments center-stage (Flutter nav + hero cards + Collections tab) | `department-centric-redesign-plan.md` §1 |
-| 14 | Budget → member obligations (`target` required / `voluntary`) | §2 |
-| 15 | Milestone/collection tracker — target vs collected, per-member progress | §2d |
-| 16 | M-Pesa/bank SMS reconciliation — read tx codes, dedupe, match obligations | §5b |
-| 17 | Subcommittee collector role — collect to own M-Pesa, scoped reconcile rights | §5b |
-| 18 | AI parser calibration — treasurer pastes sample → ruleset per scope | §5b AI profiles |
-| 19 | Flutter handover screen + notifications inbox (P0 gaps) | §7 tracker |
 | 20 | Ollama self-hosted AI fallback (`qwen2.5:3b`) | §7 tracker |
+| 21 | On-device SMS scanning in Flutter (needs `telephony`/`sms_advanced` plugin) | §5b |
+| 22 | Web reconciliation unassigned queue + remittance ledger | §5b |
 
 ### Deferred / intentional
 

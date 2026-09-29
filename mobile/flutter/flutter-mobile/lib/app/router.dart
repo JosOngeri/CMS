@@ -15,6 +15,9 @@ import '../screens/approvals_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/forgot_password_screen.dart';
 import '../screens/server_url_screen.dart';
+import '../screens/my_obligations_screen.dart';
+import '../screens/handovers_screen.dart';
+import '../screens/notifications_screen.dart';
 import '../widgets/main_shell.dart';
 import '../services/auth_service.dart';
 
@@ -54,7 +57,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Protected routes - redirect to login if not authenticated
-      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals'];
+      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications'];
       if (protectedRoutes.contains(state.matchedLocation) && !isAuthenticated) {
         debugPrint('=== Router: Redirecting to /login (protected route) ===');
         return '/login';
@@ -93,14 +96,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/payments',
-                builder: (context, state) => const PaymentsScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
                 path: '/events',
                 builder: (context, state) => const EventsScreen(),
               ),
@@ -109,8 +104,16 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: '/announcements',
-                builder: (context, state) => const AnnouncementsScreen(),
+                path: '/departments',
+                builder: (context, state) => const DepartmentsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/payments',
+                builder: (context, state) => const PaymentsScreen(),
               ),
             ],
           ),
@@ -125,8 +128,20 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
-        path: '/departments',
-        builder: (context, state) => const DepartmentsScreen(),
+        path: '/announcements',
+        builder: (context, state) => const AnnouncementsScreen(),
+      ),
+      GoRoute(
+        path: '/obligations',
+        builder: (context, state) => const MyObligationsScreen(),
+      ),
+      GoRoute(
+        path: '/handovers',
+        builder: (context, state) => const HandoversScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: '/departments/:id',

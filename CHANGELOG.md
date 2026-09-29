@@ -6,6 +6,21 @@ app.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-01
+
+### Added
+- Departments moved to centre tab of bottom navigation (Home · Events · Depts · Payments · Profile)
+- Department detail gains Collections and Leadership tabs
+- Collections tab: collection target progress, 25/50/75/100% milestones, budgets (propose/allocate), reconciliations, AI parser calibration
+- Leadership tab: roster of head/assistant/secretary/collector, appoint and revoke, temporary grants
+- My Obligations screen — member financial obligations (target and voluntary) with per-item progress and M-Pesa pay
+- Handovers screen — incoming accept/decline, outgoing checklist and complete
+- Notifications inbox with unread badge on the dashboard app bar
+- Dashboard "My Departments" hero strip plus quick links to obligations and handovers
+
+### Changed
+- Announcements moved off the bottom navigation; reachable from the dashboard
+
 ## [1.2.1] - 2026-09-28
 
 ### Fixed

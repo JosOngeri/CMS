@@ -25,19 +25,19 @@ class MainShell extends StatelessWidget {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.payments_outlined),
-            selectedIcon: Icon(Icons.payments),
-            label: 'Payments',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.event_outlined),
             selectedIcon: Icon(Icons.event),
             label: 'Events',
           ),
           NavigationDestination(
-            icon: Icon(Icons.announcement_outlined),
-            selectedIcon: Icon(Icons.announcement),
-            label: 'News',
+            icon: Icon(Icons.groups_outlined),
+            selectedIcon: Icon(Icons.groups),
+            label: 'Depts',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.payments_outlined),
+            selectedIcon: Icon(Icons.payments),
+            label: 'Payments',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

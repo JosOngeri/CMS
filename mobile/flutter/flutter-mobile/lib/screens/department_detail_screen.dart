@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
+import 'dept_collections_tab.dart';
+import 'dept_leadership_tab.dart';
 
 /// Detail view for a single department. Members get Overview / Subcommittees /
 /// Programs & Events / Messages. Heads and privileged roles also get Requests
@@ -49,7 +51,7 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
         ].contains(r)) ||
         (roles.contains('Department Head') && roleInDept.contains('head'));
     _tabController = TabController(
-      length: _canManage ? 5 : 4,
+      length: _canManage ? 7 : 6,
       vsync: this,
     );
     if (mounted) setState(() => _ready = true);
@@ -64,8 +66,10 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
     }
     final tabs = <Tab>[
       const Tab(text: 'Overview'),
+      const Tab(text: 'Collections'),
       const Tab(text: 'Subcommittees'),
       const Tab(text: 'Programs & Events'),
+      const Tab(text: 'Leadership'),
       const Tab(text: 'Messages'),
       if (_canManage) const Tab(text: 'Requests'),
     ];
@@ -89,8 +93,10 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
         controller: _tabController,
         children: [
           _OverviewTab(dept: widget.department),
+          DeptCollectionsTab(api: _api!, deptId: _deptId, canManage: _canManage),
           _SubcommitteesTab(api: _api!, deptId: _deptId, canManage: _canManage),
           _ProgramsEventsTab(api: _api!, deptId: _deptId, canManage: _canManage),
+          DeptLeadershipTab(api: _api!, deptId: _deptId, canManage: _canManage),
           _MessagesTab(api: _api!, deptId: _deptId, canManage: _canManage),
           if (_canManage) _RequestsTab(api: _api!, deptId: _deptId),
         ],

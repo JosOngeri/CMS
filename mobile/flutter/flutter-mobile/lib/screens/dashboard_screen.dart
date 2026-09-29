@@ -134,6 +134,15 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         title: const Text('Dashboard'),
         actions: [
           IconButton(
+            icon: Badge(
+              isLabelVisible:
+                  (int.tryParse('${_unreadNotifications ?? 0}') ?? 0) > 0,
+              label: Text('${_unreadNotifications ?? 0}'),
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            onPressed: () => context.push('/notifications'),
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _isRefreshing ? null : _refreshData,
           ),
@@ -162,6 +171,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         _buildWelcomeHeader(user),
                         const SizedBox(height: 24),
                         if (_stats != null) _buildStatsCards(user),
+                        const SizedBox(height: 24),
+                        _buildDepartmentsHero(),
                         if (_primaryRole(user) == 'Treasurer' &&
                             _transactions != null &&
                             _transactions!.isNotEmpty) ...[
@@ -242,6 +253,111 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             fontSize: 14,
             color: Colors.grey[600],
           ),
+        ),
+      ],
+    );
+  }
+
+  /// Departments centre-stage: my departments strip + finance shortcuts.
+  Widget _buildDepartmentsHero() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('My Departments',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            TextButton(
+              onPressed: () => context.push('/departments'),
+              child: const Text('See all'),
+            ),
+          ],
+        ),
+        FutureBuilder<Map<String, dynamic>>(
+          future: _apiService?.getMyDepartments() ??
+              Future.value({'success': false}),
+          builder: (context, snap) {
+            if (!snap.hasData) {
+              return const SizedBox(
+                  height: 96,
+                  child: Center(child: CircularProgressIndicator()));
+            }
+            final depts = snap.data?['departments'] as List? ?? [];
+            if (snap.data?['success'] != true || depts.isEmpty) {
+              return Card(
+                child: ListTile(
+                  leading: const Icon(Icons.groups),
+                  title: const Text('Browse departments'),
+                  subtitle: const Text('Join a department to get involved'),
+                  onTap: () => context.push('/departments'),
+                ),
+              );
+            }
+            return SizedBox(
+              height: 110,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: depts.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, i) {
+                  final d = depts[i] as Map<String, dynamic>;
+                  return SizedBox(
+                    width: 180,
+                    child: Card(
+                      child: InkWell(
+                        onTap: () => context.push('/departments/${d['id']}',
+                            extra: d),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                d['name']?.toString() ?? 'Department',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const Spacer(),
+                              Text(
+                                (d['role_in_department'] ?? d['role'] ?? 'member')
+                                    .toString(),
+                                style: TextStyle(
+                                    fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.task_alt, size: 18),
+                label: const Text('My Obligations'),
+                onPressed: () => context.push('/obligations'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.swap_horiz, size: 18),
+                label: const Text('Handovers'),
+                onPressed: () => context.push('/handovers'),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -383,7 +499,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
         Icons.notifications,
         Colors.orange,
-        onTap: () => context.go('/announcements'),
+        onTap: () => context.push('/announcements'),
       ),
     ];
   }
