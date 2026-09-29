@@ -163,3 +163,45 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 - [ ] Ollama self-hosted AI on VPS (`qwen2.5:3b`) — optional fallback
 - [ ] `AI_PROVIDER` env switch (gemini | ollama)
 - [ ] PII redaction in `/parser/calibrate` (names/phones stripped before AI call)
+
+---
+
+## 8. Master Feature List — All Requests To Date
+
+### Shipped ✅
+
+| # | Feature | Where |
+|---|---|---|
+| 1 | Newsletter/footer contrast fix (both themes) | Web public site |
+| 2 | `USER_LOGINS.md` — all 2,326 accounts, role quick-reference per church | Repo root |
+| 3 | Dark-mode audit — `--color-primary-strong`, full `primary-50…900` scale, 120 dead classes restored | Web |
+| 4 | Church branding — logged-in/selected church name resolves (optionalAuth fix) | Web |
+| 5 | Mobile-ready webapp — bottom nav, table→cards, bottom sheets, header search collapse | Web |
+| 6 | PWA — sw.js registered, real 192/512 + maskable icons, installable | Web |
+| 7 | Department leadership system — hierarchy, handovers, temp grants, expiry sweep, roles | Web + API |
+| 8 | Subcommittee leads + spend-approval gate (parent head approves before budget posts) | API + Web |
+| 9 | Canonical SDA dept catalog (44 depts, nested auxiliaries) seeded for all 4 churches | DB |
+| 10 | Kiserian Main real workers — 550 users, 43 depts, 111 leadership rows | DB |
+| 11 | Departments header links — Leadership + Handovers discoverable | Web |
+| 12 | AI live on VPS — `gemini-3.8-flash` via `aiContentService` | Backend |
+
+### In plan — not yet built ⬜
+
+| # | Feature | Doc ref |
+|---|---|---|
+| 13 | Departments center-stage (Flutter nav + hero cards + Collections tab) | `department-centric-redesign-plan.md` §1 |
+| 14 | Budget → member obligations (`target` required / `voluntary`) | §2 |
+| 15 | Milestone/collection tracker — target vs collected, per-member progress | §2d |
+| 16 | M-Pesa/bank SMS reconciliation — read tx codes, dedupe, match obligations | §5b |
+| 17 | Subcommittee collector role — collect to own M-Pesa, scoped reconcile rights | §5b |
+| 18 | AI parser calibration — treasurer pastes sample → ruleset per scope | §5b AI profiles |
+| 19 | Flutter handover screen + notifications inbox (P0 gaps) | §7 tracker |
+| 20 | Ollama self-hosted AI fallback (`qwen2.5:3b`) | §7 tracker |
+
+### Deferred / intentional
+
+| # | Feature | Reason |
+|---|---|---|
+| 21 | Treasury suite on mobile | Desktop-class workflows — maybe read-only summary later |
+| 22 | Admin/SMS/Telegram on mobile | Web-only by design |
+| 23 | Flutter gallery viewer | P2 polish |
