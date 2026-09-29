@@ -9,6 +9,9 @@ ALTER TABLE departments ADD COLUMN IF NOT EXISTS church_slug VARCHAR(100);
 ALTER TABLE departments ADD COLUMN IF NOT EXISTS leader_name VARCHAR(200);
 ALTER TABLE departments ADD COLUMN IF NOT EXISTS leader_contact VARCHAR(200);
 CREATE INDEX IF NOT EXISTS idx_departments_parent ON departments(parent_department_id);
+-- Slug uniqueness is per-church (multi-tenant) — drop the legacy global-unique constraint/index
+ALTER TABLE departments DROP CONSTRAINT IF EXISTS departments_slug_key;
+DROP INDEX IF EXISTS departments_slug_key;
 CREATE UNIQUE INDEX IF NOT EXISTS departments_slug_church_key ON departments(slug, church_id);
 
 -- department_permissions does not exist on all deployments — create it first
