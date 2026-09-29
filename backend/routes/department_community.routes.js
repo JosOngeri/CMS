@@ -14,7 +14,7 @@ const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify'
 const SmsHub = require('../services/SmsHub');
 const { createLogger } = require('../helpers/controllerLogger');
 const {
-  canManageSubcommittee, grantLeadership, logDeptActivity,
+  canManageSubcommittee, grantLeadership, logDeptActivity, getDepartmentForUser,
 } = require('../helpers/departmentLeadership');
 
 const logger = createLogger('department_community');
@@ -318,7 +318,7 @@ router.delete('/:id/subcommittees/:sid/members/:uid', authenticateToken, async (
 // ---------------------------------------------------------------------------
 router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res) => {
   try {
-    const dept = await getDepartment(req.params.id, req.user.church_id);
+    const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
     const sub = await pool.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',
@@ -376,7 +376,7 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
 // only their own subcommittee scope.
 router.get('/:id/subcommittees/:sid/budget', authenticateToken, async (req, res) => {
   try {
-    const dept = await getDepartment(req.params.id, req.user.church_id);
+    const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
     const sub = await pool.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',

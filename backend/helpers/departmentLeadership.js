@@ -31,6 +31,18 @@ async function getDepartment(departmentId, churchId) {
   return r.rows[0] || null;
 }
 
+/** Like getDepartment but Super Admin is church-agnostic. */
+async function getDepartmentForUser(departmentId, user) {
+  if ((user.roles || []).includes('Super Admin')) {
+    const r = await pool.query(
+      'SELECT * FROM departments WHERE id = $1 AND is_active = true',
+      [departmentId]
+    );
+    return r.rows[0] || null;
+  }
+  return getDepartment(departmentId, user.church_id);
+}
+
 async function logDeptActivity(departmentId, userId, action, description) {
   await pool.query(
     `INSERT INTO department_activities (department_id, user_id, action, description)
@@ -211,6 +223,7 @@ module.exports = {
   BUNDLES,
   hasManagerRole,
   getDepartment,
+  getDepartmentForUser,
   logDeptActivity,
   grantRole,
   revokeRole,

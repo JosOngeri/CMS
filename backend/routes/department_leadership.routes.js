@@ -20,7 +20,7 @@ const { logAction } = require('../helpers/auditLog');
 const { sendNotification } = require('../helpers/notify');
 const { createLogger } = require('../helpers/controllerLogger');
 const {
-  MANAGER_ROLES, POSITIONS, hasManagerRole, getDepartment, logDeptActivity,
+  MANAGER_ROLES, POSITIONS, hasManagerRole, getDepartmentForUser, logDeptActivity,
   grantLeadership, revokeLeadership, headsElsewhere, revokeRole,
 } = require('../helpers/departmentLeadership');
 
@@ -75,7 +75,8 @@ async function createHandover({ dept, outgoingUserId, incomingUserId, position, 
 async function loadHandover(hid, user) {
   const r = await pool.query('SELECT * FROM department_handovers WHERE id = $1', [hid]);
   const h = r.rows[0];
-  if (!h || h.church_id !== user.church_id) {
+  const isSuperAdmin = (user.roles || []).includes('Super Admin');
+  if (!h || (!isSuperAdmin && h.church_id !== user.church_id)) {
     return { error: 'Handover not found', status: 404 };
   }
   return { h };
@@ -142,7 +143,7 @@ router.get('/handovers/mine', authenticateToken, async (req, res) => {
 // ---------------------------------------------------------------------------
 router.get('/:id/leadership', authenticateToken, async (req, res) => {
   try {
-    const dept = await getDepartment(req.params.id, req.user.church_id);
+    const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
     const r = await pool.query(
       `SELECT dl.*, u.first_name || ' ' || u.last_name AS user_name, u.email AS user_email,
@@ -172,7 +173,7 @@ router.post('/:id/leadership',
   requireRole(MANAGER_ROLES),
   async (req, res) => {
     try {
-      const dept = await getDepartment(req.params.id, req.user.church_id);
+      const dept = await getDepartmentForUser(req.params.id, req.user);
       if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
       const { user_id, position, allocation_type, end_date, subcommittee_id } = req.body;
@@ -288,7 +289,7 @@ router.delete('/:id/leadership/:lid',
 // ---------------------------------------------------------------------------
 router.get('/:id/handovers', authenticateToken, async (req, res) => {
   try {
-    const dept = await getDepartment(req.params.id, req.user.church_id);
+    const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
     const r = await pool.query(
       `SELECT h.*, ou.first_name || ' ' || ou.last_name AS outgoing_name,
@@ -314,7 +315,7 @@ router.post('/:id/handovers',
   requireRole(MANAGER_ROLES),
   async (req, res) => {
     try {
-      const dept = await getDepartment(req.params.id, req.user.church_id);
+      const dept = await getDepartmentForUser(req.params.id, req.user);
       if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
       const { incoming_user_id, position = 'head', notes, subcommittee_id } = req.body;
       if (!incoming_user_id) {
