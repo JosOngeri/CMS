@@ -127,6 +127,9 @@ progress bar.
 | GET | `/me/obligations` | member's obligations across all depts |
 | POST | `/payments/initiate` (extend) | accept `obligation_id` |
 | PUT | `/departments/:id/obligations/:oid/waive` | head/treasurer waives a target obligation |
+| POST | `/departments/:id/reconciliations` | collector posts a parsed SMS payment |
+| GET | `/departments/:id/reconciliations` | list reconciliations + `unassigned` queue |
+| PUT | `/reconciliations/:rid/assign` | treasurer attaches an unassigned tx to an obligation |
 
 Permission rules: allocate/collections-detail = dept head, assistant,
 subcommittee lead (own scope), Pastor/First Elder/Treasurer. `/me/obligations` =
@@ -182,7 +185,80 @@ CREATE TABLE member_obligations (
 );
 ALTER TABLE program_contributions ADD COLUMN IF NOT EXISTS obligation_id UUID;
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS obligation_id UUID;  -- whatever the payments table is
+
+CREATE TABLE mpesa_reconciliations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id UUID NOT NULL, department_id UUID, subcommittee_id UUID,
+  budget_id UUID, obligation_id UUID,
+  tx_code VARCHAR(20) UNIQUE NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  payer_name VARCHAR(200), payer_phone VARCHAR(20),
+  sms_timestamp TIMESTAMPTZ,
+  reconciled_by UUID NOT NULL,
+  status VARCHAR(20) DEFAULT 'reconciled', -- reconciled|unassigned|reversed|remitted
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
+
+## 5b. M-Pesa / Bank SMS Reconciliation + Collector Role
+
+Church money often lands in a **person's own M-Pesa** — a subcommittee names one
+member to collect. The app must let that designated **collector** reconcile those
+real-world payments against budget allocations without giving them treasury access.
+
+### The collector role
+
+- A subcommittee lead or dept head designates **one subcommittee member as
+  collector** → `department_leadership` row, `position='collector'`, scoped to the
+  `subcommittee_id` (or dept). Grant permission `reconcile_collections` +
+  `view_members` for that scope only.
+- Collector rights are **reconciliation-only**: they can match a payment to an
+  obligation/budget — they cannot create budgets, allocate, or see church-wide
+  treasury data.
+- Revocable like any leadership row; expires if temporary.
+
+### How it works (Flutter — Android only, iOS can't read SMS)
+
+1. Collector opens **"Collect & Reconcile"** on their subcommittee tile.
+2. App requests `READ_SMS` permission, scans the inbox **filtered to financial
+   senders only** (M-PESA, bank shortcodes — see `docs/specs/mpesa-sms-samples.md`).
+3. **Parsing happens on-device** against the spec's extraction rules — the app
+   shows a list: tx code, amount, payer name/phone, date. Raw SMS bodies are
+   **never uploaded**; only extracted fields post to the server.
+4. Collector taps a payment → picks the member's obligation (or the budget pool)
+   → `POST /departments/:id/reconciliations`.
+5. Server: dedupes on `tx_code` (UNIQUE), marks the obligation
+   `partial`/`fulfilled`, writes the contribution rollup, notifies the payer
+   member + dept head, audit-logs the mutation.
+6. The collector's own incoming balance stays private — nothing else is readable.
+
+### Verification counter-flow
+
+- Reconciled collections sit on the dept's Collections page flagged **"via
+  collector — awaiting remittance"** until the money actually reaches church
+  accounts (the `sent` SMS type 3d lets the collector also prove remittance).
+- Treasurer sees an **unassigned** queue for bank/PayBill messages that matched
+  nothing, plus a `reversed` flag on any reversed transactions.
+
+### New table — `mpesa_reconciliations`
+
+| column | notes |
+|---|---|
+| id, church_id, department_id, subcommittee_id, budget_id, obligation_id | scoping (obligation nullable = pool payment) |
+| tx_code | UNIQUE — dedupe key |
+| amount, payer_name, payer_phone, sms_timestamp | extracted fields only |
+| reconciled_by | the collector's user_id |
+| status | `reconciled / unassigned / reversed / remitted` |
+| created_at | |
+
+`ALTER TABLE department_leadership` — extend position CHECK to include `'collector'`.
+`department_permissions` gains the `reconcile_collections` permission value.
+
+### Web parity
+
+Treasurer side lives on web: the unassigned queue, remittance confirmation, and
+the full reconciliations ledger on the dept Collections tab. The collector's
+scan-and-assign flow is Flutter-only (SMS access is a phone feature).
 
 ## 6. Rollout Order
 
@@ -196,7 +272,10 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS obligation_id UUID;  -- whatever t
 | 6 | Web: obligations page + dept Collections tab | 5 |
 | 7 | Flutter: nav reorder + dept hero + Collections/Leadership tabs + obligations screen | 5 |
 | 8 | Flutter: handovers + notifications screens (parity P0s, unchanged) | — |
-| 9 | Build APK + deploy web | all |
+| 9 | Reconciliation: collector role + SMS parser + `/reconciliations` endpoints | 1,3 |
+| 10 | Flutter: Collect & Reconcile screen (SMS permission + tx picker) | 9 |
+| 11 | Web: unassigned queue + remittance + reconciliations ledger | 9 |
+| 12 | Build APK + deploy web | all |
 
 ## 7. Acceptance Criteria
 
@@ -208,3 +287,9 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS obligation_id UUID;  -- whatever t
 - Voluntary budgets accept pool contributions without per-member rows
 - Waived obligations excluded from outstanding lists
 - Treasury sees only approved budgets posting to `department_budgets`
+- Collector can scan own M-Pesa → assign a payment to an obligation → member's
+  status flips to fulfilled; duplicate `tx_code` rejected on resubmit
+- Collector sees **nothing** outside their scope; non-collectors never see the
+  scan option
+- Raw SMS bodies never leave the device — verified in request payloads
+- Reversed transaction flags its reconciliation, doesn't delete it
