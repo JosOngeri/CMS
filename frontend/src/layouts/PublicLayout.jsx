@@ -137,7 +137,7 @@ const PublicLayout = () => {
             {/* Church Info */}
             <div>
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-[var(--color-surface)] rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
                   <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
                 </div>
                 <div>
@@ -149,13 +149,13 @@ const PublicLayout = () => {
                 Serving our community with love, faith, and fellowship. A place where everyone is welcome.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Facebook">
+                <a href="#" className="w-10 h-10 bg-white/10 hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Facebook">
                   <Share2 className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-pink-600 rounded-lg flex items-center justify-center transition-colors" title="Instagram">
+                <a href="#" className="w-10 h-10 bg-white/10 hover:bg-pink-600 rounded-lg flex items-center justify-center transition-colors" title="Instagram">
                   <AtSign className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
+                <a href="#" className="w-10 h-10 bg-white/10 hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
                   <Globe className="h-5 w-5" />
                 </a>
               </div>
@@ -218,15 +218,15 @@ const PublicLayout = () => {
             <div>
               <h3 className="font-bold text-lg mb-6">Service Times</h3>
               <div className="space-y-3">
-                <div className="bg-[var(--color-surface)] rounded-lg p-4">
+                <div className="bg-white/10 rounded-lg p-4">
                   <p className="text-white font-medium">Sabbath School</p>
                   <p className="text-slate-300 text-sm">9:00 AM - 10:00 AM</p>
                 </div>
-                <div className="bg-[var(--color-surface)] rounded-lg p-4">
+                <div className="bg-white/10 rounded-lg p-4">
                   <p className="text-white font-medium">Main Service</p>
                   <p className="text-slate-300 text-sm">10:30 AM - 12:30 PM</p>
                 </div>
-                <div className="bg-[var(--color-surface)] rounded-lg p-4">
+                <div className="bg-white/10 rounded-lg p-4">
                   <p className="text-white font-medium">Prayer Meeting</p>
                   <p className="text-slate-300 text-sm">Wednesday 6:00 PM</p>
                 </div>
@@ -235,7 +235,7 @@ const PublicLayout = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-[var(--color-border)] mt-12 pt-8">
+          <div className="border-t border-white/10 mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-slate-300 text-sm">
                 © {new Date().getFullYear()} {churchName}. All rights reserved.
