@@ -24,7 +24,8 @@ import {
   UserCheck,
   DollarSign,
   BarChart3,
-  FileText
+  FileText,
+  ArrowLeftRight
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -276,15 +277,33 @@ const DepartmentsList = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">Department Management</h1>
           <p className="text-sm text-[var(--color-textSecondary)]">Manage church departments and activities</p>
         </div>
-        {canManageDepartments && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => { setEditingDepartment(null); setFormData({ name: '', description: '', head_id: '', category: '', parent_department_id: '', is_committee: false, is_active: true }); setShowCreateForm(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+            onClick={() => navigate('/dashboard/departments/handovers')}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surfaceHover)] transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            New Department
+            <ArrowLeftRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Handovers</span>
           </button>
-        )}
+          {canManageDepartments && (
+            <>
+              <button
+                onClick={() => navigate('/dashboard/departments/head-allocation')}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surfaceHover)] transition-colors"
+              >
+                <Crown className="w-4 h-4" />
+                <span className="hidden sm:inline">Leadership</span>
+              </button>
+              <button
+                onClick={() => { setEditingDepartment(null); setFormData({ name: '', description: '', head_id: '', category: '', parent_department_id: '', is_committee: false, is_active: true }); setShowCreateForm(true); }}
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New Department</span>
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       <TabNavigation tabs={departmentTabs} activeTab={activeTab} onTabChange={setActiveTab} persistKey="departments-tab" />
