@@ -86,13 +86,15 @@ function ageGroup(dateOfBirth) {
 }
 
 function departmentFor(age, gender) {
-  if (age === 'child') return 'children';
-  if (age === 'youth') return 'youth';
+  if (age === 'child') return 'children-ministry';
+  if (age === 'youth') return 'youth-ministry';
   if (age === 'adult') {
-    const pool = gender === 'female' ? ['women', 'choir', 'ushering', 'prayer', 'health', 'education'] : ['men', 'choir', 'ushering', 'prayer', 'evangelism', 'health', 'education'];
+    const pool = gender === 'female'
+      ? ['adventist-women-ministry', 'church-choir', 'prayer-ministry', 'health-ministry', 'education']
+      : ['adventist-men-ministry', 'church-choir', 'prayer-ministry', 'evangelism', 'health-ministry', 'education'];
     return randomItem(pool);
   }
-  return randomItem(['prayer', 'health']);
+  return randomItem(['prayer-ministry', 'health-ministry']);
 }
 
 async function main() {
