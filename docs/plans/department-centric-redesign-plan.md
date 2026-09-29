@@ -130,6 +130,9 @@ progress bar.
 | POST | `/departments/:id/reconciliations` | collector posts a parsed SMS payment |
 | GET | `/departments/:id/reconciliations` | list reconciliations + `unassigned` queue |
 | PUT | `/reconciliations/:rid/assign` | treasurer attaches an unassigned tx to an obligation |
+| POST | `/parser/calibrate` | sample SMS → Gemini → ruleset JSON (scope-scoped) |
+| POST | `/parser/test` | run a draft ruleset against another sample |
+| GET | `/parser/profiles?scope=` | active ruleset for the collector's scope (app download) |
 
 Permission rules: allocate/collections-detail = dept head, assistant,
 subcommittee lead (own scope), Pastor/First Elder/Treasurer. `/me/obligations` =
@@ -186,6 +189,20 @@ CREATE TABLE member_obligations (
 ALTER TABLE program_contributions ADD COLUMN IF NOT EXISTS obligation_id UUID;
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS obligation_id UUID;  -- whatever the payments table is
 
+CREATE TABLE mpesa_parser_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id UUID NOT NULL,
+  department_id UUID, subcommittee_id UUID,   -- NULL,NULL = church-wide
+  version INT NOT NULL,
+  ruleset JSONB NOT NULL,                     -- AI-generated extraction rules
+  sample_sms TEXT,                            -- kept for re-calibration/audit
+  status VARCHAR(20) DEFAULT 'draft',         -- draft|active|retired
+  created_by UUID NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_parser_profiles_scope
+  ON mpesa_parser_profiles(church_id, department_id, subcommittee_id, status);
+
 CREATE TABLE mpesa_reconciliations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   church_id UUID NOT NULL, department_id UUID, subcommittee_id UUID,
@@ -232,6 +249,39 @@ real-world payments against budget allocations without giving them treasury acce
    member + dept head, audit-logs the mutation.
 6. The collector's own incoming balance stays private — nothing else is readable.
 
+### AI-calibrated parser profiles (self-configuring — no manual entry rules)
+
+Hardcoded regexes drift when banks/Safaricom change message formats, and each
+collection destination sees **different** message types (church PayBill vs a
+collector's personal "you have received" SMS vs an Equity deposit). Instead of
+maintaining parsing code, each scope gets a **versioned parser profile** that AI
+generates from one sample message.
+
+**Calibration flow:**
+
+1. Whoever receives the money configures the profile for their scope —
+   church treasurer → church account, dept treasurer/head → dept scope,
+   collector → their subcommittee. New permission `configure_parser`, granted
+   alongside `reconcile_collections`.
+2. They open **"Parser Setup"** in the app/web and paste **one sample SMS** →
+   `POST /parser/calibrate` `{ scope, sample_sms }`.
+3. Backend calls the **existing Gemini service** (`aiContentService` —
+   `GEMINI_API_KEY`, already rate-limited + audit-logged per church) with
+   `docs/specs/mpesa-sms-samples.md` as system context + the sample → returns
+   extracted fields + a generated **ruleset JSON** (field regexes, keyword
+   anchors, tx-code pattern, sender whitelist).
+4. Ruleset stored as a new `mpesa_parser_profiles` version (`draft`) — treasurer
+   runs a **test-parse** on a second sample → confirms → status `active`.
+5. The app downloads only its scope's active ruleset → **parses locally at scan
+   time** (fast, offline, no per-message AI cost). AI is used once per
+   re-calibration only.
+6. No profile → fall back to the base spec patterns. Re-calibration creates
+   v2+; old versions retained for rollback/audit.
+
+**Fallback & safety:** AI-generated regexes are validated server-side against a
+sandbox before activation (must extract tx_code + amount from the sample or
+rejected). If Gemini is unavailable, the base spec still parses.
+
 ### Verification counter-flow
 
 - Reconciled collections sit on the dept's Collections page flagged **"via
@@ -272,10 +322,11 @@ scan-and-assign flow is Flutter-only (SMS access is a phone feature).
 | 6 | Web: obligations page + dept Collections tab | 5 |
 | 7 | Flutter: nav reorder + dept hero + Collections/Leadership tabs + obligations screen | 5 |
 | 8 | Flutter: handovers + notifications screens (parity P0s, unchanged) | — |
-| 9 | Reconciliation: collector role + SMS parser + `/reconciliations` endpoints | 1,3 |
-| 10 | Flutter: Collect & Reconcile screen (SMS permission + tx picker) | 9 |
-| 11 | Web: unassigned queue + remittance + reconciliations ledger | 9 |
-| 12 | Build APK + deploy web | all |
+| 9 | Reconciliation: collector role + `/reconciliations` endpoints | 1,3 |
+| 10 | Parser profiles: `/parser/calibrate` + test + profile download; base-spec fallback | 9 |
+| 11 | Flutter: Collect & Reconcile + Parser Setup screens (SMS perm + tx picker) | 10 |
+| 12 | Web: unassigned queue + remittance + reconciliations ledger + parser setup UI | 9 |
+| 13 | Build APK + deploy web | all |
 
 ## 7. Acceptance Criteria
 
@@ -293,3 +344,8 @@ scan-and-assign flow is Flutter-only (SMS access is a phone feature).
   scan option
 - Raw SMS bodies never leave the device — verified in request payloads
 - Reversed transaction flags its reconciliation, doesn't delete it
+- Treasurer pastes one sample SMS → AI returns a working ruleset → test-parse on
+  a second sample passes → profile activates; rescan uses it offline
+- Collector without `configure_parser` never sees Parser Setup; profiles are
+  scoped — a subcommittee ruleset never applies to another scope
+- GEMINI_API_KEY absent → base-spec parsing still works (graceful degradation)
