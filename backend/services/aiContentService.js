@@ -13,7 +13,7 @@ class AIContentService {
       logger.warn('GEMINI_API_KEY is not set. AI content generation service will be disabled.');
       this.enabled = false;
       this.genAI = null;
-      this.model = 'gemini-pro';
+      this.model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
       this.cache = new Map();
       this.cacheTTL = 10 * 60 * 1000;
       this.dailyLimit = parseInt(process.env.GEMINI_DAILY_LIMIT || '100', 10);
@@ -21,7 +21,7 @@ class AIContentService {
     }
     this.enabled = true;
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = 'gemini-pro';
+    this.model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
     this.cache = new Map(); // Simple in-memory cache
     this.cacheTTL = 10 * 60 * 1000; // 10 minutes in milliseconds
     this.dailyLimit = parseInt(process.env.GEMINI_DAILY_LIMIT || '100', 10); // Default 100 requests per day per church
