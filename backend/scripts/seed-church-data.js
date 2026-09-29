@@ -578,11 +578,11 @@ async function seed() {
 
     for (const person of allMembers) {
       const userRes = await client.query(
-        `INSERT INTO users (email, password_hash, username, first_name, last_name, phone, phone_number, slug, role, is_active, email_verified, mfa_enabled, church_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, true, false, $10)
+        `INSERT INTO users (email, password_hash, username, first_name, last_name, phone, phone_number, slug, is_active, email_verified, mfa_enabled, church_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, true, false, $9)
          ON CONFLICT (email) DO UPDATE SET updated_at = NOW()
          RETURNING id, email`,
-        [person.email, passwordHash, person.username, person.first_name, person.last_name, person.phone, person.phone, person.username, person.userRole, churchId]
+        [person.email, passwordHash, person.username, person.first_name, person.last_name, person.phone, person.phone, person.username, churchId]
       );
       person.userId = userRes.rows[0].id;
       idByEmail[person.email] = person.userId;
