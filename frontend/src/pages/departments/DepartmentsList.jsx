@@ -39,6 +39,7 @@ import Card from '../../components/common/Card';
 import { usePasswordConfirmation } from '../../hooks/usePasswordConfirmation';
 import { SUCCESS_MESSAGES } from '../../constants/validation';
 import { PERMISSIONS } from '../../constants/permissions';
+import { SDA_DEPARTMENTS, SDA_CATEGORIES } from '../../constants/sdaDepartments';
 
 const DepartmentsList = () => {
   const { user, api } = useAuth();
@@ -336,15 +337,35 @@ const DepartmentsList = () => {
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="input" required />
+                  <input type="text" placeholder="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="input" required list="sda-department-names" />
+                  <datalist id="sda-department-names">
+                    {SDA_DEPARTMENTS.map((d) => <option key={d.slug} value={d.name}>{d.category}</option>)}
+                  </datalist>
                   <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="select">
                     <option value="">Select Category</option>
-                    <option value="Ministry">Ministry</option>
-                    <option value="Leadership">Leadership</option>
-                    <option value="Education">Education</option>
-                    <option value="Youth">Youth</option>
-                    <option value="Support">Support</option>
+                    {SDA_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <select
+                    value={formData.parent_department_id || ''}
+                    onChange={(e) => setFormData({...formData, parent_department_id: e.target.value || null})}
+                    className="select"
+                  >
+                    <option value="">No parent (top-level department)</option>
+                    {departments.filter((d) => d.id !== editingDepartment?.id).map((d) => (
+                      <option key={d.id} value={d.id}>{d.name}</option>
+                    ))}
+                  </select>
+                  <label className="flex items-center gap-2 text-sm text-[var(--color-text)]">
+                    <input
+                      type="checkbox"
+                      checked={!!formData.is_committee}
+                      onChange={(e) => setFormData({...formData, is_committee: e.target.checked})}
+                      className="rounded"
+                    />
+                    Committee (e.g. Camp Meeting, Development)
+                  </label>
                 </div>
                 <textarea placeholder="Description" value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="textarea" rows={3} required />
                 <div className="flex gap-3">

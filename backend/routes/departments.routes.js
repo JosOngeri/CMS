@@ -229,7 +229,7 @@ router.post('/',
   validate,
   async (req, res) => {
     try {
-      const { name, description, head_id, category, leader_name, leader_contact } = req.body;
+      const { name, description, head_id, category, leader_name, leader_contact, parent_department_id, is_committee } = req.body;
       const churchId = req.user.church_id;
       const churchSlug = req.user.church_slug;
       const slug = name
@@ -240,12 +240,12 @@ router.post('/',
         .trim();
 
       const query = `
-        INSERT INTO departments (name, description, head_id, category, leader_name, leader_contact, church_id, church_slug, slug, is_active)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true)
+        INSERT INTO departments (name, description, head_id, category, leader_name, leader_contact, church_id, church_slug, slug, is_active, parent_department_id, is_committee)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, $10, $11)
         RETURNING *
       `;
 
-      const result = await pool.query(query, [name, description, head_id || null, category || null, leader_name || null, leader_contact || null, churchId, churchSlug, slug]);
+      const result = await pool.query(query, [name, description, head_id || null, category || null, leader_name || null, leader_contact || null, churchId, churchSlug, slug, parent_department_id || null, is_committee || false]);
 
       // Log the department creation
       await logAction(pool, {
@@ -288,7 +288,7 @@ router.put('/:identifier',
   async (req, res) => {
     try {
       const { identifier } = req.params;
-      const { name, description, head_id, category, slug } = req.body;
+      const { name, description, head_id, category, slug, parent_department_id, is_committee } = req.body;
 
       // Get department by slug or ID
       const deptQuery = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
@@ -327,6 +327,24 @@ router.put('/:identifier',
           .trim();
       }
 
+      // Changing head_id goes through the handover workflow instead of
+      // silently swapping: create a pending handover, keep the current head
+      // until the incoming leader accepts and the outgoing one completes.
+      let handover = null;
+      let headIdForUpdate = head_id;
+      if (head_id && head_id !== department.head_id) {
+        const { createHandover } = require('./department_leadership.routes');
+        handover = await createHandover({
+          dept: department,
+          outgoingUserId: department.head_id,
+          incomingUserId: head_id,
+          position: 'head',
+          initiatedBy: req.user.id,
+          req,
+        });
+        headIdForUpdate = null;
+      }
+
       const updateQuery = `
         UPDATE departments
         SET name = COALESCE($1, name),
@@ -334,20 +352,25 @@ router.put('/:identifier',
             head_id = COALESCE($3, head_id),
             category = COALESCE($4, category),
             slug = COALESCE($5, slug),
+            parent_department_id = COALESCE($7, parent_department_id),
+            is_committee = COALESCE($8, is_committee),
             updated_at = CURRENT_TIMESTAMP
         WHERE id = $6
         RETURNING *
       `;
 
-      const result = await pool.query(updateQuery, [name, description, head_id, category, newSlug, id]);
+      const result = await pool.query(updateQuery, [name, description, headIdForUpdate, category, newSlug, id, parent_department_id ?? null, is_committee ?? null]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
       }
 
       res.json({
-        message: 'Department updated successfully',
-        department: result.rows[0]
+        message: handover
+          ? 'Department updated — head change created a pending handover'
+          : 'Department updated successfully',
+        department: result.rows[0],
+        handover
       });
     } catch (error) {
       logger.error('updateDepartment', error);

@@ -57,18 +57,8 @@ const CHURCHES = [
   { slug: 'kiserian-dam', name: 'Kiserian Dam', target: 1500 },
 ];
 
-const DEPARTMENTS = [
-  { name: 'Children', slug: 'children' },
-  { name: 'Youth', slug: 'youth' },
-  { name: 'Women', slug: 'women' },
-  { name: 'Men', slug: 'men' },
-  { name: 'Choir', slug: 'choir' },
-  { name: 'Ushering', slug: 'ushering' },
-  { name: 'Prayer', slug: 'prayer' },
-  { name: 'Evangelism', slug: 'evangelism' },
-  { name: 'Health', slug: 'health' },
-  { name: 'Education', slug: 'education' },
-];
+const { SDA_DEPARTMENTS } = require('./data/sda-departments');
+const DEPARTMENTS = SDA_DEPARTMENTS; // { name, slug, category, parent, isCommittee }
 
 function randomItem(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
@@ -143,23 +133,32 @@ async function main() {
     console.log(`\n=== ${church.name} (${church.slug}) target ${church.target} ===`);
 
     // Departments (prefix slug with church slug; UPDATE-then-INSERT so this
-    // works whether the DB enforces unique(slug) or unique(slug, church_id))
+    // works whether the DB enforces unique(slug) or unique(slug, church_id)).
+    // Two passes so auxiliary departments can resolve parent_department_id.
     const deptMap = {};
     for (const dept of DEPARTMENTS) {
       const deptSlug = `${church.slug}-${dept.slug}`;
       let res = await client.query(
-        `UPDATE departments SET name = $1, is_active = true
+        `UPDATE departments SET name = $1, is_active = true, category = $4, is_committee = $5
          WHERE slug = $2 AND church_id = $3 RETURNING id`,
-        [dept.name, deptSlug, churchId]
+        [dept.name, deptSlug, churchId, dept.category || null, dept.isCommittee || false]
       );
       if (res.rows.length === 0) {
         res = await client.query(
-          `INSERT INTO departments (name, slug, church_id, is_active)
-           VALUES ($1, $2, $3, true) RETURNING id`,
-          [dept.name, deptSlug, churchId]
+          `INSERT INTO departments (name, slug, church_id, is_active, category, is_committee)
+           VALUES ($1, $2, $3, true, $4, $5) RETURNING id`,
+          [dept.name, deptSlug, churchId, dept.category || null, dept.isCommittee || false]
         );
       }
       deptMap[dept.slug] = res.rows[0].id;
+    }
+    for (const dept of DEPARTMENTS) {
+      if (!dept.parent) continue;
+      const parentId = deptMap[dept.parent];
+      const childId = deptMap[dept.slug];
+      if (parentId && childId) {
+        await client.query('UPDATE departments SET parent_department_id = $1 WHERE id = $2', [parentId, childId]);
+      }
     }
 
     // Age distribution

@@ -73,6 +73,7 @@ const DepartmentOverview   = lazy(() => import('../pages/departments/DepartmentO
 const DepartmentsList      = lazy(() => import('../pages/departments/DepartmentsList'));
 const MyDepartments        = lazy(() => import('../pages/departments/MyDepartments'));
 const DepartmentHeadAllocation = lazy(() => import('../pages/departments/DepartmentHeadAllocation'));
+const DepartmentHandover   = lazy(() => import('../pages/departments/DepartmentHandover'));
 const DepartmentSettings   = lazy(() => import('../pages/departments/DepartmentSettings'));
 const DepartmentActivity   = lazy(() => import('../pages/departments/DepartmentActivity'));
 const CategoryManagement   = lazy(() => import('../pages/departments/CategoryManagement'));
@@ -170,6 +171,7 @@ export const dashboardRoutes = [
   { path: 'departments',            element: <W C={DepartmentsList} /> },
   { path: 'departments/overview',   element: <W C={DepartmentOverview} /> },
   { path: 'departments/head-allocation', element: <W C={DepartmentHeadAllocation} /> },
+  { path: 'departments/handovers',    element: <W C={DepartmentHandover} /> },
   { path: 'departments/settings',   element: <W C={DepartmentSettings} /> },
   { path: 'departments/categories', element: <W C={CategoryManagement} /> },
   { path: 'my-departments',         element: <W C={MyDepartments} /> },

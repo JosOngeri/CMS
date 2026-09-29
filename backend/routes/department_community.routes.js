@@ -13,6 +13,9 @@ const { authenticateToken } = require('../middleware/auth');
 const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify');
 const SmsHub = require('../services/SmsHub');
 const { createLogger } = require('../helpers/controllerLogger');
+const {
+  canManageSubcommittee, grantLeadership, logDeptActivity,
+} = require('../helpers/departmentLeadership');
 
 const logger = createLogger('department_community');
 
@@ -134,7 +137,7 @@ router.post('/:id/subcommittees', authenticateToken, async (req, res) => {
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const { name, description, lead_user_id } = req.body;
+    const { name, description, lead_user_id, lead_allocation_type, lead_end_date } = req.body;
     if (!name) return res.status(400).json({ success: false, error: 'name is required' });
 
     const r = await pool.query(
@@ -142,7 +145,27 @@ router.post('/:id/subcommittees', authenticateToken, async (req, res) => {
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [dept.id, dept.church_id, name, description || null, lead_user_id || null]
     );
-    res.status(201).json({ success: true, data: r.rows[0] });
+    const sub = r.rows[0];
+
+    // A lead gets scoped subcommittee_head leadership + permission bundle
+    if (lead_user_id) {
+      await grantLeadership({
+        departmentId: dept.id, churchId: dept.church_id, userId: lead_user_id,
+        position: 'subcommittee_head',
+        allocationType: lead_allocation_type === 'temporary' ? 'temporary' : 'permanent',
+        endDate: lead_allocation_type === 'temporary' ? (lead_end_date || null) : null,
+        appointedBy: req.user.id, subcommitteeId: sub.id,
+      });
+      await sendNotification(pool, {
+        recipientId: lead_user_id,
+        type: 'department_leadership',
+        title: `You now lead the ${name} subcommittee`,
+        body: `You have been appointed head of the ${name} subcommittee in ${dept.name}.`,
+        link: `/dashboard/departments/${dept.id}`,
+        relatedEntityType: 'department', relatedEntityId: dept.id,
+      });
+    }
+    res.status(201).json({ success: true, data: sub });
   } catch (e) {
     logger.error('createSubcommittee', e);
     res.status(500).json({ success: false, error: 'Failed to create subcommittee' });
@@ -156,7 +179,29 @@ router.put('/:id/subcommittees/:sid', authenticateToken, async (req, res) => {
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const { name, description, lead_user_id, is_active } = req.body;
+    const { name, description, lead_user_id, is_active, lead_allocation_type, lead_end_date } = req.body;
+
+    const before = await pool.query(
+      'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
+      [req.params.sid, dept.id]
+    );
+    if (!before.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
+    const prevLead = before.rows[0].lead_user_id;
+
+    // Replacing an existing lead routes through the handover workflow —
+    // the column is only repointed when the handover completes.
+    let handover = null;
+    let leadForUpdate = lead_user_id ?? null;
+    if (lead_user_id && prevLead && lead_user_id !== prevLead) {
+      const { createHandover } = require('./department_leadership.routes');
+      handover = await createHandover({
+        dept, outgoingUserId: prevLead, incomingUserId: lead_user_id,
+        position: 'subcommittee_head', initiatedBy: req.user.id,
+        subcommitteeId: req.params.sid, req,
+      });
+      leadForUpdate = null;
+    }
+
     const r = await pool.query(
       `UPDATE department_subcommittees SET
          name = COALESCE($3, name),
@@ -165,10 +210,22 @@ router.put('/:id/subcommittees/:sid', authenticateToken, async (req, res) => {
          is_active = COALESCE($6, is_active),
          updated_at = NOW()
        WHERE id = $1 AND department_id = $2 RETURNING *`,
-      [req.params.sid, dept.id, name ?? null, description ?? null, lead_user_id ?? null, is_active ?? null]
+      [req.params.sid, dept.id, name ?? null, description ?? null, leadForUpdate, is_active ?? null]
     );
     if (!r.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
-    res.json({ success: true, data: r.rows[0] });
+    const sub = r.rows[0];
+
+    // First-time lead appointment: grant scoped leadership immediately
+    if (lead_user_id && !prevLead) {
+      await grantLeadership({
+        departmentId: dept.id, churchId: dept.church_id, userId: lead_user_id,
+        position: 'subcommittee_head',
+        allocationType: lead_allocation_type === 'temporary' ? 'temporary' : 'permanent',
+        endDate: lead_allocation_type === 'temporary' ? (lead_end_date || null) : null,
+        appointedBy: req.user.id, subcommitteeId: sub.id,
+      });
+    }
+    res.json({ success: true, data: sub, handover });
   } catch (e) {
     logger.error('updateSubcommittee', e);
     res.status(500).json({ success: false, error: 'Failed to update subcommittee' });
@@ -201,7 +258,12 @@ router.post('/:id/subcommittees/:sid/members', authenticateToken, async (req, re
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
     const targetUser = req.body.user_id || req.user.id;
-    const isManager = await canManageDepartment(req.user, dept.id);
+    const subRow = await pool.query(
+      'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
+      [req.params.sid, dept.id]
+    );
+    if (!subRow.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
+    const isManager = await canManageSubcommittee(req.user, subRow.rows[0]);
     if (targetUser !== req.user.id && !isManager) {
       return res.status(403).json({ success: false, error: 'Only the head can assign others' });
     }
@@ -231,7 +293,12 @@ router.delete('/:id/subcommittees/:sid/members/:uid', authenticateToken, async (
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    if (req.params.uid !== req.user.id && !(await canManageDepartment(req.user, dept.id))) {
+    const sub = await pool.query(
+      'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
+      [req.params.sid, dept.id]
+    );
+    if (!sub.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
+    if (req.params.uid !== req.user.id && !(await canManageSubcommittee(req.user, sub.rows[0]))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
     await pool.query(
@@ -243,6 +310,117 @@ router.delete('/:id/subcommittees/:sid/members/:uid', authenticateToken, async (
   } catch (e) {
     logger.error('removeSubcommitteeMember', e);
     res.status(500).json({ success: false, error: 'Failed to remove member' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// SUBCOMMITTEE FINANCE — spend goes through the parent dept head's approval
+// ---------------------------------------------------------------------------
+router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartment(req.params.id, req.user.church_id);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const sub = await pool.query(
+      'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',
+      [req.params.sid, dept.id]
+    );
+    if (!sub.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
+    if (!(await canManageSubcommittee(req.user, sub.rows[0]))) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+    const { amount, description } = req.body;
+    const amt = parseFloat(amount);
+    if (!amt || amt <= 0) return res.status(400).json({ success: false, error: 'A positive amount is required' });
+
+    // Route to the parent department head (fall back to null approver = any manager)
+    const approver = dept.head_id || null;
+    const r = await pool.query(
+      `INSERT INTO approval_requests
+         (title, description, request_type, request_data, entity_type, entity_id,
+          requester_id, requested_by, approver_id, department_id, module,
+          amount, priority, status, church_id, requested_at)
+       VALUES ($1,$2,'department_spend',$3,'department',$4,$5,$5,$6,$7,'department',
+               $8,'normal','pending',$9,CURRENT_TIMESTAMP)
+       RETURNING *`,
+      [
+        `${sub.rows[0].name} — spend request`,
+        description || `Spend request from ${sub.rows[0].name}`,
+        JSON.stringify({
+          department_id: dept.id, subcommittee_id: sub.rows[0].id,
+          subcommittee_name: sub.rows[0].name, description: description || null,
+        }),
+        dept.id, req.user.id, approver, dept.id, amt, dept.church_id,
+      ]
+    );
+
+    if (approver) {
+      await sendNotification(pool, {
+        recipientId: approver,
+        type: 'approval_request',
+        title: `Spend request: ${sub.rows[0].name}`,
+        body: `A KES ${amt.toLocaleString()} spend request from the ${sub.rows[0].name} subcommittee needs your approval.`,
+        link: '/dashboard/approvals',
+        relatedEntityType: 'approval_request', relatedEntityId: r.rows[0].id,
+      });
+    }
+    await logDeptActivity(dept.id, req.user.id, 'subcommittee_spend_requested',
+      `${sub.rows[0].name}: KES ${amt} spend request submitted for approval`);
+    res.status(201).json({ success: true, data: r.rows[0] });
+  } catch (e) {
+    logger.error('subcommitteeSpend', e);
+    res.status(500).json({ success: false, error: 'Failed to submit spend request' });
+  }
+});
+
+// Budget view: dept head/managers get the whole-department roll-up, sub heads
+// only their own subcommittee scope.
+router.get('/:id/subcommittees/:sid/budget', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartment(req.params.id, req.user.church_id);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const sub = await pool.query(
+      'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',
+      [req.params.sid, dept.id]
+    );
+    if (!sub.rows[0]) return res.status(404).json({ success: false, error: 'Subcommittee not found' });
+    if (!(await canManageSubcommittee(req.user, sub.rows[0]))) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+
+    const budget = await pool.query(
+      `SELECT * FROM department_budgets WHERE subcommittee_id = $1 ORDER BY created_at DESC LIMIT 1`,
+      [sub.rows[0].id]
+    );
+    const requests = await pool.query(
+      `SELECT id, title, amount, status, requested_at, approved_at, rejected_at
+       FROM approval_requests
+       WHERE request_type = 'department_spend'
+         AND request_data->>'subcommittee_id' = $1
+       ORDER BY requested_at DESC LIMIT 50`,
+      [sub.rows[0].id]
+    );
+
+    // Department roll-up for dept managers
+    let rollup = null;
+    if (await canManageDepartment(req.user, dept.id)) {
+      const rr = await pool.query(
+        `SELECT db.subcommittee_id, s.name AS subcommittee_name,
+                db.total_amount, db.spent_amount, db.remaining_amount
+         FROM department_budgets db
+         LEFT JOIN department_subcommittees s ON s.id = db.subcommittee_id
+         WHERE db.department_id = $1`,
+        [dept.id]
+      );
+      rollup = rr.rows;
+    }
+
+    res.json({
+      success: true,
+      data: { budget: budget.rows[0] || null, spend_requests: requests.rows, rollup },
+    });
+  } catch (e) {
+    logger.error('subcommitteeBudget', e);
+    res.status(500).json({ success: false, error: 'Failed to load subcommittee budget' });
   }
 });
 

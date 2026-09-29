@@ -194,7 +194,19 @@ const departmentMappings = {
   'Church Choir': 'choir',
   'Pianist': 'pianist',
   'PA System': 'pa',
-  'V.O.P./S.O.P.': 'vop'
+  'V.O.P./S.O.P.': 'vop',
+  // Canonical catalog names (docs/plans/sda-departments-seed-plan.md)
+  'Deacons': 'deacons',
+  'Deaconesses': 'deaconesses',
+  'Treasury': 'treasurer',
+  'Publishing Ministry': 'vop',
+  'Pathfinder Club': 'pathfinder',
+  'Master Guide': 'masterGuide',
+  'KID - Kids in Discipleship': 'kid',
+  'A.M.R.': 'amr',
+  'Chaplaincy': 'chaplaincy',
+  'Librarian': 'library',
+  'Annah\'s Family': 'women'
 };
 
 // Helper functions

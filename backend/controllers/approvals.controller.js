@@ -4,6 +4,8 @@ const ApprovalsRepository = require('../repositories/ApprovalsRepository');
 const ResponseHandler = require('../utils/ResponseHandler');
 const { createLogger } = require('../helpers/controllerLogger');
 const auditService = require('../services/auditService');
+const { pool } = require('../config/database');
+const { sendNotification } = require('../helpers/notify');
 
 /**
  * Approvals Controller
@@ -159,6 +161,13 @@ class ApprovalsController extends BaseController {
         req.get('user-agent')
       );
 
+      // Post subcommittee spend on approval (finance gate)
+      if (oldApproval && oldApproval.request_type === 'department_spend') {
+        await this.postDepartmentSpend(oldApproval, req.user.id).catch((e) =>
+          this.logger.error('postDepartmentSpend', e)
+        );
+      }
+
       return ResponseHandler.success(res, { approval }, 'Request approved successfully');
     } catch (error) {
       this.logger.error('approveRequest', error);
@@ -210,6 +219,56 @@ class ApprovalsController extends BaseController {
       this.logger.error('rejectRequest', error);
       return ResponseHandler.error(res, 'Failed to reject request');
     }
+  }
+
+  /**
+   * Post an approved subcommittee spend to the subcommittee's budget row
+   * and notify the requester. request_data carries department_id,
+   * subcommittee_id and the spend description.
+   * @param {Object} approval - The approval request row
+   * @param {string} approvedBy - Approving user id
+   */
+  async postDepartmentSpend(approval, approvedBy) {
+    const data = approval.request_data || {};
+    const subcommitteeId = data.subcommittee_id;
+    const departmentId = data.department_id || approval.department_id;
+    const amount = parseFloat(approval.amount) || 0;
+    if (!departmentId || amount <= 0) return;
+
+    // Upsert the subcommittee-scoped budget row and add the spend
+    const fiscalYear = new Date().getFullYear().toString();
+    const existing = await pool.query(
+      `SELECT * FROM department_budgets
+       WHERE department_id = $1 AND subcommittee_id IS NOT DISTINCT FROM $2
+       ORDER BY created_at DESC LIMIT 1`,
+      [departmentId, subcommitteeId]
+    );
+    if (existing.rows[0]) {
+      await pool.query(
+        `UPDATE department_budgets
+         SET spent_amount = spent_amount + $2,
+             remaining_amount = total_amount - (spent_amount + $2),
+             updated_at = NOW()
+         WHERE id = $1`,
+        [existing.rows[0].id, amount]
+      );
+    } else {
+      await pool.query(
+        `INSERT INTO department_budgets
+           (department_id, subcommittee_id, total_amount, spent_amount, remaining_amount, fiscal_year)
+         VALUES ($1,$2,0,$3,-$3,$4)`,
+        [departmentId, subcommitteeId, amount, fiscalYear]
+      );
+    }
+
+    await sendNotification(pool, {
+      recipientId: approval.requester_id || approval.requested_by,
+      type: 'approval_approved',
+      title: 'Spend request approved',
+      body: `Your spend request of KES ${amount.toLocaleString()} has been approved and posted.`,
+      link: `/dashboard/departments/${departmentId}`,
+      relatedEntityType: 'approval_request', relatedEntityId: approval.id,
+    });
   }
 
   /**

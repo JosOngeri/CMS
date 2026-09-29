@@ -113,6 +113,14 @@ if (process.env.NODE_ENV !== 'test') {
       logger.error('Failed to initialize report scheduler:', error);
     });
 
+    // Expire temporary department leadership grants — on boot and daily
+    const { expireTemporaryGrants } = require('./helpers/departmentLeadership');
+    const sweepExpired = () => expireTemporaryGrants()
+      .then(n => { if (n) logger.info(`Expired ${n} temporary department grants`); })
+      .catch(e => logger.error('Temporary grant sweep failed:', e));
+    sweepExpired();
+    setInterval(sweepExpired, 24 * 60 * 60 * 1000).unref();
+
     // Initialize WebSocket server
     initActivityWebSocket(server);
 

@@ -3,7 +3,63 @@ const fs = require('fs');
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const WORKERS_FILE = 'D:\\\\VIbeCode\\\\Msabato CMS\\\\Church workers List with departments.txt';
+const { SDA_DEPARTMENTS } = require('./data/sda-departments');
+
+const WORKERS_FILE = 'D:\\Kiserian Main SDA Communications Department\\Data\\Church workers List with departments.txt';
+if (!fs.existsSync(WORKERS_FILE)) {
+  console.error(`Workers file not found: ${WORKERS_FILE}`);
+  process.exit(1);
+}
+
+// docx section heading -> catalog slug
+const DOCX_TO_CATALOG = {
+  'ELDERS': 'elders',
+  'DEACONS': 'deacons',
+  'DEACONESSES': 'deaconesses',
+  'TREASURER': 'treasury',
+  'CHURCH CLERK': 'church-clerk',
+  'STEWARDSHIP LEADER': 'stewardship',
+  'RELIGIOUS LIBERTY LEADER': 'religious-liberty',
+  'PERSONAL MINISTRY': 'personal-ministry',
+  'INTEREST COORDINATOR': 'interest-coordinator',
+  'EVANGELISM': 'evangelism',
+  'PUBLISHING DIRECTOR': 'publishing-ministry',
+  'V.O.P./S.O.P.': 'vop-sop',
+  'HEALTH MINISTRY': 'health-ministry',
+  'FAMILY LIFE': 'family-life',
+  'PRAYER MINISTRY': 'prayer-ministry',
+  'NURTURE AND RETENTION': 'nurture-and-retention',
+  'ADVENTIST WOMEN MINISTRY': 'adventist-women-ministry',
+  "ANNAH'S FAMILY": 'annahs-family',
+  'ADVENTIST MEN MINISTRY': 'adventist-men-ministry',
+  'ADVENTIST POSSIBILITY MINISTRY': 'adventist-possibility-ministry',
+  'DORCAS': 'dorcas',
+  'CHAPLAINCY': 'chaplaincy',
+  'A.M.R.': 'amr',
+  'YOUTH MINISTRY': 'youth-ministry',
+  'PATHFINDER': 'pathfinder-club',
+  'ADVENTURER CLUB': 'adventurer-club',
+  'AMBASSADORS': 'ambassadors',
+  'MASTER GUIDE': 'master-guide',
+  'CHILDREN MINISTRY': 'children-ministry',
+  'VBS': 'vbs',
+  'KID - KIDS IN DISCIPLESHIP': 'kid-kids-in-discipleship',
+  'MUSIC CO-ORDINATOR': 'music-ministry',
+  'CHURCH CHOIR': 'church-choir',
+  'CHORISTERS': 'choristers',
+  'PIANIST': 'pianist',
+  'SABBATH SCHOOL SUPERINTENDENT': 'sabbath-school',
+  'LIBRARIAN': 'librarian',
+  'EDUCATION SECRETARY': 'education',
+  'SCHOOL CHAIR': 'school-chair',
+  'COMMUNICATION SECRETARY': 'communication',
+  'PA SYSTEM': 'pa-system',
+  'CAMP MEETING': 'camp-meeting',
+  'DEVELOPMENT': 'development',
+  'WELFARE': 'welfare',
+  'CHURCH BOARD MEMBERS': null, // role label, not a department
+};
+const CATALOG_BY_SLUG = Object.fromEntries(SDA_DEPARTMENTS.map((d) => [d.slug, d]));
 const EMAIL_DOMAIN = 'msabato.org';
 const EMAIL_PREFIX = 'kmainseed+';
 const DEFAULT_PASSWORD = 'Welcome123!';
@@ -309,6 +365,7 @@ function parseWorkersFile() {
       if (section.name === 'DEACONESSES') person.roles.add('Deaconess');
       if (section.name === 'TREASURER' && isHead) person.roles.add('Treasurer');
       if (section.name === 'CHURCH CLERK' && isHead) person.roles.add('Clerk');
+      if (section.name === 'CHURCH BOARD MEMBERS') person.roles.add('Church Board Member');
     }
   }
 
@@ -466,7 +523,11 @@ async function seed() {
       INSERT INTO roles (name, description) VALUES
       ('Deacon', 'Deacon role'),
       ('Deaconess', 'Deaconess role'),
-      ('Child', 'Child member')
+      ('Child', 'Child member'),
+      ('Department Head', 'Head of a church department'),
+      ('Assistant Department Head', 'Assistant head of a church department'),
+      ('Subcommittee Head', 'Head of a department subcommittee'),
+      ('Church Board Member', 'Member of the church board')
       ON CONFLICT (name) DO NOTHING
     `);
 
@@ -538,18 +599,37 @@ async function seed() {
 
     console.log('Creating departments...');
     const deptIdByName = {};
+    const deptIdBySlug = {};
     for (const section of sections) {
       if (section.members.length === 0 || !section.head) continue;
+      if (DOCX_TO_CATALOG[section.name] === null) continue; // e.g. CHURCH BOARD MEMBERS — role, not a dept
+      const catalog = CATALOG_BY_SLUG[DOCX_TO_CATALOG[section.name]];
+      const deptName = catalog ? catalog.name : section.name;
+      const category = catalog ? catalog.category : getDeptCategory(section.name);
+      const slug = catalog ? catalog.slug : slugify(section.name);
+      const isCommittee = catalog ? !!catalog.isCommittee : false;
       const headPerson = people.find(p => p.name === section.head);
       const leaderName = headPerson ? `${headPerson.first_name} ${headPerson.last_name}` : section.head;
       const deptRes = await client.query(
-        `INSERT INTO departments (name, description, head_id, slug, is_active, church_id, category, leader_name)
-         VALUES ($1, $2, NULL, $3, true, $4, $5, $6)
-         ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description, slug = EXCLUDED.slug, is_active = EXCLUDED.is_active, church_id = EXCLUDED.church_id, category = EXCLUDED.category, leader_name = EXCLUDED.leader_name
+        `INSERT INTO departments (name, description, head_id, slug, is_active, church_id, category, leader_name, is_committee)
+         VALUES ($1, $2, NULL, $3, true, $4, $5, $6, $7)
+         ON CONFLICT (slug, church_id) DO UPDATE SET description = EXCLUDED.description, is_active = EXCLUDED.is_active, category = EXCLUDED.category, leader_name = EXCLUDED.leader_name, is_committee = EXCLUDED.is_committee
          RETURNING id, name`,
-        [section.name, `${getDeptCategory(section.name)} department of Kiserian Main SDA Church`, slugify(section.name), churchId, getDeptCategory(section.name), leaderName]
+        [deptName, `${category} department of Kiserian Main SDA Church`, slug, churchId, category, leaderName, isCommittee]
       );
       deptIdByName[section.name] = deptRes.rows[0].id;
+      deptIdBySlug[slug] = deptRes.rows[0].id;
+    }
+
+    // Second pass: wire parents for auxiliary departments
+    for (const section of sections) {
+      const catalog = CATALOG_BY_SLUG[DOCX_TO_CATALOG[section.name]];
+      if (!catalog || !catalog.parent) continue;
+      const parentId = deptIdBySlug[catalog.parent];
+      const childId = deptIdByName[section.name];
+      if (parentId && childId) {
+        await client.query('UPDATE departments SET parent_department_id = $1 WHERE id = $2', [parentId, childId]);
+      }
     }
 
     // Update department heads
@@ -558,6 +638,43 @@ async function seed() {
       const headPerson = people.find(p => p.name === section.head);
       if (headPerson && headPerson.userId) {
         await client.query('UPDATE departments SET head_id = $1 WHERE id = $2', [headPerson.userId, deptIdByName[section.name]]);
+      }
+    }
+
+    // Populate department_leadership + permission bundles from the workers list
+    console.log('Assigning department leadership...');
+    const PERM_FOR_POSITION = { head: 'admin', assistant: 'manage_members', secretary: 'write' };
+    const ROLE_FOR_POSITION = { head: 'Department Head', assistant: 'Assistant Department Head', secretary: null };
+    for (const section of sections) {
+      const deptId = deptIdByName[section.name];
+      if (!deptId) continue;
+      for (const member of section.members) {
+        const person = people.find(p => p.name === member.name);
+        if (!person || !person.userId) continue;
+        const position = member.name === section.head ? 'head'
+          : /assistant/i.test(member.role) ? 'assistant'
+          : /secretary/i.test(member.role) ? 'secretary' : null;
+        if (!position) continue;
+        await client.query(
+          `INSERT INTO department_leadership
+             (department_id, church_id, user_id, position, allocation_type, appointed_by, is_active)
+           VALUES ($1,$2,$3,$4,'permanent',$5,true)
+           ON CONFLICT (department_id, user_id, position) WHERE subcommittee_id IS NULL
+           DO UPDATE SET is_active = true, updated_at = CURRENT_TIMESTAMP`,
+          [deptId, churchId, person.userId, position, adminId]
+        );
+        await client.query(
+          `INSERT INTO department_permissions (department_id, user_id, permission, granted_by, is_temporary)
+           VALUES ($1,$2,$3,$4,false)
+           ON CONFLICT (department_id, user_id) DO UPDATE SET permission = EXCLUDED.permission, is_temporary = false`,
+          [deptId, person.userId, PERM_FOR_POSITION[position], adminId]
+        );
+        if (ROLE_FOR_POSITION[position] && roleIds[ROLE_FOR_POSITION[position]]) {
+          await client.query(
+            'INSERT INTO user_roles (user_id, role_id, church_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, role_id) DO NOTHING',
+            [person.userId, roleIds[ROLE_FOR_POSITION[position]], churchId]
+          );
+        }
       }
     }
 
