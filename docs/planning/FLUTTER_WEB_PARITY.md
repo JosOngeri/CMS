@@ -117,3 +117,49 @@ closes part of this gap (installable, offline shell) but can't match biometrics/
 
 **Verification:** build APK, log in as dept head, run a full handover round-trip on
 mobile; verify notification badge; confirm subcommittee spend routes to head for approval.
+
+---
+
+## 7. Progress Tracker — Parity Todo List
+
+Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
+
+### Blocking gaps (P0)
+
+- [ ] Flutter handover screen — incoming accept/decline + outgoing checklist (`/departments/handovers/*`)
+- [ ] Flutter notifications inbox + Home-tab badge (`/api/notifications`)
+
+### Department & finance parity (P1 — from `department-centric-redesign-plan.md`)
+
+- [ ] Flutter subcommittee spend request + budget view (`/subcommittees/:id/spend`, `/budget`)
+- [ ] Flutter subcommittee collector role UI — "Collect & Reconcile" (SMS scan, tx picker, assign to obligation)
+- [ ] Flutter "Parser Setup" screen for treasurers (`POST /parser/calibrate` → activate ruleset)
+- [ ] Web: reconciliation unassigned queue + remittance + ledger (dept Collections tab)
+- [ ] Migration 035 — `member_obligations`, `mpesa_reconciliations`, `mpesa_parser_profiles`
+- [ ] Budget→obligation flow — propose → approve → allocate (target|voluntary) → milestones
+- [ ] Departments center-stage — Flutter nav reorder + dept hero cards + Collections tab
+- [ ] My Obligations page/screen (web + Flutter)
+- [ ] Payment tagging — `obligation_id` on `POST /payments/initiate`
+
+### Minor parity (P2)
+
+- [ ] Flutter gallery viewer (read-only)
+- [ ] Flutter dept settings/categories/activity (admin pages — optional)
+- ⬜ Read-only treasury summary in Flutter (optional, deferred)
+
+### Done this sprint (web side)
+
+- [x] Mobile-ready web app — bottom nav, table→card lists, bottom-sheet modals
+- [x] PWA wired — sw.js registered, real icons, installable
+- [x] Web dept leadership UI — `DepartmentHeadAllocation` (positions, temp grants, revoke)
+- [x] Web handover page — `/dashboard/departments/handovers`
+- [x] Backend: leadership/handovers/expiry-sweep/subcommittee-spend endpoints live
+- [x] Kiserian Main seeded — 550 users, 43 depts, leadership assigned
+- [x] AI provider live — `gemini-3.8-flash` verified on VPS
+- [x] M-Pesa SMS parsing spec — `docs/specs/mpesa-sms-samples.md`
+
+### Infrastructure
+
+- [ ] Ollama self-hosted AI on VPS (`qwen2.5:3b`) — optional fallback
+- [ ] `AI_PROVIDER` env switch (gemini | ollama)
+- [ ] PII redaction in `/parser/calibrate` (names/phones stripped before AI call)
