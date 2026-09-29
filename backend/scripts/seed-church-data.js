@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 
 const { SDA_DEPARTMENTS } = require('./data/sda-departments');
 
-const WORKERS_FILE = 'D:\\Kiserian Main SDA Communications Department\\Data\\Church workers List with departments.txt';
+const WORKERS_FILE = process.env.WORKERS_FILE
+  || 'D:\\Kiserian Main SDA Communications Department\\Data\\Church workers List with departments.txt';
 if (!fs.existsSync(WORKERS_FILE)) {
   console.error(`Workers file not found: ${WORKERS_FILE}`);
   process.exit(1);
