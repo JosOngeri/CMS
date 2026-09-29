@@ -298,7 +298,7 @@ const TelegramAuth = () => {
 
       {/* Verification Modal */}
       {verificationState.step !== 'idle' && verificationState.step !== 'success' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4">
             <h2 className="text-xl font-bold mb-4">
               {verificationState.step === 'phone_sent' && 'Sending Code...'}
@@ -363,7 +363,7 @@ const TelegramAuth = () => {
 
       {/* Success Message */}
       {verificationState.step === 'success' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4 text-center">
             <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Authentication Successful</h2>

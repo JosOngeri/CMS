@@ -848,7 +848,7 @@ const DepartmentDashboard = () => {
     pendingTasks: []
   };
 
-  const modalBackdrop = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50';
+  const modalBackdrop = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50';
 
   const renderTabContent = () => {
     if (tabLoading) {

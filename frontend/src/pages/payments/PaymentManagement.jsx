@@ -640,7 +640,7 @@ const PaymentManagement = () => {
 
       {/* Payment Details Modal */}
       {selectedPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-[var(--color-surface)] rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Payment Details</h3>

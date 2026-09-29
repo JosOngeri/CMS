@@ -281,7 +281,7 @@ function GalleryAlbums() {
 
       {/* Create Album Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)]  rounded-xl shadow-xl p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-[var(--color-text)]  mb-4">Create New Album</h2>
             <form onSubmit={handleCreateAlbum} className="space-y-4">

@@ -186,7 +186,7 @@ const MyDepartments = () => {
 
       {/* Join Departments Modal */}
       {showJoinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
               <h2 className="text-xl font-semibold text-[var(--color-text)]">Join Departments</h2>

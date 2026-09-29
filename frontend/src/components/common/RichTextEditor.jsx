@@ -133,7 +133,7 @@ const RichTextEditor = ({
 
       {/* Link Modal */}
       {showLinkModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 w-96 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Add Link</h3>
@@ -175,7 +175,7 @@ const RichTextEditor = ({
 
       {/* Image Modal */}
       {showImageModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 w-96 shadow-lg">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Add Image</h3>

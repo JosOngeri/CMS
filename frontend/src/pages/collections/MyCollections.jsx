@@ -230,7 +230,7 @@ const MyCollections = () => {
 
       {/* Add Collection Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg w-full max-w-md p-6">
             <h2 className="text-xl font-bold mb-4">Add Collection</h2>
             <form onSubmit={handleSubmit} className="space-y-4">

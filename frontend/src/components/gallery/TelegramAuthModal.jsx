@@ -87,7 +87,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
 
   if (!isAdmin) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-2xl max-w-md w-full p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-[var(--color-text)]">Access Denied</h3>
@@ -104,7 +104,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
       <div className="bg-[var(--color-surface)] rounded-2xl shadow-2xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

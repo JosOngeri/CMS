@@ -275,7 +275,7 @@ const TenantDetail = () => {
         </Card>
       </div>
 
-      {pendingAction && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="tenant-action-title">
+      {pendingAction && <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="tenant-action-title">
         <div className="w-full max-w-md space-y-4 rounded-lg bg-[var(--color-surface)] p-6 shadow-xl">
           <h2 id="tenant-action-title" className="text-lg font-semibold text-[var(--color-text)]">Confirm {pendingAction} church</h2>
           <p className="text-sm text-[var(--color-textSecondary)]">Provide a reason. This action is recorded in the platform audit log.</p>

@@ -238,7 +238,7 @@ const TelegramChannels = () => {
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
             <div className="max-w-md w-full p-6 rounded-lg" style={{ backgroundColor: colors.surface }}>
               <h2 className="text-xl font-bold mb-4" style={{ color: colors.text }}>
                 {editingChannel ? 'Edit Channel' : 'Add Channel'}
