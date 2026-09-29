@@ -71,6 +71,7 @@ router.use('/announcements', generalLimiter, announcementsRoutes);
 router.use('/departments', generalLimiter, departmentsRoutes);
 router.use('/departments', generalLimiter, require('./department_community.routes'));
 router.use('/departments', generalLimiter, require('./department_leadership.routes').router);
+router.use('/departments', generalLimiter, require('./department_finance.routes'));
 router.use('/department', generalLimiter, departmentRoutes);
 router.use('/department-features', generalLimiter, departmentFeaturesRoutes);
 router.use('/department-categories', generalLimiter, departmentCategoriesRoutes);

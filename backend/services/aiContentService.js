@@ -698,6 +698,105 @@ class AIContentService {
       throw error;
     }
   }
+
+  /**
+   * Calibrate an SMS payment parser from one sample message.
+   * Returns a ruleset JSON used by the app for on-device extraction.
+   * PII is masked BEFORE the sample ever leaves the server.
+   * @param {object} data - { sampleSms, churchId, userId }
+   * @returns {Promise<object>} { data: { ruleset, extracted } }
+   */
+  async calibrateSmsParser(data) {
+    this.checkEnabled();
+    const { sampleSms, churchId, userId } = data;
+
+    try {
+      const rateLimitCheck = await AIRepository.checkAIRateLimit(churchId, 'parser_calibrate', this.dailyLimit);
+      if (rateLimitCheck && rateLimitCheck.exceeded) {
+        throw new Error(`Daily AI usage limit exceeded (${this.dailyLimit} requests per day). Please try again tomorrow.`);
+      }
+
+      // Mask PII in the sample BEFORE sending: phones, names after from/to,
+      // and any long digit runs that could be account numbers.
+      let masked = this.maskPII(this.sanitizePrompt(sampleSms));
+      masked = masked
+        .replace(/\b\d{9,13}\b/g, '[PHONE]')
+        .replace(/\b\d{4}\*{2,}\d{2,}\b/g, '[ACCOUNT]');
+
+      const generativeModel = this.genAI.getGenerativeModel({ model: this.model });
+
+      const prompt = `
+You are a parser-calibration assistant for Kenyan mobile-money SMS messages
+(M-Pesa formats and Kenyan bank SMS: Equity, KCB, Co-op, ABSA, DTB, Stanbic, NCBA).
+
+Analyze this sample SMS and return ONLY a JSON object — no markdown, no prose.
+
+Sample SMS (PII already masked):
+"""
+${masked}
+"""
+
+Return JSON in exactly this shape:
+{
+  "type": "received|paybill|till|sent|bank_deposit|reversal|not_payment",
+  "sender_patterns": ["regex strings matching the SMS sender address"],
+  "tx_code_regex": "regex capturing the transaction code (group 1)",
+  "amount_regex": "regex capturing the amount (group 1, numeric)",
+  "counterparty_name_regex": "regex or null",
+  "counterparty_phone_regex": "regex or null",
+  "occurred_at_regex": "regex capturing date/time or null",
+  "date_format": "d/m/yy|dd/mm/yyyy|null",
+  "keywords": ["anchor keywords that must be present"],
+  "extracted": {
+    "tx_code": "the tx code found in the sample",
+    "amount": 0,
+    "counterparty_name": "masked-name or null",
+    "occurred_at": "parsed timestamp or null"
+  },
+  "confidence": 0.0
+}
+
+Rules:
+- tx_code_regex must capture the token before "Confirmed" as group 1.
+- amount_regex must capture digits with optional commas/decimals after the
+  currency word (Ksh|KES).
+- If the message is not a payment SMS, return {"type":"not_payment"}.
+- Regexes must be valid JavaScript-compatible patterns (no lookbehind).
+`;
+
+      const result = await generativeModel.generateContent(prompt);
+      const text = (await result.response).text();
+
+      let ruleset;
+      try {
+        const cleaned = text.replace(/```(?:json)?/g, '').trim();
+        ruleset = JSON.parse(cleaned);
+      } catch {
+        throw new Error('AI returned invalid JSON — please try a different sample');
+      }
+
+      await AIRepository.logAIUsage({
+        churchId,
+        userId,
+        endpoint: 'parser_calibrate',
+        model: this.model,
+        inputTokens: prompt.length,
+        outputTokens: text.length,
+        status: 'success',
+        requestMetadata: JSON.stringify({ sampleLength: masked.length }),
+        responseMetadata: JSON.stringify({ type: ruleset.type })
+      });
+
+      return { data: { ruleset, rateLimit: { remaining: rateLimitCheck.remaining || 0 } } };
+    } catch (error) {
+      logger.error('calibrateSmsParser error:', error);
+      await AIRepository.logAIUsage({
+        churchId, userId, endpoint: 'parser_calibrate', model: this.model,
+        inputTokens: 0, outputTokens: 0, status: 'error', error: error.message
+      }).catch(() => {});
+      throw error;
+    }
+  }
 }
 
 module.exports = new AIContentService();

@@ -29,7 +29,7 @@ class PaymentController extends BaseController {
    */
   async initiatePayment(req, res) {
     try {
-      const { amount, phoneNumber, category, memberId, description } = req.body;
+      const { amount, phoneNumber, category, memberId, description, obligationId } = req.body;
 
       // Validate input
       if (!amount || !phoneNumber || !category) {
@@ -56,7 +56,8 @@ class PaymentController extends BaseController {
         description: description || `${category} payment`,
         payment_method: 'M-Pesa',
         status: 'pending',
-        transaction_id: null
+        transaction_id: null,
+        obligation_id: obligationId || null
       }, req.user.church_id);
 
       const paymentId = payment.id;

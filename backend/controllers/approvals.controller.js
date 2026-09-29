@@ -168,6 +168,13 @@ class ApprovalsController extends BaseController {
         );
       }
 
+      // Activate a proposed department budget on approval
+      if (oldApproval && oldApproval.request_type === 'department_budget') {
+        await this.activateDepartmentBudget(oldApproval).catch((e) =>
+          this.logger.error('activateDepartmentBudget', e)
+        );
+      }
+
       return ResponseHandler.success(res, { approval }, 'Request approved successfully');
     } catch (error) {
       this.logger.error('approveRequest', error);
@@ -214,11 +221,45 @@ class ApprovalsController extends BaseController {
         req.get('user-agent')
       );
 
+      // Mark a rejected department budget
+      if (oldApproval && oldApproval.request_type === 'department_budget') {
+        const data = oldApproval.request_data || {};
+        if (data.budget_id) {
+          await pool.query(
+            `UPDATE department_budgets SET status = 'rejected', updated_at = NOW() WHERE id = $1`,
+            [data.budget_id]
+          ).catch((e) => this.logger.error('rejectBudget', e));
+        }
+      }
+
       return ResponseHandler.success(res, { approval }, 'Request rejected successfully');
     } catch (error) {
       this.logger.error('rejectRequest', error);
       return ResponseHandler.error(res, 'Failed to reject request');
     }
+  }
+
+  /**
+   * Activate a proposed department budget once its approval request passes.
+   * request_data carries budget_id + department_id.
+   * @param {Object} approval - The approval request row
+   */
+  async activateDepartmentBudget(approval) {
+    const data = approval.request_data || {};
+    if (!data.budget_id) return;
+    await pool.query(
+      `UPDATE department_budgets SET status = 'active', approval_request_id = $2, updated_at = NOW()
+       WHERE id = $1`,
+      [data.budget_id, approval.id]
+    );
+    await sendNotification(pool, {
+      recipientId: approval.requester_id || approval.requested_by,
+      type: 'approval_approved',
+      title: 'Budget approved',
+      body: `Your department budget of KES ${Number(approval.amount || 0).toLocaleString()} is approved — you can now allocate it to members.`,
+      link: `/dashboard/departments/${data.department_id || ''}`,
+      relatedEntityType: 'approval_request', relatedEntityId: approval.id,
+    });
   }
 
   /**

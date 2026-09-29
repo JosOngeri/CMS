@@ -6,19 +6,19 @@ class PaymentRepository extends BaseRepository {
   }
 
   async create(data, churchId = null) {
-    const { amount, phone_number, category, member_id, description, payment_method, status, transaction_id } = data;
+    const { amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id } = data;
 
     let query = `
-      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
-    const params = [amount, phone_number, category, member_id, description, payment_method, status, transaction_id];
+    const params = [amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id || null];
 
     if (churchId) {
       query = `
-        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, church_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, church_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
       `;
       params.push(churchId);
@@ -52,7 +52,40 @@ class PaymentRepository extends BaseRepository {
     query += ` RETURNING *`;
 
     const result = await this.pool.query(query, params);
-    return result.rows[0];
+    const payment = result.rows[0];
+
+    // Tag-to-obligation: when a tagged payment completes, recalc the obligation
+    if (payment && payment.obligation_id && status === 'completed') {
+      await this.recalcObligation(payment.obligation_id).catch(() => {});
+    }
+    return payment;
+  }
+
+  /**
+   * Recompute a member_obligation's paid_amount/status from all completed
+   * payments + reconciliations tagged to it. Idempotent — safe on re-fire.
+   */
+  async recalcObligation(obligationId) {
+    await this.pool.query(
+      `UPDATE member_obligations mo SET
+         paid_amount = COALESCE(p.paid, 0) + COALESCE(r.paid, 0),
+         status = CASE
+           WHEN mo.status = 'waived' THEN 'waived'
+           WHEN COALESCE(p.paid, 0) + COALESCE(r.paid, 0) >= mo.amount THEN 'fulfilled'
+           WHEN COALESCE(p.paid, 0) + COALESCE(r.paid, 0) > 0 THEN 'partial'
+           ELSE 'pending'
+         END,
+         updated_at = NOW()
+       FROM member_obligations src
+       LEFT JOIN (SELECT obligation_id, SUM(amount) paid FROM payments
+                  WHERE status = 'completed' GROUP BY obligation_id) p
+         ON p.obligation_id = src.id
+       LEFT JOIN (SELECT obligation_id, SUM(amount) paid FROM mpesa_reconciliations
+                  WHERE status = 'reconciled' GROUP BY obligation_id) r
+         ON r.obligation_id = src.id
+       WHERE mo.id = $1 AND src.id = mo.id`,
+      [obligationId]
+    );
   }
 
   async getById(paymentId, churchId = null) {

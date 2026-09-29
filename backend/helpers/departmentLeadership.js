@@ -9,7 +9,7 @@ const { createLogger } = require('./controllerLogger');
 const logger = createLogger('departmentLeadership');
 
 const MANAGER_ROLES = ['Super Admin', 'Pastor', 'First Elder'];
-const POSITIONS = ['head', 'assistant', 'secretary', 'acting_head', 'subcommittee_head'];
+const POSITIONS = ['head', 'assistant', 'secretary', 'acting_head', 'subcommittee_head', 'collector'];
 
 // position -> { permission, role }
 const BUNDLES = {
@@ -18,6 +18,7 @@ const BUNDLES = {
   assistant:         { permission: 'manage_members', role: 'Assistant Department Head' },
   secretary:         { permission: 'write',          role: null },
   subcommittee_head: { permission: 'manage_members', role: 'Subcommittee Head' },
+  collector:         { permission: 'reconcile_collections', role: 'Subcommittee Collector' },
 };
 
 const hasManagerRole = (user) =>
