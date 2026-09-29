@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign, Plus, Users, CheckCircle, TrendingUp, Smartphone,
-  Link2, Sparkles, AlertCircle, X, Loader
+  Link2, Sparkles, AlertCircle, X, Loader, Inbox
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -25,6 +25,10 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
   const [form, setForm] = useState({ purpose: '', target_amount: '', collection_deadline: '', obligation_type: 'target' });
   const [allocForm, setAllocForm] = useState({ mode: 'equal', obligation_type: 'target', due_date: '' });
   const [busy, setBusy] = useState(false);
+  const [assigning, setAssigning] = useState(null); // reconciliation row
+  const [assignTarget, setAssignTarget] = useState('');
+  const [showAddTx, setShowAddTx] = useState(false);
+  const [txForm, setTxForm] = useState({ tx_code: '', amount: '', payer_name: '', payer_phone: '' });
 
   const load = useCallback(async () => {
     if (!departmentId) return;
@@ -98,9 +102,46 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
     } catch { toast.error('Activation failed'); }
   };
 
+  const assignRecon = async () => {
+    if (!assignTarget) return;
+    setBusy(true);
+    try {
+      const body = assignTarget.startsWith('budget:')
+        ? { budget_id: assignTarget.slice(7) }
+        : { obligation_id: assignTarget };
+      await api.put(`/departments/${departmentId}/reconciliations/${assigning.id}/assign`, body);
+      toast.success('Transaction assigned');
+      setAssigning(null);
+      setAssignTarget('');
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to assign');
+    } finally { setBusy(false); }
+  };
+
+  const addTransaction = async () => {
+    setBusy(true);
+    try {
+      await api.post(`/departments/${departmentId}/reconciliations`, {
+        tx_code: txForm.tx_code.trim(),
+        amount: parseFloat(txForm.amount),
+        payer_name: txForm.payer_name.trim() || null,
+        payer_phone: txForm.payer_phone.trim() || null,
+      });
+      toast.success('Transaction recorded — assign it to an obligation below');
+      setShowAddTx(false);
+      setTxForm({ tx_code: '', amount: '', payer_name: '', payer_phone: '' });
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to record transaction');
+    } finally { setBusy(false); }
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Loader className="w-6 h-6 animate-spin text-[var(--color-primary)]" /></div>;
 
   const budgets = data.budgets || [];
+  const unassigned = recons.filter((r) => r.status === 'unassigned');
+  const reconciled = recons.filter((r) => r.status !== 'unassigned');
 
   return (
     <div className="space-y-6">
@@ -238,16 +279,55 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
         </div>
       )}
 
-      {/* Reconciliations ledger */}
+      {/* Reconciliations ledger + unassigned queue */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow p-4 sm:p-6">
-        <h3 className="font-semibold text-[var(--color-text)] mb-3 flex items-center gap-2">
-          <Smartphone className="w-4 h-4" /> M-Pesa Reconciliations
-        </h3>
-        {recons.length === 0 ? (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-[var(--color-text)] flex items-center gap-2">
+            <Smartphone className="w-4 h-4" /> M-Pesa Reconciliations
+          </h3>
+          {canManage && (
+            <button onClick={() => setShowAddTx(true)}
+              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surfaceHover)]">
+              <Plus className="w-3 h-3" /> Record Transaction
+            </button>
+          )}
+        </div>
+
+        {/* Unassigned queue — needs a treasurer/head to assign */}
+        {unassigned.length > 0 && (
+          <div className="mb-4 border border-yellow-300 bg-yellow-50/50 dark:bg-yellow-900/10 rounded-lg p-3">
+            <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-400 flex items-center gap-1 mb-2">
+              <Inbox className="w-3.5 h-3.5" /> {unassigned.length} unassigned — pick which obligation each pays
+            </p>
+            <div className="divide-y divide-yellow-200/60">
+              {unassigned.map((r) => (
+                <div key={r.id} className="py-2 flex items-center justify-between gap-2 text-sm">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[var(--color-text)]">{r.tx_code}</p>
+                    <p className="text-xs text-[var(--color-textSecondary)]">
+                      {r.payer_name || 'Unknown payer'}{r.payer_phone ? ` · ${r.payer_phone}` : ''} · via {r.reconciled_by_name || 'collector'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <p className="font-medium text-[var(--color-text)]">KES {Number(r.amount).toLocaleString()}</p>
+                    {canManage && (
+                      <button onClick={() => { setAssigning(r); setAssignTarget(''); }}
+                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-primary)] text-white">
+                        Assign
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {reconciled.length === 0 && unassigned.length === 0 ? (
           <p className="text-sm text-[var(--color-textSecondary)]">No reconciled payments yet.</p>
-        ) : (
+        ) : reconciled.length > 0 && (
           <div className="divide-y divide-[var(--color-border)]">
-            {recons.map((r) => (
+            {reconciled.map((r) => (
               <div key={r.id} className="py-2 flex items-center justify-between gap-2 text-sm">
                 <div className="min-w-0">
                   <p className="font-mono text-[var(--color-text)]">{r.tx_code}</p>
@@ -257,16 +337,79 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="font-medium text-[var(--color-text)]">KES {Number(r.amount).toLocaleString()}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    r.status === 'reconciled' ? 'bg-green-100 text-green-700'
-                    : r.status === 'unassigned' ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-gray-100 text-gray-600'}`}>{r.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">reconciled</span>
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Assign reconciliation modal */}
+      {assigning && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setAssigning(null)}>
+          <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-[var(--color-text)]">Assign KES {Number(assigning.amount).toLocaleString()} — {assigning.tx_code}</h3>
+            <p className="text-sm text-[var(--color-textSecondary)]">
+              {assigning.payer_name || 'Unknown payer'} · pick the obligation this payment settles, or add it to a budget pool.
+            </p>
+            <select value={assignTarget} onChange={(e) => setAssignTarget(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]">
+              <option value="">Select obligation or budget…</option>
+              {(data.members || [])
+                .filter((m) => m.status !== 'fulfilled' && m.status !== 'waived')
+                .map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.first_name} {m.last_name} — balance KES {Number(m.amount - m.paid_amount).toLocaleString()}
+                  </option>
+                ))}
+              {budgets.filter((b) => b.status === 'active').map((b) => (
+                <option key={b.id} value={`budget:${b.id}`}>
+                  Pool → {b.purpose || 'Budget'} (KES {Number(b.target_amount).toLocaleString()} target)
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setAssigning(null)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
+              <button onClick={assignRecon} disabled={busy || !assignTarget}
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                {busy ? 'Assigning…' : 'Assign'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual transaction entry modal (bank deposit / cash transfer records) */}
+      {showAddTx && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowAddTx(false)}>
+          <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-[var(--color-text)]">Record Transaction</h3>
+            <p className="text-sm text-[var(--color-textSecondary)]">
+              Manually log a bank deposit or M-Pesa payment. The transaction code must be unique — it prevents double-counting.
+            </p>
+            <input placeholder="Transaction code (e.g. QGH7X2K4LM)" value={txForm.tx_code}
+              onChange={(e) => setTxForm({ ...txForm, tx_code: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] font-mono" />
+            <input placeholder="Amount (KES)" type="number" value={txForm.amount}
+              onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
+            <input placeholder="Payer name (optional)" value={txForm.payer_name}
+              onChange={(e) => setTxForm({ ...txForm, payer_name: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
+            <input placeholder="Payer phone (optional)" value={txForm.payer_phone}
+              onChange={(e) => setTxForm({ ...txForm, payer_phone: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowAddTx(false)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
+              <button onClick={addTransaction} disabled={busy || !txForm.tx_code || !txForm.amount}
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                {busy ? 'Recording…' : 'Record'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Propose budget modal */}
       {showPropose && (

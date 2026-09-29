@@ -50,6 +50,8 @@ function extractChangelog(version) {
     const trimmed = line.trim();
     if (trimmed.startsWith('- ')) {
       bullets.push(trimmed.replace(/^-\\s+/, ''));
+    } else if (trimmed.startsWith('#')) {
+      // Section headers like "### Added" are not changelog content.
     } else if (trimmed && bullets.length > 0) {
       bullets[bullets.length - 1] += ' ' + trimmed;
     }
