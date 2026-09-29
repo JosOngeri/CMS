@@ -82,7 +82,25 @@ CREATE TABLE IF NOT EXISTS mpesa_parser_profiles (
 CREATE INDEX IF NOT EXISTS idx_parser_profiles_scope
   ON mpesa_parser_profiles(church_id, department_id, subcommittee_id, status);
 
--- 6. Role for collectors -------------------------------------------------------
+-- 6. audit_log — referenced by helpers/auditLog.js since the leadership work but
+--    never created on production (silent 42P01 on every logged mutation)
+CREATE TABLE IF NOT EXISTS audit_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID,
+  action VARCHAR(100) NOT NULL,
+  table_name VARCHAR(100),
+  record_id UUID,
+  old_values JSONB,
+  new_values JSONB,
+  ip_address VARCHAR(64),
+  user_agent TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_table_record ON audit_log(table_name, record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at);
+
+-- 7. Role for collectors -------------------------------------------------------
 INSERT INTO roles (name, description)
 VALUES ('Subcommittee Collector', 'Scoped member allowed to reconcile M-Pesa collections for their subcommittee')
 ON CONFLICT (name) DO NOTHING;
