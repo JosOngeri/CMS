@@ -1,7 +1,7 @@
 name: sda_church_mobile
 description: Msabato Church Management System Mobile Application
 publish_to: 'none'
-version: 1.3.0+12
+version: 1.4.0+13
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -59,6 +59,11 @@ dependencies:
   
   # Permissions
   permission_handler: ^11.0.0
+
+  # SMS inbox access for collector M-Pesa reconciliation
+  # (another_telephony = maintained fork of the discontinued telephony plugin)
+  another_telephony: ^0.4.1
+  flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
   flutter_test:

@@ -18,6 +18,8 @@ android {
         // Java 17 for compatibility with current Flutter and Android Gradle Plugin
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Required by flutter_local_notifications
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -26,7 +28,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sdachurch.sda_church_mobile"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23 // another_telephony requires API 23+ (Android 6.0)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -51,4 +53,8 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

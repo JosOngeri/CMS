@@ -18,6 +18,7 @@ import '../screens/server_url_screen.dart';
 import '../screens/my_obligations_screen.dart';
 import '../screens/handovers_screen.dart';
 import '../screens/notifications_screen.dart';
+import '../screens/collect_payments_screen.dart';
 import '../widgets/main_shell.dart';
 import '../services/auth_service.dart';
 
@@ -35,9 +36,14 @@ class LoadingScreen extends StatelessWidget {
   }
 }
 
+/// Root navigator key — lets background services (e.g. SMS payment
+/// notifications) deep-link into the app without a BuildContext.
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 // Router provider with auth guards
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
     redirect: (context, state) {
       final authState = ref.watch(authProvider);
@@ -57,7 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Protected routes - redirect to login if not authenticated
-      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications'];
+      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications', '/collect-payments'];
       if (protectedRoutes.contains(state.matchedLocation) && !isAuthenticated) {
         debugPrint('=== Router: Redirecting to /login (protected route) ===');
         return '/login';
@@ -142,6 +148,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/collect-payments',
+        builder: (context, state) => const CollectPaymentsScreen(),
       ),
       GoRoute(
         path: '/departments/:id',

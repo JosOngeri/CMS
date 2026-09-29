@@ -132,7 +132,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 ### Department & finance parity (P1 — from `department-centric-redesign-plan.md`)
 
 - [ ] Flutter subcommittee spend request + budget view (`/subcommittees/:id/spend`, `/budget`)
-- [ ] Flutter subcommittee collector role UI — "Collect & Reconcile" (SMS scan, tx picker, assign to obligation)
+- [x] Flutter collector auto-reconciliation — background SMS listener, payment notification, accept/decline inbox (`collect_payments_screen.dart`, `sms_recon_service.dart`)
 - [x] Flutter "Parser Setup" — AI calibrate dialog in dept Collections tab (`POST /parser/calibrate`)
 - [ ] Web: reconciliation unassigned queue + remittance + ledger (dept Collections tab)
 - [x] Migration 035 — `member_obligations`, `mpesa_reconciliations`, `mpesa_parser_profiles` (applied on prod)
@@ -197,8 +197,7 @@ Legend: ✅ done · 🚧 in progress · ⬜ not started · — intentional gap
 | # | Feature | Doc ref |
 |---|---|---|
 | 20 | Ollama self-hosted AI fallback (`qwen2.5:3b`) | §7 tracker |
-| 21 | On-device SMS scanning in Flutter (needs `telephony`/`sms_advanced` plugin) | §5b |
-| 22 | Web reconciliation unassigned queue + remittance ledger | §5b |
+| 22 | Remittance ledger — mark collected funds as remitted to church account | §5b |
 
 ### Deferred / intentional
 

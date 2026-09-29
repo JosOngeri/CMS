@@ -18,6 +18,10 @@
     
     <!-- Required for notifications on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- Collector reconciliation: read M-Pesa/bank SMS on this device -->
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
     
     <!-- Camera feature declaration -->
     <uses-feature android:name="android.hardware.camera" android:required="false"/>
@@ -26,6 +30,15 @@
         android:label="Msabato"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Incoming SMS receiver for collector payment alerts -->
+        <receiver
+            android:name="com.shounakmulay.telephony.sms.IncomingSmsReceiver"
+            android:permission="android.permission.BROADCAST_SMS"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".MainActivity"
             android:exported="true"

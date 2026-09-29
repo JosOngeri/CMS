@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import '../services/sms_recon_service.dart';
 
 /// Department Collections tab — collection target progress, milestones,
 /// budgets/obligations (heads), and the M-Pesa reconciliation + parser
@@ -24,6 +26,8 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
   Map<String, dynamic>? _collections;
   List<dynamic> _budgets = [];
   List<dynamic> _reconciliations = [];
+  int _pendingCount = 0;
+  bool _alertsOn = false;
   bool _loading = true;
   String? _error;
 
@@ -58,6 +62,13 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
         _reconciliations = d is List ? d : (d?['reconciliations'] as List? ?? []);
       }
     });
+    final pending = await SmsReconService.instance.getPending();
+    final enabled = await SmsReconService.instance.isEnabled();
+    if (!mounted) return;
+    setState(() {
+      _pendingCount = pending.length;
+      _alertsOn = enabled;
+    });
   }
 
   @override
@@ -81,6 +92,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
           const SizedBox(height: 12),
           if (milestones.isNotEmpty) _milestonesCard(milestones),
           if (widget.canManage) ...[
+            _collectorCard(),
             _budgetCard(),
             if (_reconciliations.isNotEmpty) _reconCard(),
             _parserCard(),
@@ -153,6 +165,77 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
         ),
       ),
     );
+  }
+
+  /// Collector card — toggle SMS payment alerts on this phone and jump to
+  /// the pending-payments inbox. Once enabled the app watches incoming
+  /// M-Pesa/bank SMS automatically; the collector only accepts or declines.
+  Widget _collectorCard() {
+    return Card(
+      color: _alertsOn ? Colors.green.withOpacity(0.06) : null,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.sms,
+                    color: _alertsOn ? Colors.green : Colors.grey),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text('Payment alerts on this phone',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+                Switch(
+                  value: _alertsOn,
+                  onChanged: _toggleAlerts,
+                ),
+              ],
+            ),
+            Text(
+              _alertsOn
+                  ? 'On — when an M-Pesa or bank SMS arrives you\'ll get a notification. Just tap Accept or Decline.'
+                  : 'Turn on to get a notification whenever a payment SMS arrives on this phone.',
+              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            ),
+            if (_pendingCount > 0) ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: Badge(
+                    label: Text('$_pendingCount'),
+                    child: const Icon(Icons.inbox),
+                  ),
+                  label: const Text('Review pending payments'),
+                  onPressed: () =>
+                      context.push('/collect-payments').then((_) => _load()),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _toggleAlerts(bool on) async {
+    if (on) {
+      final ok = await SmsReconService.instance.enable();
+      if (!mounted) return;
+      if (!ok) {
+        _snack('SMS permission denied — enable it in app settings',
+            isError: true);
+        return;
+      }
+      _snack('Payment alerts on — you\'ll be notified of new payments');
+    } else {
+      await SmsReconService.instance.disable();
+      _snack('Payment alerts off');
+    }
+    setState(() => _alertsOn = on);
   }
 
   Widget _budgetCard() {
