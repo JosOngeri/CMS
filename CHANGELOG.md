@@ -6,6 +6,18 @@ app.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-10-02
+
+### Changed
+- On-device M-Pesa parser replaced with a full port of the pesa-track reference parser (github.com/JosOngeri/pesa-track `MpesaParser.kt`) — same classification precedence, counterparty/phone splitting, promotional-noise truncation, and reversal linking
+- Bank SMS deposits (`KES … deposited to Account`) now classify correctly, including 24-hour timestamps and `Balance:` extraction
+- "sent to" messages with no phone number classify as `till` (Pochi la Biashara payments) instead of paybill
+- PayBill account references (`for account X` / `Account no: X`) are captured
+
+### Added
+- Unparsed queue — trusted-sender messages with a confirmation code and amount that match no known pattern surface for manual review instead of being silently dropped
+- Parser unit tests covering received, sent, paybill, till, bank deposit, reversal, masked phone numbers, promo truncation, and rejection rules
+
 ## [1.4.0] - 2026-10-01
 
 ### Added
