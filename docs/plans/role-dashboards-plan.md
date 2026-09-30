@@ -65,6 +65,19 @@ Checks per account: dashboard loads, no console errors, every link
 resolves, no hardcoded percentages, finance sections only where the
 role has finance perms.
 
+## Status: Implemented & deployed (commit 73fb04f)
+
+- Dispatch map covers all 14 roles
+- All fake fallbacks removed; dashboards show real API data or zeros
+- Backend `getDepartmentStats`/`getFinancialStats` now return camelCase
+  (were snake_case — dashboards silently showed zeros)
+- `getSystemHealth` reports real host metrics (CPU load, memory, uptime,
+  DB latency)
+- All card/activity links fixed to real `/dashboard/*` routes
+- SystemOrganismViz: null-safe ("—" for unmeasured), divide-by-zero guard
+- Verified on prod: dept-stats `4 members / KES 919,200`; system metrics
+  `cpu 13% / mem 11% / uptime 34h / db 2ms`
+
 ### 5. Defer (not in scope)
 
 - Purpose-built ElderDashboard/BoardDashboard — the Pastor view covers
