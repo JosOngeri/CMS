@@ -280,6 +280,31 @@ class ExpenseController {
       res.status(500).json({ error: 'Failed to generate expense report' });
     }
   }
+
+  /**
+   * Delete an expense. Only pending/rejected expenses can be deleted —
+   * approved or paid expenses are part of the audit trail.
+   */
+  async deleteExpense(req, res) {
+    try {
+      const { id } = req.params;
+      const expense = await this.expenseRepo.findById(id);
+
+      if (!expense) {
+        return res.status(404).json({ error: 'Expense not found' });
+      }
+      if (['approved', 'paid'].includes(expense.status)) {
+        return res.status(409).json({ error: 'Approved or paid expenses cannot be deleted' });
+      }
+
+      await this.expenseRepo.delete(id);
+      logger.info(`Expense deleted: ${id} by ${req.user.email}`);
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Delete expense error:', error);
+      res.status(500).json({ error: 'Failed to delete expense' });
+    }
+  }
 }
 
 module.exports = ExpenseController;

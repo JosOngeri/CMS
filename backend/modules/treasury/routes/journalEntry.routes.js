@@ -60,6 +60,13 @@ router.post('/:id/reverse',
   journalController.reverseJournalEntry.bind(journalController)
 );
 
+// DELETE /api/treasury/journal-entries/:id - Delete a draft journal entry
+router.delete('/:id',
+  authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'Treasurer']),
+  journalController.deleteJournalEntry.bind(journalController)
+);
+
 // GET /api/treasury/journal-entries/accounts/:account_id/transactions - Get account transactions
 router.get('/accounts/:account_id/transactions',
   authenticateToken,

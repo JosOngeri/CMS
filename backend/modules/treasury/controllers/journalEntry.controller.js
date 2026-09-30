@@ -194,6 +194,31 @@ class JournalEntryController {
       res.status(500).json({ error: 'Failed to fetch account transactions' });
     }
   }
+
+  /**
+   * Delete a journal entry. Only drafts can be deleted —
+   * posted entries must be reversed via POST /:id/reverse.
+   */
+  async deleteJournalEntry(req, res) {
+    try {
+      const { id } = req.params;
+      const entry = await this.journalRepo.findById(id);
+
+      if (!entry) {
+        return res.status(404).json({ error: 'Journal entry not found' });
+      }
+      if (entry.status !== 'draft') {
+        return res.status(409).json({ error: 'Only draft journal entries can be deleted. Post a reversing entry instead.' });
+      }
+
+      await this.journalRepo.delete(id);
+      logger.info(`Journal entry deleted: ${id} by ${req.user.email}`);
+      res.json({ success: true });
+    } catch (error) {
+      logger.error('Delete journal entry error:', error);
+      res.status(500).json({ error: 'Failed to delete journal entry' });
+    }
+  }
 }
 
 module.exports = JournalEntryController;

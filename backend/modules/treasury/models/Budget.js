@@ -7,7 +7,7 @@ class Budget {
   constructor(data = {}) {
     this.id = data.id || null;
     this.budget_name = data.budget_name || '';
-    this.budget_type = data.budget_type || 'annual'; // annual, quarterly, monthly, project
+    this.budget_type = data.budget_type || data.period_type || 'annual'; // annual, quarterly, monthly, project
     this.fiscal_year = data.fiscal_year || new Date().getFullYear();
     this.account_id = data.account_id || null;
     this.account_name = data.account_name || null;
@@ -16,8 +16,8 @@ class Budget {
     this.fund_name = data.fund_name || null;
     this.department_id = data.department_id || null;
     this.department_name = data.department_name || null;
-    this.total_budgeted = data.total_budgeted || 0;
-    this.total_actual = data.total_actual || 0;
+    this.total_budgeted = data.total_budgeted ?? data.budgeted_amount ?? 0;
+    this.total_actual = data.total_actual ?? data.actual_amount ?? 0;
     this.variance = data.variance || 0;
     this.variance_percentage = data.variance_percentage || 0;
     this.status = data.status || 'active'; // draft, active, closed
@@ -29,6 +29,10 @@ class Budget {
     this.church_id = data.church_id || null;
     this.created_at = data.created_at || null;
     this.updated_at = data.updated_at || null;
+    // Legacy field aliases — the frontend reads budgeted_amount / actual_amount / period_type
+    this.budgeted_amount = this.total_budgeted;
+    this.actual_amount = this.total_actual;
+    this.period_type = this.budget_type;
   }
 
   /**

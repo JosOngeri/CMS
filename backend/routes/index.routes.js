@@ -82,6 +82,14 @@ router.use('/events', generalLimiter, clampQueryPagination(), eventsRoutes);
 router.use('/sms', strictLimiter, smsRoutes);
 router.use('/dashboard', generalLimiter, dashboardRoutes);
 router.use('/treasury', strictLimiter, require('../modules/treasury/routes'));
+// Legacy treasury surface — catches the endpoints the module routes do not cover
+// (transactions, vendors, recurring-payments, pledges, projects, fixed-assets,
+// bank-reconciliations, reports, receipts, contributions, exports, campaigns).
+router.use('/treasury', strictLimiter, require('./treasury.routes'));
+router.use('/treasury/dashboard', strictLimiter, require('./treasuryDashboard.routes'));
+router.use('/treasury/chart-of-accounts', strictLimiter, require('./chartOfAccounts.routes'));
+// Frontend calls /api/projects/:id/{milestones,contributions,analytics,status}
+router.use('/projects', strictLimiter, require('./projects.routes'));
 router.use('/settings', generalLimiter, settingsRoutes);
 router.use('/gallery', generalLimiter, galleryRoutes);
 router.use('/gallery-albums', generalLimiter, galleryAlbumsRoutes);

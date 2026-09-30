@@ -19,9 +19,9 @@ class ExpenseRepository extends BaseRepository {
         a.account_name, a.account_number,
         f.fund_name,
         v.vendor_name,
-        d.department_name,
+        d.name as department_name,
         p.project_name,
-        u.full_name as submitted_by_name,
+        u.first_name || ' ' || u.last_name as submitted_by_name,
         approver.full_name as approved_by_name
       FROM expenses e
       LEFT JOIN accounts a ON e.account_id = a.id
@@ -79,9 +79,9 @@ class ExpenseRepository extends BaseRepository {
         a.account_name, a.account_number,
         f.fund_name,
         v.vendor_name,
-        d.department_name,
+        d.name as department_name,
         p.project_name,
-        u.full_name as submitted_by_name,
+        u.first_name || ' ' || u.last_name as submitted_by_name,
         approver.full_name as approved_by_name
       FROM expenses e
       LEFT JOIN accounts a ON e.account_id = a.id

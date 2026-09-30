@@ -52,7 +52,7 @@ const TreasuryDashboard = () => {
       const [statsResponse, transactionsResponse, alertsResponse, approvalsResponse] = await Promise.all([
         api.get('/api/dashboard/financial-stats').catch(() => null),
         api.get('/api/dashboard/transactions?limit=5').catch(() => null),
-        api.get('/api/financial-alerts').catch(() => null),
+        api.get('/api/treasury/dashboard/alert-summary').catch(() => null),
         api.get('/api/treasury/expenses?status=pending').catch(() => null)
       ]);
 
@@ -69,8 +69,8 @@ const TreasuryDashboard = () => {
       }
 
       setRecentTransactions(transactionsResponse?.data?.data || []);
-      setBudgetAlerts(alertsResponse?.data?.data || []);
-      setPendingApprovals(approvalsResponse?.data?.data || []);
+      setBudgetAlerts(alertsResponse?.data?.data?.alerts || []);
+      setPendingApprovals(approvalsResponse?.data?.expenses || []);
     } catch (error) {
       toast.error('Failed to load treasury data')
     } finally {

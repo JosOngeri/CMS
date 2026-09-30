@@ -226,7 +226,7 @@ const PaymentManagement = () => {
         {canManagePayments && (
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             Record Payment
@@ -385,7 +385,7 @@ const PaymentManagement = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {editingPayment ? 'Update Payment' : 'Record Payment'}
               </button>

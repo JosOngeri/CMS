@@ -18,8 +18,8 @@ class BudgetRepository extends BaseRepository {
       SELECT b.*,
         a.account_name, a.account_number,
         f.fund_name,
-        d.department_name,
-        u.full_name as created_by_name
+        d.name as department_name,
+        u.first_name || ' ' || u.last_name as created_by_name
       FROM budgets b
       LEFT JOIN accounts a ON b.account_id = a.id
       LEFT JOIN funds f ON b.fund_id = f.id
@@ -62,8 +62,8 @@ class BudgetRepository extends BaseRepository {
       SELECT b.*,
         a.account_name, a.account_number,
         f.fund_name,
-        d.department_name,
-        u.full_name as created_by_name
+        d.name as department_name,
+        u.first_name || ' ' || u.last_name as created_by_name
       FROM budgets b
       LEFT JOIN accounts a ON b.account_id = a.id
       LEFT JOIN funds f ON b.fund_id = f.id
@@ -175,7 +175,7 @@ class BudgetRepository extends BaseRepository {
       SELECT b.*,
         a.account_name, a.account_number,
         f.fund_name,
-        d.department_name
+        d.name as department_name
       FROM budgets b
       LEFT JOIN accounts a ON b.account_id = a.id
       LEFT JOIN funds f ON b.fund_id = f.id

@@ -88,6 +88,13 @@ router.post('/:id/reject',
 );
 
 // POST /api/treasury/expenses/:id/pay - Mark expense as paid
+// DELETE /api/treasury/expenses/:id - Delete a pending/rejected expense
+router.delete('/:id',
+  authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'Treasurer']),
+  expenseController.deleteExpense.bind(expenseController)
+);
+
 router.post('/:id/pay',
   authenticateToken,
   requireRole(['Super Admin', 'Pastor', 'First Elder', 'Treasurer']),

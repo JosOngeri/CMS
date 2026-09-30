@@ -19,7 +19,7 @@ class JournalEntryRepository extends BaseRepository {
     if (reference_type) where.reference_type = reference_type;
     
     let query = `
-      SELECT je.*, u.full_name as created_by_name
+      SELECT je.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM journal_entries je
       LEFT JOIN users u ON je.created_by = u.id
       WHERE 1=1
@@ -71,7 +71,7 @@ class JournalEntryRepository extends BaseRepository {
 
   async findById(id) {
     const query = `
-      SELECT je.*, u.full_name as created_by_name
+      SELECT je.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM journal_entries je
       LEFT JOIN users u ON je.created_by = u.id
       WHERE je.id = $1
