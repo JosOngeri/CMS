@@ -17,6 +17,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
   ApiService? _api;
   List<Map<String, dynamic>> _pending = [];
   List<dynamic> _myDepts = [];
+  List<Map<String, dynamic>> _rulesets = [];
   bool _loading = true;
   bool _parsing = false;
   final _pasteCtrl = TextEditingController();
@@ -45,6 +46,35 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
           : [];
       _loading = false;
     });
+    _refreshRulesets();
+  }
+
+  /// Pull the active AI-calibrated parser profiles for the church scope
+  /// and each of the collector's departments, then cache them so they
+  /// also apply offline. Cached rulesets are used until this succeeds.
+  Future<void> _refreshRulesets() async {
+    _rulesets = await SmsReconService.instance.getCachedRulesets();
+    final scopes = {
+      'church',
+      ..._myDepts.map((d) => d['id'].toString()),
+    };
+    final fresh = <Map<String, dynamic>>[];
+    for (final s in scopes) {
+      try {
+        final res = await _api!.getParserProfile(s);
+        final rs =
+            SmsReconService.rulesetFromProfile(res['data']?['profile']);
+        if (rs != null) fresh.add(rs);
+      } catch (_) {
+        // Offline or profile endpoint unavailable — keep cached rules.
+      }
+    }
+    if (fresh.isNotEmpty || _rulesets.isEmpty) {
+      await SmsReconService.instance.cacheRulesets(fresh);
+      if (mounted) setState(() => _rulesets = fresh);
+    } else if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -141,7 +171,8 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
     }
     setState(() => _parsing = true);
     try {
-      final result = SmsReconService.parseDump(text);
+      final result =
+          SmsReconService.parseDump(text, rulesets: _rulesets);
       final added = await SmsReconService.instance.addPending(result.parsed);
       if (!mounted) return;
       _pasteCtrl.clear();

@@ -140,4 +140,64 @@ void main() {
       expect(r['occurred_at'], '2025-06-16 09:15');
     });
   });
+
+  group('AI-calibrated rulesets', () {
+    // Mirrors applyRuleset() in department_finance.routes.js — a church
+    // can calibrate a profile for a message format the built-in parser
+    // doesn't know.
+    final ruleset = {
+      'type': 'received',
+      'tx_code_regex': r'Ref[:.]\s*([A-Z0-9]{10})',
+      'amount_regex': r'TZS\s?([\d,]+\.\d{2})',
+      'counterparty_name_regex': r'from\s+(.*?)\s+on\s+\d',
+      'version': 3,
+    };
+    const customSms =
+        'Ref: TZA12345BC. TZS 15,000.00 received from JUMA HASSAN '
+        'on 20/06/2025 at 11:00.';
+
+    test('ruleset extracts a format the built-in parser misses', () {
+      expect(SmsReconService.parseMessage(customSms), isNull);
+      final r = SmsReconService.applyRuleset(ruleset, customSms);
+      expect(r, isNotNull);
+      expect(r!['tx_code'], 'TZA12345BC');
+      expect(r['amount'], 15000.0);
+      expect(r['counterparty_name'], 'JUMA HASSAN');
+      expect(r['type'], 'received');
+      expect(r['profile_version'], 3);
+    });
+
+    test('parseDump prefers a matching ruleset over built-in patterns', () {
+      final r = SmsReconService.parseDump(customSms, rulesets: [ruleset]);
+      expect(r.parsed, hasLength(1));
+      expect(r.parsed.first['tx_code'], 'TZA12345BC');
+      expect(r.failed, 0);
+    });
+
+    test('ruleset that cannot extract code+amount falls back to built-in', () {
+      final bad = {'tx_code_regex': r'NOMATCH', 'amount_regex': r'NOMATCH'};
+      const sms = 'SGH41RT2KL Confirmed. You have received Ksh500.00 from '
+          'JOHN KAMAU MAINA 0712345678 on 16/6/25 at 2:30 PM.';
+      final r = SmsReconService.parseDump(sms, rulesets: [bad]);
+      expect(r.parsed, hasLength(1));
+      expect(r.parsed.first['type'], 'received');
+      expect(r.parsed.first['amount'], 500.0);
+    });
+
+    test('rulesetFromProfile handles jsonb map and json string', () {
+      final asMap = SmsReconService.rulesetFromProfile({
+        'version': 2,
+        'ruleset': {'tx_code_regex': r'x([0-9])'},
+      });
+      expect(asMap!['tx_code_regex'], r'x([0-9])');
+      expect(asMap['version'], 2);
+      final asStr = SmsReconService.rulesetFromProfile({
+        'version': 4,
+        'ruleset': '{"tx_code_regex": "y([0-9])"}',
+      });
+      expect(asStr!['tx_code_regex'], 'y([0-9])');
+      expect(SmsReconService.rulesetFromProfile(null), isNull);
+      expect(SmsReconService.rulesetFromProfile({'ruleset': 42}), isNull);
+    });
+  });
 }

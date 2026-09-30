@@ -16,6 +16,45 @@ class SmsReconService {
   static final SmsReconService instance = SmsReconService._();
 
   static const _pendingKey = 'sms_recon_pending';
+  static const _rulesetsKey = 'sms_recon_rulesets';
+
+  // ------------------------------------------------------------------
+  // Active parser profiles — fetched from the server, cached locally so
+  // calibrated rules keep working offline.
+  // ------------------------------------------------------------------
+
+  Future<List<Map<String, dynamic>>> getCachedRulesets() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_rulesetsKey);
+    if (raw == null) return [];
+    try {
+      return (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> cacheRulesets(List<Map<String, dynamic>> rulesets) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_rulesetsKey, jsonEncode(rulesets));
+  }
+
+  /// Normalize a profile row from GET /departments/:id/parser/profiles
+  /// into a ruleset map ({…ruleset, version}). Handles ruleset arriving
+  /// as a Map (jsonb) or a JSON string.
+  static Map<String, dynamic>? rulesetFromProfile(dynamic profile) {
+    if (profile is! Map) return null;
+    dynamic rs = profile['ruleset'];
+    if (rs is String) {
+      try {
+        rs = jsonDecode(rs);
+      } catch (_) {
+        return null;
+      }
+    }
+    if (rs is! Map) return null;
+    return {...Map<String, dynamic>.from(rs), 'version': profile['version']};
+  }
 
   // ------------------------------------------------------------------
   // Pending queue (SharedPreferences-backed)
@@ -104,14 +143,23 @@ class SmsReconService {
         .toList();
   }
 
-  /// Parse a pasted dump (one or many messages). Returns the parsed
-  /// payment records and how many chunks yielded nothing useful.
+  /// Parse a pasted dump (one or many messages). When [rulesets] (active
+  /// AI-calibrated parser profiles fetched from the server) are supplied,
+  /// each message chunk is tried against them first — the built-in parser
+  /// handles whatever they miss. Returns the parsed payment records and
+  /// how many chunks yielded nothing useful.
   static ({List<Map<String, dynamic>> parsed, int failed}) parseDump(
-      String text) {
+      String text,
+      {List<Map<String, dynamic>> rulesets = const []}) {
     final parsed = <Map<String, dynamic>>[];
     var failed = 0;
     for (final msg in splitMessages(text)) {
-      final r = parseMessage(msg);
+      Map<String, dynamic>? r;
+      for (final ruleset in rulesets) {
+        r = applyRuleset(ruleset, msg);
+        if (r != null) break;
+      }
+      r ??= parseMessage(msg);
       if (r != null) {
         parsed.add(r);
       } else {
@@ -119,6 +167,52 @@ class SmsReconService {
       }
     }
     return (parsed: parsed, failed: failed);
+  }
+
+  // ------------------------------------------------------------------
+  // AI-calibrated rulesets (mpesa_parser_profiles) — mirrors
+  // applyRuleset() in backend/routes/department_finance.routes.js.
+  // ------------------------------------------------------------------
+
+  /// Apply a server-calibrated ruleset to one message. Returns a record
+  /// in the same shape as the built-in parser, or null when the ruleset
+  /// can't extract a code + amount.
+  static Map<String, dynamic>? applyRuleset(
+      Map<String, dynamic> ruleset, String sms) {
+    String? pick(String? re) {
+      if (re == null || re.isEmpty) return null;
+      try {
+        final m = RegExp(re, caseSensitive: false).firstMatch(sms);
+        if (m == null) return null;
+        return m.groupCount >= 1 ? m.group(1) : m.group(0);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    try {
+      final tx = pick(ruleset['tx_code_regex']?.toString());
+      final amtRaw = pick(ruleset['amount_regex']?.toString());
+      if (tx == null || amtRaw == null) return null;
+      final amount =
+          double.tryParse(amtRaw.replaceAll(',', ''));
+      if (amount == null || amount <= 0) return null;
+      return {
+        'type': ruleset['type']?.toString() ?? 'received',
+        'tx_code': tx.trim().toUpperCase(),
+        'amount': amount,
+        'counterparty_name':
+            pick(ruleset['counterparty_name_regex']?.toString()),
+        'counterparty_phone':
+            pick(ruleset['counterparty_phone_regex']?.toString()),
+        'occurred_at': pick(ruleset['occurred_at_regex']?.toString()),
+        'direction': null,
+        'captured_at': DateTime.now().toIso8601String(),
+        'profile_version': ruleset['version'],
+      };
+    } catch (_) {
+      return null;
+    }
   }
 
   // ------------------------------------------------------------------
