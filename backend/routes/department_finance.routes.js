@@ -287,14 +287,16 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
 
     const budgets = await pool.query(
       `SELECT b.id, b.purpose, b.status, b.target_amount, b.obligation_type,
-              b.collection_deadline, b.created_at,
+              b.collection_deadline, b.created_at, b.subcommittee_id,
+              s.name AS subcommittee_name,
               COALESCE(SUM(o.paid_amount), 0) AS collected,
               COUNT(o.id) AS member_count,
               COUNT(o.id) FILTER (WHERE o.status = 'fulfilled') AS fulfilled_count
        FROM department_budgets b
+       LEFT JOIN department_subcommittees s ON s.id = b.subcommittee_id
        LEFT JOIN member_obligations o ON o.budget_id = b.id AND o.status <> 'cancelled'
        WHERE b.department_id = $1 AND b.status = 'active'
-       GROUP BY b.id ORDER BY b.created_at DESC`,
+       GROUP BY b.id, s.name ORDER BY b.created_at DESC`,
       [dept.id]
     );
 
@@ -307,6 +309,35 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
         collected,
         percent: pct,
         milestones: [25, 50, 75, 100].map((m) => ({ percent: m, reached: pct >= m })),
+      };
+    });
+
+    // Per-subcommittee rollup — targets vs collected for each auxiliary
+    // arm that has budgets of its own.
+    const subs = await pool.query(
+      `SELECT s.id, s.name,
+              COALESCE(SUM(b.target_amount), 0) AS target_amount,
+              COUNT(DISTINCT b.id) AS budget_count,
+              COALESCE((
+                SELECT SUM(o.paid_amount) FROM member_obligations o
+                JOIN department_budgets b2 ON b2.id = o.budget_id
+                WHERE b2.subcommittee_id = s.id AND o.status <> 'cancelled'
+              ), 0) AS collected
+       FROM department_subcommittees s
+       LEFT JOIN department_budgets b
+         ON b.subcommittee_id = s.id AND b.status = 'active'
+       WHERE s.department_id = $1
+       GROUP BY s.id, s.name
+       ORDER BY s.name`,
+      [dept.id]
+    );
+    const subcommittees = subs.rows.map((s) => {
+      const target = Number(s.target_amount) || 0;
+      const collected = Number(s.collected) || 0;
+      return {
+        ...s,
+        collected,
+        percent: target > 0 ? Math.min(100, Math.round((collected / target) * 100)) : 0,
       };
     });
 
@@ -324,7 +355,7 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
       members = r.rows;
     }
 
-    res.json({ success: true, data: { budgets: result, members } });
+    res.json({ success: true, data: { budgets: result, subcommittees, members } });
   } catch (e) {
     logger.error('collections', e);
     res.status(500).json({ success: false, error: 'Failed to load collections' });

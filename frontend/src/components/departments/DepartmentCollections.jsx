@@ -234,7 +234,8 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <h3 className="font-semibold text-[var(--color-text)]">{b.purpose || 'Department Budget'}</h3>
               <p className="text-xs text-[var(--color-textSecondary)]">
                 {b.obligation_type === 'target' ? 'Required obligations' : 'Voluntary contributions'}
-                {b.collection_deadline && ` · due ${b.collection_deadline}`}
+                {b.subcommittee_name && ` · ${b.subcommittee_name}`}
+                {b.collection_deadline && ` · due ${String(b.collection_deadline).split('T')[0]}`}
               </p>
             </div>
             <span className={`text-xs px-2 py-1 rounded-full ${b.status === 'active' ? 'bg-green-100 text-green-700' : b.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
@@ -304,6 +305,28 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
           )}
         </div>
       ))}
+
+      {/* Subcommittee rollup */}
+      {(data.subcommittees || []).length > 0 && (
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-4 sm:p-6">
+          <h3 className="font-semibold text-[var(--color-text)] mb-3">Subcommittee collections</h3>
+          <div className="space-y-3">
+            {data.subcommittees.map((s) => (
+              <div key={s.id}>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-[var(--color-text)]">{s.name}</span>
+                  <span className="text-[var(--color-textSecondary)]">
+                    KES {Number(s.collected).toLocaleString()} / {Number(s.target_amount).toLocaleString()} ({s.percent}%)
+                  </span>
+                </div>
+                <div className="h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
+                  <div className="h-full bg-[var(--color-secondary)] rounded-full" style={{ width: `${s.percent}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Per-member breakdown (leaders) */}
       {data.members && (

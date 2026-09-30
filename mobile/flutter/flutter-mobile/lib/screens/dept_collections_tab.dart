@@ -30,6 +30,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
   List<dynamic> _reconciliations = [];
   List<dynamic> _pendingFunds = [];
   List<dynamic> _remittances = [];
+  List<dynamic> _subcommitteeList = [];
   int _pendingCount = 0;
   bool _loading = true;
   String? _error;
@@ -58,6 +59,9 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     final rems = canRemit
         ? await widget.api.getRemittances(widget.deptId)
         : {'success': false};
+    final subs = widget.canManage
+        ? await widget.api.getSubcommittees(widget.deptId)
+        : {'success': false};
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -78,6 +82,10 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
         final d = rems['data'];
         _remittances = d is List ? d : (d?['remittances'] as List? ?? []);
       }
+      if (subs['success'] == true) {
+        final d = subs['data'];
+        _subcommitteeList = d is List ? d : (d?['subcommittees'] as List? ?? []);
+      }
     });
     final pending = await SmsReconService.instance.getPending();
     if (!mounted) return;
@@ -92,20 +100,28 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     if (_error != null && _collections == null) {
       return Center(child: Text(_error!));
     }
-    final target = _num(_collections?['target_amount']);
-    final collected = _num(_collections?['collected_amount']);
+    final collBudgets = (_collections?['budgets'] as List?) ?? [];
+    final subcommittees = (_collections?['subcommittees'] as List?) ?? [];
+    final members = (_collections?['members'] as List?) ?? [];
+    final target = collBudgets.fold<double>(
+        0, (s, b) => s + _num(b['target_amount']));
+    final collected = collBudgets.fold<double>(
+        0, (s, b) => s + _num(b['collected']));
     final progress = target > 0 ? (collected / target).clamp(0.0, 1.0) : 0.0;
-    final milestones = (_collections?['milestones'] as List?) ?? [];
-    final obligations = (_collections?['obligations'] as List?) ?? [];
 
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _progressCard(target, collected, progress),
-          const SizedBox(height: 12),
-          if (milestones.isNotEmpty) _milestonesCard(milestones),
+          if (collBudgets.isNotEmpty)
+            _progressCard(target, collected, progress),
+          if (collBudgets.isNotEmpty) const SizedBox(height: 12),
+          ...collBudgets.map((b) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _collectionBudgetCard(b),
+              )),
+          if (subcommittees.isNotEmpty) _subcommitteesCard(subcommittees),
           if (widget.canManage || widget.canCollect) ...[
             _collectorCard(),
             if (widget.canManage) _budgetCard(),
@@ -114,8 +130,162 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
               _remittanceCard(),
             if (widget.canManage) _parserCard(),
           ],
-          if (obligations.isNotEmpty) _obligationsCard(obligations),
+          if (members.isNotEmpty) _membersCard(members),
         ],
+      ),
+    );
+  }
+
+  /// Per-budget progress card — mirrors the web Collections tab: progress
+  /// bar, milestone marks, member fulfillment, subcommittee tag, and an
+  /// allocate action for managers on active budgets.
+  Widget _collectionBudgetCard(Map<String, dynamic> b) {
+    final target = _num(b['target_amount']);
+    final collected = _num(b['collected']);
+    final pct = (_num(b['percent']) / 100).clamp(0.0, 1.0);
+    final milestones = (b['milestones'] as List?) ?? [];
+    final status = (b['status'] ?? '').toString();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(b['purpose']?.toString() ?? 'Department budget',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 15)),
+                      Text(
+                        '${b['obligation_type'] == 'target' ? 'Required obligations' : 'Voluntary contributions'}'
+                        '${b['subcommittee_name'] != null ? ' · ${b['subcommittee_name']}' : ''}'
+                        '${b['collection_deadline'] != null ? ' · due ${b['collection_deadline'].toString().split('T').first}' : ''}',
+                        style:
+                            TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+                if (status.isNotEmpty)
+                  Chip(
+                    label: Text(status,
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.white)),
+                    backgroundColor:
+                        status == 'active' ? Colors.green : Colors.grey,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            LinearProgressIndicator(value: pct, minHeight: 10),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('KES ${collected.toStringAsFixed(0)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+                Text('of KES ${target.toStringAsFixed(0)} '
+                    '(${_num(b['percent']).toStringAsFixed(0)}%)'),
+              ],
+            ),
+            if (milestones.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: milestones
+                    .map((m) => Row(
+                          children: [
+                            if (m['reached'] == true)
+                              const Icon(Icons.check_circle,
+                                  size: 14, color: Colors.green),
+                            Text(' ${_num(m['percent']).toInt()}%',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: m['reached'] == true
+                                        ? Colors.green
+                                        : Colors.grey)),
+                          ],
+                        ))
+                    .toList(),
+              ),
+            ],
+            const SizedBox(height: 6),
+            Text(
+              '${_num(b['fulfilled_count']).toInt()}/${_num(b['member_count']).toInt()} members fulfilled',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            if (widget.canManage && status == 'active')
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.groups, size: 18),
+                  label: const Text('Allocate to members'),
+                  onPressed: () => _allocate(b),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Subcommittee rollup — how each auxiliary arm is doing against its
+  /// own budget targets.
+  Widget _subcommitteesCard(List subs) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Subcommittee collections',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            ...subs.map((s) {
+              final target = _num(s['target_amount']);
+              final collected = _num(s['collected']);
+              final pct = (_num(s['percent']) / 100).clamp(0.0, 1.0);
+              return InkWell(
+                onTap: () => _subDetail(s),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                                s['name']?.toString() ?? 'Subcommittee',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                          Text(
+                            'KES ${collected.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}',
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[700]),
+                          ),
+                          const Icon(Icons.chevron_right,
+                              size: 18, color: Colors.grey),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      LinearProgressIndicator(value: pct, minHeight: 6),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -139,44 +309,6 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                 Text('of KES ${target.toStringAsFixed(0)} '
                     '(${(progress * 100).toStringAsFixed(0)}%)'),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _milestonesCard(List milestones) {
-    const marks = [25, 50, 75, 100];
-    final hit = milestones
-        .map((m) => (m is Map ? _num(m['milestone']) : _num(m)).toInt())
-        .toSet();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Milestones',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: marks
-                  .map((m) => Column(
-                        children: [
-                          Icon(
-                            hit.contains(m)
-                                ? Icons.check_circle
-                                : Icons.radio_button_unchecked,
-                            color:
-                                hit.contains(m) ? Colors.green : Colors.grey,
-                          ),
-                          const SizedBox(height: 4),
-                          Text('$m%', style: const TextStyle(fontSize: 12)),
-                        ],
-                      ))
-                  .toList(),
             ),
           ],
         ),
@@ -244,7 +376,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Budgets',
+                const Text('Budget pipeline',
                     style:
                         TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 TextButton.icon(
@@ -259,13 +391,15 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                   style: TextStyle(color: Colors.grey))
             else
               ..._budgets.map((b) {
-                final status = (b['status'] ?? 'proposed').toString();
+                final status = (b['status'] ?? 'pending').toString();
+                final subName = _subName(b['subcommittee_id']);
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(b['title']?.toString() ?? 'Budget'),
+                  title: Text(b['purpose']?.toString() ?? 'Budget'),
                   subtitle: Text(
-                      'KES ${_num(b['amount']).toStringAsFixed(0)} • $status'),
-                  trailing: status == 'approved'
+                      'KES ${_num(b['target_amount']).toStringAsFixed(0)} • $status'
+                      '${subName != null ? ' • $subName' : ''}'),
+                  trailing: status == 'active'
                       ? TextButton(
                           onPressed: () => _allocate(b),
                           child: const Text('Allocate'),
@@ -277,6 +411,16 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
         ),
       ),
     );
+  }
+
+  String? _subName(dynamic subId) {
+    if (subId == null) return null;
+    for (final s in _subcommitteeList) {
+      if (s['id']?.toString() == subId.toString()) {
+        return s['name']?.toString();
+      }
+    }
+    return null;
   }
 
   Widget _reconCard() {
@@ -556,7 +700,9 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     );
   }
 
-  Widget _obligationsCard(List obligations) {
+  /// Per-member obligation breakdown for the newest active budget —
+  /// leaders only (backend gates `members` on canManageDepartment).
+  Widget _membersCard(List members) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -566,18 +712,33 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             const Text('Member Obligations',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 8),
-            ...obligations.take(20).map((o) {
-              final t = _num(o['target_amount']);
+            ...members.take(20).map((o) {
+              final t = _num(o['amount']);
               final p = _num(o['paid_amount']);
               final pct = t > 0 ? (p / t * 100).toStringAsFixed(0) : '0';
+              final name =
+                  '${o['first_name'] ?? ''} ${o['last_name'] ?? ''}'.trim();
+              final status = (o['status'] ?? '').toString();
               return ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(o['member_name']?.toString() ??
-                    o['title']?.toString() ??
-                    'Member'),
-                subtitle:
-                    Text('KES ${p.toStringAsFixed(0)} / ${t.toStringAsFixed(0)}'),
-                trailing: Text('$pct%'),
+                title: Text(name.isNotEmpty ? name : 'Member'),
+                subtitle: Text(
+                    '${o['obligation_type'] ?? 'target'} • KES ${p.toStringAsFixed(0)} / ${t.toStringAsFixed(0)}'),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('$pct%'),
+                    if (widget.canManage &&
+                        status != 'fulfilled' &&
+                        status != 'waived')
+                      TextButton(
+                        onPressed: () => _waive(o),
+                        child: const Text('waive',
+                            style:
+                                TextStyle(fontSize: 12, color: Colors.red)),
+                      ),
+                  ],
+                ),
               );
             }),
           ],
@@ -586,47 +747,181 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     );
   }
 
+  /// Subcommittee detail sheet — collection rollup plus spend view
+  /// (budget total/spent/remaining and recent spend requests).
+  Future<void> _subDetail(Map<String, dynamic> s) async {
+    final res = await widget.api
+        .getSubcommitteeBudget(widget.deptId, s['id'].toString());
+    if (!mounted) return;
+    if (res['success'] != true) {
+      _snack(res['error']?.toString() ?? 'Failed to load', isError: true);
+      return;
+    }
+    final budget = res['data']?['budget'];
+    final requests = (res['data']?['spend_requests'] as List?) ?? [];
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s['name']?.toString() ?? 'Subcommittee',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18)),
+              const SizedBox(height: 4),
+              Text(
+                'Collected KES ${_num(s['collected']).toStringAsFixed(0)} '
+                'of KES ${_num(s['target_amount']).toStringAsFixed(0)} target',
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              const Divider(height: 24),
+              if (budget == null)
+                const Text('No spend budget set for this subcommittee.',
+                    style: TextStyle(color: Colors.grey))
+              else ...[
+                const Text('Spend budget',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                _kvRow('Total',
+                    'KES ${_num(budget['total_amount']).toStringAsFixed(0)}'),
+                _kvRow('Spent',
+                    'KES ${_num(budget['spent_amount']).toStringAsFixed(0)}'),
+                _kvRow(
+                    'Remaining',
+                    'KES ${_num(budget['remaining_amount']).toStringAsFixed(0)}'),
+              ],
+              if (requests.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                const Text('Recent spend requests',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                ...requests.take(5).map((r) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.receipt_long, size: 20),
+                      title: Text(r['title']?.toString() ?? 'Request',
+                          overflow: TextOverflow.ellipsis),
+                      subtitle: Text(
+                          'KES ${_num(r['amount']).toStringAsFixed(0)}'),
+                      trailing: Chip(
+                        label: Text('${r['status']}',
+                            style: const TextStyle(
+                                fontSize: 10, color: Colors.white)),
+                        backgroundColor: r['status'] == 'approved'
+                            ? Colors.green
+                            : r['status'] == 'rejected'
+                                ? Colors.red
+                                : Colors.orange,
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _kvRow(String k, String v) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [Text(k), Text(v, style: const TextStyle(fontWeight: FontWeight.w600))],
+        ),
+      );
+
+  Future<void> _waive(Map<String, dynamic> o) async {
+    final res = await widget.api
+        .waiveObligation(widget.deptId, o['id'].toString());
+    _result(res, successMsg: 'Obligation waived');
+  }
+
   Future<void> _proposeBudget() async {
-    final titleCtrl = TextEditingController();
+    final purposeCtrl = TextEditingController();
     final amountCtrl = TextEditingController();
-    final descCtrl = TextEditingController();
+    final deadlineCtrl = TextEditingController();
+    String obligationType = 'target';
+    String? subcommitteeId;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Propose Budget'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-                controller: titleCtrl,
-                decoration: const InputDecoration(labelText: 'Title')),
-            TextField(
-                controller: amountCtrl,
-                keyboardType: TextInputType.number,
-                decoration:
-                    const InputDecoration(labelText: 'Amount (KES)')),
-            TextField(
-                controller: descCtrl,
-                decoration: const InputDecoration(labelText: 'Description')),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('Propose Budget'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                    controller: purposeCtrl,
+                    decoration:
+                        const InputDecoration(labelText: 'Purpose')),
+                TextField(
+                    controller: amountCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                        labelText: 'Target amount (KES)')),
+                TextField(
+                    controller: deadlineCtrl,
+                    decoration: const InputDecoration(
+                        labelText: 'Deadline (YYYY-MM-DD, optional)')),
+                DropdownButtonFormField<String>(
+                  value: obligationType,
+                  decoration:
+                      const InputDecoration(labelText: 'Obligation type'),
+                  items: const [
+                    DropdownMenuItem(
+                        value: 'target',
+                        child: Text('Target — members must give')),
+                    DropdownMenuItem(
+                        value: 'voluntary',
+                        child: Text('Voluntary — open pool')),
+                  ],
+                  onChanged: (v) =>
+                      setDlg(() => obligationType = v ?? 'target'),
+                ),
+                if (_subcommitteeList.isNotEmpty)
+                  DropdownButtonFormField<String>(
+                    value: subcommitteeId,
+                    decoration: const InputDecoration(
+                        labelText: 'Subcommittee (optional)'),
+                    items: [
+                      const DropdownMenuItem(
+                          value: null, child: Text('Whole department')),
+                      ..._subcommitteeList.map((s) => DropdownMenuItem(
+                          value: s['id']?.toString(),
+                          child: Text(s['name']?.toString() ?? 'Sub'))),
+                    ],
+                    onChanged: (v) => setDlg(() => subcommitteeId = v),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Submit')),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Submit')),
-        ],
       ),
     );
     if (ok != true) return;
     final res = await widget.api.proposeDeptBudget(widget.deptId, {
-      'title': titleCtrl.text.trim(),
-      'amount': double.tryParse(amountCtrl.text) ?? 0,
-      'description': descCtrl.text.trim(),
+      'purpose': purposeCtrl.text.trim(),
+      'target_amount': double.tryParse(amountCtrl.text) ?? 0,
+      'obligation_type': obligationType,
+      if (deadlineCtrl.text.trim().isNotEmpty)
+        'collection_deadline': deadlineCtrl.text.trim(),
+      if (subcommitteeId != null) 'subcommittee_id': subcommitteeId,
     });
-    _result(res);
+    _result(res, successMsg: 'Budget proposed — awaiting approval');
   }
 
   Future<void> _allocate(Map<String, dynamic> budget) async {

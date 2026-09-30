@@ -698,6 +698,10 @@ class ApiService {
       _deptSend('post', '/$deptId/subcommittees', data);
   Future<Map<String, dynamic>> updateSubcommittee(String deptId, String subId, Map<String, dynamic> data) =>
       _deptSend('put', '/$deptId/subcommittees/$subId', data);
+  /// Subcommittee spend view — budget total/spent/remaining + requests
+  /// (managers and subcommittee heads only).
+  Future<Map<String, dynamic>> getSubcommitteeBudget(String deptId, String subId) =>
+      _deptGet('/$deptId/subcommittees/$subId/budget');
   Future<Map<String, dynamic>> getDeptPrograms(String deptId) =>
       _deptGet('/$deptId/programs');
   Future<Map<String, dynamic>> createDeptProgram(String deptId, Map<String, dynamic> data) =>

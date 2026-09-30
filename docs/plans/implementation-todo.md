@@ -63,17 +63,17 @@ Delete in batches; for each file grep its name once repo-wide and confirm only d
 | D3 | Shared pagination — adopt rescued `middleware/pagination.js`; apply to members, users, departments, payments, notifications, audit-logs, sms-logs, gallery | security §10 | [ ] |
 | D4 | Index audit — composite `(church_id, is_active)` + `(church_id, created_at)` on members, users, department_members, notifications, payments, events, sms_logs | security §12 | [ ] |
 | D5 | Redis-backed identity cache + rate-limit store — **DEFERRED (verified)**: PM2 `ecosystem.config.cjs` runs `instances: 1` fork mode, so in-memory is correct. Rate limiter already auto-switches to RedisStore when `REDIS_URL` is set. **Revisit trigger**: changing `instances` >1 or `exec_mode: 'cluster'` — then `identityCache` in `middleware/auth.js` must move to `redisCache` too | security §11 | [x] deferred |
-| D6 | Frontend deps: lazy `xlsx` if sms components kept (else gone with C1); remove `react-toastify` (2 usages → ToastContext); remove `cypress` devDep; `vendor-charts` manualChunk; versioned `sw.js` cache | lean §12-16 | [ ] |
-| D7 | IDOR regression tests — church A cannot read/write church B (departments, members, payments) | security §15 | [ ] |
-| D8 | Regenerate `GRANULAR_AUDIT_CLUSTERS.md` for KMainCMS + wire `npm run security-audit` into CI/pre-push | security §14-15 | [ ] |
+| D6 | Frontend deps — cypress removed (Playwright is the e2e framework), bogus `main` field fixed, `sw.js` NEVER_CACHE hardened + versioned; react-toastify kept (still used by payment/profile screens) | lean §12-16 | [x] |
+| D7 | IDOR regression tests — 13-test suite in `tests/api/` (mpesa cross-church guards + callback CSRF fix found & fixed) | security §15 | [x] |
+| D8 | `scripts/validate-audit-map.py` (497 refs checked), audit map refreshed, `security_audit.js` moved to `backend/scripts/` + wired into CI | security §14-15 | [x] |
 
 ## Phase E — Product carryover (dept-centric + parity)
 
 | # | Task | Source | Status |
 |---|------|--------|--------|
-| E1 | Remittance ledger — collector marks gathered funds handed to church account; treasurer approves (dates, amounts, references) | dept plan §10 | [ ] |
-| E2 | Parser profiles → on-device parser — fetch active `mpesa_parser_profiles` ruleset for the dept's scope, apply over built-in patterns, fallback local | dept plan §9 | [ ] |
-| E3 | Flutter subcommittee spend/budget view | parity P1 | [ ] |
+| E1 | Remittance ledger — mig 037, pending-funds/remittances/confirm/dispute endpoints, Flutter + web cards | dept plan §10 | [x] |
+| E2 | Parser profiles → on-device parser — `applyRuleset` ported, cached offline, ruleset-first precedence in `parseDump` | dept plan §9 | [x] |
+| E3 | Flutter subcommittee spend/budget view — collections rollup + tap-to-spend sheet; also fixed stale response shape + propose-budget field bug | parity P1 | [x] |
 | E4 | Real-device regression pass on 1.6.0 paste-to-parse flow | release | [ ] |
 
 ## Done (reference)
