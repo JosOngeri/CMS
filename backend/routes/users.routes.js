@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken, requireRole, invalidateUserCache } = require('../middleware/auth');
 const { validate, validationRules } = require('../middleware/validation');
 const { body, validationResult } = require('express-validator');
 const userRepository = require('../repositories/UserRepository');
@@ -174,6 +174,8 @@ router.post('/:id/roles',
         return res.status(400).json({ error: 'User already has this role' });
       }
 
+      invalidateUserCache(id);
+
       res.status(201).json({
         message: 'Role assigned successfully',
         user_role: result
@@ -201,6 +203,8 @@ router.delete('/:id/roles/:roleId',
         return res.status(404).json({ error: 'Role assignment not found' });
       }
 
+      invalidateUserCache(id);
+
       res.json({ message: 'Role removed successfully' });
     } catch (error) {
       logger.error('removeRole', error);
@@ -216,13 +220,15 @@ router.patch('/:id/deactivate',
   convertUserSlugToId,
   async (req, res) => {
     try {
-      const { id } = req.params;
+      const id = req.userId || req.params.id;
 
       const result = await userRepository.deactivateUser(id);
 
       if (!result) {
         return res.status(404).json({ error: 'User not found' });
       }
+
+      invalidateUserCache(id);
 
       res.json({
         message: 'User deactivated successfully',
@@ -309,6 +315,8 @@ router.delete('/:id', authenticateToken, requireRole(['Super Admin']), async (re
     if (!result) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    invalidateUserCache(id);
 
     res.json({
       message: 'User deleted successfully'

@@ -8,6 +8,7 @@ const {
   generalLimiter,
   strictLimiter
 } = require('../middleware/rateLimiter');
+const { clampQueryPagination } = require('../middleware/pagination');
 
 // Import all route modules
 const authRoutes = require('./auth.routes');
@@ -63,10 +64,10 @@ const smsSyncRoutes = require('./smsSync.routes');
 // Note: route modules apply their own auth (authenticateToken, identityGuard, etc.)
 router.use('/auth', authLimiter, authRoutes);
 router.use('/churches', generalLimiter, churchRoutes);
-router.use('/users', generalLimiter, usersRoutes);
+router.use('/users', generalLimiter, clampQueryPagination(), usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);
-router.use('/announcements', generalLimiter, announcementsRoutes);
-router.use('/departments', generalLimiter, departmentsRoutes);
+router.use('/announcements', generalLimiter, clampQueryPagination(), announcementsRoutes);
+router.use('/departments', generalLimiter, clampQueryPagination(), departmentsRoutes);
 router.use('/departments', generalLimiter, require('./department_community.routes'));
 router.use('/departments', generalLimiter, require('./department_leadership.routes').router);
 router.use('/departments', generalLimiter, require('./department_finance.routes'));
@@ -76,8 +77,8 @@ router.use('/department-categories', generalLimiter, departmentCategoriesRoutes)
 router.use('/apk', generalLimiter, require('./apk.routes'));
 router.use('/payments', strictLimiter, paymentsRoutes);
 router.use('/payment', strictLimiter, paymentRoutes);
-router.use('/members', generalLimiter, membersRoutes);
-router.use('/events', generalLimiter, eventsRoutes);
+router.use('/members', generalLimiter, clampQueryPagination(), membersRoutes);
+router.use('/events', generalLimiter, clampQueryPagination(), eventsRoutes);
 router.use('/sms', strictLimiter, smsRoutes);
 router.use('/dashboard', generalLimiter, dashboardRoutes);
 router.use('/treasury', strictLimiter, require('../modules/treasury/routes'));
@@ -89,25 +90,25 @@ router.use('/notifications', generalLimiter, notificationsRoutes);
 router.use('/approvals', strictLimiter, approvalsRoutes);
 router.use('/comments', generalLimiter, commentsRoutes);
 router.use('/field-permissions', generalLimiter, fieldPermissionsRoutes);
-router.use('/audit-logs', strictLimiter, auditLogsRoutes);
+router.use('/audit-logs', strictLimiter, clampQueryPagination(), auditLogsRoutes);
 router.use('/security', strictLimiter, securityRoutes);
 router.use('/collections', generalLimiter, collectionsRoutes);
 router.use('/reports', generalLimiter, reportsRoutes);
-router.use('/documents', uploadLimiter, documentsRoutes);
+router.use('/documents', uploadLimiter, clampQueryPagination(), documentsRoutes);
 router.use('/telegram', generalLimiter, telegramRoutes);
 router.use('/telegramAuth', generalLimiter, telegramAuthRoutes);
 router.use('/telegram-church', generalLimiter, telegramChurchRoutes);
-router.use('/content', generalLimiter, contentRoutes);
+router.use('/content', generalLimiter, clampQueryPagination(), contentRoutes);
 // router.use('/sda-content', generalLimiter, require('./sdaContent.routes'));
 router.use('/reconciliation', strictLimiter, reconciliationRoutes);
-router.use('/mpesa', generalLimiter, mpesaRoutes);
+router.use('/mpesa', generalLimiter, clampQueryPagination(), mpesaRoutes);
 router.use('/manual-payments', strictLimiter, manualPaymentRoutes);
 router.use('/gateway', generalLimiter, gatewayRoutes);
 router.use('/sms-hub', generalLimiter, smsHubRoutes);
 router.use('/document-approval', strictLimiter, documentApprovalRoutes);
 router.use('/analytics', generalLimiter, analyticsRoutes);
 router.use('/ai', strictLimiter, aiRoutes);
-router.use('/chat', generalLimiter, chatRoutes);
+router.use('/chat', generalLimiter, clampQueryPagination(), chatRoutes);
 router.use('/sync', strictLimiter, syncRoutes);
 router.use('/mobile', generalLimiter, mobileRoutes);
 router.use('/platform', strictLimiter, platformRoutes);

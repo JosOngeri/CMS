@@ -2,6 +2,7 @@
 const UserRepository = require('../repositories/UserRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 const auditService = require('../services/auditService');
+const { invalidateUserCache } = require('../middleware/auth');
 
 /**
  * Users Controller
@@ -141,6 +142,7 @@ class UsersController extends BaseController {
       // Update roles if provided
       if (roles) {
         await UserRepository.updateUserRoles(id, roles, churchId);
+        invalidateUserCache(id);
       }
 
       // Log audit event
