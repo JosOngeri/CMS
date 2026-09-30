@@ -203,19 +203,13 @@ class SecurityController extends BaseController {
    */
   async updateSecuritySettings(req, res) {
     try {
-      const { passwordPolicy, sessionTimeout, mfaEnabled, ipWhitelist, ipBlacklist } = req.body;
       const churchId = req.user.church_id;
+      const newSettings = { ...req.body };
+      delete newSettings.church_id;
+      delete newSettings.id;
 
       // Get old settings for audit log
       const oldSettings = await SecurityRepository.getSecuritySettings(churchId);
-
-      const newSettings = {
-        passwordPolicy,
-        sessionTimeout,
-        mfaEnabled,
-        ipWhitelist,
-        ipBlacklist
-      };
 
       await SecurityRepository.updateSecuritySettings(churchId, newSettings);
 

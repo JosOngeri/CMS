@@ -31,11 +31,25 @@ class DashboardController extends BaseController {
         recent_announcements_count: 0
       };
 
+      const [totalDepartments, pendingApprovals] = await Promise.all([
+        DashboardRepository.getDepartmentCount(churchId).catch(() => 0),
+        DashboardRepository.getPendingApprovals(churchId).catch(() => 0)
+      ]);
+
+      const totalMembers = parseInt(stats.total_members) || 0;
+      const recentAnnouncements = parseInt(stats.recent_announcements_count) || 0;
+
       this.success(res, {
-        totalMembers: parseInt(stats.total_members) || 0,
+        totalMembers,
+        totalUsers: totalMembers,
+        totalDepartments,
+        activeDepartments: totalDepartments,
+        pendingApprovals: parseInt(pendingApprovals) || 0,
         totalPayments: parseFloat(stats.total_revenue) || 0,
+        financialOverview: parseFloat(stats.total_revenue) || 0,
         upcomingEvents: parseInt(stats.upcoming_events_count) || 0,
-        recentAnnouncements: parseInt(stats.recent_announcements_count) || 0
+        recentAnnouncements,
+        totalAnnouncements: recentAnnouncements
       });
     } catch (error) {
       this.logger.error('getStats', error);

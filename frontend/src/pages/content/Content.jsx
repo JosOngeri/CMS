@@ -68,7 +68,7 @@ const Content = () => {
 
   const saveContent = async () => {
     try {
-      toast.loading('Saving content...');
+      toast.info('Saving content...');
       if (editingItem) {
         await api.put(`/content/${editingItem.id}`, formData);
         toast.success('Content updated successfully');
@@ -85,7 +85,7 @@ const Content = () => {
 
   const publishContent = async (id) => {
     try {
-      toast.loading('Publishing content...');
+      toast.info('Publishing content...');
       await api.put(`/content/${id}/publish`);
       toast.success('Content published successfully');
       fetchContent();
@@ -98,7 +98,7 @@ const Content = () => {
     if (!confirm('Are you sure you want to delete this content?')) return;
     
     try {
-      toast.loading('Deleting content...');
+      toast.info('Deleting content...');
       await api.delete(`/content/${id}`);
       toast.success('Content deleted successfully');
       fetchContent();

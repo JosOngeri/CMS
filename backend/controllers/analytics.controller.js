@@ -302,7 +302,7 @@ class AnalyticsController extends BaseController {
       const { months = 6 } = req.query;
       const churchId = req.user.church_id;
       const performance = await AnalyticsRepository.getSMSPerformance(months, churchId);
-      this.success(res, { data: performance });
+      this.success(res, performance);
     } catch (error) {
       this.logger.error('getSMSPerformance', error);
       this.error(res, 'Failed to fetch SMS performance');

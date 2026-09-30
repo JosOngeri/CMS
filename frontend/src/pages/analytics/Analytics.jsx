@@ -1,16 +1,97 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Activity, TrendingUp, Users, Calendar, DollarSign, Eye, BarChart3, PieChart, LineChart, Download, RefreshCw } from 'lucide-react';
+﻿/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Church analytics dashboard. Each tab pulls real metrics from the backend
+ * (members, finance, departments, attendance, collections, events, SMS) and
+ * can be exported as JSON or CSV.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/analytics/*  → all tab data + /export
+ * - contexts/AuthContext.jsx  → authed api client
+ */
+
+import React, { useState, useEffect } from 'react';
+import { Activity, Users, Calendar, Download } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+
+const TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'members', label: 'Members' },
+  { id: 'finance', label: 'Finance' },
+  { id: 'departments', label: 'Departments' },
+  { id: 'attendance', label: 'Attendance' },
+  { id: 'collections', label: 'Collections' },
+  { id: 'events', label: 'Events' },
+  { id: 'sms', label: 'SMS' },
+];
+
+const fmtMoney = (n) => `KES ${Number(n || 0).toLocaleString()}`;
+const fmtPct = (n) => `${Number(n || 0).toFixed(1)}%`;
+const fmtDate = (d) => (d ? new Date(d).toLocaleDateString() : '—');
+
+const StatCard = ({ label, value, sub }) => (
+  <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-4">
+    <p className="text-sm text-[var(--color-textSecondary)]">{label}</p>
+    <p className="text-2xl font-bold text-[var(--color-text)]">{value}</p>
+    {sub && <p className="text-xs text-[var(--color-textSecondary)] mt-1">{sub}</p>}
+  </div>
+);
+
+const DataTable = ({ columns, rows, empty = 'No data available for this period.' }) => (
+  <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] overflow-hidden overflow-x-auto">
+    <table className="min-w-full divide-y divide-[var(--color-border)]">
+      <thead className="bg-[var(--color-background)]">
+        <tr>
+          {columns.map((c) => (
+            <th key={c.key} className="px-4 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
+              {c.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-[var(--color-border)]">
+        {!rows || rows.length === 0 ? (
+          <tr>
+            <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-[var(--color-textSecondary)]">
+              {empty}
+            </td>
+          </tr>
+        ) : (
+          rows.map((row, i) => (
+            <tr key={i} className="hover:bg-[var(--color-background)]">
+              {columns.map((c) => (
+                <td key={c.key} className="px-4 py-3 text-sm text-[var(--color-text)] whitespace-nowrap">
+                  {c.render ? c.render(row) : row[c.key] ?? '—'}
+                </td>
+              ))}
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+);
+
+const Section = ({ title, children }) => (
+  <div className="space-y-3">
+    <h2 className="font-semibold text-[var(--color-text)] flex items-center gap-2">
+      <Activity className="w-5 h-5 text-[var(--color-primary)]" />
+      {title}
+    </h2>
+    {children}
+  </div>
+);
 
 const Analytics = () => {
   const { api } = useAuth();
   const toast = useToast();
-  const [timeRange, setTimeRange] = useState('7d');
+  const [timeRange, setTimeRange] = useState('30d');
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  
-  // Analytics data states
+
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [memberDemographics, setMemberDemographics] = useState(null);
   const [memberActivity, setMemberActivity] = useState([]);
   const [financialSummary, setFinancialSummary] = useState(null);
@@ -23,8 +104,7 @@ const Analytics = () => {
   const [eventAttendance, setEventAttendance] = useState([]);
   const [smsPerformance, setSmsPerformance] = useState(null);
   const [smsDelivery, setSmsDelivery] = useState([]);
-  const [customMetrics, setCustomMetrics] = useState([]);
-  
+
   useEffect(() => {
     fetchAnalyticsData();
   }, [timeRange, activeTab]);
@@ -34,16 +114,10 @@ const Analytics = () => {
     try {
       switch (activeTab) {
         case 'members':
-          await Promise.all([
-            fetchMemberDemographics(),
-            fetchMemberActivity()
-          ]);
+          await Promise.all([fetchMemberDemographics(), fetchMemberActivity()]);
           break;
         case 'finance':
-          await Promise.all([
-            fetchFinancialSummary(),
-            fetchContributionTrends()
-          ]);
+          await Promise.all([fetchFinancialSummary(), fetchContributionTrends()]);
           break;
         case 'departments':
           await fetchDepartmentPerformance();
@@ -52,22 +126,13 @@ const Analytics = () => {
           await fetchAttendanceSummary();
           break;
         case 'collections':
-          await Promise.all([
-            fetchCollectionPerformance(),
-            fetchCollectionTrends()
-          ]);
+          await Promise.all([fetchCollectionPerformance(), fetchCollectionTrends()]);
           break;
         case 'events':
-          await Promise.all([
-            fetchEventEngagement(),
-            fetchEventAttendance()
-          ]);
+          await Promise.all([fetchEventEngagement(), fetchEventAttendance()]);
           break;
         case 'sms':
-          await Promise.all([
-            fetchSmsPerformance(),
-            fetchSmsDelivery()
-          ]);
+          await Promise.all([fetchSmsPerformance(), fetchSmsDelivery()]);
           break;
         default:
           await fetchOverviewData();
@@ -81,9 +146,8 @@ const Analytics = () => {
   };
 
   const fetchOverviewData = async () => {
-    // Fetch summary data for overview
     const response = await api.get('/analytics/dashboard');
-    setMemberDemographics(response.data.data);
+    setDashboardStats(response.data.data);
   };
 
   const fetchMemberDemographics = async () => {
@@ -105,14 +169,14 @@ const Analytics = () => {
 
   const fetchContributionTrends = async () => {
     const response = await api.get('/analytics/contribution-trends', {
-      params: { months: 12 }
+      params: getMonthsParam()
     });
     setContributionTrends(response.data.data);
   };
 
   const fetchDepartmentPerformance = async () => {
     const response = await api.get('/analytics/department-performance', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setDepartmentPerformance(response.data.data);
   };
@@ -124,67 +188,82 @@ const Analytics = () => {
 
   const fetchCollectionPerformance = async () => {
     const response = await api.get('/analytics/collection-performance', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setCollectionPerformance(response.data.data);
   };
 
   const fetchCollectionTrends = async () => {
     const response = await api.get('/analytics/collection-trends', {
-      params: { months: 12 }
+      params: getMonthsParam()
     });
     setCollectionTrends(response.data.data);
   };
 
   const fetchEventEngagement = async () => {
     const response = await api.get('/analytics/event-engagement', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setEventEngagement(response.data.data);
   };
 
   const fetchEventAttendance = async () => {
     const response = await api.get('/analytics/event-attendance', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setEventAttendance(response.data.data);
   };
 
   const fetchSmsPerformance = async () => {
     const response = await api.get('/analytics/sms-performance', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setSmsPerformance(response.data.data);
   };
 
   const fetchSmsDelivery = async () => {
     const response = await api.get('/analytics/sms-delivery', {
-      params: { months: 6 }
+      params: getMonthsParam()
     });
     setSmsDelivery(response.data.data);
   };
 
+  const getMonthsParam = () => ({
+    months: timeRange === '1y' ? 12 : timeRange === '90d' ? 3 : 1
+  });
+
   const handleExport = async (format = 'json') => {
     try {
-      toast.loading('Exporting analytics...');
+      toast.info('Exporting analytics...');
+      const { start, end } = getDateRange();
       const response = await api.post('/analytics/export', {
         type: activeTab,
         format,
-        startDate: getDateRange().start,
-        endDate: getDateRange().end
-      });
-      
+        startDate: start,
+        endDate: end
+      }, format === 'csv' ? { responseType: 'blob' } : {});
+
       if (format === 'csv') {
-        const blob = new Blob([response.data], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', `analytics_${activeTab}_${Date.now()}.csv`);
         document.body.appendChild(link);
         link.click();
         link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const blob = new Blob([JSON.stringify(response.data?.data ?? response.data, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `analytics_${activeTab}_${Date.now()}.json`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
       }
-      
+
       toast.success('Analytics exported successfully');
     } catch (error) {
       console.error('Failed to export analytics:', error);
@@ -199,9 +278,6 @@ const Analytics = () => {
       case '7d':
         start.setDate(start.getDate() - 7);
         break;
-      case '30d':
-        start.setDate(start.getDate() - 30);
-        break;
       case '90d':
         start.setDate(start.getDate() - 90);
         break;
@@ -209,7 +285,7 @@ const Analytics = () => {
         start.setFullYear(start.getFullYear() - 1);
         break;
       default:
-        start.setDate(start.getDate() - 7);
+        start.setDate(start.getDate() - 30);
     }
     return {
       start: start.toISOString().split('T')[0],
@@ -217,253 +293,253 @@ const Analytics = () => {
     };
   };
 
-  // Mock analytics data
-  const metrics = {
-    totalVisitors: 12543,
-    activeUsers: 892,
-    pageViews: 45678,
-    conversionRate: 3.2,
-    avgSessionDuration: '4m 32s',
-    bounceRate: 42.5
-  };
+  const renderOverview = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <StatCard label="Total Members" value={dashboardStats?.members?.total ?? '—'} sub={`${dashboardStats?.members?.active ?? 0} active`} />
+      <StatCard label="Departments" value={dashboardStats?.departments?.total ?? '—'} />
+      <StatCard label="Monthly Income" value={fmtMoney(dashboardStats?.finance?.monthly_income)} />
+      <StatCard label="Monthly Expenses" value={fmtMoney(dashboardStats?.finance?.monthly_expense)} />
+      <StatCard label="Pending Approvals" value={dashboardStats?.approvals?.pending ?? '—'} />
+      <StatCard label="Unread Notifications" value={dashboardStats?.notifications?.unread ?? '—'} />
+    </div>
+  );
 
-  const trafficData = [
-    { date: 'Mon', visitors: 1200, pageViews: 4500 },
-    { date: 'Tue', visitors: 1450, pageViews: 5200 },
-    { date: 'Wed', visitors: 1380, pageViews: 4900 },
-    { date: 'Thu', visitors: 1620, pageViews: 5800 },
-    { date: 'Fri', visitors: 1890, pageViews: 6200 },
-    { date: 'Sat', visitors: 2100, pageViews: 7500 },
-    { date: 'Sun', visitors: 1900, pageViews: 6800 },
-  ];
-
-  const topPages = [
-    { page: '/dashboard', views: 12450, unique: 8900 },
-    { page: '/departments', views: 8230, unique: 5600 },
-    { page: '/treasury', views: 6780, unique: 4200 },
-    { page: '/events', views: 5430, unique: 3800 },
-    { page: '/gallery', views: 4120, unique: 2900 },
-  ];
-
-  const deviceBreakdown = [
-    { device: 'Desktop', percentage: 65, users: 8153 },
-    { device: 'Mobile', percentage: 28, users: 3512 },
-    { device: 'Tablet', percentage: 7, users: 878 },
-  ];
-
-  const renderBarChart = (data, height = 200) => {
-    const maxValue = Math.max(...data.map(d => d.visitors));
-    
-    return (
-      <div className="flex items-end gap-2 h-full">
-        {data.map((item, index) => {
-          const heightPercent = (item.visitors / maxValue) * 100;
-          return (
-            <div key={index} className="flex-1 flex flex-col items-center">
-              <div 
-                className="w-full bg-[var(--color-primary)] rounded-t transition-all hover:bg-[var(--color-primary)]"
-                style={{ height: `${heightPercent}%` }}
-              />
-              <span className="text-xs mt-2 text-[var(--color-textSecondary)]">{item.date}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderPieChart = (data) => {
-    const colors = ['bg-[var(--color-primary)]', 'bg-[var(--color-success)]', 'bg-[var(--color-warning-light)]0', 'bg-[var(--color-accent)]', 'bg-[var(--color-accent)]'];
-    
-    return (
-      <div className="flex gap-4">
-        <div className="relative w-32 h-32">
-          <div className="absolute inset-0 rounded-full" style={{
-            background: `conic-gradient(
-              ${data[0].percentage}% blue 0%,
-              ${data[0].percentage + data[1].percentage}% green 0%,
-              ${data[0].percentage + data[1].percentage + data[2].percentage}% yellow 0%
-            )`
-          }} />
+  const renderMembers = () => (
+    <>
+      {memberDemographics && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard label="Total Members" value={memberDemographics.total_members} />
+          <StatCard label="Active" value={memberDemographics.active_members} />
+          <StatCard label="Inactive" value={memberDemographics.inactive_members} />
+          <StatCard label="Visitors" value={memberDemographics.visitors} />
+          <StatCard label="Male" value={memberDemographics.male_count} />
+          <StatCard label="Female" value={memberDemographics.female_count} />
+          <StatCard label="Average Age" value={Math.round(memberDemographics.average_age || 0)} />
+          <StatCard label="Youth (0–25)" value={(parseInt(memberDemographics.age_0_17) || 0) + (parseInt(memberDemographics.age_18_25) || 0)} />
         </div>
-        <div className="flex flex-col justify-center gap-2">
-          {data.map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded ${colors[index]}`} />
-              <span className="text-sm">{item.device}: {item.percentage}%</span>
-            </div>
-          ))}
+      )}
+      <Section title="Daily member activity">
+        <DataTable
+          columns={[
+            { key: 'date', label: 'Date', render: (r) => fmtDate(r.date) },
+            { key: 'active_members', label: 'Active Members' },
+            { key: 'total_activities', label: 'Activities' },
+          ]}
+          rows={memberActivity}
+        />
+      </Section>
+    </>
+  );
+
+  const renderFinance = () => (
+    <>
+      {financialSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total Income" value={fmtMoney(financialSummary.total_income)} />
+          <StatCard label="Total Expenses" value={fmtMoney(financialSummary.total_expense)} />
+          <StatCard label="Last 30 Days Income" value={fmtMoney(financialSummary.monthly_income)} sub={`${financialSummary.income_transactions ?? 0} transactions`} />
+          <StatCard label="Last 30 Days Expenses" value={fmtMoney(financialSummary.monthly_expense)} sub={`${financialSummary.expense_transactions ?? 0} transactions`} />
         </div>
+      )}
+      <Section title="Contribution trends">
+        <DataTable
+          columns={[
+            { key: 'month', label: 'Month', render: (r) => fmtDate(r.month) },
+            { key: 'total_contributions', label: 'Total', render: (r) => fmtMoney(r.total_contributions) },
+            { key: 'contribution_count', label: 'Count' },
+            { key: 'average_contribution', label: 'Average', render: (r) => fmtMoney(r.average_contribution) },
+          ]}
+          rows={contributionTrends}
+        />
+      </Section>
+    </>
+  );
+
+  const renderDepartments = () => (
+    <Section title="Department performance">
+      <DataTable
+        columns={[
+          { key: 'department_name', label: 'Department' },
+          { key: 'member_count', label: 'Members' },
+          { key: 'meetings_count', label: 'Meetings' },
+          { key: 'recent_meetings', label: 'Recent Meetings' },
+          { key: 'tasks_completed', label: 'Tasks Completed' },
+        ]}
+        rows={departmentPerformance}
+      />
+    </Section>
+  );
+
+  const renderAttendance = () => (
+    attendanceSummary ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="Attendance Records" value={attendanceSummary.total_attendance_records} />
+        <StatCard label="Unique Attendees" value={attendanceSummary.unique_attendees} />
+        <StatCard label="Average Attendance Rate" value={fmtPct((attendanceSummary.average_attendance_rate || 0) * 100)} />
+        <StatCard label="Last Attendance" value={fmtDate(attendanceSummary.last_attendance_date)} />
       </div>
-    );
+    ) : (
+      <p className="text-sm text-[var(--color-textSecondary)]">No attendance data available.</p>
+    )
+  );
+
+  const renderCollections = () => (
+    <>
+      <Section title="Collection performance">
+        <DataTable
+          columns={[
+            { key: 'collection_name', label: 'Collection' },
+            { key: 'completion_percentage', label: 'Progress', render: (r) => fmtPct(r.completion_percentage) },
+            { key: 'unique_contributors', label: 'Contributors' },
+            { key: 'total_contributions', label: 'Contributions' },
+            { key: 'average_contribution', label: 'Avg', render: (r) => fmtMoney(r.average_contribution) },
+          ]}
+          rows={collectionPerformance}
+        />
+      </Section>
+      <Section title="Collection trends">
+        <DataTable
+          columns={[
+            { key: 'month', label: 'Month', render: (r) => fmtDate(r.month) },
+            { key: 'collections_created', label: 'Created' },
+            { key: 'total_target_amount', label: 'Target', render: (r) => fmtMoney(r.total_target_amount) },
+            { key: 'total_collected_amount', label: 'Collected', render: (r) => fmtMoney(r.total_collected_amount) },
+          ]}
+          rows={collectionTrends}
+        />
+      </Section>
+    </>
+  );
+
+  const renderEvents = () => (
+    <>
+      <Section title="Event engagement">
+        <DataTable
+          columns={[
+            { key: 'event_name', label: 'Event' },
+            { key: 'registered_attendees', label: 'Registered' },
+            { key: 'actual_attendees', label: 'Attended' },
+            { key: 'attendance_rate', label: 'Rate', render: (r) => fmtPct(r.attendance_rate) },
+          ]}
+          rows={eventEngagement}
+        />
+      </Section>
+      <Section title="Weekly attendance">
+        <DataTable
+          columns={[
+            { key: 'week', label: 'Week', render: (r) => fmtDate(r.week) },
+            { key: 'events_count', label: 'Events' },
+            { key: 'total_attendees', label: 'Attendees' },
+          ]}
+          rows={eventAttendance}
+        />
+      </Section>
+    </>
+  );
+
+  const renderSms = () => (
+    <>
+      {smsPerformance && (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Total Messages" value={smsPerformance.total_messages} />
+          <StatCard label="Delivered" value={smsPerformance.delivered_count} />
+          <StatCard label="Failed" value={smsPerformance.failed_count} />
+          <StatCard label="Pending" value={smsPerformance.pending_count} />
+          <StatCard label="Delivery Rate" value={fmtPct(smsPerformance.delivery_rate)} />
+          <StatCard label="Total Cost" value={fmtMoney(smsPerformance.total_cost)} />
+        </div>
+      )}
+      <Section title="Daily delivery">
+        <DataTable
+          columns={[
+            { key: 'date', label: 'Date', render: (r) => fmtDate(r.date) },
+            { key: 'messages_sent', label: 'Sent' },
+            { key: 'delivered', label: 'Delivered' },
+            { key: 'failed', label: 'Failed' },
+          ]}
+          rows={smsDelivery}
+        />
+      </Section>
+    </>
+  );
+
+  const renderTab = () => {
+    switch (activeTab) {
+      case 'members': return renderMembers();
+      case 'finance': return renderFinance();
+      case 'departments': return renderDepartments();
+      case 'attendance': return renderAttendance();
+      case 'collections': return renderCollections();
+      case 'events': return renderEvents();
+      case 'sms': return renderSms();
+      default: return renderOverview();
+    }
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-        <select
-          value={timeRange}
-          onChange={(e) => setTimeRange(e.target.value)}
-          className="px-4 py-2 border rounded-lg"
-        >
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="90d">Last 90 days</option>
-          <option value="1y">Last year</option>
-        </select>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Total Visitors</p>
-              <p className="text-2xl font-bold">{metrics.totalVisitors.toLocaleString()}</p>
-            </div>
-            <Eye className="w-8 h-8 text-[var(--color-primary)]" />
-          </div>
-          <p className="text-sm text-[var(--color-success)] mt-2">↑ 12.5% from last period</p>
-        </div>
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Active Users</p>
-              <p className="text-2xl font-bold">{metrics.activeUsers.toLocaleString()}</p>
-            </div>
-            <Users className="w-8 h-8 text-[var(--color-success)]" />
-          </div>
-          <p className="text-sm text-[var(--color-success)] mt-2">↑ 8.3% from last period</p>
-        </div>
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Page Views</p>
-              <p className="text-2xl font-bold">{metrics.pageViews.toLocaleString()}</p>
-            </div>
-            <Activity className="w-8 h-8 text-[var(--color-accent)]" />
-          </div>
-          <p className="text-sm text-[var(--color-success)] mt-2">↑ 15.2% from last period</p>
-        </div>
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Conversion Rate</p>
-              <p className="text-2xl font-bold">{metrics.conversionRate}%</p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-[var(--color-warning)]" />
-          </div>
-          <p className="text-sm text-[var(--color-error)] mt-2">↓ 2.1% from last period</p>
-        </div>
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Avg Session</p>
-              <p className="text-2xl font-bold">{metrics.avgSessionDuration}</p>
-            </div>
-            <Calendar className="w-8 h-8 text-[var(--color-secondary)]" />
-          </div>
-          <p className="text-sm text-[var(--color-success)] mt-2">↑ 5.4% from last period</p>
-        </div>
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-[var(--color-textSecondary)]">Bounce Rate</p>
-              <p className="text-2xl font-bold">{metrics.bounceRate}%</p>
-            </div>
-            <BarChart3 className="w-8 h-8 text-[var(--color-error)]" />
-          </div>
-          <p className="text-sm text-[var(--color-success)] mt-2">↓ 3.8% from last period</p>
+    <div className="p-6 space-y-6">
+      <div className="flex flex-wrap gap-3 justify-between items-center">
+        <h1 className="text-2xl font-bold text-[var(--color-text)] flex items-center gap-2">
+          <Users className="w-6 h-6 text-[var(--color-primary)]" />
+          Analytics
+        </h1>
+        <div className="flex items-center gap-3">
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value)}
+            className="px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="1y">Last year</option>
+          </select>
+          <button
+            onClick={() => handleExport('csv')}
+            className="flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] rounded-lg text-[var(--color-text)] hover:bg-[var(--color-background)]"
+          >
+            <Download className="w-4 h-4" />
+            CSV
+          </button>
+          <button
+            onClick={() => handleExport('json')}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+          >
+            <Download className="w-4 h-4" />
+            JSON
+          </button>
         </div>
       </div>
 
-      {/* Traffic Chart */}
-      <div className="bg-[var(--color-surface)]  rounded-lg border p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold flex items-center gap-2">
-            <LineChart className="w-5 h-5" />
-            Traffic Overview
-          </h2>
-        </div>
-        <div className="h-64">
-          {renderBarChart(trafficData)}
-        </div>
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2 border-b border-[var(--color-border)] pb-2">
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              activeTab === tab.id
+                ? 'bg-[var(--color-primary)] text-white'
+                : 'text-[var(--color-textSecondary)] hover:bg-[var(--color-background)]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Top Pages */}
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-6">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
-            Top Pages
-          </h2>
-          <div className="space-y-3">
-            {topPages.map((page, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded">
-                <div>
-                  <p className="font-medium">{page.page}</p>
-                  <p className="text-sm text-[var(--color-textSecondary)]">{page.unique.toLocaleString()} unique visitors</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">{page.views.toLocaleString()}</p>
-                  <p className="text-sm text-[var(--color-textSecondary)]">views</p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-4 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : (
+        <div className="space-y-6">{renderTab()}</div>
+      )}
 
-        {/* Device Breakdown */}
-        <div className="bg-[var(--color-surface)]  rounded-lg border p-6">
-          <h2 className="font-semibold mb-4 flex items-center gap-2">
-            <PieChart className="w-5 h-5" />
-            Device Breakdown
-          </h2>
-          {renderPieChart(deviceBreakdown)}
-        </div>
-      </div>
-
-      {/* Configuration */}
-      <div className="bg-[var(--color-surface)]  rounded-lg border p-6">
-        <h2 className="font-semibold mb-4">Analytics Configuration</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Tracking Code</label>
-            <input
-              type="text"
-              defaultValue="UA-123456789-1"
-              className="w-full px-3 py-2 border rounded-lg"
-              placeholder="Google Analytics ID"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Data Retention</label>
-            <select className="w-full px-3 py-2 border rounded-lg">
-              <option>30 days</option>
-              <option>90 days</option>
-              <option>1 year</option>
-              <option>Forever</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked className="rounded" />
-            <label className="text-sm">Track user sessions</label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked className="rounded" />
-            <label className="text-sm">Track page views</label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" defaultChecked className="rounded" />
-            <label className="text-sm">Track events</label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" className="rounded" />
-            <label className="text-sm">Anonymize IP addresses</label>
-          </div>
-        </div>
-      </div>
+      <p className="text-xs text-[var(--color-textSecondary)] flex items-center gap-1">
+        <Calendar className="w-3 h-3" />
+        Figures are computed live from church records for the selected period.
+      </p>
     </div>
   );
 };

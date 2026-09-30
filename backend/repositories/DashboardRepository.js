@@ -23,6 +23,14 @@ class DashboardRepository extends BaseRepository {
     };
   }
 
+  async getDepartmentCount(churchId) {
+    const query = churchId
+      ? 'SELECT COUNT(*)::int AS count FROM departments WHERE is_active = true AND church_id = $1'
+      : 'SELECT COUNT(*)::int AS count FROM departments WHERE is_active = true';
+    const result = await this.pool.query(query, churchId ? [churchId] : []);
+    return result.rows[0]?.count || 0;
+  }
+
   async getAnnouncementCount(churchId) {
     const query = `SELECT COUNT(*) as count FROM announcements WHERE is_public = true AND church_id = $1`;
     const params = [churchId];

@@ -49,7 +49,7 @@ const NotificationDashboard = () => {
   const fetchUnreadCount = async () => {
     try {
       const res = await api.get(API_ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT);
-      setUnreadCount(res.data.count || 0);
+      setUnreadCount(res.data?.data?.count ?? res.data?.count ?? 0);
     } catch (e) {
       console.error(e);
     }
@@ -63,7 +63,7 @@ const NotificationDashboard = () => {
 
   const markAsRead = async (id) => {
     try {
-      await api.patch(API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id));
+      await api.post(API_ENDPOINTS.NOTIFICATIONS.MARK_READ(id));
       setNotifications(prev =>
         prev.map(n => (n.id === id ? { ...n, is_read: true, read_at: new Date() } : n))
       );
@@ -77,7 +77,7 @@ const NotificationDashboard = () => {
 
   const markAllAsRead = async () => {
     try {
-      await api.patch(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
+      await api.post(API_ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true, read_at: new Date() })));
       setUnreadCount(0);
       toast.success('All notifications marked as read');

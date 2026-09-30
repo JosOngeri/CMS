@@ -24,11 +24,12 @@ const AdminDashboard = () => {
   const fetchAdminStats = async () => {
     try {
       const response = await api.get('/api/dashboard/stats')
-      setStats(response.data.stats || {
-        totalUsers: 0,
-        totalPayments: 0,
-        totalDepartments: 0,
-        totalAnnouncements: 0
+      const d = response.data.data || response.data.stats || {}
+      setStats({
+        totalUsers: d.totalUsers ?? d.totalMembers ?? 0,
+        totalPayments: d.totalPayments ?? 0,
+        totalDepartments: d.totalDepartments ?? 0,
+        totalAnnouncements: d.totalAnnouncements ?? d.recentAnnouncements ?? 0
       })
     } catch (error) {
       console.error('Failed to fetch admin stats:', error)

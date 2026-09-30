@@ -17,7 +17,16 @@ class TelegramChurchController extends BaseController {
         'SELECT * FROM telegram_channels WHERE church_id = $1 LIMIT 1',
         [churchId]
       );
-      this.success(res, { data: result.rows[0] || null });
+      const row = result.rows[0];
+      this.success(res, row ? {
+          channelId: row.channel_id,
+          channelName: row.channel_name,
+          channelUsername: row.channel_username,
+          autoSyncToAnnouncements: row.auto_sync_to_announcements,
+          syncIntervalHours: row.sync_interval_hours,
+          isActive: row.is_active,
+          last_sync_at: row.last_sync_at,
+        } : null);
     } catch (error) {
       logger.error('getConfig', error);
       this.error(res, 'Failed to fetch Telegram config');

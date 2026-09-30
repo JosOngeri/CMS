@@ -74,25 +74,42 @@ class SecurityRepository extends BaseRepository {
       'SELECT * FROM security_settings WHERE church_id = $1',
       [churchId]
     );
-    return result.rows[0] || {};
+    const row = result.rows[0];
+    if (!row) return {};
+    // Prefer the flexible JSONB payload; fall back to legacy columns
+    return row.settings && Object.keys(row.settings).length
+      ? row.settings
+      : row;
   }
 
   async updateSecuritySettings(churchId, data) {
-    const { passwordPolicy, sessionTimeout, mfaEnabled, ipWhitelist, ipBlacklist } = data;
+    const sessionTimeout = data.sessionTimeout ?? data.session_timeout;
+    const mfaEnabled = data.mfaEnabled ?? data.requireMfaForAdmin ?? data.mfa_enabled;
+    const ipWhitelist = data.ipWhitelist ?? data.ip_whitelist;
+    const ipBlacklist = data.ipBlacklist ?? data.ip_blacklist;
+    const passwordPolicy = data.passwordPolicy ?? data.password_policy;
 
     const result = await this.pool.query(
-      `UPDATE security_settings
-       SET password_policy = $1, session_timeout = $2, mfa_enabled = $3,
-           ip_whitelist = $4, ip_blacklist = $5, updated_at = CURRENT_TIMESTAMP
-       WHERE church_id = $6
+      `INSERT INTO security_settings
+         (church_id, password_policy, session_timeout, mfa_enabled, ip_whitelist, ip_blacklist, settings)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (church_id) DO UPDATE SET
+         password_policy = COALESCE(EXCLUDED.password_policy, security_settings.password_policy),
+         session_timeout = COALESCE(EXCLUDED.session_timeout, security_settings.session_timeout),
+         mfa_enabled = COALESCE(EXCLUDED.mfa_enabled, security_settings.mfa_enabled),
+         ip_whitelist = COALESCE(EXCLUDED.ip_whitelist, security_settings.ip_whitelist),
+         ip_blacklist = COALESCE(EXCLUDED.ip_blacklist, security_settings.ip_blacklist),
+         settings = EXCLUDED.settings,
+         updated_at = CURRENT_TIMESTAMP
        RETURNING *`,
       [
-        JSON.stringify(passwordPolicy),
-        sessionTimeout,
-        mfaEnabled,
-        JSON.stringify(ipWhitelist),
-        JSON.stringify(ipBlacklist),
-        churchId
+        churchId,
+        JSON.stringify(passwordPolicy || {}),
+        sessionTimeout ?? null,
+        mfaEnabled ?? null,
+        JSON.stringify(ipWhitelist || []),
+        JSON.stringify(ipBlacklist || []),
+        JSON.stringify(data)
       ]
     );
     return result.rows[0];

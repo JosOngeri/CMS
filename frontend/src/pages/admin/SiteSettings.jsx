@@ -59,7 +59,7 @@ const SiteSettings = () => {
     try {
       setLoading(true)
       const response = await api.get('/settings')
-      setSettings(response.data.settings || {})
+      setSettings(response.data.data?.settings || response.data.settings || {})
     } catch (error) {
       console.error('Error fetching settings:', error)
       toast.error('Failed to load settings')

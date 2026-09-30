@@ -24,6 +24,18 @@ const Security = () => {
     requireMfaForAdmin: true,
   });
 
+  const fetchSettings = async () => {
+    try {
+      const response = await api.get('/security/settings');
+      const saved = response.data?.data?.settings || response.data?.settings;
+      if (saved && typeof saved === 'object') {
+        setSecuritySettings((prev) => ({ ...prev, ...saved }));
+      }
+    } catch (error) {
+      // Settings may not exist yet — keep defaults
+    }
+  };
+
   const fetchLogs = async () => {
     try {
       const response = await api.get('/api/audit-logs?limit=50');
@@ -38,7 +50,7 @@ const Security = () => {
 
   const saveSettings = async () => {
     try {
-      toast.loading('Saving security settings...');
+      toast.info('Saving security settings...');
       await api.put('/security/settings', securitySettings);
       toast.success('Security settings saved successfully');
     } catch (error) {
@@ -66,6 +78,7 @@ const Security = () => {
 
   React.useEffect(() => {
     fetchLogs();
+    fetchSettings();
   }, []);
 
   return (
