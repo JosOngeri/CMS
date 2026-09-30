@@ -6,7 +6,7 @@ const TreasurySecurityMiddleware = require('../middleware/treasurySecurity');
 const treasuryModuleRoutes = require('../modules/treasury/routes');
 
 // All routes require authentication
-router.use(authenticateToken);
+router.use(authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder', 'Treasurer']));
 
 // All treasury routes require treasury access
 router.use(TreasurySecurityMiddleware.hasTreasuryAccess);

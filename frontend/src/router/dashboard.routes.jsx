@@ -207,7 +207,7 @@ export const dashboardRoutes = [
   { path: 'admin/documents',        element: <W C={Documents} roles={ADMIN_ROLES} /> },
   { path: 'security',               element: <W C={Security} roles={ADMIN_ROLES} /> },
   { path: 'monitoring',             element: <W C={Monitoring} roles={ADMIN_ROLES} /> },
-  { path: 'analytics',              element: <W C={Analytics} roles={ADMIN_ROLES} /> },
+  { path: 'analytics',              element: <W C={Analytics} roles={FINANCE_ROLES} /> },
 
   // Communication & Media
   { path: 'sms',                    element: <W C={SMS} roles={LEADERSHIP_ROLES} /> },

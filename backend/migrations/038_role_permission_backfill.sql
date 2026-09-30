@@ -105,11 +105,23 @@ ON CONFLICT (role_id, permission_id) DO NOTHING;
 
 INSERT INTO role_permissions (role_id, permission_id)
 SELECT r.id, p.id FROM roles r, permissions p
-WHERE r.name = 'Collector'
+WHERE r.name = 'Subcommittee Collector'
   AND p.name IN (
     'dashboard.view','departments.view','announcements.view','events.view',
-    'notifications.view','collections.view_own','obligations.view',
-    'payments.view_own','gallery.view','content.view'
+    'notifications.view','collections.view_own','collections.view',
+    'obligations.view','payments.view_own','gallery.view','content.view',
+    'members.view'
+  )
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.name = 'Subcommittee Head'
+  AND p.name IN (
+    'dashboard.view','members.view','departments.view','announcements.view',
+    'events.view','gallery.view','documents.view','content.view',
+    'notifications.view','approvals.view','payments.view_own',
+    'collections.view_own','obligations.view','reports.view','sms.view'
   )
 ON CONFLICT (role_id, permission_id) DO NOTHING;
 

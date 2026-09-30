@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const analyticsController = require('../controllers/analytics.controller');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// All routes require authentication
-router.use(authenticateToken);
+// All routes require authentication + leadership/finance role
+// (analytics expose church-wide financial, member and SMS data)
+router.use(authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder', 'Treasurer']));
 
 // Dashboard stats
 router.get('/dashboard', analyticsController.getDashboardStats);
