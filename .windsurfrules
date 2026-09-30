@@ -119,3 +119,11 @@
   - Touch-friendly button sizes (minimum 44px)
 - Before marking UI changes as complete, verify the equivalent component exists in both platforms
 - Document any intentional differences between mobile and web implementations
+
+## Database Schema Changes Require Seed Data
+- Every migration/schema change MUST include seed data that fills new tables and columns with realistic test data for ALL churches (multi-tenant, correct church_id)
+- No NULLs left where a sensible value exists; no placeholder strings ("test", "foo", "lorem")
+- Seeds must be idempotent (ON CONFLICT / existence checks) and safe to re-run
+- After seeding, verify row counts and that the feature reads the data end-to-end
+- Prod schema is source of truth — check information_schema before writing inserts
+- See .devin/rules/seed-data.md for full details
