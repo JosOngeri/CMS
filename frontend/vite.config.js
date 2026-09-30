@@ -28,13 +28,15 @@ export default defineConfig({
       clientPort: 5181
     },
     watch: {
-      usePolling: true,
+      // Polling is only needed on network drives/WSL — enable with
+      // VITE_USE_POLLING=1 to avoid constant CPU use on normal disks.
+      usePolling: process.env.VITE_USE_POLLING === '1',
       interval: 1000
     }
   },
   build: {
     outDir: 'dist-new',
-    sourcemap: true,
+    sourcemap: false,
     emptyOutDir: true,
     minify: 'terser',
     terserOptions: {

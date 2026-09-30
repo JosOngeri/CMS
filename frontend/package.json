@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Kiserian Main SDA Church Website - Frontend",
   "scripts": {
-    "dev": "node scripts/check-server.js && vite --force",
+    "dev": "node scripts/check-server.js && vite",
     "build": "vite build",
     "build:analyze": "vite build --mode analyze",
     "preview": "vite preview",

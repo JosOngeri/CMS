@@ -98,6 +98,7 @@ Documentation/Other Files/*.exe
 .github/workflows/azure-deploy.yml
 docs/AZURE_DEPLOYMENT.md
 dist-new/
+dist-test/
 dist_old/
 .env*
 .vite-cache/
