@@ -1,142 +1,107 @@
-import { DollarSign, Megaphone, Calendar, Users, FileText, Settings, Plus, Pin, Heart, Building, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A grid of shortcut buttons that take the user to the most common tasks.
+ * Only buttons the user is allowed to use are shown, based on their
+ * permissions.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - hooks/usePermission.js → filters actions by required permission
+ * - React Router <Link>    → navigates to real dashboard routes
+ */
 
-const ChurchQuickActions = ({ pinnedActions = [] }) => {
+import { DollarSign, Megaphone, Calendar, Users, FileText, Building, CheckCircle, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { usePermission } from '../../hooks/usePermission';
+
+const ChurchQuickActions = ({ limit = 6 }) => {
+  const { can } = usePermission();
+
   const allActions = [
-    { 
-      id: 'payment', 
-      title: 'Make Payment', 
-      description: 'Pay tithe and offerings', 
-      icon: DollarSign, 
-      category: 'stewardship',
-      link: '/dashboard/payments' 
+    {
+      id: 'payment',
+      title: 'Make Payment',
+      description: 'Pay tithe and offerings',
+      icon: DollarSign,
+      link: '/dashboard/payments/my',
+      permission: 'payments.view_own',
     },
-    { 
-      id: 'announcement', 
-      title: 'New Announcement', 
-      description: 'Create announcement', 
-      icon: Megaphone, 
-      category: 'communication',
-      link: '/dashboard/announcements/new' 
+    {
+      id: 'announcement',
+      title: 'Announcements',
+      description: 'Read or share church news',
+      icon: Megaphone,
+      link: '/dashboard/announcements',
+      permission: 'announcements.view',
     },
-    { 
-      id: 'event', 
-      title: 'Create Event', 
-      description: 'Schedule church event', 
-      icon: Calendar, 
-      category: 'community',
-      link: '/dashboard/events/new' 
+    {
+      id: 'event',
+      title: 'Events',
+      description: 'View the church calendar',
+      icon: Calendar,
+      link: '/dashboard/events',
+      permission: 'events.view',
     },
-    { 
-      id: 'member', 
-      title: 'Add Member', 
-      description: 'Register new member', 
-      icon: Users, 
-      category: 'community',
-      link: '/dashboard/members/new' 
+    {
+      id: 'member',
+      title: 'People',
+      description: 'View church members',
+      icon: Users,
+      link: '/dashboard/members',
+      permission: 'members.view',
     },
-    { 
-      id: 'document', 
-      title: 'Upload Document', 
-      description: 'Add to document library', 
-      icon: FileText, 
-      category: 'resources',
-      link: '/dashboard/documents/upload' 
+    {
+      id: 'document',
+      title: 'Documents',
+      description: 'Open documents and resources',
+      icon: FileText,
+      link: '/dashboard/documents',
+      permission: 'documents.view',
     },
-    { 
-      id: 'ministry', 
-      title: 'Ministry Update', 
-      description: 'Share ministry progress', 
-      icon: Heart, 
-      category: 'ministry',
-      link: '/dashboard/ministry/update' 
+    {
+      id: 'department',
+      title: 'Departments',
+      description: 'Manage your departments',
+      icon: Building,
+      link: '/dashboard/departments',
+      permission: 'departments.view',
     },
-    { 
-      id: 'department', 
-      title: 'Department Activity', 
-      description: 'Manage department', 
-      icon: Building, 
-      category: 'community',
-      link: '/dashboard/departments' 
+    {
+      id: 'approval',
+      title: 'Approvals',
+      description: 'Requests needing attention',
+      icon: CheckCircle,
+      link: '/dashboard/approvals',
+      permission: 'approvals.view',
     },
-    { 
-      id: 'approval', 
-      title: 'Submit Request', 
-      description: 'Request approval', 
-      icon: CheckCircle, 
-      category: 'governance',
-      link: '/dashboard/approvals/submit' 
-    },
-    { 
-      id: 'settings', 
-      title: 'Settings', 
-      description: 'Manage settings', 
-      icon: Settings, 
-      category: 'system',
-      link: '/dashboard/admin/settings' 
+    {
+      id: 'settings',
+      title: 'Settings',
+      description: 'Admin and system settings',
+      icon: Settings,
+      link: '/dashboard/admin/settings',
+      permission: 'settings.view',
     },
   ];
 
-  const displayActions = pinnedActions.length > 0
-    ? allActions.filter(action => pinnedActions.includes(action.id))
-    : allActions.slice(0, 6);
-
-  // Group actions by category for community gathering metaphor
-  const groupedActions = displayActions.reduce((groups, action) => {
-    const category = action.category || 'general';
-    if (!groups[category]) {
-      groups[category] = [];
-    }
-    groups[category].push(action);
-    return groups;
-  }, {});
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      stewardship: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
-      communication: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-      community: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
-      resources: 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]',
-      ministry: 'bg-[var(--color-secondary-light)] text-[var(--color-secondary)]',
-      governance: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
-      system: 'bg-[var(--color-surface)] text-[var(--color-textSecondary)]',
-      general: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-    };
-    return colors[category] || colors.general;
-  };
+  const visibleActions = allActions.filter(a => can(a.permission)).slice(0, limit);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-lg text-[var(--color-text)]">Quick Actions</h3>
-        <button 
-          className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)] flex items-center gap-1 transition-colors"
-          aria-label="Customize quick actions"
-        >
-          <Pin size={14} aria-hidden="true" />
-          Customize
-        </button>
-      </div>
-      
-      {/* Community gathering layout - circular/grouped arrangement */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {displayActions.map((action) => {
+    <div>
+      <h3 className="font-semibold text-lg text-[var(--color-text)] mb-4">Quick Actions</h3>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {visibleActions.map((action) => {
           const Icon = action.icon;
-          const categoryColor = getCategoryColor(action.category);
-          
           return (
             <Link
               key={action.id}
               to={action.link}
-              className="group flex flex-col items-center p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl hover:shadow-lg hover:border-[var(--color-primary-light)] transition-all duration-300"
-              aria-label={`${action.title}: ${action.description}`}
+              className="group flex flex-col items-center p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl hover:shadow-lg hover:border-[var(--color-primary-light)] transition-all"
             >
-              {/* Icon with warm interaction */}
-              <div className={`p-4 rounded-full ${categoryColor} mb-3 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+              <div className="p-4 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] mb-3 group-hover:scale-110 transition-transform">
                 <Icon size={24} aria-hidden="true" />
               </div>
-              
-              {/* Text */}
               <span className="text-sm font-semibold text-[var(--color-text)] text-center mb-1">
                 {action.title}
               </span>
@@ -146,18 +111,6 @@ const ChurchQuickActions = ({ pinnedActions = [] }) => {
             </Link>
           );
         })}
-      </div>
-      
-      {/* Category indicators for community feel */}
-      <div className="flex flex-wrap gap-2 mt-4">
-        {Object.keys(groupedActions).map((category) => (
-          <span 
-            key={category}
-            className="text-xs px-3 py-1 rounded-full bg-[var(--color-background)] text-[var(--color-textSecondary)] border border-[var(--color-border)]"
-          >
-            {category.charAt(0).toUpperCase() + category.slice(1)}
-          </span>
-        ))}
       </div>
     </div>
   );

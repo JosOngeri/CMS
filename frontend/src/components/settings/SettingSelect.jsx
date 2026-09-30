@@ -21,7 +21,7 @@ const SettingSelect = ({ label, description, value, onChange, options, disabled,
         aria-label={label}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${selectId}-error` : description ? `${selectId}-description` : undefined}
-        className={`input ${error ? 'border-red-500 ring-red-500' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`input ${error ? 'border-[var(--color-error)] ring-[var(--color-error)]' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -36,7 +36,7 @@ const SettingSelect = ({ label, description, value, onChange, options, disabled,
         </p>
       )}
       {error && (
-        <p id={`${selectId}-error`} className="text-xs text-red-600" role="alert">{error}</p>
+        <p id={`${selectId}-error`} className="text-xs text-[var(--color-error)]" role="alert">{error}</p>
       )}
     </div>
   )

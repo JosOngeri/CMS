@@ -1,3 +1,18 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The Super Admin's "health check" widget. It has three tabs:
+ *   1. System Overview  → how many monitored services are running
+ *   2. Component Health → database, API, cache, storage status
+ *   3. Performance      → CPU, memory, disk, database speed
+ *
+ * Any metric that cannot be measured shows "—" rather than a made-up number.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - SuperAdminDashboard.jsx → passes real metrics from /api/dashboard/system-health
+ */
+
 import { useState, useEffect } from 'react'
 import { Server, Database, Activity, Shield, CheckCircle, AlertTriangle, Cpu, HardDrive, Globe, Zap } from 'lucide-react'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'
@@ -84,7 +99,7 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
               const Icon = metric.icon
               return (
                 <div key={index} className="flex items-center gap-3 p-3 bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)]">
-                  <div className={`p-2 rounded-lg ${metric.color} bg-opacity-10`}>
+                  <div className={`p-2 rounded-lg ${metric.color} bg-[var(--color-background)]`}>
                     <Icon size={16} aria-hidden="true" />
                   </div>
                   <div>

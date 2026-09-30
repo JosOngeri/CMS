@@ -389,6 +389,12 @@ input:-webkit-autofill:active {
     background-color: var(--color-warning) !important;
   }
 
+  /* Compact variant for dense admin rows — keeps the 44px touch floor on mobile */
+  .btn-sm {
+    @apply px-3 py-1.5 text-sm rounded-lg;
+    min-height: 36px;
+  }
+
   .panel {
     /* stylelint-disable-next-line at-rule-no-unknown */
     @apply shadow rounded-2xl p-6 mb-6;

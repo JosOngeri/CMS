@@ -51,7 +51,7 @@ const AdminDashboard = () => {
       title: 'Department Management',
       description: 'Create and manage church departments',
       icon: Settings,
-      color: 'bg-green-100 text-green-600',
+      color: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
       link: '/dashboard/departments',
       permissions: ['Super Admin', 'Pastor', 'First Elder']
     },
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
       title: 'Announcement Management',
       description: 'Manage all church announcements',
       icon: Megaphone,
-      color: 'bg-purple-100 text-purple-600',
+      color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
       link: '/dashboard/announcements',
       permissions: ['Super Admin', 'Pastor', 'First Elder', 'Department Head']
     },
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
       title: 'Payment Management',
       description: 'View and manage all payments',
       icon: DollarSign,
-      color: 'bg-yellow-100 text-yellow-600',
+      color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
       link: '/dashboard/payment-management',
       permissions: ['Super Admin', 'Pastor', 'First Elder']
     },
@@ -75,7 +75,7 @@ const AdminDashboard = () => {
       title: 'Gallery Management',
       description: 'Manage photo gallery and uploads',
       icon: Image,
-      color: 'bg-pink-100 text-pink-600',
+      color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
       link: '/dashboard/gallery',
       permissions: ['Super Admin', 'Pastor', 'First Elder', 'Department Head']
     },
@@ -83,7 +83,7 @@ const AdminDashboard = () => {
       title: 'SMS Management',
       description: 'Send bulk SMS and manage templates',
       icon: BarChart,
-      color: 'bg-red-100 text-red-600',
+      color: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
       link: '/dashboard/sms',
       permissions: ['Super Admin', 'Pastor', 'First Elder', 'Department Head']
     },
@@ -91,7 +91,7 @@ const AdminDashboard = () => {
       title: 'System Settings',
       description: 'Configure system settings',
       icon: Shield,
-      color: 'bg-indigo-100 text-indigo-600',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       link: '/dashboard/profile-management',
       permissions: ['Super Admin']
     },
@@ -117,10 +117,10 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">
           Admin Dashboard
         </h1>
-        <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+        <p className="text-[var(--color-textSecondary)]">
           System administration and management
         </p>
       </div>
@@ -130,13 +130,13 @@ const AdminDashboard = () => {
         <div className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Total Users</p>
-              <p className="text-2xl font-bold text-[var(--color-text)] text-white">
+              <p className="text-sm text-[var(--color-textSecondary)]">Total Users</p>
+              <p className="text-2xl font-bold text-[var(--color-text)]">
                 {(stats?.totalUsers ?? 0).toLocaleString()}
               </p>
             </div>
-            <div className="p-3 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
-              <Users className="h-6 w-6 text-[var(--color-primary)] text-[var(--color-primary)]" />
+            <div className="p-3 bg-[var(--color-primary-light)] rounded-lg">
+              <Users className="h-6 w-6 text-[var(--color-primary)]" />
             </div>
           </div>
         </div>
@@ -144,13 +144,13 @@ const AdminDashboard = () => {
         <div className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Total Payments</p>
-              <p className="text-2xl font-bold text-[var(--color-text)] text-white">
+              <p className="text-sm text-[var(--color-textSecondary)]">Total Payments</p>
+              <p className="text-2xl font-bold text-[var(--color-text)]">
                 KES {((stats?.totalPayments ?? 0) / 1000).toFixed(0)}K
               </p>
             </div>
-            <div className="p-3 bg-green-100 bg-green-900 rounded-lg">
-              <DollarSign className="h-6 w-6 text-green-600 text-green-400" />
+            <div className="p-3 bg-[var(--color-success-light)] rounded-lg">
+              <DollarSign className="h-6 w-6 text-[var(--color-success)]" />
             </div>
           </div>
         </div>
@@ -158,13 +158,13 @@ const AdminDashboard = () => {
         <div className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Departments</p>
-              <p className="text-2xl font-bold text-[var(--color-text)] text-white">
+              <p className="text-sm text-[var(--color-textSecondary)]">Departments</p>
+              <p className="text-2xl font-bold text-[var(--color-text)]">
                 {stats.totalDepartments}
               </p>
             </div>
-            <div className="p-3 bg-purple-100 bg-purple-900 rounded-lg">
-              <Settings className="h-6 w-6 text-purple-600 text-purple-400" />
+            <div className="p-3  rounded-lg">
+              <Settings className="h-6 w-6 text-[var(--color-accent)]" />
             </div>
           </div>
         </div>
@@ -172,13 +172,13 @@ const AdminDashboard = () => {
         <div className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Announcements</p>
-              <p className="text-2xl font-bold text-[var(--color-text)] text-white">
+              <p className="text-sm text-[var(--color-textSecondary)]">Announcements</p>
+              <p className="text-2xl font-bold text-[var(--color-text)]">
                 {stats.totalAnnouncements}
               </p>
             </div>
-            <div className="p-3 bg-orange-100 bg-orange-900 rounded-lg">
-              <Megaphone className="h-6 w-6 text-orange-600 text-orange-400" />
+            <div className="p-3  rounded-lg">
+              <Megaphone className="h-6 w-6 text-[var(--color-warning)]" />
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ const AdminDashboard = () => {
 
       {/* Admin Modules */}
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Administration Modules</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Administration Modules</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {adminModules
             .filter(module => hasPermission(module.permissions))
@@ -201,10 +201,10 @@ const AdminDashboard = () => {
                   <div className={`inline-flex p-3 rounded-lg ${module.color} mb-4`}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-[var(--color-text)] text-white mb-2 group-hover:text-primary-600">
+                  <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600">
                     {module.title}
                   </h3>
-                  <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                  <p className="text-sm text-[var(--color-textSecondary)]">
                     {module.description}
                   </p>
                 </div>
@@ -215,39 +215,39 @@ const AdminDashboard = () => {
 
       {/* Recent Activity */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Recent System Activity</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Recent System Activity</h2>
         <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
+            <div className="w-2 h-2 bg-[var(--color-success)] rounded-full"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)] text-white">
+              <p className="text-sm font-medium text-[var(--color-text)]">
                 New user registration
               </p>
-              <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+              <p className="text-xs text-[var(--color-textSecondary)]">
                 John Doe registered 2 hours ago
               </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
+          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
             <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)] text-white">
+              <p className="text-sm font-medium text-[var(--color-text)]">
                 Payment received
               </p>
-              <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+              <p className="text-xs text-[var(--color-textSecondary)]">
                 KES 5,000 from Jane Smith 4 hours ago
               </p>
             </div>
           </div>
           
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
-            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
+            <div className="w-2 h-2 bg-[var(--color-accent)] rounded-full"></div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)] text-white">
+              <p className="text-sm font-medium text-[var(--color-text)]">
                 New announcement posted
               </p>
-              <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+              <p className="text-xs text-[var(--color-textSecondary)]">
                 Sabbath School updates 6 hours ago
               </p>
             </div>

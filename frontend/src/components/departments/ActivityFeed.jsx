@@ -1,3 +1,18 @@
+/**
+ * WHAT THIS COMPONENT DOES
+ * ------------------------
+ * The "Recent Activity" feed used inside a department dashboard. Lists
+ * member joins, communications, meetings, tasks, approvals etc. with
+ * filter chips, refresh, "approve/reject all pending" bulk actions, and
+ * Load More pagination.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - hooks/useActivityFeed.js                → data fetching + pagination
+ * - backend /departments/:id/activities      → activity list (via the hook)
+ * - Parent supplies onActivityClick / onActionClick for approvals
+ */
+
 import React, { useState, useEffect } from 'react';
 import {
   Users,
@@ -34,7 +49,8 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
     hasMore,
     fetchActivities,
     refresh,
-    filterByType
+    filterByType,
+    loadMore
   } = useActivityFeed(departmentId, { limit, autoFetch: false });
 
   useEffect(() => {
@@ -84,23 +100,23 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
   const getActivityIcon = (activityType) => {
     switch (activityType) {
       case 'member_joined':
-        return <Users className="w-4 h-4 text-green-600" aria-hidden="true" />;
+        return <Users className="w-4 h-4 text-[var(--color-success)]" aria-hidden="true" />;
       case 'member_left':
-        return <UserMinus className="w-4 h-4 text-red-600" aria-hidden="true" />;
+        return <UserMinus className="w-4 h-4 text-[var(--color-error)]" aria-hidden="true" />;
       case 'communication':
         return <MessageSquare className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />;
       case 'meeting_created':
-        return <Calendar className="w-4 h-4 text-purple-600" aria-hidden="true" />;
+        return <Calendar className="w-4 h-4 text-[var(--color-accent)]" aria-hidden="true" />;
       case 'task_created':
-        return <CheckSquare className="w-4 h-4 text-orange-600" aria-hidden="true" />;
+        return <CheckSquare className="w-4 h-4 text-[var(--color-warning)]" aria-hidden="true" />;
       case 'task_completed':
-        return <CheckCircle className="w-4 h-4 text-green-600" aria-hidden="true" />;
+        return <CheckCircle className="w-4 h-4 text-[var(--color-success)]" aria-hidden="true" />;
       case 'approval_requested':
-        return <Clock className="w-4 h-4 text-yellow-600" aria-hidden="true" />;
+        return <Clock className="w-4 h-4 text-[var(--color-warning)]" aria-hidden="true" />;
       case 'approval_approved':
-        return <CheckCircle2 className="w-4 h-4 text-green-600" aria-hidden="true" />;
+        return <CheckCircle2 className="w-4 h-4 text-[var(--color-success)]" aria-hidden="true" />;
       case 'approval_rejected':
-        return <X className="w-4 h-4 text-red-600" aria-hidden="true" />;
+        return <X className="w-4 h-4 text-[var(--color-error)]" aria-hidden="true" />;
       case 'admin_granted':
         return <Shield className="w-4 h-4 text-[var(--color-primary)]" aria-hidden="true" />;
       case 'admin_revoked':
@@ -117,23 +133,23 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
   const getActivityColor = (activityType) => {
     switch (activityType) {
       case 'member_joined':
-        return 'bg-green-100';
+        return 'bg-[var(--color-success-light)]';
       case 'member_left':
-        return 'bg-red-100';
+        return 'bg-[var(--color-error-light)]';
       case 'communication':
         return 'bg-[var(--color-primary-light)]';
       case 'meeting_created':
-        return 'bg-purple-100';
+        return 'bg-[var(--color-accent-light)]';
       case 'task_created':
-        return 'bg-orange-100';
+        return 'bg-[var(--color-warning-light)]';
       case 'task_completed':
-        return 'bg-green-100';
+        return 'bg-[var(--color-success-light)]';
       case 'approval_requested':
-        return 'bg-yellow-100';
+        return 'bg-[var(--color-warning-light)]';
       case 'approval_approved':
-        return 'bg-green-100';
+        return 'bg-[var(--color-success-light)]';
       case 'approval_rejected':
-        return 'bg-red-100';
+        return 'bg-[var(--color-error-light)]';
       case 'admin_granted':
         return 'bg-[var(--color-primary-light)]';
       case 'admin_revoked':
@@ -229,7 +245,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
     return (
       <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
         <div className="text-center py-8">
-          <p className="text-red-600 mb-2">Error loading activities</p>
+          <p className="text-[var(--color-error)] mb-2">Error loading activities</p>
           <p className="text-sm text-[var(--color-textSecondary)]">{error}</p>
           <button
             onClick={handleRefresh}
@@ -251,7 +267,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Activity</h2>
             {getPendingActions().length > 0 && (
-              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+              <span className="px-2 py-1 bg-[var(--color-warning-light)] text-[var(--color-warning)] text-xs font-medium rounded-full">
                 {getPendingActions().length} pending
               </span>
             )}
@@ -261,7 +277,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
               <div className="flex items-center gap-2 mr-2">
                 <button
                   onClick={() => handleBulkAction('approve')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700 transition-colors min-h-[36px]"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-success)] text-white text-xs rounded-lg hover:opacity-90 transition-colors min-h-[36px]"
                   aria-label="Approve all pending actions"
                   aria-busy={isProcessingBulk}
                 >
@@ -270,7 +286,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
                 </button>
                 <button
                   onClick={() => handleBulkAction('reject')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors min-h-[36px]"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-error)] text-white text-xs rounded-lg hover:opacity-90 transition-colors min-h-[36px]"
                   aria-label="Reject all pending actions"
                   aria-busy={isProcessingBulk}
                 >
@@ -330,7 +346,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           activities.map((activity, index) => (
             <div 
               key={`${activity.activity_type}-${activity.id}-${index}`} 
-              className={`p-4 hover:bg-[var(--color-background)] transition-colors cursor-pointer ${needsAction(activity) ? 'bg-yellow-50' : ''}`}
+              className={`p-4 hover:bg-[var(--color-background)] transition-colors cursor-pointer ${needsAction(activity) ? 'bg-[var(--color-warning-light)]' : ''}`}
               onClick={() => onActivityClick?.(activity)}
             >
               <div className="flex items-start gap-3">
@@ -342,7 +358,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
                     <p className="text-sm font-medium text-[var(--color-text)] truncate">
                       {activity.title || getActivityLabel(activity.activity_type)}
                       {needsAction(activity) && (
-                        <span className="ml-2 px-2 py-0.5 bg-yellow-200 text-yellow-800 text-xs rounded-full">
+                        <span className="ml-2 px-2 py-0.5 bg-[var(--color-warning-light)] text-[var(--color-warning)] text-xs rounded-full">
                           Action Required
                         </span>
                       )}
@@ -383,8 +399,8 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           )}
           {hasMore && !showViewAll && (
             <button
-              onClick={() => {/* Load more logic would go here */}}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-[var(--color-textSecondary)] hover:text-[var(--color-text)] text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] transition-colors min-h-[44px]"
+              onClick={() => loadMore(api)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors min-h-[44px]"
               aria-label="Load more activities"
             >
               Load More

@@ -190,9 +190,9 @@ const JournalEntries = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'draft': return 'bg-yellow-100 text-yellow-700'
-      case 'posted': return 'bg-green-100 text-green-700'
-      case 'reversed': return 'bg-red-100 text-red-700'
+      case 'draft': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+      case 'posted': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+      case 'reversed': return 'bg-[var(--color-error-light)] text-[var(--color-error)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
   }
@@ -206,8 +206,8 @@ const JournalEntries = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Journal Entries</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Journal Entries</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Double-entry bookkeeping transactions
           </p>
         </div>
@@ -256,7 +256,7 @@ const JournalEntries = () => {
           {showFilters && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   Status
                 </label>
                 <select
@@ -272,7 +272,7 @@ const JournalEntries = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   From Date
                 </label>
                 <input
@@ -283,7 +283,7 @@ const JournalEntries = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   To Date
                 </label>
                 <input
@@ -309,18 +309,18 @@ const JournalEntries = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 rounded-lg">
+                    <div className="p-2 bg-[var(--color-primary-light)]/20 rounded-lg">
                       <FileText className="h-5 w-5 text-[var(--color-primary)]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[var(--color-text)] text-white">
+                      <p className="font-medium text-[var(--color-text)]">
                         {entry.entry_number}
                       </p>
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                      <p className="text-sm text-[var(--color-textSecondary)]">
                         {entry.description}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
-                        <span className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                        <span className="text-xs text-[var(--color-textSecondary)]">
                           {entry.entry_date}
                         </span>
                         <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(entry.status)}`}>
@@ -331,27 +331,27 @@ const JournalEntries = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Debit</p>
-                      <p className="font-semibold text-[var(--color-text)] text-white">
+                      <p className="text-sm text-[var(--color-textSecondary)]">Debit</p>
+                      <p className="font-semibold text-[var(--color-text)]">
                         KES {(entry?.total_debit ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Credit</p>
-                      <p className="font-semibold text-[var(--color-text)] text-white">
+                      <p className="text-sm text-[var(--color-textSecondary)]">Credit</p>
+                      <p className="font-semibold text-[var(--color-text)]">
                         KES {(entry?.total_credit ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => handleEdit(entry)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(entry.id)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -372,11 +372,11 @@ const JournalEntries = () => {
 
       {/* Journal Entry Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-[var(--color-text)] text-white">
+                <h2 className="text-xl font-bold text-[var(--color-text)]">
                   {editingEntry ? 'Edit Journal Entry' : 'New Journal Entry'}
                 </h2>
                 <button
@@ -393,7 +393,7 @@ const JournalEntries = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Entry Number
                     </label>
                     <input
@@ -405,7 +405,7 @@ const JournalEntries = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Entry Date
                     </label>
                     <input
@@ -418,7 +418,7 @@ const JournalEntries = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Description
                   </label>
                   <input
@@ -431,7 +431,7 @@ const JournalEntries = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Reference Type
                     </label>
                     <input
@@ -442,7 +442,7 @@ const JournalEntries = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Reference ID
                     </label>
                     <input
@@ -457,7 +457,7 @@ const JournalEntries = () => {
                 {/* Journal Entry Lines */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)]">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)]">
                       Entry Lines
                     </label>
                     <button
@@ -471,7 +471,7 @@ const JournalEntries = () => {
                   </div>
                   <div className="space-y-2">
                     {formData.lines.map((line, index) => (
-                      <div key={index} className="flex items-center space-x-2 p-3 bg-[var(--color-background)] bg-[var(--color-surface)]/50 rounded-lg">
+                      <div key={index} className="flex items-center space-x-2 p-3 bg-[var(--color-background)]/50 rounded-lg">
                         <div className="flex-1">
                           <select
                             required
@@ -511,7 +511,7 @@ const JournalEntries = () => {
                           <button
                             type="button"
                             onClick={() => removeLine(index)}
-                            className="p-2 text-red-600 hover:text-red-700"
+                            className="p-2 text-[var(--color-error)] hover:text-[var(--color-error)]"
                           >
                             <X className="h-4 w-4" />
                           </button>

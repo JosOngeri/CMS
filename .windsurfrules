@@ -127,3 +127,12 @@
 - After seeding, verify row counts and that the feature reads the data end-to-end
 - Prod schema is source of truth — check information_schema before writing inserts
 - See .devin/rules/seed-data.md for full details
+
+## No Hardcoded Colors
+- **CRITICAL**: All colors must use the CSS-variable palette from frontend/src/index.css — never Tailwind color-scale classes (bg-green-600, text-gray-500), hex literals (#fff), or rgb()/named colors in JSX or inline styles
+- Semantic states: success→--color-success/-light, error→--color-error/-light, warning→--color-warning/-light, info→--color-primary/-light
+- Neutrals: bg-white/bg-gray-*→--color-surface or --color-background, text-gray-*→--color-text/--color-textSecondary, border/divide gray→--color-border
+- Decorative category hues (purple/pink/orange/etc.) map to nearest token (primary/secondary/accent/warning/error)
+- bg-primary-NNN scale classes are allowed — mapped to tokens in tailwind.config.js
+- Need a new shade? Extend index.css tokens — never inline it
+- See .devin/rules/no-hardcoded-colors.md for the full table

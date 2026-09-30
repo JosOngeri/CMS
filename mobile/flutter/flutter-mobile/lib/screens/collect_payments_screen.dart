@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/sms_recon_service.dart';
+import '../app/theme.dart';
 
 /// Collector's pending-payments inbox. The collector copies an M-Pesa or
 /// bank payment SMS and pastes it here — the app parses it on-device and
@@ -95,7 +96,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                       padding: EdgeInsets.only(top: 60),
                       child: Column(children: [
                         Icon(Icons.sms_outlined,
-                            size: 56, color: Colors.grey),
+                            size: 56, color: AppTheme.textSecondary),
                         SizedBox(height: 12),
                         Text('No payments waiting',
                             style: TextStyle(fontSize: 16)),
@@ -103,7 +104,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                         Text(
                           'Copy an M-Pesa or bank payment SMS and\npaste it above to reconcile it.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
+                          style: TextStyle(color: AppTheme.textSecondary),
                         ),
                       ]),
                     )
@@ -128,7 +129,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
             Text(
               'Long-press the SMS in your messages app → Copy, then paste it '
               'here. You can paste several messages at once.',
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -209,10 +210,10 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                         ? Icons.north_east
                         : Icons.south_west,
                 color: isReversal
-                    ? Colors.red
+                    ? AppTheme.errorColor
                     : type == 'sent'
-                        ? Colors.orange
-                        : Colors.green,
+                        ? AppTheme.warningColor
+                        : AppTheme.successColor,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -229,13 +230,13 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                     Text(
                       '${tx['counterparty_name'] ?? 'Unknown'}'
                       '${tx['counterparty_phone'] != null ? ' · ${tx['counterparty_phone']}' : ''}',
-                      style: TextStyle(color: Colors.grey[700]),
+                      style: TextStyle(color: AppTheme.textSecondary),
                     ),
                     Text('${tx['tx_code']} · $type',
                         style: TextStyle(
                             fontSize: 11,
                             fontFamily: 'monospace',
-                            color: Colors.grey[500])),
+                            color: AppTheme.textTertiary)),
                   ],
                 ),
               ),
@@ -343,7 +344,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                       final bal = _num(o['target_amount']) - _num(o['paid_amount']);
                       return ListTile(
                         leading: score > 0
-                            ? const Icon(Icons.star, color: Colors.amber)
+                            ? const Icon(Icons.star, color: AppTheme.warningColor)
                             : const Icon(Icons.person_outline),
                         title: Text(o['member_name']?.toString() ??
                             'Member'),
@@ -352,7 +353,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
                         trailing: score > 0
                             ? const Text('suggested',
                                 style: TextStyle(
-                                    fontSize: 11, color: Colors.amber))
+                                    fontSize: 11, color: AppTheme.warningColor))
                             : null,
                         onTap: () => Navigator.pop(ctx, o),
                       );
@@ -426,7 +427,7 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      backgroundColor: isError ? AppTheme.errorColor : AppTheme.successColor,
     ));
   }
 }

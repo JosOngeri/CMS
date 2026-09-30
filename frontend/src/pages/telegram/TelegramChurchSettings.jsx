@@ -207,7 +207,7 @@ const TelegramChurchSettings = () => {
 
       {config.last_sync_at && (
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-6 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-500" />
+          <CheckCircle className="w-5 h-5 text-[var(--color-success)]" />
           <span className="text-sm text-[var(--color-text)]">
             Last sync: <span className="font-medium">{new Date(config.last_sync_at).toLocaleString()}</span>
           </span>

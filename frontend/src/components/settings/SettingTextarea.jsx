@@ -23,7 +23,7 @@ const SettingTextarea = ({ label, description, value, onChange, placeholder, dis
         aria-label={label}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${textareaId}-error` : description ? `${textareaId}-description` : undefined}
-        className={`input min-h-[100px] ${error ? 'border-red-500 ring-red-500' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`input min-h-[100px] ${error ? 'border-[var(--color-error)] ring-[var(--color-error)]' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       />
       {description && (
         <p id={`${textareaId}-description`} className="flex items-center text-xs text-[var(--color-textSecondary)]">
@@ -32,7 +32,7 @@ const SettingTextarea = ({ label, description, value, onChange, placeholder, dis
         </p>
       )}
       {error && (
-        <p id={`${textareaId}-error`} className="text-xs text-red-600" role="alert">{error}</p>
+        <p id={`${textareaId}-error`} className="text-xs text-[var(--color-error)]" role="alert">{error}</p>
       )}
     </div>
   )

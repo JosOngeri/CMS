@@ -87,11 +87,11 @@ const PermissionBadge = ({ permission, size = 'sm' }) => {
   return (
     <span className={`inline-flex items-center gap-1 rounded-full ${sizeClasses[size]} ${
       hasAccess
-        ? 'bg-green-100 text-green-700'
-        : 'bg-red-100 text-red-700'
+        ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+        : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
     }`}>
       {hasAccess ? (
-        <span className="w-3 h-3 bg-green-500 rounded-full" />
+        <span className="w-3 h-3 bg-[var(--color-success)] rounded-full" />
       ) : (
         <Lock className="w-3 h-3" />
       )}

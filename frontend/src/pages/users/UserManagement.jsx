@@ -35,10 +35,10 @@ const UserManagement = () => {
   )
 
   const roles = [
-    { value: 'Super Admin', label: 'Super Admin', color: 'bg-red-100 text-red-800' },
-    { value: 'Pastor', label: 'Pastor', color: 'bg-purple-100 text-purple-800' },
+    { value: 'Super Admin', label: 'Super Admin', color: 'bg-[var(--color-error-light)] text-[var(--color-error)]' },
+    { value: 'Pastor', label: 'Pastor', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
     { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-    { value: 'Department Head', label: 'Department Head', color: 'bg-green-100 text-green-800' },
+    { value: 'Department Head', label: 'Department Head', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ]
 
@@ -482,8 +482,8 @@ const UserManagement = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       user.is_active 
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+                        : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                     }`}>
                       {user.is_active ? (
                         <>
@@ -517,8 +517,8 @@ const UserManagement = () => {
                         buttonProps={{
                           onClick: () => handleToggleStatus(user.id, user.is_active),
                           className: user.is_active 
-                            ? "text-yellow-600 hover:text-yellow-900"
-                            : "text-green-600 hover:text-green-900",
+                            ? "text-[var(--color-warning)] hover:text-[var(--color-warning)]"
+                            : "text-[var(--color-success)] hover:text-[var(--color-success)]",
                         }}
                       >
                         {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
@@ -527,7 +527,7 @@ const UserManagement = () => {
                         permission={PERMISSIONS.USERS_DELETE}
                         buttonProps={{
                           onClick: () => handleDelete(user.id),
-                          className: "text-red-600 hover:text-red-900",
+                          className: "text-[var(--color-error)] hover:opacity-80",
                         }}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -550,7 +550,7 @@ const UserManagement = () => {
               subtitle={`@${user.username} · ${user.email}`}
               badge={
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
-                  user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  user.is_active ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                 }`}>
                   {user.is_active ? 'Active' : 'Inactive'}
                 </span>
@@ -560,11 +560,11 @@ const UserManagement = () => {
                   <button onClick={() => handleEdit(user)} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
                     <Edit className="w-4 h-4" /><span>Edit</span>
                   </button>
-                  <button onClick={() => handleToggleStatus(user.id, user.is_active)} className={`flex items-center gap-1 text-sm font-medium min-h-[44px] px-2 ${user.is_active ? 'text-yellow-600' : 'text-green-600'}`}>
+                  <button onClick={() => handleToggleStatus(user.id, user.is_active)} className={`flex items-center gap-1 text-sm font-medium min-h-[44px] px-2 ${user.is_active ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'}`}>
                     {user.is_active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                     <span>{user.is_active ? 'Deactivate' : 'Activate'}</span>
                   </button>
-                  <button onClick={() => handleDelete(user.id)} className="flex items-center gap-1 text-sm text-red-600 font-medium min-h-[44px] px-2">
+                  <button onClick={() => handleDelete(user.id)} className="flex items-center gap-1 text-sm text-[var(--color-error)] font-medium min-h-[44px] px-2">
                     <Trash2 className="w-4 h-4" /><span>Delete</span>
                   </button>
                 </>

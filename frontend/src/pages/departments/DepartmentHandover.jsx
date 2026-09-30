@@ -1,3 +1,20 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Leadership handover page (route: /dashboard/departments/handovers).
+ * Incoming leaders accept or decline a role; outgoing leaders complete a
+ * checklist before the handover finishes. Managers also see temporary
+ * access grants expiring soon, and can assign subcommittee leads.
+ * Subcommittee leads can request budget spend approval here.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/handovers/mine            → handovers involving me
+ * - backend /departments/leadership/expiring       → expiring temp grants
+ * - backend /departments/:id/subcommittees         → sub list + lead assign
+ * - backend /departments/:id/subcommittees/:sid/spend → spend requests
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -140,7 +157,7 @@ const DepartmentHandover = () => {
                     <p className="font-medium text-[var(--color-text)]">
                       {h.department_name}
                       {h.subcommittee_name ? ` — ${h.subcommittee_name}` : ''}
-                      <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">{h.status}</span>
+                      <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--color-warning-light)] text-[var(--color-warning)]">{h.status}</span>
                     </p>
                     <p className="text-sm text-[var(--color-textSecondary)]">
                       {h.outgoing_name || 'Vacant'} → {h.incoming_name} · {h.position.replace('_', ' ')}
@@ -210,7 +227,7 @@ const DepartmentHandover = () => {
                   <p className="text-sm font-medium text-[var(--color-text)]">{l.user_name} — {l.position.replace('_', ' ')}</p>
                   <p className="text-xs text-[var(--color-textSecondary)]">{l.department_name}</p>
                 </div>
-                <span className="text-xs text-amber-700">{new Date(l.end_date).toLocaleDateString()}</span>
+                <span className="text-xs text-[var(--color-warning)]">{new Date(l.end_date).toLocaleDateString()}</span>
               </div>
             ))}
           </div>

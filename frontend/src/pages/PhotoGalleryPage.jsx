@@ -1,4 +1,23 @@
-import { useState, useEffect, useCallback } from 'react'
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The public photo gallery. Anyone (signed in or not) can browse church
+ * photos, search them, filter by category, mark favorites (saved on the
+ * device), and open them full-screen.
+ *
+ * Admins also see a "Configure Telegram" button for the gallery bot.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/gallery/photos          → public photo list (no login)
+ * - backend /api/gallery/photos/search   → public search
+ * - backend /api/gallery/categories      → category list
+ * - components/gallery/ApplePhotoGrid.jsx → the photo grid
+ * - components/gallery/PhotoLightbox.jsx  → full-screen viewer
+ * - utils/dateGrouping.js                 → "Recent" filtering
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Megaphone, ArrowRight, Search, Filter, LayoutGrid, List, SlidersHorizontal, Smartphone } from 'lucide-react'
 import Card from '../components/common/Card'
@@ -20,12 +39,13 @@ const PhotoGalleryPage = () => {
   
   // State
   const [photos, setPhotos] = useState([])
-  const [filteredPhotos, setFilteredPhotos] = useState([])
   const [loading, setLoading] = useState(true)
   const [categories, setCategories] = useState([])
   const [currentView, setCurrentView] = useState(searchParams.get('view') || 'library')
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
+  const [debouncedSearch, setDebouncedSearch] = useState(searchParams.get('search') || '')
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '')
+  const searchTimer = useRef(null)
   
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -42,10 +62,11 @@ const PhotoGalleryPage = () => {
     ['Super Admin', 'Pastor', 'Department Head'].includes(role)
   )
 
-  // Fetch photos based on current view
+  // Fetch photos based on current view — uses the debounced search term so
+  // we don't fire a request on every keystroke.
   useEffect(() => {
     fetchPhotos()
-  }, [currentView, page, selectedCategory, searchTerm])
+  }, [currentView, page, selectedCategory, debouncedSearch])
 
   // Fetch categories
   useEffect(() => {
@@ -70,8 +91,8 @@ const PhotoGalleryPage = () => {
       let response
       
       // Use search endpoint if there's a search term
-      if (searchTerm) {
-        url = `/api/gallery/photos/search?search=${encodeURIComponent(searchTerm)}&limit=50&offset=${(page - 1) * 50}`
+      if (debouncedSearch) {
+        url = `/api/gallery/photos/search?search=${encodeURIComponent(debouncedSearch)}&limit=50&offset=${(page - 1) * 50}`
         response = await fetch(url)
         const data = await response.json()
         const searchPhotos = data.data?.photos || []
@@ -82,8 +103,7 @@ const PhotoGalleryPage = () => {
           } else {
             setPhotos(prev => [...prev, ...searchPhotos])
           }
-          setFilteredPhotos(searchPhotos)
-          setTotalCount(searchPhotos.length)
+          setTotalCount(data.data?.pagination?.total ?? searchPhotos.length)
           setHasMore(searchPhotos.length === 50)
         }
       } else {
@@ -110,24 +130,6 @@ const PhotoGalleryPage = () => {
             setPhotos(prev => [...prev, ...responsePhotos])
           }
 
-          // Filter based on view type
-          let filtered = responsePhotos
-          switch (currentView) {
-            case 'recents':
-              filtered = getPhotosByPeriod(responsePhotos, 'week')
-              break
-            case 'favorites':
-              filtered = responsePhotos.filter(p => favorites.has(p.id))
-              break
-            case 'albums':
-              // Show all for now, albums view would need album data
-              break
-            default:
-              // library and category views - already filtered by API
-              break
-          }
-
-          setFilteredPhotos(filtered)
           setTotalCount(pagination?.total || 0)
           setHasMore(responsePhotos.length === 50 && pagination?.page < pagination?.totalPages)
         }
@@ -194,22 +196,29 @@ const PhotoGalleryPage = () => {
     setFilteredPhotos([])
   }
 
+  // Debounce typing so the API is hit ~300ms after the user stops typing.
   const handleSearch = (e) => {
-    setSearchTerm(e.target.value)
-    setPage(1)
-    setPhotos([])
-    setFilteredPhotos([])
+    const value = e.target.value
+    setSearchTerm(value)
+    clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(value)
+      setPage(1)
+      setPhotos([])
+    }, 300)
   }
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
+    clearTimeout(searchTimer.current)
+    setDebouncedSearch(searchTerm)
     setPage(1)
     setPhotos([])
-    setFilteredPhotos([])
   }
 
   const clearFilters = () => {
     setSearchTerm('')
+    setDebouncedSearch('')
     setSelectedCategory('')
     setCurrentView('library')
     setPage(1)
@@ -237,7 +246,7 @@ const PhotoGalleryPage = () => {
             <div className="flex items-center space-x-4">
               <Link
                 to="/auth/login"
-                className="inline-flex items-center space-x-2 bg-white text-[var(--color-primary-strong)] hover:bg-white/90 px-5 py-2.5 rounded-lg font-medium transition-colors"
+                className="inline-flex items-center space-x-2 bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[var(--color-surface)]/90 px-5 py-2.5 rounded-lg font-medium transition-colors"
               >
                 <span>Join Our Community</span>
                 <ArrowRight className="h-4 w-4" />
@@ -248,7 +257,7 @@ const PhotoGalleryPage = () => {
               {isAdmin && (
                 <button
                   onClick={() => setShowTelegramAuth(true)}
-                  className="inline-flex items-center space-x-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 px-4 py-2.5 rounded-lg font-medium transition-colors border border-blue-400/30"
+                  className="inline-flex items-center space-x-2 bg-[var(--color-primary-light)] hover:bg-[var(--color-primary-light)] text-[var(--color-primary)] px-4 py-2.5 rounded-lg font-medium transition-colors border border-[var(--color-primary)]/30"
                 >
                   <Smartphone className="h-4 w-4" />
                   <span>Configure Telegram</span>

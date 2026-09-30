@@ -21,17 +21,17 @@ const FeaturedAnnouncements = () => {
       case 'urgent': 
         return { 
           icon: AlertCircle, 
-          bg: 'bg-red-50', 
-          text: 'text-red-700', 
-          border: 'border-red-200',
+          bg: 'bg-[var(--color-error-light)]', 
+          text: 'text-[var(--color-error)]', 
+          border: 'border-[var(--color-error)]',
           label: 'Urgent'
         };
       case 'high': 
         return { 
           icon: AlertCircle, 
-          bg: 'bg-orange-50', 
-          text: 'text-orange-700', 
-          border: 'border-orange-200',
+          bg: 'bg-[var(--color-warning-light)]', 
+          text: 'text-[var(--color-warning)]', 
+          border: 'border-[var(--color-warning)]',
           label: 'High'
         };
       case 'low': 

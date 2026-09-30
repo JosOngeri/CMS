@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/loading_button.dart';
+import '../app/theme.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -102,7 +103,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     const Icon(
                       Icons.check_circle,
                       size: 64,
-                      color: Colors.green,
+                      color: AppTheme.successColor,
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -117,7 +118,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       'Check your email for instructions to reset your password',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -141,7 +142,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     const Icon(
                       Icons.lock_reset,
                       size: 64,
-                      color: Colors.blue,
+                      color: AppTheme.primaryColor,
                     ),
                     const SizedBox(height: 24),
                     const Text(
@@ -156,7 +157,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       'Enter your email address and we\'ll send you instructions to reset your password',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey[600],
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -166,18 +167,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.red.shade50,
+                            color: AppTheme.errorColor.shade50,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red.shade200),
+                            border: Border.all(color: AppTheme.errorColor.shade200),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: Colors.red),
+                              const Icon(Icons.error_outline, color: AppTheme.errorColor),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _errorMessage!,
-                                  style: const TextStyle(color: Colors.red),
+                                  style: const TextStyle(color: AppTheme.errorColor),
                                 ),
                               ),
                             ],

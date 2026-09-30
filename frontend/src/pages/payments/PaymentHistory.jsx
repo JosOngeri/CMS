@@ -1,3 +1,17 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Full payment history with search, filters, and pagination. Members see
+ * their own payments and can download receipts.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/payments/my-payments     → paged list
+ * - backend /api/payments/{id}/receipt    → PDF receipt download
+ * - constants/api.js                      → endpoint names
+ * - components/common/MobileCard.jsx      → card layout on small screens
+ */
+
 import { useState, useEffect } from 'react'
 import { Search, Filter, Download, Calendar, DollarSign, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
@@ -45,11 +59,11 @@ const PaymentHistory = () => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-4 w-4 text-[var(--color-success)]" />
       case 'failed':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-4 w-4 text-[var(--color-error)]" />
       case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-600" />
+        return <Clock className="h-4 w-4 text-[var(--color-warning)]" />
       default:
         return <Clock className="h-4 w-4 text-[var(--color-textSecondary)]" />
     }
@@ -84,25 +98,21 @@ const PaymentHistory = () => {
     payment.notes?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const downloadReceipt = (payment) => {
-    // Mock download functionality
-    const receiptData = {
-      id: payment.id,
-      amount: payment.amount,
-      date: payment.payment_date,
-      status: payment.status,
-      items: payment.payment_items
+  const downloadReceipt = async (payment) => {
+    try {
+      const response = await api.get(`/payments/${payment.id}/receipt`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `receipt_${payment.id.slice(-8)}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('Receipt downloaded')
+    } catch {
+      toast.error('Could not download the receipt')
     }
-    
-    const blob = new Blob([JSON.stringify(receiptData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `receipt_${payment.id}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
   }
 
   if (loading) {
@@ -112,10 +122,10 @@ const PaymentHistory = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[var(--color-text)] text-white mb-2">
+        <h1 className="text-2xl font-bold text-[var(--color-text)] mb-2">
           Payment History
         </h1>
-        <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+        <p className="text-[var(--color-textSecondary)]">
           View and manage your payment history
         </p>
       </div>
@@ -148,7 +158,7 @@ const PaymentHistory = () => {
             </select>
           </div>
 
-          <div className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] self-center">
+          <div className="text-sm text-[var(--color-textSecondary)] self-center">
             {filteredPayments.length} payment{filteredPayments.length !== 1 ? 's' : ''} found
           </div>
         </div>
@@ -160,41 +170,41 @@ const PaymentHistory = () => {
           <>
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
-              <thead className="bg-[var(--color-background)] bg-[var(--color-surface)]">
+              <thead className="bg-[var(--color-surface)]">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Payment ID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
                 {filteredPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)]">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)] text-white">
+                  <tr key={payment.id} className="hover:bg-[var(--color-background)]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
                       {payment.id.slice(-8)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
                       {formatDate(payment.created_at)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] text-white font-semibold">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] font-semibold">
                       KES {parseFloat(payment?.amount ?? 0).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
                       {payment.phone_number}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -205,7 +215,7 @@ const PaymentHistory = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
                       <div className="flex items-center space-x-2">
                         {payment.status === 'completed' && (
                           <button
@@ -220,7 +230,7 @@ const PaymentHistory = () => {
                           onClick={() => {
                             // Show payment details
                           }}
-                          className="text-[var(--color-textSecondary)] hover:text-[var(--color-text)] text-[var(--color-textSecondary)] hover:text-white"
+                          className="text-[var(--color-textSecondary)] hover:text-[var(--color-text)]"
                         >
                           View
                         </button>
@@ -274,7 +284,7 @@ const PaymentHistory = () => {
             Previous
           </button>
           
-          <span className="px-4 py-2 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <span className="px-4 py-2 text-sm text-[var(--color-textSecondary)]">
             Page {currentPage} of {totalPages}
           </span>
           

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -75,7 +76,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Saved to ${result['path']}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -163,10 +164,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue[50],
+          backgroundColor: AppTheme.primaryLight,
           child: Icon(
             _iconForCategory(document['category']),
-            color: Colors.blue,
+            color: AppTheme.primaryColor,
           ),
         ),
         title: Text(document['name'] ?? document['title'] ?? 'Document'),
@@ -207,7 +208,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -233,17 +234,17 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.folder_open, size: 64, color: Colors.grey[400]),
+            Icon(Icons.folder_open, size: 64, color: AppTheme.textTertiary),
             const SizedBox(height: 16),
             Text(
               'No documents available',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Quarterlies, bulletins and policies will appear here',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: AppTheme.textTertiary),
             ),
           ],
         ),

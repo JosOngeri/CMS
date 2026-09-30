@@ -10,6 +10,7 @@ import '../services/auth_service.dart';
 import '../services/biometric_service.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/custom_text_field.dart';
+import '../app/theme.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -175,7 +176,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.green,
+        backgroundColor: AppTheme.successColor,
         duration: const Duration(seconds: 3),
         action: SnackBarAction(
           label: 'Dismiss',
@@ -208,7 +209,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 80,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF3B82F6), Color(0xFFF59E0B)],
+                        colors: [AppTheme.primaryColor, AppTheme.warningColor],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),

@@ -361,7 +361,7 @@ const PhotoLightbox = ({
             onClick={() => onFavoriteToggle?.(currentPhoto.id)}
             className={`p-3 rounded-full transition-colors ${
               isFavorite 
-                ? 'bg-red-500 text-white' 
+                ? 'bg-[var(--color-error-light)]0 text-white' 
                 : 'bg-[var(--color-surface)]/10 text-white/80 hover:bg-[var(--color-surface)]/20 hover:text-white'
             }`}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -396,7 +396,7 @@ const PhotoLightbox = ({
           {canDelete && (
             <button
               onClick={() => onDelete?.(currentPhoto.id)}
-              className="p-3 bg-red-500/80 text-white hover:bg-red-500 rounded-full transition-colors"
+              className="p-3 bg-[var(--color-error-light)]0/80 text-white hover:bg-[var(--color-error-light)]0 rounded-full transition-colors"
               aria-label="Delete photo"
             >
               <Trash2 className="h-5 w-5" aria-hidden="true" />

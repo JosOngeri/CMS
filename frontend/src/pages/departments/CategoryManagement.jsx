@@ -213,7 +213,7 @@ const CategoryManagement = () => {
                 </button>
                 <button
                   onClick={() => handleDelete(category.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors"
                   title="Delete Category"
                 >
                   <Trash2 className="w-4 h-4" />

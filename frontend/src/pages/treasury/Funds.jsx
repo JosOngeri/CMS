@@ -138,9 +138,9 @@ const Funds = () => {
 
   const getFundTypeColor = (type) => {
     switch (type) {
-      case 'unrestricted': return 'bg-green-100 text-green-700'
-      case 'restricted': return 'bg-red-100 text-red-700'
-      case 'temporarily_restricted': return 'bg-yellow-100 text-yellow-700'
+      case 'unrestricted': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+      case 'restricted': return 'bg-[var(--color-error-light)] text-[var(--color-error)]'
+      case 'temporarily_restricted': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
   }
@@ -154,8 +154,8 @@ const Funds = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Funds</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Funds</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Manage restricted and unrestricted funds
           </p>
         </div>
@@ -180,13 +180,13 @@ const Funds = () => {
                   placeholder="Search funds..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -194,7 +194,7 @@ const Funds = () => {
             </button>
             <button
               onClick={fetchFunds}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -203,13 +203,13 @@ const Funds = () => {
 
           {showFilters && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 Fund Type
               </label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               >
                 {fundTypes.map(type => (
                   <option key={type.value} value={type.value}>
@@ -233,14 +233,14 @@ const Funds = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-purple-100 bg-purple-900/20 rounded-lg">
-                      <Wallet className="h-5 w-5 text-purple-600" />
+                    <div className="p-2 bg-[var(--color-accent-light)] rounded-lg">
+                      <Wallet className="h-5 w-5 text-[var(--color-accent)]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[var(--color-text)] text-white">
+                      <p className="font-medium text-[var(--color-text)]">
                         {fund.fund_code} - {fund.fund_name}
                       </p>
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                      <p className="text-sm text-[var(--color-textSecondary)]">
                         {fund.description || 'No description'}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
@@ -248,7 +248,7 @@ const Funds = () => {
                           {fund.fund_type}
                         </span>
                         {fund.is_active ? (
-                          <span className="text-xs text-green-600 flex items-center">
+                          <span className="text-xs text-[var(--color-success)] flex items-center">
                             <Unlock className="h-3 w-3 mr-1" /> Active
                           </span>
                         ) : (
@@ -262,13 +262,13 @@ const Funds = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEdit(fund)}
-                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(fund.id)}
-                      className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -288,15 +288,15 @@ const Funds = () => {
 
       {/* Fund Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-          <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[var(--color-text)] text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">
                 {editingFund ? 'Edit Fund' : 'Add Fund'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Fund Code
                   </label>
                   <input
@@ -304,11 +304,11 @@ const Funds = () => {
                     required
                     value={formData.fund_code}
                     onChange={(e) => setFormData({ ...formData, fund_code: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Fund Name
                   </label>
                   <input
@@ -316,18 +316,18 @@ const Funds = () => {
                     required
                     value={formData.fund_name}
                     onChange={(e) => setFormData({ ...formData, fund_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Fund Type
                   </label>
                   <select
                     required
                     value={formData.fund_type}
                     onChange={(e) => setFormData({ ...formData, fund_type: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   >
                     <option value="unrestricted">Unrestricted</option>
                     <option value="restricted">Restricted</option>
@@ -335,48 +335,48 @@ const Funds = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Purpose
                   </label>
                   <textarea
                     value={formData.purpose}
                     onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
                     rows={2}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Start Date
                     </label>
                     <input
                       type="date"
                       value={formData.start_date}
                       onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       End Date
                     </label>
                     <input
                       type="date"
                       value={formData.end_date}
                       onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
@@ -388,7 +388,7 @@ const Funds = () => {
                       setEditingFund(null)
                       resetForm()
                     }}
-                    className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>

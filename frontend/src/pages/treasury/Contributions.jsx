@@ -131,8 +131,8 @@ const Contributions = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-green-100  rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-[var(--color-success-light)]  rounded-lg">
+                <DollarSign className="h-6 w-6 text-[var(--color-success)]" />
               </div>
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Total Contributions</p>
@@ -163,8 +163,8 @@ const Contributions = () => {
         <Card>
           <div className="p-6">
             <div className="flex items-center space-x-3">
-              <div className="p-3 bg-purple-100  rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-[var(--color-accent-light)]  rounded-lg">
+                <TrendingUp className="h-6 w-6 text-[var(--color-accent)]" />
               </div>
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Transactions</p>

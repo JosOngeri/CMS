@@ -1,3 +1,19 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The church calendar page. Members see every upcoming event grouped by
+ * date (this week, next week, later), can accept or decline an RSVP, and
+ * leaders with permission can create, edit, or delete events.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/events          → list / create / update / delete events
+ * - backend /api/events/rsvps    → my RSVP responses
+ * - backend /api/events/{id}/rsvp → accept or decline
+ * - utils/dateGrouping.js        → groups events into readable sections
+ * - PermissionButton.jsx         → hides New/Edit/Delete without permission
+ */
+
 import { useState, useEffect } from 'react'
 import { Calendar, Plus, Edit, Trash2, Clock, MapPin, Users, Filter, User, ChevronDown, ChevronRight, CheckCircle, XCircle, CalendarCheck } from 'lucide-react'
 import { useToast } from '../../contexts/ToastContext'
@@ -6,9 +22,8 @@ import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EventsEmptyState } from '../../components/common/EmptyState'
 import PermissionButton from '../../components/common/PermissionButton'
-import { API_ENDPOINTS } from '../../constants/api'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
-import { groupEventsByDate, createInfiniteEventLoop, EVENT_DATE_GROUPS } from '../../utils/dateGrouping'
+import { groupEventsByDate } from '../../utils/dateGrouping'
 import { PERMISSIONS } from '../../constants/permissions'
 
 const Events = () => {
@@ -20,8 +35,8 @@ const Events = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
   const [filterCategory, setFilterCategory] = useState('all')
-  const [infiniteLoopMode, setInfiniteLoopMode] = useState(false)
-  const [expandedGroups, setExpandedGroups] = useState({})
+  // Groups default to expanded — a section is only hidden once the user folds it.
+  const [collapsedGroups, setCollapsedGroups] = useState({})
   const [rsvps, setRsvps] = useState([])
   const [formData, setFormData] = useState({
     title: '',
@@ -151,14 +166,16 @@ const Events = () => {
     }
   }
 
+  // Category chips map decorative hues to the nearest palette token —
+  // no hardcoded Tailwind colors (see .devin/rules/no-hardcoded-colors.md).
   const getCategoryColor = (category) => {
     switch (category) {
-      case 'service': return 'text-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20'
-      case 'prayer': return 'text-purple-600 bg-purple-50 bg-purple-900/20'
-      case 'music': return 'text-green-600 bg-green-50 bg-green-900/20'
-      case 'youth': return 'text-orange-600 bg-orange-50 bg-orange-900/20'
-      case 'fellowship': return 'text-pink-600 bg-pink-50 bg-pink-900/20'
-      case 'outreach': return 'text-indigo-600 bg-indigo-50 bg-indigo-900/20'
+      case 'service': return 'text-[var(--color-primary)] bg-[var(--color-primary-light)]'
+      case 'prayer': return 'text-[var(--color-accent)] bg-[var(--color-accent-light)]'
+      case 'music': return 'text-[var(--color-success)] bg-[var(--color-success-light)]'
+      case 'youth': return 'text-[var(--color-warning)] bg-[var(--color-warning-light)]'
+      case 'fellowship': return 'text-[var(--color-error)] bg-[var(--color-error-light)]'
+      case 'outreach': return 'text-[var(--color-secondary)] bg-[var(--color-secondary-light)]'
       default: return 'text-[var(--color-textSecondary)] bg-[var(--color-background)]'
     }
   }
@@ -167,22 +184,14 @@ const Events = () => {
     ? events
     : events.filter(event => event.category === filterCategory)
 
-  const displayEvents = infiniteLoopMode
-    ? createInfiniteEventLoop(filteredEvents, 3)
-    : filteredEvents
-
-  const groupedEvents = groupEventsByDate(displayEvents)
+  const groupedEvents = groupEventsByDate(filteredEvents)
 
   const toggleGroup = (groupTitle) => {
-    setExpandedGroups(prev => ({
+    setCollapsedGroups(prev => ({
       ...prev,
       [groupTitle]: !prev[groupTitle]
     }))
   }
-
-  const sortedEvents = [...filteredEvents].sort((a, b) =>
-    new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
-  )
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -223,17 +232,6 @@ const Events = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={infiniteLoopMode}
-                onChange={(e) => setInfiniteLoopMode(e.target.checked)}
-                className="w-4 h-4 text-[var(--color-primary)] rounded focus:ring-[var(--color-primary)]"
-              />
-              <span className="text-sm text-[var(--color-text)] ">Infinite Loop (Yearly Plans)</span>
-            </label>
-          </div>
         </div>
 
         <PermissionButton
@@ -420,10 +418,10 @@ const Events = () => {
               onClick={() => toggleGroup(groupTitle)}
             >
               <h3 className="text-lg font-semibold text-[var(--color-text)] ">{groupTitle}</h3>
-              {expandedGroups[groupTitle] ? <ChevronDown /> : <ChevronRight />}
+              {collapsedGroups[groupTitle] ? <ChevronRight /> : <ChevronDown />}
             </div>
 
-            {expandedGroups[groupTitle] && (
+            {!collapsedGroups[groupTitle] && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {groupEvents.map((event) => (
                   <Card key={event.id} className="hover:shadow-lg transition-shadow">
@@ -441,7 +439,7 @@ const Events = () => {
                           {categories.find(c => c.value === event.category)?.label || event.category}
                         </span>
                         {isUpcoming(event.date) && (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 bg-green-900/20 text-green-400">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-[var(--color-success-light)] text-[var(--color-success)]">
                             Upcoming
                           </span>
                         )}
@@ -468,7 +466,7 @@ const Events = () => {
                         {getRsvpStatus(event.id) && (
                           <div className="flex items-center gap-2">
                             <CalendarCheck size={16} />
-                            <span className={`font-medium ${getRsvpStatus(event.id) === 'attending' ? 'text-green-600' : 'text-red-600'}`}>
+                            <span className={`font-medium ${getRsvpStatus(event.id) === 'attending' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                               RSVP: {getRsvpStatus(event.id)}
                             </span>
                           </div>
@@ -480,7 +478,7 @@ const Events = () => {
                             {getRsvpStatus(event.id) === 'attending' ? (
                               <button
                                 onClick={() => handleRsvp(event.id, 'declined')}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
                               >
                                 <XCircle size={14} />
                                 Decline
@@ -488,7 +486,7 @@ const Events = () => {
                             ) : getRsvpStatus(event.id) === 'declined' ? (
                               <button
                                 onClick={() => handleRsvp(event.id, 'attending')}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
                               >
                                 <CheckCircle size={14} />
                                 Accept
@@ -497,14 +495,14 @@ const Events = () => {
                               <>
                                 <button
                                   onClick={() => handleRsvp(event.id, 'attending')}
-                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
                                 >
                                   <CheckCircle size={14} />
                                   Accept
                                 </button>
                                 <button
                                   onClick={() => handleRsvp(event.id, 'declined')}
-                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
                                 >
                                   <XCircle size={14} />
                                   Decline
@@ -527,7 +525,7 @@ const Events = () => {
                           permission={PERMISSIONS.EVENTS_DELETE}
                           buttonProps={{
                             onClick: () => handleDelete(event.id),
-                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm",
+                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm",
                           }}
                         >
                           <Trash2 size={14} />

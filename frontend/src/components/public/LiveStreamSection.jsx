@@ -17,7 +17,7 @@ const LiveStreamSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-[var(--color-surface)]/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-[var(--color-error-light)]0 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium">Live Every Sabbath</span>
           </div>
 
@@ -29,7 +29,7 @@ const LiveStreamSection = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
               to="/#live-stream"
-              className="btn btn-lg bg-white text-[var(--color-primary-strong)] hover:bg-white/90 shadow-xl hover:shadow-2xl transition-all duration-300 group flex items-center justify-center gap-2"
+              className="btn btn-lg bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[var(--color-surface)]/90 shadow-xl hover:shadow-2xl transition-all duration-300 group flex items-center justify-center gap-2"
               aria-label="Watch live stream"
             >
               <Play className="h-5 w-5" aria-hidden="true" />
@@ -39,7 +39,7 @@ const LiveStreamSection = () => {
               href="https://www.youtube.com/results?search_query=Seventh-day+Adventist+sermon"
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-white hover:text-[var(--color-primary-strong)] transition-all duration-300 flex items-center justify-center gap-2"
+              className="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-[var(--color-surface)] hover:text-[var(--color-primary-strong)] transition-all duration-300 flex items-center justify-center gap-2"
               aria-label="Visit YouTube channel"
             >
               <Video className="h-5 w-5" aria-hidden="true" />

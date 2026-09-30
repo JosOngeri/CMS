@@ -107,7 +107,7 @@ const SEOManager = () => {
       {/* Open Graph */}
       <div className="bg-[var(--color-surface)] border rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Search className="text-green-600" size={20} />
+          <Search className="text-[var(--color-success)]" size={20} />
           <h3 className="font-semibold">Open Graph</h3>
         </div>
         <div className="space-y-4">
@@ -137,7 +137,7 @@ const SEOManager = () => {
       {/* Robots & Sitemap */}
       <div className="bg-[var(--color-surface)] border rounded-lg p-6">
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="text-purple-600" size={20} />
+          <BarChart3 className="text-[var(--color-accent)]" size={20} />
           <h3 className="font-semibold">Robots & Sitemap</h3>
         </div>
         <div className="space-y-4">
@@ -192,15 +192,15 @@ const SEOManager = () => {
               <div
                 key={index}
                 className={`flex items-start gap-3 p-3 rounded-lg ${
-                  issue.severity === 'error' ? 'bg-red-50' :
-                  issue.severity === 'warning' ? 'bg-yellow-50' :
-                  'bg-green-50'
+                  issue.severity === 'error' ? 'bg-[var(--color-error-light)]' :
+                  issue.severity === 'warning' ? 'bg-[var(--color-warning-light)]' :
+                  'bg-[var(--color-success-light)]'
                 }`}
               >
                 {issue.severity === 'error' ? (
-                  <AlertCircle className="text-red-600 mt-0.5" size={16} />
+                  <AlertCircle className="text-[var(--color-error)] mt-0.5" size={16} />
                 ) : (
-                  <Check className="text-green-600 mt-0.5" size={16} />
+                  <Check className="text-[var(--color-success)] mt-0.5" size={16} />
                 )}
                 <div>
                   <div className="font-medium">{issue.title}</div>

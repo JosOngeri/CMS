@@ -1,3 +1,23 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The main navigation menu on the left of the dashboard. It only shows
+ * items the current user is allowed to see, based on their role and
+ * permissions from the backend.
+ *
+ * The menu is organised from simplest (member) at the top to most
+ * powerful (admin) at the bottom, so a normal church member immediately
+ * sees the things they actually use.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - constants/permissions.js → MODULE_PERMISSIONS decides visibility
+ * - hooks/usePermission.js   → checks role/permission
+ * - hooks/useChurchBranding.js → shows the active church name
+ * - AuthContext.jsx          → user name, initials, logout
+ * - DashboardLayout.jsx      → renders this component
+ */
+
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -7,14 +27,10 @@ import {
   FileText,
   DollarSign,
   MessageSquare,
-  FolderOpen,
   Calendar,
   Bell,
-  Menu,
   X,
   LogOut,
-  Activity,
-  User,
   Building2,
   BarChart3,
   Shield,
@@ -22,27 +38,20 @@ import {
   Megaphone,
   HandCoins,
   CheckSquare,
-  Landmark
+  Landmark,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../hooks/usePermission';
 import { useChurchBranding } from '../../hooks/useChurchBranding';
-import { MODULE_PERMISSIONS } from '../../constants/permissions';
-
-const LEADERSHIP_ROLES = [
-  'Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'Elder',
-  'Church Board Member', 'Department Head', 'Assistant Department Head',
-  'Deacon', 'Deaconess', 'Subcommittee Head', 'Subcommittee Collector',
-];
+import { LEADERSHIP_ROLES } from '../../constants/roles';
 
 function Sidebar({ isOpen, setIsOpen }) {
   const { user, logout } = useAuth();
   const { churchName } = useChurchBranding();
-  const { canAccessModule, isAny } = usePermission();
+  const { canAccessModule, isAny, isSuperAdmin } = usePermission();
   const location = useLocation();
 
-  // Member essentials first — the things a member actually opens the app for.
-  // Leadership/management items sit in their own sections and are permission-filtered.
+  // Menu sections, ordered from everyday member tasks down to admin tools.
   const sections = [
     {
       title: null,
@@ -53,7 +62,7 @@ function Sidebar({ isOpen, setIsOpen }) {
     {
       title: 'My Church',
       items: [
-        { path: '/dashboard/obligations', icon: HandCoins, label: 'My Giving' },
+        { path: '/dashboard/obligations', icon: HandCoins, label: 'My Obligations' },
         { path: '/dashboard/payments/my', icon: DollarSign, label: 'My Payments' },
         { path: '/dashboard/announcements', icon: Megaphone, label: 'Announcements' },
         { path: '/dashboard/events', icon: Calendar, label: 'Events' },
@@ -61,7 +70,7 @@ function Sidebar({ isOpen, setIsOpen }) {
         { path: '/dashboard/collections', icon: Heart, label: 'Collections' },
         { path: '/dashboard/gallery', icon: ImageIcon, label: 'Gallery' },
         { path: '/dashboard/documents', icon: FileText, label: 'Documents' },
-        { path: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
+        { path: '/dashboard/notifications', icon: Bell, label: 'Messages' },
       ],
     },
     {
@@ -70,7 +79,7 @@ function Sidebar({ isOpen, setIsOpen }) {
         { path: '/dashboard/departments', icon: Building2, label: 'All Departments', roles: LEADERSHIP_ROLES },
         { path: '/dashboard/members', icon: Users, label: 'People' },
         { path: '/dashboard/approvals', icon: CheckSquare, label: 'Approvals' },
-        { path: '/dashboard/sms', icon: MessageSquare, label: 'Communications' },
+        { path: '/dashboard/sms', icon: MessageSquare, label: 'Communications', roles: LEADERSHIP_ROLES },
         { path: '/dashboard/content', icon: FileText, label: 'Content', roles: LEADERSHIP_ROLES },
       ],
     },
@@ -80,7 +89,6 @@ function Sidebar({ isOpen, setIsOpen }) {
         { path: '/dashboard/treasury', icon: Landmark, label: 'Treasury' },
         { path: '/dashboard/payments/management', icon: DollarSign, label: 'Payment Management' },
         { path: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
-        { path: '/dashboard/analytics', icon: Activity, label: 'Analytics' },
       ],
     },
     {
@@ -93,14 +101,13 @@ function Sidebar({ isOpen, setIsOpen }) {
     },
   ];
 
-  const isSuperAdmin = user?.roles?.includes('Super Admin');
-
+  // Filter out items the user cannot reach. Super Admin sees everything.
   const visibleSections = sections
     .map(section => ({
       ...section,
       items: section.items.filter(item => {
-        if (isSuperAdmin) return true;
-        if (item.roles && !item.roles.some(r => user?.roles?.includes(r))) return false;
+        if (isSuperAdmin()) return true;
+        if (item.roles && !isAny(item.roles)) return false;
         return canAccessModule(item.path);
       }),
     }))
@@ -112,10 +119,10 @@ function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay behind the sidebar */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+        <div
+          className="fixed inset-0 bg-[var(--color-overlay)] z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -125,7 +132,7 @@ function Sidebar({ isOpen, setIsOpen }) {
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 lg:static lg:z-0 w-64 flex-shrink-0 border-r border-[var(--color-border)]`}>
         <div className="flex flex-col h-full">
-          {/* Header with Gradient */}
+          {/* Church name header */}
           <div className="p-6 church-gradient">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -144,7 +151,7 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation links */}
           <nav className="flex-1 p-4 overflow-y-auto">
             {visibleSections.map((section, si) => (
               <div key={si} className={si > 0 ? 'mt-5' : ''}>
@@ -182,7 +189,7 @@ function Sidebar({ isOpen, setIsOpen }) {
             ))}
           </nav>
 
-          {/* User Profile Summary & Logout */}
+          {/* User summary & logout */}
           <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-background)]/50">
             <div className="flex items-center space-x-3 mb-4 px-2">
               <div className="w-10 h-10 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center text-[var(--color-primary)] font-bold">
@@ -199,7 +206,7 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="w-full flex items-center px-4 py-2 text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors"
             >
               <LogOut className="h-4 w-4 mr-3" />
               Sign Out

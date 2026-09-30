@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class DepartmentsScreen extends StatefulWidget {
   const DepartmentsScreen({super.key});
@@ -195,7 +196,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
                           department['category'],
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: AppTheme.textSecondary,
                           ),
                         ),
                     ],
@@ -216,14 +217,14 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
               const SizedBox(height: 12),
               Text(
                 department['description'],
-                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
               ),
             ],
             if (department['joined_at'] != null) ...[
               const SizedBox(height: 8),
               Text(
                 'Member since ${_formatDate(department['joined_at'])}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
               ),
             ],
           ],
@@ -250,7 +251,7 @@ class _DepartmentsScreenState extends State<DepartmentsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,

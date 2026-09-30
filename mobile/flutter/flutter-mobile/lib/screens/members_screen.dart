@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class MembersScreen extends StatefulWidget {
   const MembersScreen({super.key});
@@ -226,9 +227,9 @@ class _MembersScreenState extends State<MembersScreen> {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
+          Icon(icon, size: 20, color: AppTheme.textSecondary),
           const SizedBox(width: 12),
-          Text('$label: ', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+          Text('$label: ', style: TextStyle(color: AppTheme.textSecondary, fontSize: 14)),
           Expanded(
             child: Text(
               value.toString(),
@@ -257,7 +258,7 @@ class _MembersScreenState extends State<MembersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -283,16 +284,16 @@ class _MembersScreenState extends State<MembersScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
+            Icon(Icons.people_outline, size: 64, color: AppTheme.textTertiary),
             const SizedBox(height: 16),
             Text(
               _searchQuery.isNotEmpty ? 'No members match "$_searchQuery"' : 'No members found',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Pull down to refresh',
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: AppTheme.textTertiary),
             ),
           ],
         ),

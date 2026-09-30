@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/payment_method_card.dart';
+import '../app/theme.dart';
 
 class PaymentsScreen extends StatefulWidget {
   const PaymentsScreen({super.key});
@@ -203,7 +204,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
       builder: (context) => AlertDialog(
         title: const Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green),
+            Icon(Icons.check_circle, color: AppTheme.successColor),
             SizedBox(width: 8),
             Text('Payment Initiated'),
           ],
@@ -230,7 +231,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                 result['paymentUrl'],
                 style: const TextStyle(
                   fontSize: 12,
-                  color: Colors.blue,
+                  color: AppTheme.primaryColor,
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -239,7 +240,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
               const SizedBox(height: 16),
               Text(
                 'Expires: ${result['expiresAt']}',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
               ),
             ],
           ],
@@ -500,7 +501,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Receipt saved to ${result['path']}'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -530,7 +531,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.receipt_long, size: 48, color: Colors.grey),
+                          Icon(Icons.receipt_long, size: 48, color: AppTheme.textSecondary),
                           SizedBox(height: 16),
                           Text('No payment history'),
                         ],
@@ -545,7 +546,7 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                         final isDownloading =
                             paymentId != null && _downloadingReceipts.contains(paymentId);
                         return ListTile(
-                          leading: const Icon(Icons.payment, color: Colors.green),
+                          leading: const Icon(Icons.payment, color: AppTheme.successColor),
                           title: Text(
                             payment['category'] ?? payment['payment_type'] ?? 'Payment',
                           ),
@@ -607,15 +608,15 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
     switch (status?.toLowerCase()) {
       case 'completed':
       case 'success':
-        return Colors.green;
+        return AppTheme.successColor;
       case 'pending':
       case 'processing':
-        return Colors.orange;
+        return AppTheme.warningColor;
       case 'failed':
       case 'cancelled':
-        return Colors.red;
+        return AppTheme.errorColor;
       default:
-        return Colors.grey;
+        return AppTheme.textSecondary;
     }
   }
 }

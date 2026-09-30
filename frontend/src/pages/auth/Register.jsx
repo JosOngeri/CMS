@@ -82,7 +82,7 @@ const Register = () => {
                   autoComplete="given-name"
                 />
                 {errors.first_name && (
-                  <p id="first_name-error" className="mt-1 text-sm text-red-600" role="alert">{errors.first_name.message}</p>
+                  <p id="first_name-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.first_name.message}</p>
                 )}
               </div>
 
@@ -104,7 +104,7 @@ const Register = () => {
                   autoComplete="family-name"
                 />
                 {errors.last_name && (
-                  <p id="last_name-error" className="mt-1 text-sm text-red-600" role="alert">{errors.last_name.message}</p>
+                  <p id="last_name-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.last_name.message}</p>
                 )}
               </div>
             </div>
@@ -132,7 +132,7 @@ const Register = () => {
                 autoComplete="username"
               />
               {errors.username && (
-                <p id="username-error" className="mt-1 text-sm text-red-600" role="alert">{errors.username.message}</p>
+                <p id="username-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.username.message}</p>
               )}
             </div>
 
@@ -159,7 +159,7 @@ const Register = () => {
                 autoComplete="email"
               />
               {errors.email && (
-                <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+                <p id="email-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.email.message}</p>
               )}
             </div>
 
@@ -186,7 +186,7 @@ const Register = () => {
                 autoComplete="tel"
               />
               {errors.phone_number && (
-                <p id="phone_number-error" className="mt-1 text-sm text-red-600" role="alert">{errors.phone_number.message}</p>
+                <p id="phone_number-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.phone_number.message}</p>
               )}
             </div>
 
@@ -227,7 +227,7 @@ const Register = () => {
                 </button>
               </div>
               {errors.password && (
-                <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">{errors.password.message}</p>
+                <p id="password-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.password.message}</p>
               )}
             </div>
 
@@ -265,7 +265,7 @@ const Register = () => {
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p id="confirmPassword-error" className="mt-1 text-sm text-red-600" role="alert">{errors.confirmPassword.message}</p>
+                <p id="confirmPassword-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.confirmPassword.message}</p>
               )}
             </div>
 

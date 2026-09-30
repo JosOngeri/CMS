@@ -1,8 +1,20 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A Gmail-style message list used by pages like Announcements. Shows a list
+ * of items with priority tabs, checkboxes for bulk selection, a refresh
+ * button, and a floating "Compose" button for people who can create.
+ *
+ * Clicking a row calls onRowAction('view', item). The only row action
+ * buttons shown are ones the parent page actually supports (delete).
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - pages/announcements/Announcements.jsx → feeds items, handles view/delete/compose
+ * - ColorPaletteContext.jsx               → church colours
+ */
 import React, { useState } from 'react';
-import { 
-  Check, Star, Archive, Trash2, MoreVertical, 
-  RefreshCw, X, Clock, Filter 
-} from 'lucide-react';
+import { Trash2, RefreshCw, X, Filter } from 'lucide-react';
 import { useColorPalette } from '../../contexts/ColorPaletteContext';
 
 const GmailMessageList = ({
@@ -28,8 +40,7 @@ const GmailMessageList = ({
     switch (priority) {
       case 'urgent': return { color: colors.error, bg: colors.error + '20' };
       case 'high': return { color: colors.warning, bg: colors.warning + '20' };
-      case 'normal': return { color: colors.primary, bg: colors.primary + '20' };
-      case 'medium': return { color: colors.warning, bg: colors.warning + '20' };
+      case 'medium': return { color: colors.primary, bg: colors.primary + '20' };
       case 'low': return { color: colors.textSecondary, bg: colors.background };
       default: return { color: colors.textSecondary, bg: colors.background };
     }
@@ -113,16 +124,6 @@ const GmailMessageList = ({
                 {selectedItems.size} selected
               </span>
               <button
-                onClick={() => onBulkAction('archive')}
-                className="p-1.5 rounded"
-                aria-label="Archive selected"
-                style={{ transition: 'background-color 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <Archive className="w-4 h-4" style={{ color: colors.textSecondary }} />
-              </button>
-              <button
                 onClick={() => onBulkAction('delete')}
                 className="p-1.5 rounded"
                 aria-label="Delete selected"
@@ -131,16 +132,6 @@ const GmailMessageList = ({
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <Trash2 className="w-4 h-4" style={{ color: colors.textSecondary }} />
-              </button>
-              <button
-                onClick={() => onBulkAction('markRead')}
-                className="p-1.5 rounded"
-                aria-label="Mark selected as read"
-                style={{ transition: 'background-color 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <Check className="w-4 h-4" style={{ color: colors.textSecondary }} />
               </button>
             </div>
           )}
@@ -167,33 +158,19 @@ const GmailMessageList = ({
         <div className="flex items-center justify-between px-4 py-2 bg-[var(--color-primary-light)] border-b border-[var(--color-primary-light)]">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => onBulkAction('archive')}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text)]  hover:bg-[var(--color-surface)]  rounded"
-            >
-              <Archive className="w-4 h-4" />
-              Archive
-            </button>
-            <button
               onClick={() => onBulkAction('delete')}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text)]  hover:bg-[var(--color-surface)]  rounded"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded"
             >
               <Trash2 className="w-4 h-4" />
               Delete
             </button>
-            <button
-              onClick={() => onBulkAction('markRead')}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text)]  hover:bg-[var(--color-surface)]  rounded"
-            >
-              <Check className="w-4 h-4" />
-              Mark as read
-            </button>
           </div>
           <button
             onClick={() => onToggleSelectAll(false)}
-            className="p-1.5 hover:bg-[var(--color-surface)]  rounded"
+            className="p-1.5 hover:bg-[var(--color-surface)] rounded"
             aria-label="Clear selection"
           >
-            <X className="w-4 h-4 text-[var(--color-textSecondary)] " />
+            <X className="w-4 h-4 text-[var(--color-textSecondary)]" />
           </button>
         </div>
       )}
@@ -201,21 +178,20 @@ const GmailMessageList = ({
       {/* Message List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="text-[var(--color-textSecondary)] ">Loading...</div>
+          <div className="text-[var(--color-textSecondary)]">Loading...</div>
         </div>
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <div className="text-[var(--color-textSecondary)] mb-2">
             <Filter className="w-12 h-12 mx-auto" />
           </div>
-          <p className="text-[var(--color-textSecondary)] ">{emptyMessage}</p>
+          <p className="text-[var(--color-textSecondary)]">{emptyMessage}</p>
         </div>
       ) : (
-        <div className="divide-y divide-[var(--color-border)] ">
+        <div className="divide-y divide-[var(--color-border)]">
           {items.map((item, index) => {
             const isSelected = selectedItems.has(item.id);
             const isHovered = hoveredRow === index;
-            const isUnread = !item.read;
 
             return (
               <div
@@ -224,8 +200,7 @@ const GmailMessageList = ({
                 onMouseLeave={() => setHoveredRow(null)}
                 className={`
                   flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors
-                  ${isSelected ? 'bg-[var(--color-primary-light)]' : 'hover:bg-[var(--color-background)] /50'}
-                  ${isUnread ? 'bg-[var(--color-surface)] ' : 'bg-[var(--color-background)]/50 /50'}
+                  ${isSelected ? 'bg-[var(--color-primary-light)]' : 'hover:bg-[var(--color-background)]'}
                 `}
                 onClick={() => onRowAction && onRowAction('view', item)}
               >
@@ -241,43 +216,30 @@ const GmailMessageList = ({
                   onClick={(e) => e.stopPropagation()}
                 />
 
-                {/* Star */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRowAction && onRowAction('star', item);
-                  }}
-                  className={`p-1 hover:bg-[var(--color-surface)]  rounded ${
-                    item.starred ? 'text-yellow-500' : 'text-[var(--color-textSecondary)]'
-                  }`}
-                >
-                  <Star className={`w-4 h-4 ${item.starred ? 'fill-current' : ''}`} />
-                </button>
-
                 {/* Sender/Author */}
                 <div className="w-48 flex-shrink-0">
-                  <span className={`text-sm truncate block ${
-                    isUnread ? 'font-semibold text-[var(--color-text)] ' : 'text-[var(--color-text)] '
-                  }`}>
-                    {item.sender || item.author || 'Unknown'}
+                  <span className="text-sm truncate block font-medium text-[var(--color-text)]">
+                    {item.sender || item.author || 'Church Office'}
                   </span>
                 </div>
 
                 {/* Subject + Preview */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={`text-sm truncate ${
-                      isUnread ? 'font-semibold text-[var(--color-text)] ' : 'text-[var(--color-text)] '
-                    }`}>
+                    <span className="text-sm truncate font-medium text-[var(--color-text)]">
                       {item.title || item.subject || '(No subject)'}
                     </span>
-                    {item.type && (
-                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${getPriorityColor(item.priority || 'normal')}`}>
-                        {item.type}
-                      </span>
-                    )}
+                    <span
+                      className="px-2 py-0.5 text-xs font-medium rounded-full capitalize"
+                      style={{
+                        color: getPriorityColor(item.priority || 'normal').color,
+                        backgroundColor: getPriorityColor(item.priority || 'normal').bg
+                      }}
+                    >
+                      {item.priority || 'normal'}
+                    </span>
                   </div>
-                  <p className="text-sm text-[var(--color-textSecondary)]  truncate">
+                  <p className="text-sm text-[var(--color-textSecondary)] truncate">
                     {truncateText(item.message || item.content || item.description, 80)}
                   </p>
                 </div>
@@ -289,46 +251,16 @@ const GmailMessageList = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRowAction && onRowAction('archive', item);
-                        }}
-                        className="p-1.5 hover:bg-[var(--color-surface)] rounded"
-                        title="Archive"
-                      >
-                        <Archive className="w-4 h-4 text-[var(--color-textSecondary)] " />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
                           onRowAction && onRowAction('delete', item);
                         }}
                         className="p-1.5 hover:bg-[var(--color-surface)] rounded"
                         title="Delete"
                       >
-                        <Trash2 className="w-4 h-4 text-[var(--color-textSecondary)] " />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRowAction && onRowAction('markRead', item);
-                        }}
-                        className="p-1.5 hover:bg-[var(--color-surface)] rounded"
-                        title="Mark as read"
-                      >
-                        <Check className="w-4 h-4 text-[var(--color-textSecondary)] " />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRowAction && onRowAction('snooze', item);
-                        }}
-                        className="p-1.5 hover:bg-[var(--color-surface)] rounded"
-                        title="Snooze"
-                      >
-                        <Clock className="w-4 h-4 text-[var(--color-textSecondary)] " />
+                        <Trash2 className="w-4 h-4 text-[var(--color-textSecondary)]" />
                       </button>
                     </div>
                   ) : (
-                    <span className="text-sm text-[var(--color-textSecondary)]  whitespace-nowrap">
+                    <span className="text-sm text-[var(--color-textSecondary)] whitespace-nowrap">
                       {formatDate(item.created_at || item.sent_at || item.date)}
                     </span>
                   )}
@@ -343,7 +275,7 @@ const GmailMessageList = ({
       {onCompose && (
         <button
           onClick={onCompose}
-          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full shadow-lg hover:bg-[var(--color-primary)] transition-colors z-10"
+          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full shadow-lg hover:opacity-90 transition-opacity z-10"
           aria-label="Compose new message"
         >
           <span className="font-medium">Compose</span>

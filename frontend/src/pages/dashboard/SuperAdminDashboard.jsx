@@ -1,13 +1,27 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Home screen for the platform administrator. It answers: is the system
+ * healthy, how many people and departments use it, what needs approval,
+ * and what just happened.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/dashboard/stats          → platform totals
+ * - backend /api/dashboard/system-health  → live server metrics (CPU, memory, uptime)
+ * - backend /api/dashboard/activity       → recent system activity
+ * - components/dashboard/SystemOrganismViz.jsx → health visualization
+ * - components/dashboard/ChurchStatsCard.jsx
+ * - components/dashboard/ChurchQuickActions.jsx
+ */
+
 import { useState, useEffect } from 'react'
 import {
-  Users, DollarSign, Calendar, Megaphone, TrendingUp,
-  Clock, CheckCircle, AlertCircle, ArrowRight, Building, Image as ImageIcon,
-  Server, Database, Activity, Shield, Settings, FileText, Users as UsersIcon
+  Users, DollarSign, CheckCircle, Building, Shield, Server, ArrowRight
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import Card from '../../components/common/Card'
 import ChurchStatsCard from '../../components/dashboard/ChurchStatsCard'
 import ChurchQuickActions from '../../components/dashboard/ChurchQuickActions'
@@ -15,179 +29,135 @@ import SystemOrganismViz from '../../components/dashboard/SystemOrganismViz'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
+const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
+
 const SuperAdminDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
+
   const [stats, setStats] = useState({
     totalMembers: 0,
     activeDepartments: 0,
     pendingApprovals: 0,
     financialOverview: 0,
-    totalPayments: 0,
-    upcomingEvents: 0,
-    recentAnnouncements: 0
   })
   const [systemHealth, setSystemHealth] = useState({
     database: 'unknown',
     api: 'unknown',
     lastSync: null,
     activeUsers: 0,
-    metrics: {}
+    metrics: {},
   })
-  const [recentActivities, setRecentActivities] = useState([])
+  const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchDashboardData()
+    load()
   }, [])
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true)
-      
-      // Fetch system-wide stats
-      try {
-        const statsResponse = await api.get('/api/dashboard/stats')
-        const rawStats = statsResponse.data.data || {}
-        setStats({
-          totalMembers: rawStats.totalMembers || 0,
-          activeDepartments: rawStats.activeDepartments || 0,
-          pendingApprovals: rawStats.pendingApprovals || 0,
-          financialOverview: rawStats.financialOverview || rawStats.totalPayments || 0,
-          totalPayments: rawStats.totalPayments || 0,
-          upcomingEvents: rawStats.upcomingEvents || 0,
-          recentAnnouncements: rawStats.recentAnnouncements || 0
-        })
-      } catch (statsError) {
-        console.error('Failed to fetch stats:', statsError)
-        // Set default values if stats endpoint fails
-        setStats({
-          totalMembers: 0,
-          activeDepartments: 0,
-          pendingApprovals: 0,
-          financialOverview: 0,
-          totalPayments: 0,
-          upcomingEvents: 0,
-          recentAnnouncements: 0
-        })
-      }
+  const load = async () => {
+    setLoading(true)
+    // Each section is independent — one failing endpoint shouldn't blank the page.
+    const [statsRes, healthRes, activityRes] = await Promise.allSettled([
+      api.get('/api/dashboard/stats'),
+      api.get('/api/dashboard/system-health'),
+      api.get('/api/dashboard/activity?limit=10'),
+    ])
 
-      // Fetch system health
-      try {
-        const healthResponse = await api.get('/api/dashboard/system-health')
-        setSystemHealth(healthResponse.data.data || {
-          database: 'unknown',
-          api: 'unknown',
-          lastSync: null,
-          activeUsers: 0,
-          metrics: {}
-        })
-      } catch (healthError) {
-        console.error('Failed to fetch system health:', healthError)
-        // Set default values if health endpoint fails
-        setSystemHealth({
-          database: 'unknown',
-          api: 'unknown',
-          lastSync: null,
-          activeUsers: 0,
-          metrics: {}
-        })
-      }
+    if (statsRes.status === 'fulfilled') {
+      const s = statsRes.value.data.data || {}
+      setStats({
+        totalMembers: s.totalMembers ?? 0,
+        activeDepartments: s.activeDepartments ?? 0,
+        pendingApprovals: s.pendingApprovals ?? 0,
+        financialOverview: s.financialOverview ?? s.totalPayments ?? 0,
+      })
+    } else {
+      console.error('Stats fetch failed:', statsRes.reason)
+    }
 
-      // Fetch recent system activities
-      try {
-        const activityResponse = await api.get('/api/dashboard/activity?limit=10')
-        const iconMap = {
-          user: Users,
-          payment: DollarSign,
-          announcement: Megaphone,
-          event: Calendar,
-          system: Server,
-          security: Shield
-        }
-        const colorMap = {
-          user: colors.primary,
-          payment: colors.success,
-          announcement: colors.secondary,
-          event: colors.accent,
-          system: colors.warning,
-          security: colors.error
-        }
+    if (healthRes.status === 'fulfilled') {
+      const h = healthRes.value.data.data || {}
+      setSystemHealth({
+        database: h.database || 'unknown',
+        api: h.api || 'unknown',
+        lastSync: h.lastSync || null,
+        activeUsers: h.activeUsers || 0,
+        metrics: h.metrics || {},
+      })
+    } else {
+      console.error('System health fetch failed:', healthRes.reason)
+    }
 
-        const formattedActivities = (activityResponse.data.data || []).map((activity, index) => ({
-          id: index,
-          type: activity.type,
-          title: activity.title,
-          description: activity.description,
-          time: activity.time,
-          icon: iconMap[activity.type] || Activity,
-          color: colorMap[activity.type] || colors.textSecondary
-        }))
+    if (activityRes.status === 'fulfilled') {
+      setActivities(activityRes.value.data.data || [])
+    } else {
+      console.error('Activity fetch failed:', activityRes.reason)
+    }
 
-        setRecentActivities(formattedActivities)
-      } catch (activityError) {
-        console.error('Failed to fetch activities:', activityError)
-        setRecentActivities([])
-      }
-    } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
+    setLoading(false)
+
+    if (statsRes.status === 'rejected' && healthRes.status === 'rejected') {
+      toast.error('Could not load system data. Please try again.')
     }
   }
 
-  if (loading) {
-    return <FullPageLoading message="Loading dashboard..." />
-  }
+  if (loading) return <FullPageLoading message="Loading system overview..." />
+
+  const servicesHealthy = [systemHealth.database, systemHealth.api]
+    .filter(s => s === 'healthy').length
 
   return (
     <div className="space-y-6">
-      {/* Page Header with System Health */}
+      {/* Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">Super Admin Dashboard</h1>
-          <p className="page-subtitle">Welcome back, {user?.first_name}! System administration and platform oversight.</p>
+          <h1 className="page-title">System Overview</h1>
+          <p className="page-subtitle">
+            Welcome back, {user?.first_name}! Here is the platform health at a glance.
+          </p>
         </div>
-        <div className="flex items-center gap-4">
-          {/* System Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success-light)] text-[var(--color-success)] rounded-lg">
-            <Shield className="h-4 w-4" />
-            <span className="text-sm font-medium">System Health: {systemHealth.database === 'healthy' && systemHealth.api === 'healthy' ? 'Excellent' : 'Degraded'}</span>
-          </div>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+          servicesHealthy === 2
+            ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+            : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+        }`}>
+          <Shield className="h-4 w-4" />
+          <span className="text-sm font-medium">
+            {servicesHealthy === 2 ? 'All systems healthy' : 'Some systems degraded'}
+          </span>
         </div>
       </div>
 
-      {/* System Organism Visualization - Signature Element */}
+      {/* Live system metrics visualization */}
       <SystemOrganismViz
         systemData={{
           totalServices: 2,
-          activeServices: [systemHealth.database, systemHealth.api].filter(s => s === 'healthy').length,
-          degradedServices: [systemHealth.database, systemHealth.api].filter(s => s !== 'healthy').length,
-          uptimeHours: systemHealth.metrics?.uptimeHours ?? null
+          activeServices: servicesHealthy,
+          degradedServices: 2 - servicesHealthy,
+          uptimeHours: systemHealth.metrics?.uptimeHours ?? null,
         }}
         healthData={{
           databaseHealth: systemHealth.database,
           apiHealth: systemHealth.api,
           cacheHealth: 'unmonitored',
-          storageHealth: 'unmonitored'
+          storageHealth: 'unmonitored',
         }}
         performanceData={{
           cpuUsage: systemHealth.metrics?.cpuLoad ?? null,
           memoryUsage: systemHealth.metrics?.memoryUsage ?? null,
           diskUsage: null,
-          dbLatencyMs: systemHealth.metrics?.dbLatencyMs ?? null
+          dbLatencyMs: systemHealth.metrics?.dbLatencyMs ?? null,
         }}
       />
 
-      {/* Stats Grid with Church-Focused Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Platform totals */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <ChurchStatsCard
           title="Total Members"
           value={stats.totalMembers}
           change="Platform users"
-          changeType="positive"
+          changeType="neutral"
           icon={Users}
           statType="members"
           linkTo="/dashboard/users"
@@ -195,7 +165,7 @@ const SuperAdminDashboard = () => {
         <ChurchStatsCard
           title="Active Departments"
           value={stats.activeDepartments}
-          change="Platform departments"
+          change="Across all churches"
           changeType="neutral"
           icon={Building}
           statType="default"
@@ -204,55 +174,50 @@ const SuperAdminDashboard = () => {
         <ChurchStatsCard
           title="Pending Approvals"
           value={stats.pendingApprovals}
-          change="Requires attention"
-          changeType="neutral"
+          change="Need attention"
+          changeType={stats.pendingApprovals > 0 ? 'negative' : 'positive'}
           icon={CheckCircle}
           statType="default"
           linkTo="/dashboard/approvals"
         />
         <ChurchStatsCard
           title="Financial Overview"
-          value={`KES ${stats.financialOverview.toLocaleString()}`}
+          value={fmtKES(stats.financialOverview)}
           change="Platform finances"
-          changeType="positive"
+          changeType="neutral"
           icon={DollarSign}
           statType="financial"
           linkTo="/dashboard/treasury"
         />
       </div>
 
-      {/* Church-Focused Quick Actions */}
       <ChurchQuickActions />
 
-      {/* Recent System Activity Feed */}
+      {/* Recent system activity */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent System Activity</h2>
-          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
-            View all
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Activity</h2>
+          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] flex items-center gap-1">
+            View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        {recentActivities.length > 0 ? (
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
-                <div className={`p-2 rounded-lg ${activity.color} bg-opacity-10`}>
-                  <activity.icon className="h-4 w-4" aria-hidden="true" />
+        {activities.length ? (
+          <div className="space-y-3">
+            {activities.map((activity, index) => (
+              <div key={activity.id || index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
+                <div className="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                  <Server className="h-4 w-4" aria-hidden="true" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--color-text)]">{activity.title}</p>
-                  <p className="text-sm text-[var(--color-textSecondary)]">{activity.description}</p>
-                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">{activity.time}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">{activity.description}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-0.5">{activity.time}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <EmptyState
-            icon={Server}
-            title="No recent activity"
-            description="System activities will appear here"
-          />
+          <EmptyState icon={Server} title="No recent activity" description="System activity will appear here." />
         )}
       </Card>
     </div>

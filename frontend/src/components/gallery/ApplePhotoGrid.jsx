@@ -190,8 +190,8 @@ const ApplePhotoGrid = ({
               onClick={(e) => handleFavoriteToggle(e, photo.id)}
               className={`favorite-btn absolute top-2 right-2 p-1.5 rounded-full transition-colors ${
                 isFavorite 
-                  ? 'bg-red-500 text-white' 
-                  : 'bg-[var(--color-surface)]/80 text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:text-red-500'
+                  ? 'bg-[var(--color-error-light)]0 text-white' 
+                  : 'bg-[var(--color-surface)]/80 text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-error)]'
               }`}
               aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               aria-pressed={isFavorite}

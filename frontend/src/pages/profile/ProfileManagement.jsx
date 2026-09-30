@@ -117,9 +117,9 @@ const ProfileManagement = () => {
   const getActivityColor = (type) => {
     switch (type) {
       case 'login': return 'text-[var(--color-primary)] bg-[var(--color-primary-light)]'
-      case 'profile_update': return 'text-green-600 bg-green-100'
-      case 'password_change': return 'text-yellow-600 bg-yellow-100'
-      case 'payment': return 'text-purple-600 bg-purple-100'
+      case 'profile_update': return 'text-[var(--color-success)] bg-[var(--color-success-light)]'
+      case 'password_change': return 'text-[var(--color-warning)] bg-[var(--color-warning-light)]'
+      case 'payment': return 'text-[var(--color-accent)] bg-[var(--color-accent-light)]'
       default: return 'text-[var(--color-textSecondary)] bg-[var(--color-surface)]'
     }
   }
@@ -205,10 +205,10 @@ const ProfileManagement = () => {
                   </button>
                 </div>
                 <div>
-                  <h2 className="text-xl font-semibold text-[var(--color-text)] text-white">
+                  <h2 className="text-xl font-semibold text-[var(--color-text)]">
                     {user.first_name} {user.last_name}
                   </h2>
-                  <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">@{user.username}</p>
+                  <p className="text-[var(--color-textSecondary)]">@{user.username}</p>
                   <div className="flex items-center gap-2 mt-1">
                     {user.roles?.map(role => (
                       <span key={role} className="px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)]">
@@ -231,11 +231,11 @@ const ProfileManagement = () => {
           {/* Edit Profile Form */}
           {showEditForm && (
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-              <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Edit Profile</h3>
+              <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Edit Profile</h3>
               <form onSubmit={handleProfileUpdate} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">First Name</label>
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">First Name</label>
                     <input
                       type="text"
                       value={formData.first_name}
@@ -245,7 +245,7 @@ const ProfileManagement = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">Last Name</label>
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Last Name</label>
                     <input
                       type="text"
                       value={formData.last_name}
@@ -256,7 +256,7 @@ const ProfileManagement = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">Email</label>
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Email</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -266,7 +266,7 @@ const ProfileManagement = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">Phone Number</label>
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Phone Number</label>
                   <input
                     type="tel"
                     value={formData.phone_number}
@@ -276,7 +276,7 @@ const ProfileManagement = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">Bio</label>
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Bio</label>
                   <textarea
                     value={formData.bio}
                     onChange={(e) => setFormData({...formData, bio: e.target.value})}
@@ -320,16 +320,16 @@ const ProfileManagement = () => {
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Mail className="w-5 h-5 text-[var(--color-textSecondary)]" />
-                <h3 className="font-semibold text-[var(--color-text)] text-white">Email</h3>
+                <h3 className="font-semibold text-[var(--color-text)]">Email</h3>
               </div>
-              <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">{user.email}</p>
+              <p className="text-[var(--color-textSecondary)]">{user.email}</p>
             </div>
             <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Phone className="w-5 h-5 text-[var(--color-textSecondary)]" />
-                <h3 className="font-semibold text-[var(--color-text)] text-white">Phone</h3>
+                <h3 className="font-semibold text-[var(--color-text)]">Phone</h3>
               </div>
-              <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">{user.phone_number || 'Not provided'}</p>
+              <p className="text-[var(--color-textSecondary)]">{user.phone_number || 'Not provided'}</p>
             </div>
           </div>
         </div>
@@ -352,8 +352,8 @@ const ProfileManagement = () => {
           <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Change Password</h3>
-                <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mt-1">
+                <h3 className="text-lg font-semibold text-[var(--color-text)]">Change Password</h3>
+                <p className="text-sm text-[var(--color-textSecondary)] mt-1">
                   Update your password to keep your account secure
                 </p>
               </div>
@@ -369,7 +369,7 @@ const ProfileManagement = () => {
             {showPasswordForm && (
               <form onSubmit={handlePasswordChange} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                     Current Password
                   </label>
                   <div className="relative">
@@ -391,7 +391,7 @@ const ProfileManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                     New Password
                   </label>
                   <div className="relative">
@@ -411,13 +411,13 @@ const ProfileManagement = () => {
                       {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mt-1">
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">
                     Password must be at least 6 characters long
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                     Confirm New Password
                   </label>
                   <div className="relative">
@@ -473,12 +473,12 @@ const ProfileManagement = () => {
           </div>
 
           {/* Security Info */}
-          <div className="bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 border border-[var(--color-primary-light)] border-[var(--color-primary)] rounded-lg p-4">
+          <div className="bg-[var(--color-primary-light)]/20 border border-[var(--color-primary)] rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-[var(--color-primary)] text-[var(--color-primary)] mt-0.5" />
+              <Shield className="w-5 h-5 text-[var(--color-primary)] mt-0.5" />
               <div>
-                <h4 className="font-medium text-[var(--color-primary)] text-[var(--color-primary-light)]">Security Tips</h4>
-                <ul className="text-sm text-[var(--color-primary)] text-[var(--color-primary-light)] mt-2 space-y-1">
+                <h4 className="font-medium text-[var(--color-primary-light)]">Security Tips</h4>
+                <ul className="text-sm text-[var(--color-primary-light)] mt-2 space-y-1">
                   <li>• Use a strong password with at least 8 characters</li>
                   <li>• Include a mix of letters, numbers, and special characters</li>
                   <li>• Don't reuse passwords from other sites</li>
@@ -493,23 +493,23 @@ const ProfileManagement = () => {
       {/* Activity Tab */}
       {activeTab === 'activity' && (
         <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Activity History</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Activity History</h3>
           {activityHistory.length === 0 ? (
-            <div className="text-center py-8 text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+            <div className="text-center py-8 text-[var(--color-textSecondary)]">
               No activity history available
             </div>
           ) : (
             <div className="space-y-4">
               {activityHistory.map((activity, index) => (
-                <div key={index} className="flex items-start gap-4 p-4 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
+                <div key={index} className="flex items-start gap-4 p-4 bg-[var(--color-background)] rounded-lg">
                   <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
                     {getActivityIcon(activity.type)}
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {activity.description || activity.type}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {formatDate(activity.created_at)}
                     </p>
                   </div>

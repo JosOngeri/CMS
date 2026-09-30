@@ -40,7 +40,7 @@ const PublicAnnouncementDetail = () => {
   if (error || !announcement) {
     return (
       <div className="container mx-auto px-4 py-16 max-w-lg text-center">
-        <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-6">{error || 'Announcement not found.'}</p>
+        <p className="text-[var(--color-textSecondary)] mb-6">{error || 'Announcement not found.'}</p>
         <Link to="/announcements" className="text-primary-600 font-medium hover:underline">
           ← Back to announcements
         </Link>
@@ -58,14 +58,14 @@ const PublicAnnouncementDetail = () => {
         All announcements
       </Link>
 
-      <article className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-xl shadow-sm border border-[var(--color-border)] border-[var(--color-border)] p-8">
-        <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-4">
+      <article className="bg-[var(--color-surface)] rounded-xl shadow-sm border border-[var(--color-border)] p-8">
+        <div className="flex flex-wrap items-center gap-3 text-sm text-[var(--color-textSecondary)] mb-4">
           <span
             className={`px-2 py-0.5 rounded-full text-xs font-medium ${
               announcement.priority === 'urgent'
-                ? 'bg-red-100 text-red-800'
+                ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                 : announcement.priority === 'high'
-                  ? 'bg-amber-100 text-amber-800'
+                  ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
                   : 'bg-[var(--color-surface)] text-[var(--color-text)]'
             }`}
           >
@@ -84,11 +84,11 @@ const PublicAnnouncementDetail = () => {
             </span>
           )}
         </div>
-        <h1 className="text-3xl font-bold text-[var(--color-text)] text-white mb-4">{announcement.title}</h1>
+        <h1 className="text-3xl font-bold text-[var(--color-text)] mb-4">{announcement.title}</h1>
         {announcement.department_name && (
           <p className="text-sm text-[var(--color-textSecondary)] mb-6">Department: {announcement.department_name}</p>
         )}
-        <div className="prose prose-invert max-w-none text-[var(--color-text)] text-[var(--color-textSecondary)] whitespace-pre-wrap">
+        <div className="prose prose-invert max-w-none text-[var(--color-textSecondary)] whitespace-pre-wrap">
           {announcement.content}
         </div>
       </article>

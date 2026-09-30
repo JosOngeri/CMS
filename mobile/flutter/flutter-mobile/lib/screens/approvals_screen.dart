@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key});
@@ -85,7 +86,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['error'] ?? 'Action failed'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppTheme.errorColor,
         ),
       );
     }
@@ -153,13 +154,13 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     Color statusColor;
     switch (status) {
       case 'approved':
-        statusColor = Colors.green;
+        statusColor = AppTheme.successColor;
         break;
       case 'rejected':
-        statusColor = Colors.red;
+        statusColor = AppTheme.errorColor;
         break;
       default:
-        statusColor = Colors.orange;
+        statusColor = AppTheme.warningColor;
     }
 
     return Card(
@@ -195,7 +196,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
               const SizedBox(height: 8),
               Text(
                 approval['description'],
-                style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
               ),
             ],
             const SizedBox(height: 8),
@@ -205,7 +206,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 if (approval['created_at'] != null)
                   'Submitted ${_formatDate(approval['created_at'])}',
               ].join(' • '),
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
             ),
             if (isPending) ...[
               const SizedBox(height: 12),
@@ -214,8 +215,8 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                 children: [
                   TextButton.icon(
                     onPressed: busy ? null : () => _handleAction(approval, false),
-                    icon: const Icon(Icons.close, color: Colors.red),
-                    label: const Text('Reject', style: TextStyle(color: Colors.red)),
+                    icon: const Icon(Icons.close, color: AppTheme.errorColor),
+                    label: const Text('Reject', style: TextStyle(color: AppTheme.errorColor)),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
@@ -229,7 +230,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                         : const Icon(Icons.check),
                     label: const Text('Approve'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppTheme.successColor,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -259,7 +260,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -285,16 +286,16 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.check_circle_outline, size: 64, color: Colors.grey[400]),
+            Icon(Icons.check_circle_outline, size: 64, color: AppTheme.textTertiary),
             const SizedBox(height: 16),
             Text(
               _filter == 'pending' ? 'No pending approvals' : 'No $_filter approvals',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Pull down to refresh',
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: AppTheme.textTertiary),
             ),
           ],
         ),

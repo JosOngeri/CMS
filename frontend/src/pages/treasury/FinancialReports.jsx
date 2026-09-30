@@ -102,34 +102,34 @@ const FinancialReports = () => {
       <div className="space-y-4 overflow-x-auto">
         <table className="w-full min-w-[560px]">
           <thead>
-            <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Account</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Debit</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Credit</th>
+            <tr className="border-b border-[var(--color-border)]">
+              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Account</th>
+              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Debit</th>
+              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Credit</th>
             </tr>
           </thead>
           <tbody>
             {reportData.accounts.map((account, index) => (
-              <tr key={index} className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-                <td className="py-3 px-4 text-sm text-[var(--color-text)] text-white">
+              <tr key={index} className="border-b border-[var(--color-border)]">
+                <td className="py-3 px-4 text-sm text-[var(--color-text)]">
                   {account.account_number} - {account.account_name}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white">
+                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
                   {account.debit ? `KES ${parseFloat(account?.debit ?? 0).toLocaleString()}` : '-'}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white">
+                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
                   {account.credit ? `KES ${parseFloat(account?.credit ?? 0).toLocaleString()}` : '-'}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-[var(--color-background)] bg-[var(--color-surface)]">
-              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Total</td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)] text-white">
+            <tr className="bg-[var(--color-background)]">
+              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Total</td>
+              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
                 KES {parseFloat(reportData?.total_debit ?? 0).toLocaleString()}
               </td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)] text-white">
+              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
                 KES {parseFloat(reportData?.total_credit ?? 0).toLocaleString()}
               </td>
             </tr>
@@ -145,48 +145,48 @@ const FinancialReports = () => {
     return (
       <div className="space-y-4 overflow-x-auto">
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Revenue</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">Revenue</h3>
           {reportData.line_items
             .filter(item => item.type === 'income')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-green-50 bg-green-900/20 rounded">
-                <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
-                <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded">
+                <span className="text-sm text-[var(--color-text)]">{item.name}</span>
+                <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-green-100 bg-green-900/30 rounded font-semibold">
-            <span className="text-[var(--color-text)] text-white">Total Revenue</span>
-            <span className="text-[var(--color-text)] text-white">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded font-semibold">
+            <span className="text-[var(--color-text)]">Total Revenue</span>
+            <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_income ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
         
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Expenses</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">Expenses</h3>
           {reportData.line_items
             .filter(item => item.type === 'expense')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-red-50 bg-red-900/20 rounded">
-                <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
-                <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded">
+                <span className="text-sm text-[var(--color-text)]">{item.name}</span>
+                <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-red-100 bg-red-900/30 rounded font-semibold">
-            <span className="text-[var(--color-text)] text-white">Total Expenses</span>
-            <span className="text-[var(--color-text)] text-white">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded font-semibold">
+            <span className="text-[var(--color-text)]">Total Expenses</span>
+            <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_expenses ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
         
-        <div className="flex justify-between py-4 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/30 rounded-lg">
-          <span className="text-lg font-bold text-[var(--color-text)] text-white">Net Income</span>
-          <span className={`text-lg font-bold ${reportData.net_income >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className="flex justify-between py-4 px-4 bg-[var(--color-primary-light)]/30 rounded-lg">
+          <span className="text-lg font-bold text-[var(--color-text)]">Net Income</span>
+          <span className={`text-lg font-bold ${reportData.net_income >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
             KES {parseFloat(reportData?.net_income ?? 0).toLocaleString()}
           </span>
         </div>
@@ -200,60 +200,60 @@ const FinancialReports = () => {
     return (
       <div className="space-y-6">
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Assets</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">Assets</h3>
           {reportData.line_items
             .filter(item => item.type === 'asset')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20 rounded">
-                <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
-                <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)]/20 rounded">
+                <span className="text-sm text-[var(--color-text)]">{item.name}</span>
+                <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)]/30 rounded font-semibold">
-            <span className="text-[var(--color-text)] text-white">Total Assets</span>
-            <span className="text-[var(--color-text)] text-white">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)]/30 rounded font-semibold">
+            <span className="text-[var(--color-text)]">Total Assets</span>
+            <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_assets ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
         
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Liabilities</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">Liabilities</h3>
           {reportData.line_items
             .filter(item => item.type === 'liability')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-red-50 bg-red-900/20 rounded">
-                <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
-                <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded">
+                <span className="text-sm text-[var(--color-text)]">{item.name}</span>
+                <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-red-100 bg-red-900/30 rounded font-semibold">
-            <span className="text-[var(--color-text)] text-white">Total Liabilities</span>
-            <span className="text-[var(--color-text)] text-white">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-background)] rounded font-semibold">
+            <span className="text-[var(--color-text)]">Total Liabilities</span>
+            <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_liabilities ?? 0).toLocaleString()}
             </span>
           </div>
         </div>
         
         <div className="space-y-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">Equity</h3>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">Equity</h3>
           {reportData.line_items
             .filter(item => item.type === 'equity')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-purple-50 bg-purple-900/20 rounded">
-                <span className="text-sm text-[var(--color-text)] text-white">{item.name}</span>
-                <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+              <div key={index} className="flex justify-between py-2 px-4  rounded">
+                <span className="text-sm text-[var(--color-text)]">{item.name}</span>
+                <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-purple-100 bg-purple-900/30 rounded font-semibold">
-            <span className="text-[var(--color-text)] text-white">Total Equity</span>
-            <span className="text-[var(--color-text)] text-white">
+          <div className="flex justify-between py-2 px-4 bg-[var(--color-accent-light)] rounded font-semibold">
+            <span className="text-[var(--color-text)]">Total Equity</span>
+            <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_equity ?? 0).toLocaleString()}
             </span>
           </div>
@@ -269,31 +269,31 @@ const FinancialReports = () => {
       <div className="space-y-4 overflow-x-auto">
         <table className="w-full min-w-[560px]">
           <thead>
-            <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Fund</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Type</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Balance</th>
+            <tr className="border-b border-[var(--color-border)]">
+              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Fund</th>
+              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Type</th>
+              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Balance</th>
             </tr>
           </thead>
           <tbody>
             {reportData.funds.map((fund, index) => (
-              <tr key={index} className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-                <td className="py-3 px-4 text-sm text-[var(--color-text)] text-white">
+              <tr key={index} className="border-b border-[var(--color-border)]">
+                <td className="py-3 px-4 text-sm text-[var(--color-text)]">
                   {fund.fund_name}
                 </td>
-                <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
                   {fund.fund_type}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white font-semibold">
+                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] font-semibold">
                   KES {parseFloat(fund?.balance ?? 0).toLocaleString()}
                 </td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="bg-[var(--color-background)] bg-[var(--color-surface)]">
-              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white" colSpan="2">Total</td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)] text-white">
+            <tr className="bg-[var(--color-background)]">
+              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]" colSpan="2">Total</td>
+              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
                 KES {parseFloat(reportData?.total_balance ?? 0).toLocaleString()}
               </td>
             </tr>
@@ -308,8 +308,8 @@ const FinancialReports = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Financial Reports</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Financial Reports</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Generate and download financial reports
           </p>
         </div>
@@ -333,7 +333,7 @@ const FinancialReports = () => {
               className={`p-4 rounded-lg border-2 transition-colors ${
                 selectedReport === report.value
                   ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20'
-                  : 'border-[var(--color-border)] border-[var(--color-border)] hover:border-[var(--color-border)] hover:border-[var(--color-border)]'
+                  : 'border-[var(--color-border)] hover:border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
             >
               <div className="flex flex-col items-center space-y-2">
@@ -341,7 +341,7 @@ const FinancialReports = () => {
                   selectedReport === report.value ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'
                 }`} />
                 <span className={`text-sm font-medium ${
-                  selectedReport === report.value ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)] text-white'
+                  selectedReport === report.value ? 'text-[var(--color-primary)]' : 'text-[var(--color-text)]'
                 }`}>
                   {report.label}
                 </span>
@@ -356,30 +356,30 @@ const FinancialReports = () => {
         <div className="p-4">
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 From Date
               </label>
               <input
                 type="date"
                 value={dateFrom}
                 onChange={(e) => setDateFrom(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 To Date
               </label>
               <input
                 type="date"
                 value={dateTo}
                 onChange={(e) => setDateTo(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
             <button
               onClick={fetchReport}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Generate</span>
@@ -392,10 +392,10 @@ const FinancialReports = () => {
       <Card>
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-[var(--color-text)] text-white">
+            <h2 className="text-xl font-bold text-[var(--color-text)]">
               {reportTypes.find(r => r.value === selectedReport)?.label}
             </h2>
-            <span className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+            <span className="text-sm text-[var(--color-textSecondary)]">
               {dateFrom} to {dateTo}
             </span>
           </div>

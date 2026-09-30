@@ -92,7 +92,7 @@ const ServiceTimes = () => {
               >
                 {service.highlight && (
                   <div className="absolute top-4 right-4">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-[var(--color-success)] rounded-full animate-pulse"></div>
                   </div>
                 )}
 

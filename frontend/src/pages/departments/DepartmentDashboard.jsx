@@ -1,3 +1,23 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The home page for one department (route: /dashboard/departments/:slug).
+ * Department leaders see the full set of tabs — members, communications,
+ * events, gallery, tasks, resources, collections, settings — while regular
+ * members see a smaller set (overview, collections, events, gallery,
+ * resources). The viewer's role comes from the server, so deep links work.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/:slug/dashboard      → dept info + metrics + role
+ * - backend /departments/:slug/communications → dept message board
+ * - backend /departments/:slug/members        → roster + join requests
+ * - backend /departments/:slug/meetings|tasks|resources
+ * - components/GmailMessageList               → communications inbox UI
+ * - components/departments/DepartmentCollections → collections tab
+ * - pages/departments/components/*            → allocation/permissions/branding
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -44,10 +64,6 @@ const DepartmentDashboard = () => {
   const { colors } = useColorPalette();
   const location = useLocation();
   
-  // Get user's role in this department from navigation state
-  const userRole = location.state?.role || 'Member';
-  const isAdmin = location.state?.isAdmin || false;
-  
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -62,6 +78,7 @@ const DepartmentDashboard = () => {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [tabLoading, setTabLoading] = useState(false);
   const [showCommModal, setShowCommModal] = useState(false);
+  const [viewComm, setViewComm] = useState(null);
   const [showEventModal, setShowEventModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -142,7 +159,6 @@ const DepartmentDashboard = () => {
       setErrorType(null);
       const response = await fetchWithRetry(() => api.get(API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.DASHBOARD(departmentSlug)));
 
-      console.log('Dashboard response:', response.data);
       setDashboard(response.data.department || response.data.data);
     } catch (error) {
       const errorMessage = error.response?.data?.error || error.response?.data?.details || error.message || 'Failed to load department dashboard';
@@ -387,55 +403,36 @@ const DepartmentDashboard = () => {
     }
   };
 
+  // GmailMessageList only emits real actions: 'delete' (bulk + row) and
+  // 'view' (row click). Deletion goes through the authed api client — a raw
+  // fetch here used to call undefined authHeaders() and crash.
   const handleCommBulkAction = async (action) => {
+    if (action !== 'delete') return;
+    if (!confirm(`Are you sure you want to delete ${commSelectedItems.size} communications?`)) return;
     try {
-      if (action === 'delete') {
-        if (confirm(`Are you sure you want to delete ${commSelectedItems.size} communications?`)) {
-          for (const id of commSelectedItems) {
-            await fetch('/api' + API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug) + '/' + id, {
-              method: 'DELETE',
-              headers: authHeaders(),
-            });
-          }
-          toast.success(`${commSelectedItems.size} communications deleted`);
-        }
-      } else if (action === 'archive') {
-        toast.success('Communications archived');
-      } else if (action === 'markRead') {
-        toast.success('Communications marked as read');
+      for (const id of commSelectedItems) {
+        await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${id}`);
       }
+      toast.success(`${commSelectedItems.size} communications deleted`);
       setCommSelectedItems(new Set());
       loadCommunications();
     } catch (error) {
-      console.error('Failed to perform bulk action:', error);
-      toast.error('Failed to perform action');
+      console.error('Failed to delete communications:', error);
+      toast.error('Failed to delete communications');
     }
   };
 
-  const handleCommRowAction = (action, item) => {
-    if (action === 'delete') {
-      if (confirm('Are you sure you want to delete this communication?')) {
-        fetch('/api' + API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug) + '/' + item.id, {
-          method: 'DELETE',
-          headers: authHeaders(),
-        }).then(() => {
-          toast.success('Communication deleted');
-          loadCommunications();
-        }).catch((error) => {
-          toast.error('Failed to delete communication');
-        });
+  const handleCommRowAction = async (action, item) => {
+    if (action === 'view') {
+      setViewComm(item);
+    } else if (action === 'delete' && confirm('Are you sure you want to delete this communication?')) {
+      try {
+        await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${item.id}`);
+        toast.success('Communication deleted');
+        loadCommunications();
+      } catch (error) {
+        toast.error('Failed to delete communication');
       }
-    } else if (action === 'star') {
-      toast.success('Communication starred');
-    } else if (action === 'archive') {
-      toast.success('Communication archived');
-    } else if (action === 'markRead') {
-      toast.success('Communication marked as read');
-    } else if (action === 'snooze') {
-      toast.success('Communication snoozed');
-    } else if (action === 'view') {
-      // Could open a detail view modal
-      toast.success('Viewing communication');
     }
   };
 
@@ -629,6 +626,13 @@ const DepartmentDashboard = () => {
     }
   };
 
+  // The viewer's role in THIS department comes from the server response
+  // (computed in getDepartmentDashboard). Navigation state is only a
+  // fallback so the page still works when opened via a deep link.
+  const LEADER_ROLES = ['Admin', 'Department Head', 'Assistant Department Head', 'Head', 'Leader', 'Subcommittee Head'];
+  const userRole = dashboard?.department?.userRole || location.state?.role || 'Member';
+  const isAdmin = LEADER_ROLES.includes(userRole) || location.state?.isAdmin === true;
+
   const tabs = isAdmin ? [
     { id: 'overview', label: 'Overview', shortLabel: 'Overview', icon: FileText },
     { id: 'members', label: 'Members', shortLabel: 'Members', icon: Users },
@@ -657,16 +661,16 @@ const DepartmentDashboard = () => {
         case 'forbidden':
           return (
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <AlertCircle className="w-8 h-8 text-red-600" />
+              <div className="w-16 h-16 bg-[var(--color-error-light)] rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-[var(--color-error)]" />
               </div>
               <h2 className="text-xl font-semibold text-[var(--color-text)]  mb-2">Access Denied</h2>
               <p className="text-[var(--color-textSecondary)]  text-center max-w-md mb-6">
                 {error || 'You do not have permission to access this department dashboard.'}
               </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mb-6">
-                <h3 className="font-medium text-yellow-800 mb-2">To resolve this issue:</h3>
-                <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+              <div className="bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg p-4 max-w-md mb-6">
+                <h3 className="font-medium text-[var(--color-warning)] mb-2">To resolve this issue:</h3>
+                <ul className="text-sm text-[var(--color-warning)] space-y-1 list-disc list-inside">
                   <li>Contact your department head to request access</li>
                   <li>Ensure you are a member of this department</li>
                   <li>Check with the church administrator if you believe this is an error</li>
@@ -727,16 +731,16 @@ const DepartmentDashboard = () => {
         case 'unauthorized':
           return (
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4">
-                <AlertCircle className="w-8 h-8 text-orange-600" />
+              <div className="w-16 h-16 bg-[var(--color-warning-light)] rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-[var(--color-warning)]" />
               </div>
               <h2 className="text-xl font-semibold text-[var(--color-text)]  mb-2">Session Expired</h2>
               <p className="text-[var(--color-textSecondary)]  text-center max-w-md mb-6">
                 {error || 'Your session has expired. Please log in again to continue.'}
               </p>
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 max-w-md mb-6">
-                <h3 className="font-medium text-orange-800 mb-2">To resolve this issue:</h3>
-                <ul className="text-sm text-orange-700 space-y-1 list-disc list-inside">
+              <div className="bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg p-4 max-w-md mb-6">
+                <h3 className="font-medium text-[var(--color-warning)] mb-2">To resolve this issue:</h3>
+                <ul className="text-sm text-[var(--color-warning)] space-y-1 list-disc list-inside">
                   <li>Log out and log back in to refresh your session</li>
                   <li>Clear your browser cache if the issue persists</li>
                   <li>Contact support if you continue to experience issues</li>
@@ -801,16 +805,16 @@ const DepartmentDashboard = () => {
         default:
           return (
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                <AlertCircle className="w-8 h-8 text-red-600" />
+              <div className="w-16 h-16 bg-[var(--color-error-light)] rounded-full flex items-center justify-center mb-4">
+                <AlertCircle className="w-8 h-8 text-[var(--color-error)]" />
               </div>
               <h2 className="text-xl font-semibold text-[var(--color-text)]  mb-2">Error Loading Dashboard</h2>
               <p className="text-[var(--color-textSecondary)]  text-center max-w-md mb-6">
                 {error || 'An unexpected error occurred while loading the department dashboard.'}
               </p>
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mb-6">
-                <h3 className="font-medium text-red-800 mb-2">To resolve this issue:</h3>
-                <ul className="text-sm text-red-700 space-y-1 list-disc list-inside">
+              <div className="bg-[var(--color-error-light)] border border-[var(--color-error)] rounded-lg p-4 max-w-md mb-6">
+                <h3 className="font-medium text-[var(--color-error)] mb-2">To resolve this issue:</h3>
+                <ul className="text-sm text-[var(--color-error)] space-y-1 list-disc list-inside">
                   <li>Refresh the page to try again</li>
                   <li>Contact the church administrator if the issue persists</li>
                   <li>Check the server logs for more details</li>
@@ -850,7 +854,7 @@ const DepartmentDashboard = () => {
     pendingTasks: []
   };
 
-  const modalBackdrop = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50';
+  const modalBackdrop = 'fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[var(--color-overlay)]';
 
   const renderTabContent = () => {
     if (tabLoading) {
@@ -955,8 +959,8 @@ const DepartmentDashboard = () => {
 
             {/* Pending Requests Section */}
             {pendingRequests && pendingRequests.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
-                <h3 className="text-base sm:text-lg font-semibold text-yellow-800 mb-3 sm:mb-4">
+              <div className="bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg p-4 sm:p-6">
+                <h3 className="text-base sm:text-lg font-semibold text-[var(--color-warning)] mb-3 sm:mb-4">
                   Pending Membership Requests ({pendingRequests?.length || 0})
                 </h3>
                 <div className="space-y-3">
@@ -966,8 +970,8 @@ const DepartmentDashboard = () => {
                       className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-[var(--color-surface)]  rounded-lg p-3 sm:p-4 shadow-sm gap-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs sm:text-sm font-semibold text-yellow-600">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--color-warning-light)] rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs sm:text-sm font-semibold text-[var(--color-warning)]">
                             {request.first_name?.[0] || 'U'}
                           </span>
                         </div>
@@ -984,7 +988,7 @@ const DepartmentDashboard = () => {
                       <div className="flex items-center gap-2 self-end sm:self-auto">
                         <button
                           onClick={() => handleApproveMember(request.user_id)}
-                          className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm"
+                          className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-xs sm:text-sm"
                         >
                           <Check className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">Approve</span>
@@ -992,7 +996,7 @@ const DepartmentDashboard = () => {
                         </button>
                         <button
                           onClick={() => handleRejectMember(request.user_id)}
-                          className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm"
+                          className="flex items-center gap-1 px-2 sm:px-3 py-1.5 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-xs sm:text-sm"
                         >
                           <X className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">Reject</span>
@@ -1095,7 +1099,7 @@ const DepartmentDashboard = () => {
                 {/* Event Details Card */}
                 <div className="bg-[var(--color-surface)]  rounded-lg shadow p-4 sm:p-6">
                   <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-success)]" />
                     <h3 className="text-lg sm:text-xl font-semibold text-[var(--color-text)]  truncate">{selectedEvent.title}</h3>
                   </div>
                   {selectedEvent.description && (
@@ -1129,8 +1133,8 @@ const DepartmentDashboard = () => {
                 )}
 
                 {!selectedEventCollection && selectedEvent.has_collection && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 sm:p-6">
-                    <p className="text-sm sm:text-base text-yellow-800">Loading collection data...</p>
+                  <div className="bg-[var(--color-warning-light)] border border-[var(--color-warning)] rounded-lg p-4 sm:p-6">
+                    <p className="text-sm sm:text-base text-[var(--color-warning)]">Loading collection data...</p>
                   </div>
                 )}
               </div>
@@ -1143,7 +1147,7 @@ const DepartmentDashboard = () => {
                     className="bg-[var(--color-surface)]  rounded-lg shadow p-4 sm:p-6 cursor-pointer hover:shadow-lg transition-shadow"
                   >
                     <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                      <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-success)]" />
                       <h3 className="text-sm sm:text-base font-medium text-[var(--color-text)]  truncate">{event.title}</h3>
                     </div>
                     <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[var(--color-textSecondary)] ">
@@ -1162,7 +1166,7 @@ const DepartmentDashboard = () => {
                         Duration: {event.duration} minutes
                       </p>
                       {event.has_collection && (
-                        <p className="flex items-center gap-2 text-green-600">
+                        <p className="flex items-center gap-2 text-[var(--color-success)]">
                           <DollarSign className="w-3 h-3 sm:w-4 sm:h-4" />
                           Has Collection
                         </p>
@@ -1189,7 +1193,7 @@ const DepartmentDashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowTaskModal(true)}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-warning)] text-white rounded-lg hover:bg-[var(--color-warning)] transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Create Task</span>
@@ -1208,14 +1212,14 @@ const DepartmentDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-green-100 text-green-800'
+                        task.priority === 'high' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' :
+                        task.priority === 'medium' ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' :
+                        'bg-[var(--color-success-light)] text-[var(--color-success)]'
                       }`}>
                         {task.priority}
                       </span>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        task.status === 'completed' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' :
                         task.status === 'in_progress' ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' :
                         'bg-[var(--color-surface)] text-[var(--color-text)] '
                       }`}>
@@ -1232,7 +1236,7 @@ const DepartmentDashboard = () => {
                     {task.status !== 'completed' && (
                       <button
                         onClick={() => updateTaskStatus(task.id, 'completed')}
-                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
                       >
                         <CheckSquare className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Complete</span>
@@ -1251,7 +1255,7 @@ const DepartmentDashboard = () => {
                     )}
                     <button
                       onClick={() => deleteTask(task.id)}
-                      className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="flex items-center gap-1 px-2 sm:px-3 py-1.5 text-xs sm:text-sm bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors"
                     >
                       <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">Delete</span>
@@ -1277,7 +1281,7 @@ const DepartmentDashboard = () => {
               <h2 className="text-base sm:text-lg font-semibold text-[var(--color-text)] ">Resources</h2>
               <button
                 type="button"
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent)] transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Upload Resource</span>
@@ -1288,7 +1292,7 @@ const DepartmentDashboard = () => {
               {resources && resources.map((resource) => (
                 <div key={resource.id} className="bg-[var(--color-surface)]  rounded-lg shadow p-4 sm:p-6">
                   <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-                    <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 flex-shrink-0" />
+                    <FolderOpen className="w-4 h-4 sm:w-5 sm:h-5 text-[var(--color-accent)] flex-shrink-0" />
                     <h3 className="text-sm sm:text-base font-medium text-[var(--color-text)]  truncate">{resource.file_name}</h3>
                   </div>
                   <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-[var(--color-textSecondary)] ">
@@ -1438,7 +1442,7 @@ const DepartmentDashboard = () => {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--color-background)] ">
         <div className="text-center p-8">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-[var(--color-error)] mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Error Loading Department</h2>
           <p className="text-[var(--color-textSecondary)] mb-4">{error}</p>
           <button
@@ -1518,7 +1522,7 @@ const DepartmentDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setShowEventModal(true)}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
                 >
                   <Calendar className="w-4 h-4" />
                   <span className="hidden sm:inline">Create Event</span>
@@ -1527,7 +1531,7 @@ const DepartmentDashboard = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab('members')}
-                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent)] transition-colors text-sm"
                 >
                   <Users className="w-4 h-4" />
                   <span className="hidden sm:inline">Add Member</span>
@@ -1603,9 +1607,9 @@ const DepartmentDashboard = () => {
                   className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]  "
                 >
                   <option value="Announcement">Announcement</option>
-                  <option value="Notice">Notice</option>
-                  <option value="Prayer Request">Prayer Request</option>
-                  <option value="General">General</option>
+                  <option value="Meeting">Meeting</option>
+                  <option value="Report">Report</option>
+                  <option value="Event">Event</option>
                 </select>
               </div>
               <div>
@@ -1651,6 +1655,35 @@ const DepartmentDashboard = () => {
         </div>
       )}
 
+      {/* Read-only view for a single communication, opened by clicking a row */}
+      {viewComm && (
+        <div className={modalBackdrop} onClick={() => setViewComm(null)}>
+          <div
+            className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
+              <h2 className="text-lg font-semibold text-[var(--color-text)]">{viewComm.subject || viewComm.title}</h2>
+              <button
+                type="button"
+                onClick={() => setViewComm(null)}
+                className="p-2 hover:bg-[var(--color-surface)] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[var(--color-textSecondary)]" />
+              </button>
+            </div>
+            <div className="p-6 space-y-3">
+              <div className="flex items-center gap-2 text-sm text-[var(--color-textSecondary)]">
+                <span className="px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)]">{viewComm.type}</span>
+                <span>{viewComm.sender}</span>
+                {viewComm.created_at && <span>· {new Date(viewComm.created_at).toLocaleString()}</span>}
+              </div>
+              <p className="text-[var(--color-text)] whitespace-pre-wrap">{viewComm.content || viewComm.message}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Modal */}
       {showEventModal && (
         <div className={modalBackdrop}>
@@ -1673,7 +1706,7 @@ const DepartmentDashboard = () => {
                   required
                   value={eventForm.title}
                   onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                 />
               </div>
               <div>
@@ -1682,7 +1715,7 @@ const DepartmentDashboard = () => {
                   rows={3}
                   value={eventForm.description}
                   onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                 />
               </div>
               <div>
@@ -1692,7 +1725,7 @@ const DepartmentDashboard = () => {
                   required
                   value={eventForm.eventDate}
                   onChange={(e) => setEventForm({ ...eventForm, eventDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                 />
               </div>
               <div>
@@ -1703,7 +1736,7 @@ const DepartmentDashboard = () => {
                   min="15"
                   value={eventForm.duration}
                   onChange={(e) => setEventForm({ ...eventForm, duration: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                 />
               </div>
               <div>
@@ -1712,7 +1745,7 @@ const DepartmentDashboard = () => {
                   type="text"
                   value={eventForm.location}
                   onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                 />
               </div>
 
@@ -1724,7 +1757,7 @@ const DepartmentDashboard = () => {
                     id="hasCollection"
                     checked={eventForm.hasCollection}
                     onChange={(e) => setEventForm({ ...eventForm, hasCollection: e.target.checked })}
-                    className="w-4 h-4 text-green-600 border-[var(--color-border)] rounded focus:ring-green-500"
+                    className="w-4 h-4 text-[var(--color-success)] border-[var(--color-border)] rounded focus:ring-[var(--color-success)]"
                   />
                   <label htmlFor="hasCollection" className="text-sm font-medium text-[var(--color-text)] ">
                     Enable Collection/Budget Tracking
@@ -1732,7 +1765,7 @@ const DepartmentDashboard = () => {
                 </div>
 
                 {eventForm.hasCollection && (
-                  <div className="space-y-4 pl-6 border-l-2 border-green-200">
+                  <div className="space-y-4 pl-6 border-l-2 border-[var(--color-success)]">
                     <div>
                       <label className="block text-sm font-medium text-[var(--color-text)]  mb-1">Collection Title</label>
                       <input
@@ -1740,7 +1773,7 @@ const DepartmentDashboard = () => {
                         value={eventForm.collectionTitle}
                         onChange={(e) => setEventForm({ ...eventForm, collectionTitle: e.target.value })}
                         placeholder="e.g., Building Fund, Special Offering"
-                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                       />
                     </div>
                     <div>
@@ -1750,7 +1783,7 @@ const DepartmentDashboard = () => {
                         value={eventForm.collectionDescription}
                         onChange={(e) => setEventForm({ ...eventForm, collectionDescription: e.target.value })}
                         placeholder="Describe the purpose of this collection"
-                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                       />
                     </div>
                     <div>
@@ -1762,7 +1795,7 @@ const DepartmentDashboard = () => {
                         placeholder="0.00"
                         min="0"
                         step="0.01"
-                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                       />
                     </div>
                     <div>
@@ -1770,7 +1803,7 @@ const DepartmentDashboard = () => {
                       <select
                         value={eventForm.collectionVisibility}
                         onChange={(e) => setEventForm({ ...eventForm, collectionVisibility: e.target.value })}
-                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-green-500  "
+                        className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-success)]  "
                       >
                         <option value="department">Department Members Only</option>
                         <option value="church">Entire Church</option>
@@ -1789,7 +1822,7 @@ const DepartmentDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
                 >
                   Create Event
                 </button>
@@ -1821,7 +1854,7 @@ const DepartmentDashboard = () => {
                   required
                   value={taskForm.title}
                   onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-orange-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-warning)]  "
                 />
               </div>
               <div>
@@ -1830,7 +1863,7 @@ const DepartmentDashboard = () => {
                   rows={3}
                   value={taskForm.description}
                   onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-orange-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-warning)]  "
                 />
               </div>
               <div>
@@ -1840,7 +1873,7 @@ const DepartmentDashboard = () => {
                   required
                   value={taskForm.dueDate}
                   onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-orange-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-warning)]  "
                 />
               </div>
               <div>
@@ -1848,7 +1881,7 @@ const DepartmentDashboard = () => {
                 <select
                   value={taskForm.priority}
                   onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-orange-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-warning)]  "
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -1862,7 +1895,7 @@ const DepartmentDashboard = () => {
                   value={taskForm.assignee}
                   onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
                   placeholder="Enter assignee name"
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-orange-500  "
+                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg focus:ring-2 focus:ring-[var(--color-warning)]  "
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -1875,7 +1908,7 @@ const DepartmentDashboard = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                  className="flex-1 px-4 py-2 bg-[var(--color-warning)] text-white rounded-lg hover:bg-[var(--color-warning)] transition-colors"
                 >
                   Create Task
                 </button>

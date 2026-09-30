@@ -99,8 +99,8 @@ const Receipts = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Receipts</h1>
-        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">Receipts</h1>
+        <p className="text-sm text-[var(--color-textSecondary)]">
           Generate and manage payment receipts
         </p>
       </div>
@@ -117,13 +117,13 @@ const Receipts = () => {
                   placeholder="Search receipts..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -131,7 +131,7 @@ const Receipts = () => {
             </button>
             <button
               onClick={fetchReceipts}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -141,25 +141,25 @@ const Receipts = () => {
           {showFilters && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   From Date
                 </label>
                 <input
                   type="date"
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   To Date
                 </label>
                 <input
                   type="date"
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
@@ -174,45 +174,45 @@ const Receipts = () => {
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Receipt #</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Date</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Description</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Member</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Amount</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Actions</th>
+                <tr className="border-b border-[var(--color-border)]">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Receipt #</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Date</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Description</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Member</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Amount</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredReceipts.map((receipt) => (
-                  <tr key={receipt.id} className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-                    <td className="py-3 px-4 text-sm text-[var(--color-text)] text-white font-medium">
+                  <tr key={receipt.id} className="border-b border-[var(--color-border)]">
+                    <td className="py-3 px-4 text-sm text-[var(--color-text)] font-medium">
                       {receipt.receipt_number}
                     </td>
-                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
                       {new Date(receipt.receipt_date).toLocaleDateString()}
                     </td>
-                    <td className="py-3 px-4 text-sm text-[var(--color-text)] text-white">
+                    <td className="py-3 px-4 text-sm text-[var(--color-text)]">
                       {receipt.description}
                     </td>
-                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
                       {receipt.member_name || '-'}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white font-semibold">
+                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] font-semibold">
                       KES {parseFloat(receipt?.amount ?? 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleViewReceipt(receipt)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                           title="View"
                         >
                           <Eye className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDownloadPDF(receipt.id)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-green-600 text-[var(--color-textSecondary)] hover:text-green-400 transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-success)] transition-colors"
                           title="Download PDF"
                         >
                           <Download className="h-4 w-4" />
@@ -235,7 +235,7 @@ const Receipts = () => {
                 actions={
                   <button
                     onClick={(e) => { e.stopPropagation(); handleDownloadPDF(receipt.id); }}
-                    className="flex items-center gap-1 text-sm text-green-600 font-medium min-h-[44px] px-2"
+                    className="flex items-center gap-1 text-sm text-[var(--color-success)] font-medium min-h-[44px] px-2"
                   >
                     <Download className="h-4 w-4" /><span>Download PDF</span>
                   </button>
@@ -258,11 +258,11 @@ const Receipts = () => {
 
       {/* Receipt Detail Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-          <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-[var(--color-text)] text-white">Receipt Details</h2>
+                <h2 className="text-xl font-bold text-[var(--color-text)]">Receipt Details</h2>
                 <button
                   onClick={() => setSelectedReceipt(null)}
                   className="p-2 hover:bg-[var(--color-surface)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
@@ -273,30 +273,30 @@ const Receipts = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Receipt Number</p>
-                    <p className="font-semibold text-[var(--color-text)] text-white">{selectedReceipt.receipt_number}</p>
+                    <p className="text-sm text-[var(--color-textSecondary)]">Receipt Number</p>
+                    <p className="font-semibold text-[var(--color-text)]">{selectedReceipt.receipt_number}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Date</p>
-                    <p className="font-semibold text-[var(--color-text)] text-white">
+                    <p className="text-sm text-[var(--color-textSecondary)]">Date</p>
+                    <p className="font-semibold text-[var(--color-text)]">
                       {new Date(selectedReceipt.receipt_date).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Description</p>
-                  <p className="font-semibold text-[var(--color-text)] text-white">{selectedReceipt.description}</p>
+                  <p className="text-sm text-[var(--color-textSecondary)]">Description</p>
+                  <p className="font-semibold text-[var(--color-text)]">{selectedReceipt.description}</p>
                 </div>
                 {selectedReceipt.member_name && (
                   <div>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Member</p>
-                    <p className="font-semibold text-[var(--color-text)] text-white">{selectedReceipt.member_name}</p>
+                    <p className="text-sm text-[var(--color-textSecondary)]">Member</p>
+                    <p className="font-semibold text-[var(--color-text)]">{selectedReceipt.member_name}</p>
                   </div>
                 )}
-                <div className="border-t border-[var(--color-border)] border-[var(--color-border)] pt-4">
+                <div className="border-t border-[var(--color-border)] pt-4">
                   <div className="flex justify-between items-center">
-                    <p className="text-lg font-semibold text-[var(--color-text)] text-white">Total</p>
-                    <p className="text-2xl font-bold text-[var(--color-text)] text-white">
+                    <p className="text-lg font-semibold text-[var(--color-text)]">Total</p>
+                    <p className="text-2xl font-bold text-[var(--color-text)]">
                       KES {parseFloat(selectedReceipt?.amount ?? 0).toLocaleString()}
                     </p>
                   </div>

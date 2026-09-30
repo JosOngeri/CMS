@@ -238,7 +238,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                 {b.collection_deadline && ` · due ${String(b.collection_deadline).split('T')[0]}`}
               </p>
             </div>
-            <span className={`text-xs px-2 py-1 rounded-full ${b.status === 'active' ? 'bg-green-100 text-green-700' : b.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full ${b.status === 'active' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : b.status === 'pending' ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' : 'bg-[var(--color-background)] text-[var(--color-textSecondary)]'}`}>
               {b.status}
             </span>
           </div>
@@ -250,14 +250,14 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <span className="text-[var(--color-textSecondary)]">of KES {Number(b.target_amount || 0).toLocaleString()} ({b.percent}%)</span>
             </div>
             <div className="h-3 bg-[var(--color-background)] rounded-full overflow-hidden relative">
-              <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${b.percent}%` }} />
+              <div className="h-full bg-[var(--color-success)] rounded-full transition-all" style={{ width: `${b.percent}%` }} />
               {[25, 50, 75].map((m) => (
                 <div key={m} className="absolute top-0 bottom-0 w-px bg-[var(--color-surface)]" style={{ left: `${m}%` }} />
               ))}
             </div>
             <div className="flex justify-between mt-1">
               {b.milestones.map((m) => (
-                <span key={m.percent} className={`text-xs flex items-center gap-1 ${m.reached ? 'text-green-600 font-medium' : 'text-[var(--color-textSecondary)]'}`}>
+                <span key={m.percent} className={`text-xs flex items-center gap-1 ${m.reached ? 'text-[var(--color-success)] font-medium' : 'text-[var(--color-textSecondary)]'}`}>
                   {m.reached && <CheckCircle className="w-3 h-3" />}{m.percent}%
                 </span>
               ))}
@@ -343,11 +343,11 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                   <p className="text-[var(--color-text)]">KES {Number(m.paid_amount).toLocaleString()} / {Number(m.amount).toLocaleString()}</p>
                   <div className="flex items-center gap-2 justify-end">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      m.status === 'fulfilled' ? 'bg-green-100 text-green-700'
-                      : m.status === 'partial' ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-gray-100 text-gray-600'}`}>{m.status}</span>
+                      m.status === 'fulfilled' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+                      : m.status === 'partial' ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+                      : 'bg-[var(--color-background)] text-[var(--color-textSecondary)]'}`}>{m.status}</span>
                     {m.status !== 'fulfilled' && m.status !== 'waived' && (
-                      <button onClick={() => waive(m.id)} className="text-xs text-red-500 hover:underline">waive</button>
+                      <button onClick={() => waive(m.id)} className="text-xs text-[var(--color-error)] hover:underline">waive</button>
                     )}
                   </div>
                 </div>
@@ -373,11 +373,11 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
         {/* Unassigned queue — needs a treasurer/head to assign */}
         {unassigned.length > 0 && (
-          <div className="mb-4 border border-yellow-300 bg-yellow-50/50 dark:bg-yellow-900/10 rounded-lg p-3">
-            <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-400 flex items-center gap-1 mb-2">
+          <div className="mb-4 border border-[var(--color-warning)] bg-[var(--color-warning-light)] rounded-lg p-3">
+            <p className="text-xs font-semibold text-[var(--color-warning)] flex items-center gap-1 mb-2">
               <Inbox className="w-3.5 h-3.5" /> {unassigned.length} unassigned — pick which obligation each pays
             </p>
-            <div className="divide-y divide-yellow-200/60">
+            <div className="divide-y divide-[var(--color-warning)]/30">
               {unassigned.map((r) => (
                 <div key={r.id} className="py-2 flex items-center justify-between gap-2 text-sm">
                   <div className="min-w-0">
@@ -415,7 +415,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                 </div>
                 <div className="text-right flex-shrink-0">
                   <p className="font-medium text-[var(--color-text)]">KES {Number(r.amount).toLocaleString()}</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">reconciled</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-success-light)] text-[var(--color-success)]">reconciled</span>
                 </div>
               </div>
             ))}
@@ -431,10 +431,10 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
           </h3>
 
           {pendingFunds.length > 0 && (
-            <div className="mb-4 border border-amber-300 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg p-3">
+            <div className="mb-4 border border-[var(--color-warning)] bg-[var(--color-warning-light)] rounded-lg p-3">
               <div className="flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                  <p className="text-sm font-semibold text-[var(--color-warning)]">
                     KES {pendingFunds.reduce((s, x) => s + Number(x.amount), 0).toLocaleString()} in hand
                   </p>
                   <p className="text-xs text-[var(--color-textSecondary)]">
@@ -467,19 +467,19 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                   {r.status === 'pending' && canManage ? (
                     <>
                       <button onClick={() => confirmRemittance(r.id)} disabled={busy}
-                        className="text-xs px-2.5 py-1 rounded-lg bg-green-600 text-white flex items-center gap-1">
+                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-success)] text-white flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> Confirm
                       </button>
                       <button onClick={() => { setDisputing(r); setDisputeReason(''); }} disabled={busy}
-                        className="text-xs px-2.5 py-1 rounded-lg border border-red-300 text-red-600 flex items-center gap-1">
+                        className="text-xs px-2.5 py-1 rounded-lg border border-[var(--color-error)] text-[var(--color-error)] flex items-center gap-1">
                         <Flag className="w-3 h-3" /> Dispute
                       </button>
                     </>
                   ) : (
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      r.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                      r.status === 'disputed' ? 'bg-red-100 text-red-700' :
-                      'bg-orange-100 text-orange-700'}`}>
+                      r.status === 'confirmed' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' :
+                      r.status === 'disputed' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' :
+                      'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>
                       {r.status}
                     </span>
                   )}
@@ -492,7 +492,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Hand-over modal */}
       {showRemit && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowRemit(false)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowRemit(false)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Hand over funds to church account</h3>
             <div className="max-h-48 overflow-y-auto divide-y divide-[var(--color-border)] border border-[var(--color-border)] rounded-lg">
@@ -538,7 +538,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Dispute modal */}
       {disputing && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setDisputing(null)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setDisputing(null)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Dispute remittance — KES {Number(disputing.amount).toLocaleString()}</h3>
             <textarea value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} rows={3}
@@ -548,7 +548,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <button onClick={() => setDisputing(null)}
                 className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)]">Cancel</button>
               <button onClick={submitDispute} disabled={busy || !disputeReason.trim()}
-                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-white text-sm disabled:opacity-50">
                 {busy ? 'Submitting…' : 'Flag as disputed'}
               </button>
             </div>
@@ -558,7 +558,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Assign reconciliation modal */}
       {assigning && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setAssigning(null)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setAssigning(null)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Assign KES {Number(assigning.amount).toLocaleString()} — {assigning.tx_code}</h3>
             <p className="text-sm text-[var(--color-textSecondary)]">
@@ -593,7 +593,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Manual transaction entry modal (bank deposit / cash transfer records) */}
       {showAddTx && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowAddTx(false)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowAddTx(false)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Record Transaction</h3>
             <p className="text-sm text-[var(--color-textSecondary)]">
@@ -624,7 +624,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Propose budget modal */}
       {showPropose && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowPropose(false)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowPropose(false)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Propose Department Budget</h3>
             <input placeholder="Purpose (e.g. Camp meeting funds)" value={form.purpose}
@@ -655,7 +655,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
 
       {/* Parser setup modal */}
       {showParser && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowParser(false)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowParser(false)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-[var(--color-primary)]" />
@@ -673,13 +673,13 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               {busy ? 'Calibrating…' : 'Calibrate with AI'}
             </button>
             {parserResult && (
-              <div className="border border-green-200 bg-green-50/50 rounded-lg p-4 space-y-2">
-                <p className="text-sm font-medium text-green-800 flex items-center gap-2">
+              <div className="border border-[var(--color-success)] bg-[var(--color-success-light)]/50 rounded-lg p-4 space-y-2">
+                <p className="text-sm font-medium text-[var(--color-success)] flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" /> Extraction verified against your sample
                 </p>
                 <pre className="text-xs text-[var(--color-textSecondary)] overflow-x-auto">{JSON.stringify(parserResult.test_extraction, null, 2)}</pre>
                 <button onClick={() => activateProfile(parserResult.profile.id)}
-                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm">
+                  className="px-4 py-2 rounded-lg bg-[var(--color-success)] text-white text-sm">
                   Activate this parser
                 </button>
               </div>

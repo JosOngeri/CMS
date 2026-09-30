@@ -166,9 +166,9 @@ const RecurringPayments = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-700'
-      case 'paused': return 'bg-yellow-100 text-yellow-700'
-      case 'cancelled': return 'bg-red-100 text-red-700'
+      case 'active': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+      case 'paused': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+      case 'cancelled': return 'bg-[var(--color-error-light)] text-[var(--color-error)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
   }
@@ -182,8 +182,8 @@ const RecurringPayments = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Recurring Payments</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Recurring Payments</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Manage automated recurring payments
           </p>
         </div>
@@ -231,7 +231,7 @@ const RecurringPayments = () => {
 
           {showFilters && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 Status
               </label>
               <select
@@ -261,21 +261,21 @@ const RecurringPayments = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-purple-100 bg-purple-900/20 rounded-lg">
-                      <Clock className="h-5 w-5 text-purple-600" />
+                    <div className="p-2 bg-[var(--color-accent-light)] rounded-lg">
+                      <Clock className="h-5 w-5 text-[var(--color-accent)]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[var(--color-text)] text-white">
+                      <p className="font-medium text-[var(--color-text)]">
                         {payment.payment_number}
                       </p>
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                      <p className="text-sm text-[var(--color-textSecondary)]">
                         {payment.description}
                       </p>
                       <div className="flex items-center space-x-2 mt-1">
                         <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(payment.status)}`}>
                           {payment.status}
                         </span>
-                        <span className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                        <span className="text-xs text-[var(--color-textSecondary)]">
                           {payment.frequency}
                         </span>
                       </div>
@@ -283,14 +283,14 @@ const RecurringPayments = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Amount</p>
-                      <p className="font-semibold text-[var(--color-text)] text-white">
+                      <p className="text-sm text-[var(--color-textSecondary)]">Amount</p>
+                      <p className="font-semibold text-[var(--color-text)]">
                         KES {parseFloat(payment?.amount ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Next Date</p>
-                      <p className="text-sm text-[var(--color-text)] text-white">
+                      <p className="text-sm text-[var(--color-textSecondary)]">Next Date</p>
+                      <p className="text-sm text-[var(--color-text)]">
                         {payment.next_payment_date || '-'}
                       </p>
                     </div>
@@ -298,7 +298,7 @@ const RecurringPayments = () => {
                       {payment.status === 'active' && (
                         <button
                           onClick={() => handlePause(payment.id)}
-                          className="p-2 text-yellow-600 hover:text-yellow-700"
+                          className="p-2 text-[var(--color-warning)] hover:text-[var(--color-warning)]"
                           title="Pause"
                         >
                           <Pause className="h-4 w-4" />
@@ -307,7 +307,7 @@ const RecurringPayments = () => {
                       {payment.status === 'paused' && (
                         <button
                           onClick={() => handleActivate(payment.id)}
-                          className="p-2 text-green-600 hover:text-green-700"
+                          className="p-2 text-[var(--color-success)] hover:text-[var(--color-success)]"
                           title="Activate"
                         >
                           <Play className="h-4 w-4" />
@@ -315,13 +315,13 @@ const RecurringPayments = () => {
                       )}
                       <button
                         onClick={() => handleEdit(payment)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(payment.id)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -342,15 +342,15 @@ const RecurringPayments = () => {
 
       {/* Payment Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[var(--color-text)] text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">
                 {editingPayment ? 'Edit Recurring Payment' : 'Add Recurring Payment'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Payment Number
                   </label>
                   <input
@@ -362,7 +362,7 @@ const RecurringPayments = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Description
                   </label>
                   <input
@@ -375,7 +375,7 @@ const RecurringPayments = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Amount
                     </label>
                     <input
@@ -388,7 +388,7 @@ const RecurringPayments = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Frequency
                     </label>
                     <select
@@ -406,7 +406,7 @@ const RecurringPayments = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Start Date
                     </label>
                     <input
@@ -418,7 +418,7 @@ const RecurringPayments = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       End Date
                     </label>
                     <input
@@ -430,7 +430,7 @@ const RecurringPayments = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Category
                   </label>
                   <input
@@ -441,7 +441,7 @@ const RecurringPayments = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Notes
                   </label>
                   <textarea

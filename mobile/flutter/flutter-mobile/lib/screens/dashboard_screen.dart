@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/pull_sync_service.dart';
+import '../app/theme.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -214,7 +215,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red,
+              color: AppTheme.errorColor,
             ),
             const SizedBox(height: 16),
             Text(
@@ -251,7 +252,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           'Here\'s what\'s happening with your church',
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey[600],
+            color: AppTheme.textSecondary,
           ),
         ),
       ],
@@ -326,7 +327,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                 (d['role_in_department'] ?? d['role'] ?? 'member')
                                     .toString(),
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.grey[600]),
+                                    fontSize: 12, color: AppTheme.textSecondary),
                               ),
                             ],
                           ),
@@ -435,7 +436,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
+                color: AppTheme.textSecondary,
                 letterSpacing: 0.5,
               ),
             ),
@@ -477,28 +478,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         'My Contributions',
         'KES ${_stats!['personal_contributions'] ?? 0}',
         Icons.volunteer_activism,
-        Colors.green,
+        AppTheme.successColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'My Departments',
         '${_stats!['my_departments'] ?? 0}',
         Icons.groups,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Upcoming Events',
         '${_stats!['upcoming_events'] ?? 0}',
         Icons.event,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.go('/events'),
       ),
       _buildStatCard(
         'Unread Notices',
         '${_stats!['unread_announcements'] ?? _unreadNotifications ?? 0}',
         Icons.notifications,
-        Colors.orange,
+        AppTheme.warningColor,
         onTap: () => context.push('/announcements'),
       ),
     ];
@@ -510,28 +511,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         'Total Members',
         '${_stats!['total_members'] ?? 0}',
         Icons.people,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.push('/members'),
       ),
       _buildStatCard(
         'Departments',
         '${_stats!['total_departments'] ?? 0}',
         Icons.groups,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Financial Overview',
         'KES ${_stats!['total_payments'] ?? _stats!['monthly_income'] ?? 0}',
         Icons.account_balance,
-        Colors.green,
+        AppTheme.successColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Pending Approvals',
         '${_pendingApprovals ?? 0}',
         Icons.approval,
-        Colors.purple,
+        AppTheme.accentColor,
         onTap: () => context.push('/approvals'),
       ),
       _buildStatCard(
@@ -540,13 +541,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ? 'Healthy'
             : 'Degraded',
         Icons.monitor_heart,
-        (_roleData?['database'] == 'healthy') ? Colors.green : Colors.red,
+        (_roleData?['database'] == 'healthy') ? AppTheme.successColor : AppTheme.errorColor,
       ),
       _buildStatCard(
         'Active Users',
         '${_roleData?['activeUsers'] ?? 0}',
         Icons.people_alt,
-        Colors.indigo,
+        AppTheme.accentColor,
         onTap: () => context.push('/members'),
       ),
     ];
@@ -558,42 +559,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         'Total Members',
         '${_stats!['total_members'] ?? 0}',
         Icons.people,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.push('/members'),
       ),
       _buildStatCard(
         'Member Engagement',
         '${_roleData?['memberEngagement'] ?? 0}%',
         Icons.volunteer_activism,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Spiritual Growth',
         '${_roleData?['spiritualGrowth'] ?? 0}%',
         Icons.self_improvement,
-        Colors.indigo,
+        AppTheme.accentColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Dept Activity',
         '${_roleData?['departmentActivity'] ?? 0}%',
         Icons.groups,
-        Colors.orange,
+        AppTheme.warningColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Upcoming Events',
         '${_stats!['upcoming_events'] ?? 0}',
         Icons.event,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.go('/events'),
       ),
       _buildStatCard(
         'Pending Approvals',
         '${_pendingApprovals ?? 0}',
         Icons.approval,
-        Colors.purple,
+        AppTheme.accentColor,
         onTap: () => context.push('/approvals'),
       ),
     ];
@@ -605,42 +606,42 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         'Total Balance',
         'KES ${_roleData?['total_balance'] ?? 0}',
         Icons.account_balance_wallet,
-        Colors.green,
+        AppTheme.successColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Income (Month)',
         'KES ${_roleData?['monthly_income'] ?? 0}',
         Icons.trending_up,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Expenses (Month)',
         'KES ${_roleData?['monthly_expenses'] ?? 0}',
         Icons.trending_down,
-        Colors.red,
+        AppTheme.errorColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Pending Payments',
         '${_roleData?['pending_payments'] ?? 0}',
         Icons.pending_actions,
-        Colors.orange,
+        AppTheme.warningColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Budget Used',
         '${_roleData?['budgetUtilization'] ?? 0}%',
         Icons.pie_chart,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Collection Rate',
         '${_roleData?['collectionRate'] ?? 0}%',
         Icons.savings,
-        Colors.indigo,
+        AppTheme.accentColor,
         onTap: () => context.go('/payments'),
       ),
     ];
@@ -652,41 +653,41 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         'Dept Members',
         '${_roleData?['department_members'] ?? 0}',
         Icons.people,
-        Colors.blue,
+        AppTheme.primaryColor,
         onTap: () => context.push('/members'),
       ),
       _buildStatCard(
         'Pending Tasks',
         '${_roleData?['pending_tasks'] ?? 0}',
         Icons.task_alt,
-        Colors.orange,
+        AppTheme.warningColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Dept Events',
         '${_roleData?['department_events'] ?? 0}',
         Icons.event,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.go('/events'),
       ),
       _buildStatCard(
         'Dept Budget',
         'KES ${_roleData?['department_budget'] ?? 0}',
         Icons.account_balance,
-        Colors.green,
+        AppTheme.successColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Task Completion',
         '${_roleData?['taskCompletionRate'] ?? 0}%',
         Icons.check_circle,
-        Colors.indigo,
+        AppTheme.accentColor,
       ),
       _buildStatCard(
         'Participation',
         '${_roleData?['memberParticipationCount'] ?? 0}',
         Icons.how_to_reg,
-        Colors.teal,
+        AppTheme.accentColor,
         onTap: () => context.push('/departments'),
       ),
     ];
@@ -732,7 +733,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     if (onTap != null) ...[
                       const SizedBox(width: 2),
-                      Icon(Icons.chevron_right, size: 14, color: Colors.grey[400]),
+                      Icon(Icons.chevron_right, size: 14, color: AppTheme.textTertiary),
                     ],
                   ],
                 ),
@@ -775,10 +776,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 dense: true,
                 leading: CircleAvatar(
                   backgroundColor:
-                      isIncome ? Colors.green.shade50 : Colors.red.shade50,
+                      isIncome ? AppTheme.successColor.shade50 : AppTheme.errorColor.shade50,
                   child: Icon(
                     isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isIncome ? Colors.green : Colors.red,
+                    color: isIncome ? AppTheme.successColor : AppTheme.errorColor,
                     size: 18,
                   ),
                 ),
@@ -789,13 +790,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
                 subtitle: Text(
                   _formatTxDate(tx['transaction_date'] ?? tx['created_at']),
-                  style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
                 ),
                 trailing: Text(
                   '${isIncome ? '+' : '-'} KES ${tx['amount']}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isIncome ? Colors.green : Colors.red,
+                    color: isIncome ? AppTheme.successColor : AppTheme.errorColor,
                   ),
                 ),
                 onTap: () => context.go('/payments'),
@@ -854,22 +855,22 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     switch (type) {
       case 'payment':
         icon = Icons.payment;
-        color = Colors.green;
+        color = AppTheme.successColor;
         route = '/payments';
         break;
       case 'announcement':
         icon = Icons.announcement;
-        color = Colors.orange;
+        color = AppTheme.warningColor;
         route = '/announcements';
         break;
       case 'event':
         icon = Icons.event;
-        color = Colors.purple;
+        color = AppTheme.accentColor;
         route = '/events';
         break;
       default:
         icon = Icons.info;
-        color = Colors.blue;
+        color = AppTheme.primaryColor;
     }
 
     return Semantics(
@@ -883,7 +884,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           title: Text(description ?? 'Unknown activity'),
           subtitle: Text(createdAt ?? 'Unknown time'),
           trailing: route != null
-              ? Icon(Icons.chevron_right, color: Colors.grey[400])
+              ? Icon(Icons.chevron_right, color: AppTheme.textTertiary)
               : null,
           onTap: route != null ? () => context.go(route!) : null,
         ),
@@ -903,14 +904,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               Icon(
                 Icons.inbox,
                 size: 48,
-                color: Colors.grey[400],
+                color: AppTheme.textTertiary,
               ),
               const SizedBox(height: 16),
               Text(
                 'No recent activities',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: AppTheme.textSecondary,
                 ),
               ),
             ],

@@ -169,8 +169,8 @@ const FixedAssets = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Fixed Assets</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Fixed Assets</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Asset register and depreciation tracking
           </p>
         </div>
@@ -195,13 +195,13 @@ const FixedAssets = () => {
                   placeholder="Search assets..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -209,7 +209,7 @@ const FixedAssets = () => {
             </button>
             <button
               onClick={fetchAssets}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -218,13 +218,13 @@ const FixedAssets = () => {
 
           {showFilters && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 Status
               </label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               >
                 {statusOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -244,53 +244,53 @@ const FixedAssets = () => {
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[var(--color-border)] border-[var(--color-border)]">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Asset</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Type</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Purchase Cost</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Acc. Depreciation</th>
-                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Book Value</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)] text-white">Actions</th>
+                <tr className="border-b border-[var(--color-border)]">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Asset</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Type</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Purchase Cost</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Acc. Depreciation</th>
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Book Value</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredAssets.map((asset) => (
-                  <tr key={asset.id} className="border-b border-[var(--color-border)] border-[var(--color-border)]">
+                  <tr key={asset.id} className="border-b border-[var(--color-border)]">
                     <td className="py-3 px-4">
                       <div>
-                        <p className="font-medium text-[var(--color-text)] text-white">
+                        <p className="font-medium text-[var(--color-text)]">
                           {asset.asset_number} - {asset.asset_name}
                         </p>
                         {asset.purchase_date && (
-                          <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                          <p className="text-xs text-[var(--color-textSecondary)]">
                             Purchased: {asset.purchase_date}
                           </p>
                         )}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
                       {asset.asset_type || '-'}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white">
+                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
                       KES {parseFloat(asset?.purchase_cost ?? 0).toLocaleString()}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] text-white">
+                    <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
                       KES {parseFloat(asset?.accumulated_depreciation ?? 0).toLocaleString()}
                     </td>
-                    <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)] text-white">
+                    <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
                       KES {(calculateBookValue(asset) ?? 0).toLocaleString()}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEdit(asset)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(asset.id)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -313,7 +313,7 @@ const FixedAssets = () => {
                     <button onClick={() => handleEdit(asset)} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
                       <Edit className="w-4 h-4" /><span>Edit</span>
                     </button>
-                    <button onClick={() => handleDelete(asset.id)} className="flex items-center gap-1 text-sm text-red-600 font-medium min-h-[44px] px-2">
+                    <button onClick={() => handleDelete(asset.id)} className="flex items-center gap-1 text-sm text-[var(--color-error)] font-medium min-h-[44px] px-2">
                       <Trash2 className="w-4 h-4" /><span>Delete</span>
                     </button>
                   </>
@@ -337,16 +337,16 @@ const FixedAssets = () => {
 
       {/* Asset Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-          <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[var(--color-text)] text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">
                 {editingAsset ? 'Edit Asset' : 'Add Asset'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Asset Number
                     </label>
                     <input
@@ -354,11 +354,11 @@ const FixedAssets = () => {
                       required
                       value={formData.asset_number}
                       onChange={(e) => setFormData({ ...formData, asset_number: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Asset Name
                     </label>
                     <input
@@ -366,35 +366,35 @@ const FixedAssets = () => {
                       required
                       value={formData.asset_name}
                       onChange={(e) => setFormData({ ...formData, asset_name: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Asset Type
                   </label>
                   <input
                     type="text"
                     value={formData.asset_type}
                     onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Description
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={2}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Purchase Date
                     </label>
                     <input
@@ -402,11 +402,11 @@ const FixedAssets = () => {
                       required
                       value={formData.purchase_date}
                       onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Purchase Cost
                     </label>
                     <input
@@ -415,13 +415,13 @@ const FixedAssets = () => {
                       required
                       value={formData.purchase_cost}
                       onChange={(e) => setFormData({ ...formData, purchase_cost: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Salvage Value
                     </label>
                     <input
@@ -429,29 +429,29 @@ const FixedAssets = () => {
                       step="0.01"
                       value={formData.salvage_value}
                       onChange={(e) => setFormData({ ...formData, salvage_value: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Useful Life (years)
                     </label>
                     <input
                       type="number"
                       value={formData.useful_life}
                       onChange={(e) => setFormData({ ...formData, useful_life: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Depreciation Method
                   </label>
                   <select
                     value={formData.depreciation_method}
                     onChange={(e) => setFormData({ ...formData, depreciation_method: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   >
                     <option value="straight_line">Straight Line</option>
                     <option value="declining_balance">Declining Balance</option>
@@ -466,7 +466,7 @@ const FixedAssets = () => {
                       setEditingAsset(null)
                       resetForm()
                     }}
-                    className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>

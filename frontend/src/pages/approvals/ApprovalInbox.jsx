@@ -117,7 +117,7 @@ const ApprovalInbox = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[var(--color-text)] ">Approval Inbox</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Manage approval workflows and requests</p>
+          <p className="text-sm text-[var(--color-textSecondary)]">Manage approval workflows and requests</p>
         </div>
       </div>
 

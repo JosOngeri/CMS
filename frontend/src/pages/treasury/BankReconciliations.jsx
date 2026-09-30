@@ -135,9 +135,9 @@ const BankReconciliations = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-700'
-      case 'completed': return 'bg-green-100 text-green-700'
-      case 'out_of_balance': return 'bg-red-100 text-red-700'
+      case 'pending': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+      case 'completed': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
+      case 'out_of_balance': return 'bg-[var(--color-error-light)] text-[var(--color-error)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
   }
@@ -155,8 +155,8 @@ const BankReconciliations = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Bank Reconciliations</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Bank Reconciliations</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Bank statement reconciliation process
           </p>
         </div>
@@ -181,13 +181,13 @@ const BankReconciliations = () => {
                   placeholder="Search reconciliations..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -195,7 +195,7 @@ const BankReconciliations = () => {
             </button>
             <button
               onClick={fetchReconciliations}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -204,13 +204,13 @@ const BankReconciliations = () => {
 
           {showFilters && (
             <div className="mt-4">
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                 Status
               </label>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               >
                 {statusOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -237,21 +237,21 @@ const BankReconciliations = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className={`p-2 ${isBalanced ? 'bg-green-100 bg-green-900/20' : 'bg-red-100 bg-red-900/20'} rounded-lg`}>
-                        <Banknote className={`h-5 w-5 ${isBalanced ? 'text-green-600' : 'text-red-600'}`} />
+                      <div className={`p-2 ${isBalanced ? 'bg-[var(--color-success-light)]' : 'bg-[var(--color-error-light)]'} rounded-lg`}>
+                        <Banknote className={`h-5 w-5 ${isBalanced ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`} />
                       </div>
                       <div>
-                        <p className="font-medium text-[var(--color-text)] text-white">
+                        <p className="font-medium text-[var(--color-text)]">
                           {reconciliation.reconciliation_number}
                         </p>
-                        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                        <p className="text-sm text-[var(--color-textSecondary)]">
                           {reconciliation.bank_account}
                         </p>
                         <div className="flex items-center space-x-2 mt-1">
                           <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(reconciliation.status)}`}>
                             {reconciliation.status}
                           </span>
-                          <span className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                          <span className="text-xs text-[var(--color-textSecondary)]">
                             Statement: {reconciliation.statement_date}
                           </span>
                         </div>
@@ -259,19 +259,19 @@ const BankReconciliations = () => {
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Statement</p>
-                        <p className="font-semibold text-[var(--color-text)] text-white">
+                        <p className="text-sm text-[var(--color-textSecondary)]">Statement</p>
+                        <p className="font-semibold text-[var(--color-text)]">
                           KES {parseFloat(reconciliation?.statement_balance ?? 0).toLocaleString()}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Book</p>
-                        <p className="font-semibold text-[var(--color-text)] text-white">
+                        <p className="text-sm text-[var(--color-textSecondary)]">Book</p>
+                        <p className="font-semibold text-[var(--color-text)]">
                           KES {parseFloat(reconciliation?.book_balance ?? 0).toLocaleString()}
                         </p>
                       </div>
-                      <div className={`text-right ${isBalanced ? 'text-green-600' : 'text-red-600'}`}>
-                        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Difference</p>
+                      <div className={`text-right ${isBalanced ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
+                        <p className="text-sm text-[var(--color-textSecondary)]">Difference</p>
                         <p className="font-semibold">
                           KES {Math.abs(difference ?? 0).toLocaleString()}
                         </p>
@@ -279,13 +279,13 @@ const BankReconciliations = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => handleEdit(reconciliation)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                         >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(reconciliation.id)}
-                          className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                          className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -307,15 +307,15 @@ const BankReconciliations = () => {
 
       {/* Reconciliation Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-          <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[var(--color-text)] text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">
                 {editingReconciliation ? 'Edit Reconciliation' : 'New Reconciliation'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Reconciliation Number
                   </label>
                   <input
@@ -323,11 +323,11 @@ const BankReconciliations = () => {
                     required
                     value={formData.reconciliation_number}
                     onChange={(e) => setFormData({ ...formData, reconciliation_number: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Bank Account
                   </label>
                   <input
@@ -335,12 +335,12 @@ const BankReconciliations = () => {
                     required
                     value={formData.bank_account}
                     onChange={(e) => setFormData({ ...formData, bank_account: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Statement Date
                     </label>
                     <input
@@ -348,24 +348,24 @@ const BankReconciliations = () => {
                       required
                       value={formData.statement_date}
                       onChange={(e) => setFormData({ ...formData, statement_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Reconciliation Date
                     </label>
                     <input
                       type="date"
                       value={formData.reconciliation_date}
                       onChange={(e) => setFormData({ ...formData, reconciliation_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Statement Balance
                     </label>
                     <input
@@ -374,11 +374,11 @@ const BankReconciliations = () => {
                       required
                       value={formData.statement_balance}
                       onChange={(e) => setFormData({ ...formData, statement_balance: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Book Balance
                     </label>
                     <input
@@ -387,7 +387,7 @@ const BankReconciliations = () => {
                       required
                       value={formData.book_balance}
                       onChange={(e) => setFormData({ ...formData, book_balance: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                 </div>
@@ -399,7 +399,7 @@ const BankReconciliations = () => {
                       setEditingReconciliation(null)
                       resetForm()
                     }}
-                    className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>

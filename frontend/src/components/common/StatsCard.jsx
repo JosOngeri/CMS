@@ -40,8 +40,8 @@ const StatsCard = ({
         </div>
       ) : error ? (
         <div className="flex flex-col items-center gap-2">
-          <AlertCircle className="h-8 w-8 text-red-600" />
-          <span className="text-sm text-red-600">Error loading data</span>
+          <AlertCircle className="h-8 w-8 text-[var(--color-error)]" />
+          <span className="text-sm text-[var(--color-error)]">Error loading data</span>
           {onRetry && (
             <button
               onClick={(e) => {
@@ -59,7 +59,7 @@ const StatsCard = ({
         <>
           <span className="stat-value">{value}</span>
           {subtitle && <span className="stat-subtitle">{subtitle}</span>}
-          <span className={`stat-change ${changeType === 'positive' ? 'text-green-600' : changeType === 'negative' ? 'text-red-600' : 'text-[var(--color-textSecondary)]'}`}>
+          <span className={`stat-change ${changeType === 'positive' ? 'text-[var(--color-success)]' : changeType === 'negative' ? 'text-[var(--color-error)]' : 'text-[var(--color-textSecondary)]'}`}>
             {changeType === 'positive' ? '↑' : changeType === 'negative' ? '↓' : ''} {change}
             {trendPeriod && <span className="ml-1 text-xs text-[var(--color-textSecondary)]">{trendPeriod}</span>}
           </span>

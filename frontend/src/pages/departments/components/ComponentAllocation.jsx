@@ -1,3 +1,16 @@
+/**
+ * WHAT THIS COMPONENT DOES
+ * ------------------------
+ * Settings-tab panel that lets a department admin attach optional
+ * "components" (feature modules) to their department, or remove them.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/components/all        → catalog of addable modules
+ * - backend /departments/:id/components        → add/remove on this dept
+ * - Rendered by pages/departments/DepartmentDashboard.jsx (settings tab)
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
@@ -9,98 +22,45 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useColorPalette } from '../../../contexts/ColorPaletteContext';
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
-  'Content-Type': 'application/json',
-});
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ComponentAllocation = ({ departmentId }) => {
   const toast = useToast();
   const { colors } = useColorPalette();
+  const { api } = useAuth();
   const [availableComponents, setAvailableComponents] = useState([]);
   const [allocatedComponents, setAllocatedComponents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
 
-  const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const result = await fetchFn()
-        return result
-      } catch (error) {
-        if (error.message?.includes('429') && i < retries - 1) {
-          // Exponential backoff for rate limiting
-          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
-          continue
-        }
-        throw error
-      }
-    }
-  }
-
+  // The api client attaches the auth cookie + CSRF token automatically.
+  // 403 means "not allowed" — show an empty panel rather than an error toast.
   const fetchAvailableComponents = useCallback(async () => {
     try {
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch('/api/departments/components/all', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (!res.ok) {
-          if (res.status === 403) {
-            const error = new Error('You do not have permission to view available components');
-            error.status = res.status;
-            throw error;
-          }
-          const error = new Error('Failed to fetch available components');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-      const data = await response.json();
-      setAvailableComponents(data.data || []);
+      const res = await api.get('/departments/components/all');
+      setAvailableComponents(res.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch available components:', error);
-      // Don't show toast for 403 errors - just set empty state
-      if (error.status !== 403) {
-        toast.error(error.message || 'Failed to fetch available components');
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch available components');
       }
       setAvailableComponents([]);
     }
-  }, [toast]);
+  }, [api, toast]);
 
   const fetchAllocatedComponents = useCallback(async () => {
     try {
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${departmentId}/components`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (!res.ok) {
-          if (res.status === 403) {
-            const error = new Error('You do not have permission to view allocated components');
-            error.status = res.status;
-            throw error;
-          }
-          const error = new Error('Failed to fetch allocated components');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-      const data = await response.json();
-      setAllocatedComponents(data.data || []);
+      const res = await api.get(`/departments/${departmentId}/components`);
+      setAllocatedComponents(res.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch allocated components:', error);
-      // Don't show toast for 403 errors - just set empty state
-      if (error.status !== 403) {
-        toast.error(error.message || 'Failed to fetch allocated components');
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch allocated components');
       }
       setAllocatedComponents([]);
     } finally {
       setLoading(false);
     }
-  }, [departmentId, toast]);
+  }, [api, departmentId, toast]);
 
   useEffect(() => {
     setLoading(true);
@@ -110,31 +70,22 @@ const ComponentAllocation = ({ departmentId }) => {
 
   const allocateComponent = async (componentId) => {
     try {
-      const response = await fetch(`/api/departments/${departmentId}/components`, {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ componentId }),
-      });
-      if (!response.ok) throw new Error('Failed to allocate component');
+      await api.post(`/departments/${departmentId}/components`, { componentId });
       toast.success('Component allocated successfully');
       fetchAllocatedComponents();
       setShowAddModal(false);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.error || 'Failed to allocate component');
     }
   };
 
   const removeComponent = async (componentId) => {
     try {
-      const response = await fetch(`/api/departments/${departmentId}/components/${componentId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to remove component');
+      await api.delete(`/departments/${departmentId}/components/${componentId}`);
       toast.success('Component removed successfully');
       fetchAllocatedComponents();
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.error || 'Failed to remove component');
     }
   };
 

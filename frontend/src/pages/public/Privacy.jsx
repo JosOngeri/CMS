@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 
 const Privacy = () => (
   <div className="container mx-auto px-4 py-12 max-w-3xl">
-    <h1 className="text-3xl font-bold text-[var(--color-text)] text-white mb-6">Privacy</h1>
-    <div className="prose prose-invert text-[var(--color-text)] text-[var(--color-textSecondary)] space-y-4">
+    <h1 className="text-3xl font-bold text-[var(--color-text)] mb-6">Privacy</h1>
+    <div className="prose prose-invert text-[var(--color-textSecondary)] space-y-4">
       <p>
         We collect the information you provide at registration and data needed to run church programmes (for example
         announcements, departments, and payments). Access is limited by role.

@@ -131,7 +131,7 @@ const DocumentationManager = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleDelete(selectedDoc.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded"
                   >
                     <Trash2 size={16} />
                   </button>

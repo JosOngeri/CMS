@@ -1,11 +1,27 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The member's profile page. Lets them update their name, email, and phone
+ * number, change their password, and see which departments they belong to.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/users/{id}   → update details, fetch departments
+ * - backend /api/auth/password → change password
+ * - AuthContext.jsx           → current user, updateUser()
+ * - ToastContext.jsx          → success/error popups
+ */
+
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { User, Mail, Phone, Save, Loader2, Lock, Eye, EyeOff, Key } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { toast } from 'react-toastify'
+import { useToast } from '../../contexts/ToastContext'
 
 const Profile = () => {
   const { user, updateUser, api } = useAuth()
+  const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [departments, setDepartments] = useState([])
   const [showPassword, setShowPassword] = useState(false)
@@ -128,7 +144,7 @@ const Profile = () => {
                     className="input w-full"
                   />
                   {errors.first_name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.first_name.message}</p>
+                    <p className="mt-1 text-sm text-[var(--color-error)]">{errors.first_name.message}</p>
                   )}
                 </div>
 
@@ -144,7 +160,7 @@ const Profile = () => {
                     className="input w-full"
                   />
                   {errors.last_name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.last_name.message}</p>
+                    <p className="mt-1 text-sm text-[var(--color-error)]">{errors.last_name.message}</p>
                   )}
                 </div>
               </div>
@@ -165,7 +181,7 @@ const Profile = () => {
                   className="input w-full"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-[var(--color-error)]">{errors.email.message}</p>
                 )}
               </div>
 
@@ -186,7 +202,7 @@ const Profile = () => {
                   placeholder="+254 700 000 000"
                 />
                 {errors.phone_number && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone_number.message}</p>
+                  <p className="mt-1 text-sm text-[var(--color-error)]">{errors.phone_number.message}</p>
                 )}
               </div>
 
@@ -369,25 +385,18 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Account Settings */}
-          <div className="bg-[var(--color-surface)]  rounded-lg shadow-sm p-6">
-            <h3 className="font-semibold text-[var(--color-text)]  mb-4">Account Settings</h3>
-            
+          {/* Useful links — real pages only */}
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-sm p-6">
+            <h3 className="font-semibold text-[var(--color-text)] mb-4">Quick Links</h3>
             <div className="space-y-3">
-              <button className="w-full text-left p-3 hover:bg-[var(--color-background)]  rounded-lg transition-colors">
-                <p className="font-medium text-[var(--color-text)] ">Change Password</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">Update your password</p>
-              </button>
-              
-              <button className="w-full text-left p-3 hover:bg-[var(--color-background)]  rounded-lg transition-colors">
-                <p className="font-medium text-[var(--color-text)] ">Notification Settings</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">Manage email and SMS notifications</p>
-              </button>
-              
-              <button className="w-full text-left p-3 hover:bg-[var(--color-background)]  rounded-lg transition-colors">
-                <p className="font-medium text-[var(--color-text)] ">Privacy Settings</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">Control your privacy preferences</p>
-              </button>
+              <Link to="/dashboard/notifications" className="block w-full text-left p-3 hover:bg-[var(--color-background)] rounded-lg transition-colors">
+                <p className="font-medium text-[var(--color-text)]">Notifications</p>
+                <p className="text-sm text-[var(--color-textSecondary)]">See messages sent to you</p>
+              </Link>
+              <Link to="/dashboard/my-departments" className="block w-full text-left p-3 hover:bg-[var(--color-background)] rounded-lg transition-colors">
+                <p className="font-medium text-[var(--color-text)]">My Departments</p>
+                <p className="text-sm text-[var(--color-textSecondary)]">Manage your department memberships</p>
+              </Link>
             </div>
           </div>
         </div>

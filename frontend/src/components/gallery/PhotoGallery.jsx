@@ -77,21 +77,10 @@ const PhotoGallery = ({
     if (!window.confirm('Are you sure you want to delete this photo?')) return
     
     try {
-      const response = await fetch(`/api/gallery/photos/${photoId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      if (response.ok) {
-        toast.success('Photo deleted successfully')
-        if (onDelete) onDelete(photoId)
-      } else {
-        toast.error('Failed to delete photo')
-      }
+      await api.delete(`/gallery/photos/${photoId}`)
+      toast.success('Photo deleted successfully')
+      if (onDelete) onDelete(photoId)
     } catch (error) {
-      console.error('Error deleting photo:', error)
       toast.error('Failed to delete photo')
     }
   }
@@ -234,7 +223,7 @@ const PhotoGallery = ({
           {displayedPhotos.map((photo, index) => (
             <div
               key={photo.id}
-              className={`relative group cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow ${selectedPhotos.has(photo.id) ? 'ring-2 ring-green-500' : ''}`}
+              className={`relative group cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow ${selectedPhotos.has(photo.id) ? 'ring-2 ring-[var(--color-success)]' : ''}`}
               onClick={(e) => {
                 if (enableSelection) {
                   e.stopPropagation()
@@ -247,7 +236,7 @@ const PhotoGallery = ({
               {enableSelection && (
                 <div className="absolute top-2 left-2 z-10 bg-[var(--color-surface)] rounded-full p-1 shadow-md">
                   {selectedPhotos.has(photo.id) ? (
-                    <CheckSquare className="h-5 w-5 text-green-600" />
+                    <CheckSquare className="h-5 w-5 text-[var(--color-success)]" />
                   ) : (
                     <Square className="h-5 w-5 text-[var(--color-textSecondary)]" />
                   )}
@@ -270,7 +259,7 @@ const PhotoGallery = ({
                       e.stopPropagation()
                       handleDelete(photo.id)
                     }}
-                    className="absolute top-2 right-2 p-2 bg-red-600 hover:bg-red-700 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 p-2 bg-[var(--color-error)] hover:opacity-90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                     aria-label="Delete photo"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -317,7 +306,7 @@ const PhotoGallery = ({
                 {canUpload && onDelete && (
                   <button
                     onClick={() => handleDelete(photo.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                    className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg"
                     aria-label="Delete photo"
                   >
                     <Trash2 className="h-5 w-5" />
@@ -346,21 +335,21 @@ const PhotoGallery = ({
             </div>
             <button
               onClick={() => navigateSlideshow('prev')}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={() => navigateSlideshow('next')}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
               aria-label="Next photo"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
             <button
               onClick={() => setIsSlideshowPlaying(!isSlideshowPlaying)}
-              className="absolute top-2 right-2 p-2 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full"
+              className="absolute top-2 right-2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
               aria-label={isSlideshowPlaying ? 'Pause slideshow' : 'Play slideshow'}
               aria-pressed={isSlideshowPlaying}
             >

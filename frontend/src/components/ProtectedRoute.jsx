@@ -1,7 +1,23 @@
-import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { usePermission } from '../hooks/usePermission'
-import { Loader2 } from 'lucide-react'
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A wrapper that guards a page. It checks:
+ *   1. Is the user logged in? If not, send them to the login page.
+ *   2. Does the user have one of the required roles? If not, send them home.
+ *   3. Does the user have the required permission(s)? If not, send them home.
+ *
+ * Use it in the router around any page that needs protection.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - AuthContext.jsx  → isAuthenticated / user loading state
+ * - hooks/usePermission.js → role and permission checks
+ */
+
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { usePermission } from '../hooks/usePermission';
+import { Loader2 } from 'lucide-react';
 
 const ProtectedRoute = ({
   children,
@@ -11,11 +27,9 @@ const ProtectedRoute = ({
   redirectTo = '/login',
   requiredRoles = []
 }) => {
-  const { isAuthenticated, isLoading, user } = useAuth()
-  const { can, canAny, canAll, hasRole } = usePermission()
-  const location = useLocation()
-
-  import.meta.env.DEV && console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading)
+  const { isAuthenticated, isLoading } = useAuth();
+  const { can, canAny, canAll, isAny } = usePermission();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -25,40 +39,31 @@ const ProtectedRoute = ({
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!isAuthenticated) {
-    import.meta.env.DEV && console.log('Not authenticated, redirecting to login')
-    const redirectPath = `${redirectTo}?redirect=${encodeURIComponent(location.pathname + location.search)}`
-    return <Navigate to={redirectPath} replace />
+    const redirectPath = `${redirectTo}?redirect=${encodeURIComponent(location.pathname + location.search)}`;
+    return <Navigate to={redirectPath} replace />;
   }
 
-  // Check roles if specified
-  if (requiredRoles.length > 0) {
-    const hasRequiredRole = requiredRoles.some(role => hasRole(role))
-    if (!hasRequiredRole) {
-      import.meta.env.DEV && console.log('Not authorized by role, redirecting to dashboard')
-      return <Navigate to="/dashboard/overview" replace />
-    }
+  if (requiredRoles.length > 0 && !isAny(requiredRoles)) {
+    return <Navigate to="/dashboard/overview" replace />;
   }
 
-  // Check permissions if specified
   if (permission || permissions.length > 0) {
-    const hasPermission = permission
+    const allowed = permission
       ? can(permission)
       : requireAll
         ? canAll(permissions)
-        : canAny(permissions)
+        : canAny(permissions);
 
-    if (!hasPermission) {
-      import.meta.env.DEV && console.log('Not authorized by permission, redirecting to dashboard')
-      return <Navigate to="/dashboard/overview" replace />
+    if (!allowed) {
+      return <Navigate to="/dashboard/overview" replace />;
     }
   }
 
-  import.meta.env.DEV && console.log('Authenticated and authorized, rendering children')
-  return children
-}
+  return children;
+};
 
-export default ProtectedRoute
+export default ProtectedRoute;

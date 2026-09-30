@@ -1,135 +1,156 @@
 /**
- * usePermission Hook
- * Provides easy access to permission checking functions
- * This is a convenience hook that wraps AuthContext permission methods
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A convenience hook for asking "is the current user allowed to do X?"
+ * anywhere in the app. It wraps the permission and role data that comes
+ * from the backend after login.
+ *
+ * Use it like this in a component:
+ *   const { can, canAccessModule, isAny } = usePermission();
+ *   if (can('payments.view_own')) { ... }
+ *   if (canAccessModule('/dashboard/treasury')) { ... }
+ *   if (isAny(['Treasurer','Super Admin'])) { ... }
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - AuthContext.jsx     → supplies user.roles, user.permissions
+ * - constants/permissions.js → permission strings and module map
  */
 
 import { useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { PERMISSIONS, getModulePermissions } from '../constants/permissions';
 
-// Permission hierarchy: if user has higher permission, they automatically have lower permission
+// Higher-level permissions automatically grant the matching view permission.
+// Example: having 'members.edit' means you can also view members.
 const PERMISSION_HIERARCHY = {
-  'manage_members': ['view_members'],
-  'manage_departments': ['view_departments'],
-  'manage_treasury': ['view_treasury'],
-  'manage_content': ['view_content'],
-  'manage_events': ['view_events'],
-  'manage_users': ['view_users'],
-  'manage_analytics': ['view_analytics'],
-  'manage_settings': ['view_settings'],
-  'delete_members': ['manage_members', 'view_members'],
-  'delete_departments': ['manage_departments', 'view_departments'],
+  [PERMISSIONS.MEMBERS_CREATE]: [PERMISSIONS.MEMBERS_VIEW],
+  [PERMISSIONS.MEMBERS_EDIT]: [PERMISSIONS.MEMBERS_VIEW],
+  [PERMISSIONS.MEMBERS_DELETE]: [PERMISSIONS.MEMBERS_VIEW, PERMISSIONS.MEMBERS_EDIT],
+  [PERMISSIONS.MEMBERS_EXPORT]: [PERMISSIONS.MEMBERS_VIEW],
+
+  [PERMISSIONS.DEPARTMENTS_CREATE]: [PERMISSIONS.DEPARTMENTS_VIEW],
+  [PERMISSIONS.DEPARTMENTS_EDIT]: [PERMISSIONS.DEPARTMENTS_VIEW],
+  [PERMISSIONS.DEPARTMENTS_DELETE]: [PERMISSIONS.DEPARTMENTS_VIEW, PERMISSIONS.DEPARTMENTS_EDIT],
+  [PERMISSIONS.DEPARTMENTS_MANAGE]: [PERMISSIONS.DEPARTMENTS_VIEW, PERMISSIONS.DEPARTMENTS_EDIT, PERMISSIONS.DEPARTMENTS_CREATE],
+
+  [PERMISSIONS.GALLERY_UPLOAD]: [PERMISSIONS.GALLERY_VIEW],
+  [PERMISSIONS.GALLERY_EDIT]: [PERMISSIONS.GALLERY_VIEW],
+  [PERMISSIONS.GALLERY_DELETE]: [PERMISSIONS.GALLERY_VIEW, PERMISSIONS.GALLERY_EDIT],
+  [PERMISSIONS.GALLERY_MANAGE]: [PERMISSIONS.GALLERY_VIEW, PERMISSIONS.GALLERY_UPLOAD, PERMISSIONS.GALLERY_EDIT, PERMISSIONS.GALLERY_DELETE],
+
+  [PERMISSIONS.DOCUMENTS_UPLOAD]: [PERMISSIONS.DOCUMENTS_VIEW],
+  [PERMISSIONS.DOCUMENTS_EDIT]: [PERMISSIONS.DOCUMENTS_VIEW],
+  [PERMISSIONS.DOCUMENTS_DELETE]: [PERMISSIONS.DOCUMENTS_VIEW, PERMISSIONS.DOCUMENTS_EDIT],
+  [PERMISSIONS.DOCUMENTS_MANAGE]: [PERMISSIONS.DOCUMENTS_VIEW, PERMISSIONS.DOCUMENTS_UPLOAD, PERMISSIONS.DOCUMENTS_EDIT, PERMISSIONS.DOCUMENTS_DELETE],
+
+  [PERMISSIONS.TREASURY_MANAGE]: [PERMISSIONS.TREASURY_VIEW, PERMISSIONS.TREASURY_REPORTS, PERMISSIONS.TREASURY_BUDGETS],
+  [PERMISSIONS.TREASURY_REPORTS]: [PERMISSIONS.TREASURY_VIEW],
+  [PERMISSIONS.TREASURY_TRANSACTIONS]: [PERMISSIONS.TREASURY_VIEW],
+  [PERMISSIONS.TREASURY_BUDGETS]: [PERMISSIONS.TREASURY_VIEW],
+
+  [PERMISSIONS.SMS_SEND]: [PERMISSIONS.SMS_VIEW],
+  [PERMISSIONS.SMS_MANAGE]: [PERMISSIONS.SMS_VIEW, PERMISSIONS.SMS_SEND, PERMISSIONS.SMS_TEMPLATES, PERMISSIONS.SMS_CAMPAIGNS],
+
+  [PERMISSIONS.ANNOUNCEMENTS_CREATE]: [PERMISSIONS.ANNOUNCEMENTS_VIEW],
+  [PERMISSIONS.ANNOUNCEMENTS_EDIT]: [PERMISSIONS.ANNOUNCEMENTS_VIEW],
+  [PERMISSIONS.ANNOUNCEMENTS_DELETE]: [PERMISSIONS.ANNOUNCEMENTS_VIEW, PERMISSIONS.ANNOUNCEMENTS_EDIT],
+  [PERMISSIONS.ANNOUNCEMENTS_PUBLISH]: [PERMISSIONS.ANNOUNCEMENTS_CREATE, PERMISSIONS.ANNOUNCEMENTS_VIEW],
+
+  [PERMISSIONS.APPROVALS_REQUEST]: [PERMISSIONS.APPROVALS_VIEW],
+  [PERMISSIONS.APPROVALS_APPROVE]: [PERMISSIONS.APPROVALS_VIEW],
+  [PERMISSIONS.APPROVALS_REJECT]: [PERMISSIONS.APPROVALS_VIEW],
+  [PERMISSIONS.APPROVALS_MANAGE]: [PERMISSIONS.APPROVALS_VIEW, PERMISSIONS.APPROVALS_REQUEST, PERMISSIONS.APPROVALS_APPROVE, PERMISSIONS.APPROVALS_REJECT],
+
+  [PERMISSIONS.USERS_CREATE]: [PERMISSIONS.USERS_VIEW],
+  [PERMISSIONS.USERS_EDIT]: [PERMISSIONS.USERS_VIEW],
+  [PERMISSIONS.USERS_DELETE]: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_EDIT],
+  [PERMISSIONS.USERS_MANAGE_ROLES]: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_EDIT],
+
+  [PERMISSIONS.SETTINGS_EDIT]: [PERMISSIONS.SETTINGS_VIEW],
+  [PERMISSIONS.SETTINGS_MANAGE]: [PERMISSIONS.SETTINGS_VIEW, PERMISSIONS.SETTINGS_EDIT],
+
+  [PERMISSIONS.EVENTS_CREATE]: [PERMISSIONS.EVENTS_VIEW],
+  [PERMISSIONS.EVENTS_EDIT]: [PERMISSIONS.EVENTS_VIEW],
+  [PERMISSIONS.EVENTS_DELETE]: [PERMISSIONS.EVENTS_VIEW, PERMISSIONS.EVENTS_EDIT],
+  [PERMISSIONS.EVENTS_MANAGE]: [PERMISSIONS.EVENTS_VIEW, PERMISSIONS.EVENTS_CREATE, PERMISSIONS.EVENTS_EDIT, PERMISSIONS.EVENTS_DELETE],
+
+  [PERMISSIONS.PAYMENTS_PROCESS]: [PERMISSIONS.PAYMENTS_VIEW],
+  [PERMISSIONS.PAYMENTS_REFUND]: [PERMISSIONS.PAYMENTS_VIEW],
+  [PERMISSIONS.PAYMENTS_MANAGE]: [PERMISSIONS.PAYMENTS_VIEW, PERMISSIONS.PAYMENTS_PROCESS, PERMISSIONS.PAYMENTS_REFUND],
+
+  [PERMISSIONS.COLLECTIONS_MANAGE]: [PERMISSIONS.COLLECTIONS_VIEW, PERMISSIONS.COLLECTIONS_VIEW_OWN],
+
+  [PERMISSIONS.REPORTS_GENERATE]: [PERMISSIONS.REPORTS_VIEW],
+  [PERMISSIONS.REPORTS_EXPORT]: [PERMISSIONS.REPORTS_VIEW, PERMISSIONS.REPORTS_GENERATE],
+
+  [PERMISSIONS.CONTENT_CREATE]: [PERMISSIONS.CONTENT_VIEW],
+  [PERMISSIONS.CONTENT_EDIT]: [PERMISSIONS.CONTENT_VIEW],
+  [PERMISSIONS.CONTENT_DELETE]: [PERMISSIONS.CONTENT_VIEW, PERMISSIONS.CONTENT_EDIT],
+  [PERMISSIONS.CONTENT_PUBLISH]: [PERMISSIONS.CONTENT_CREATE, PERMISSIONS.CONTENT_VIEW],
+
+  [PERMISSIONS.SECURITY_MANAGE]: [PERMISSIONS.SECURITY_VIEW],
+  [PERMISSIONS.SECURITY_AUDIT]: [PERMISSIONS.SECURITY_VIEW],
+
+  [PERMISSIONS.TELEGRAM_MANAGE]: [PERMISSIONS.TELEGRAM_VIEW],
+  [PERMISSIONS.TELEGRAM_BROADCAST]: [PERMISSIONS.TELEGRAM_VIEW],
+
+  [PERMISSIONS.MOBILE_MANAGE]: [PERMISSIONS.MOBILE_VIEW],
+  [PERMISSIONS.MONITORING_MANAGE]: [PERMISSIONS.MONITORING_VIEW],
+  [PERMISSIONS.SEO_MANAGE]: [PERMISSIONS.SEO_VIEW],
+  [PERMISSIONS.ACCESSIBILITY_MANAGE]: [PERMISSIONS.ACCESSIBILITY_VIEW],
+  [PERMISSIONS.TESTING_EXECUTE]: [PERMISSIONS.TESTING_VIEW],
+  [PERMISSIONS.DOCUMENTATION_EDIT]: [PERMISSIONS.DOCUMENTATION_VIEW],
 };
 
 export const usePermission = () => {
   const { hasPermission, hasAnyPermission, hasAllPermissions, hasRole, hasAnyRole, user } = useAuth();
 
-  /**
-   * Check if user has a specific permission
-   * Includes permission hierarchy: if user has higher permission, they automatically have lower permission
-   */
-  const can = (permission) => {
-    // Direct check
-    if (hasPermission(permission)) {
-      return true;
-    }
-
-    // Check hierarchy: if user has any permission that implies this permission
-    for (const [higherPermission, impliedPermissions] of Object.entries(PERMISSION_HIERARCHY)) {
-      if (impliedPermissions.includes(permission) && hasPermission(higherPermission)) {
-        return true;
+  // Collect all permissions the user effectively has, including implied ones.
+  const effectivePermissions = useMemo(() => {
+    const base = new Set(user?.permissions || []);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const [higher, implied] of Object.entries(PERMISSION_HIERARCHY)) {
+        if (base.has(higher)) {
+          for (const p of implied) {
+            if (!base.has(p)) {
+              base.add(p);
+              changed = true;
+            }
+          }
+        }
       }
     }
+    return base;
+  }, [user?.permissions]);
 
-    return false;
-  };
+  const can = (permission) => effectivePermissions.has(permission);
+  const canAny = (permissions) => !permissions?.length || permissions.some(p => effectivePermissions.has(p));
+  const canAll = (permissions) => !permissions?.length || permissions.every(p => effectivePermissions.has(p));
+  const canAccessModule = (path) => canAny(getModulePermissions(path));
 
-  /**
-   * Check if user has any of the specified permissions
-   */
-  const canAny = (permissions) => {
-    return hasAnyPermission(permissions);
-  };
-
-  /**
-   * Check if user has all of the specified permissions
-   */
-  const canAll = (permissions) => {
-    return hasAllPermissions(permissions);
-  };
-
-  /**
-   * Check if user can access a specific module path
-   */
-  const canAccessModule = (path) => {
-    const requiredPermissions = getModulePermissions(path);
-    return canAny(requiredPermissions);
-  };
-
-  /**
-   * Check if user has a specific role
-   */
-  const is = (role) => {
-    return hasRole(role);
-  };
-
-  /**
-   * Check if user has any of the specified roles
-   */
-  const isAny = (roles) => {
-    return hasAnyRole(roles);
-  };
-
-  /**
-   * Check if user is an admin (Super Admin, Pastor, or First Elder)
-   */
-  const isAdmin = () => {
-    return isAny(['Super Admin', 'Pastor', 'First Elder']);
-  };
-
-  /**
-   * Check if user is a Super Admin
-   */
-  const isSuperAdmin = () => {
-    return is('Super Admin');
-  };
-
-  /**
-   * Get user's permissions array
-   */
-  const getUserPermissions = () => {
-    return user?.permissions || [];
-  };
-
-  /**
-   * Get user's roles array
-   */
-  const getUserRoles = () => {
-    return user?.roles || [];
-  };
+  const is = (role) => hasRole(role);
+  const isAny = (roles) => hasAnyRole(roles);
+  const isAdmin = () => isAny(['Super Admin', 'Pastor', 'First Elder']);
+  const isSuperAdmin = () => is('Super Admin');
 
   return useMemo(() => ({
-    // Direct permission checks
     can,
     canAny,
     canAll,
     canAccessModule,
-
-    // Role checks
     is,
     isAny,
     isAdmin,
     isSuperAdmin,
-
-    // User data
-    getUserPermissions,
-    getUserRoles,
-
-    // Permission constants (for convenience)
+    // Backward-compatible aliases used by older components
+    hasRole: is,
+    hasAnyRole: isAny,
+    getUserPermissions: () => [...effectivePermissions],
+    getUserRoles: () => user?.roles || [],
     PERMISSIONS,
-
-    // User object
     user,
-  }), [can, canAny, canAll, canAccessModule, is, isAny, isAdmin, isSuperAdmin, getUserPermissions, getUserRoles, user]);
+  }), [can, canAny, canAll, canAccessModule, is, isAny, isAdmin, isSuperAdmin, effectivePermissions, user]);
 };

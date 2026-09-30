@@ -359,7 +359,7 @@ const Reports = () => {
                       permission={PERMISSIONS.REPORTS_EXPORT}
                       buttonProps={{
                         onClick: () => downloadReport(report.id, 'pdf'),
-                        className: "p-2 text-red-600 hover:bg-red-50 rounded",
+                        className: "p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded",
                         title: "Download as PDF",
                       }}
                     >
@@ -369,7 +369,7 @@ const Reports = () => {
                       permission={PERMISSIONS.REPORTS_EXPORT}
                       buttonProps={{
                         onClick: () => downloadReport(report.id, 'xlsx'),
-                        className: "p-2 text-green-600 hover:bg-green-50 rounded",
+                        className: "p-2 text-[var(--color-success)] hover:bg-[var(--color-success-light)] rounded",
                         title: "Download as Excel",
                       }}
                     >

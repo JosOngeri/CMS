@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../services/media_service.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/loading_button.dart';
+import '../app/theme.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -126,7 +127,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profile photo updated'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
           ),
         );
       } else if (mounted) {
@@ -179,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Profile updated successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
           ),
         );
       } else if (mounted) {
@@ -379,12 +380,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Member No: $membershipNo',
-                        style: TextStyle(color: Colors.grey[700]),
+                        style: TextStyle(color: AppTheme.textSecondary),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         churchName,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        style: TextStyle(color: AppTheme.textSecondary, fontSize: 12),
                       ),
                     ],
                   ),
@@ -407,7 +408,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       children: [
         Card(
           child: ListTile(
-            leading: const Icon(Icons.groups, color: Colors.teal),
+            leading: const Icon(Icons.groups, color: AppTheme.accentColor),
             title: const Text('My Departments'),
             subtitle: const Text('Departments you belong to'),
             trailing: const Icon(Icons.chevron_right),
@@ -416,7 +417,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.folder, color: Colors.blue),
+            leading: const Icon(Icons.folder, color: AppTheme.primaryColor),
             title: const Text('Document Library'),
             subtitle: const Text('Quarterlies, bulletins & policies'),
             trailing: const Icon(Icons.chevron_right),

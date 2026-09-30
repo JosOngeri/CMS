@@ -1,3 +1,18 @@
+/**
+ * WHAT THIS COMPONENT DOES
+ * ------------------------
+ * Settings-tab panel for managing department admins: view current admins,
+ * grant admin rights to members, and revoke them. Church-level admins act
+ * directly; regular department leaders create an approval request instead.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/:id/admins   → list, grant, revoke
+ * - backend /departments/:id/members  → pick list for new admins
+ * - backend /approvals                → approval requests (non-admin path)
+ * - Rendered by pages/departments/DepartmentDashboard.jsx (settings tab)
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Shield,
@@ -14,11 +29,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useColorPalette } from '../../../contexts/ColorPaletteContext';
 import { API_ENDPOINTS } from '../../../constants/api';
 
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
-  'Content-Type': 'application/json',
-});
-
 const PermissionManagement = ({ departmentId }) => {
   const toast = useToast();
   const { api, user } = useAuth();
@@ -34,83 +44,33 @@ const PermissionManagement = ({ departmentId }) => {
     ['Super Admin', 'Pastor', 'First Elder'].includes(role)
   );
 
-  const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const result = await fetchFn()
-        return result
-      } catch (error) {
-        if (error.message?.includes('429') && i < retries - 1) {
-          // Exponential backoff for rate limiting
-          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
-          continue
-        }
-        throw error
-      }
-    }
-  }
-
+  // The api client attaches the auth cookie + CSRF token automatically.
+  // 403 means "not allowed" — show an empty panel rather than an error toast.
   const fetchAdmins = useCallback(async () => {
     try {
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${departmentId}/admins`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (!res.ok) {
-          if (res.status === 403) {
-            const error = new Error('You do not have permission to view department admins');
-            error.status = res.status;
-            throw error;
-          }
-          const error = new Error('Failed to fetch admins');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-      const data = await response.json();
-      setAdmins(data.data || []);
+      const res = await api.get(`/departments/${departmentId}/admins`);
+      setAdmins(res.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch admins:', error);
-      // Don't show toast for 403 errors - just set empty state
-      if (error.status !== 403) {
-        toast.error(error.message || 'Failed to fetch admins');
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch admins');
       }
       setAdmins([]);
     }
-  }, [departmentId, toast]);
+  }, [api, departmentId, toast]);
 
   const fetchMembers = useCallback(async () => {
     try {
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${departmentId}/members`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (!res.ok) {
-          if (res.status === 403) {
-            const error = new Error('You do not have permission to view department members');
-            error.status = res.status;
-            throw error;
-          }
-          const error = new Error('Failed to fetch members');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-      const data = await response.json();
-      setMembers(data.data || []);
+      const res = await api.get(`/departments/${departmentId}/members`);
+      setMembers(res.data.data || res.data.members || []);
     } catch (error) {
-      console.error('Failed to fetch members:', error);
-      // Don't show toast for 403 errors - just set empty state
-      if (error.status !== 403) {
-        toast.error(error.message || 'Failed to fetch members');
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch members');
       }
       setMembers([]);
     } finally {
       setLoading(false);
     }
-  }, [departmentId, toast]);
+  }, [api, departmentId, toast]);
 
   useEffect(() => {
     setLoading(true);
@@ -122,12 +82,7 @@ const PermissionManagement = ({ departmentId }) => {
     try {
       if (isAdmin) {
         // Admins can grant admin access directly
-        const response = await fetch(`/api/departments/${departmentId}/admins`, {
-          method: 'POST',
-          headers: authHeaders(),
-          body: JSON.stringify({ userId }),
-        });
-        if (!response.ok) throw new Error('Failed to grant admin access');
+        await api.post(`/departments/${departmentId}/admins`, { userId });
         toast.success('Admin access granted successfully');
       } else {
         // Non-admins need to create an approval request
@@ -153,11 +108,7 @@ const PermissionManagement = ({ departmentId }) => {
     try {
       if (isAdmin) {
         // Admins can revoke admin access directly
-        const response = await fetch(`/api/departments/${departmentId}/admins/${userId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        if (!response.ok) throw new Error('Failed to revoke admin access');
+        await api.delete(`/departments/${departmentId}/admins/${userId}`);
         toast.success('Admin access revoked successfully');
       } else {
         // Non-admins need to create an approval request

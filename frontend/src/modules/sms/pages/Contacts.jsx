@@ -1,9 +1,22 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * SMS contacts admin page (route: /dashboard/sms/contacts). Lists contacts
+ * with search/source/group filters, add/edit/delete, and CSV export.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /sms-contacts        → CRUD + /export (CSV blob)
+ * - backend /sms-groups          → group picklist
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import axios from 'axios';
+import { useToast } from '../../../contexts/ToastContext';
 
 const Contacts = () => {
-  const { user } = useAuth();
+  const { api } = useAuth();
+  const toast = useToast();
   const [contacts, setContacts] = useState([]);
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,8 +34,6 @@ const Contacts = () => {
     status: 'active'
   });
 
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
   useEffect(() => {
     fetchContacts();
     fetchGroups();
@@ -30,18 +41,16 @@ const Contacts = () => {
 
   const fetchContacts = async () => {
     try {
-      const token = localStorage.getItem('token');
       const params = new URLSearchParams();
       if (sourceFilter !== 'all') params.set('source', sourceFilter);
       if (groupFilter) params.set('group_id', groupFilter);
       if (searchTerm) params.set('search', searchTerm);
 
-      const response = await axios.get(`${API_URL}/api/sms-contacts?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setContacts(response.data.contacts);
+      const response = await api.get(`/sms-contacts?${params.toString()}`);
+      setContacts(response.data.contacts || []);
     } catch (error) {
       console.error('Error fetching contacts:', error);
+      setContacts([]);
     } finally {
       setLoading(false);
     }
@@ -49,11 +58,8 @@ const Contacts = () => {
 
   const fetchGroups = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/sms-groups`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setGroups(response.data.groups);
+      const response = await api.get('/sms-groups');
+      setGroups(response.data.groups || []);
     } catch (error) {
       console.error('Error fetching groups:', error);
     }
@@ -62,15 +68,10 @@ const Contacts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       if (editingContact) {
-        await axios.put(`${API_URL}/api/sms-contacts/${editingContact.id}`, formData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.put(`/sms-contacts/${editingContact.id}`, formData);
       } else {
-        await axios.post(`${API_URL}/api/sms-contacts`, formData, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.post('/sms-contacts', formData);
       }
       setShowModal(false);
       setEditingContact(null);
@@ -78,7 +79,7 @@ const Contacts = () => {
       fetchContacts();
     } catch (error) {
       console.error('Error saving contact:', error);
-      alert('Failed to save contact');
+      toast.error(error.response?.data?.error || 'Failed to save contact');
     }
   };
 
@@ -99,24 +100,17 @@ const Contacts = () => {
     if (!window.confirm('Are you sure you want to delete this contact?')) return;
     
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/sms-contacts/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/sms-contacts/${id}`);
       fetchContacts();
     } catch (error) {
       console.error('Error deleting contact:', error);
-      alert('Failed to delete contact');
+      toast.error('Failed to delete contact');
     }
   };
 
   const handleExport = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/sms-contacts/export`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob'
-      });
+      const response = await api.get('/sms-contacts/export', { responseType: 'blob' });
       
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -127,7 +121,7 @@ const Contacts = () => {
       link.remove();
     } catch (error) {
       console.error('Error exporting contacts:', error);
-      alert('Failed to export contacts');
+      toast.error('Failed to export contacts');
     }
   };
 
@@ -142,13 +136,13 @@ const Contacts = () => {
         <div className="flex gap-2">
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90"
           >
             Export CSV
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
           >
             Add Contact
           </button>
@@ -185,20 +179,20 @@ const Contacts = () => {
         </select>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-[var(--color-surface)] rounded-lg shadow overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-[var(--color-background)]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Phone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Group</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Source</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-[var(--color-surface)] divide-y divide-[var(--color-border)]">
             {contacts.map((contact) => (
               <tr key={contact.id}>
                 <td className="px-6 py-4 whitespace-nowrap">{contact.name}</td>
@@ -210,13 +204,13 @@ const Contacts = () => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleEdit(contact)}
-                    className="text-blue-600 hover:text-blue-900 mr-2"
+                    className="text-[var(--color-primary)] hover:underline mr-2"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(contact.id)}
-                    className="text-red-600 hover:text-red-900"
+                    className="text-[var(--color-error)] hover:underline"
                   >
                     Delete
                   </button>
@@ -228,14 +222,14 @@ const Contacts = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center">
+          <div className="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">
               {editingContact ? 'Edit Contact' : 'Add Contact'}
             </h2>
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Name</label>
                 <input
                   type="text"
                   required
@@ -245,7 +239,7 @@ const Contacts = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Phone</label>
                 <input
                   type="tel"
                   required
@@ -256,7 +250,7 @@ const Contacts = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Email</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -265,7 +259,7 @@ const Contacts = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Group</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Group</label>
                 <select
                   value={formData.group_id}
                   onChange={(e) => setFormData({...formData, group_id: e.target.value})}
@@ -278,7 +272,7 @@ const Contacts = () => {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
@@ -297,13 +291,13 @@ const Contacts = () => {
                     setEditingContact(null);
                     setFormData({ name: '', phone: '', email: '', group_id: '', source: 'manual', status: 'active' });
                   }}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
+                  className="px-4 py-2 border rounded hover:bg-[var(--color-background)]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
                 >
                   {editingContact ? 'Update' : 'Create'}
                 </button>

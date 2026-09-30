@@ -38,7 +38,7 @@ const PasswordConfirmationModal = ({
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50"
+      className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="password-modal-title"
@@ -90,7 +90,7 @@ const PasswordConfirmationModal = ({
           <button
             onClick={onConfirm}
             disabled={isLoading || !password}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Confirm action"
             aria-busy={isLoading}
           >

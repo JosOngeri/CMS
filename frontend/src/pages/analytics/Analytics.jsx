@@ -273,7 +273,7 @@ const Analytics = () => {
   };
 
   const renderPieChart = (data) => {
-    const colors = ['bg-[var(--color-primary)]', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500'];
+    const colors = ['bg-[var(--color-primary)]', 'bg-[var(--color-success)]', 'bg-[var(--color-warning-light)]0', 'bg-[var(--color-accent)]', 'bg-[var(--color-accent)]'];
     
     return (
       <div className="flex gap-4">
@@ -324,7 +324,7 @@ const Analytics = () => {
             </div>
             <Eye className="w-8 h-8 text-[var(--color-primary)]" />
           </div>
-          <p className="text-sm text-green-600 mt-2">↑ 12.5% from last period</p>
+          <p className="text-sm text-[var(--color-success)] mt-2">↑ 12.5% from last period</p>
         </div>
         <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -332,9 +332,9 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Active Users</p>
               <p className="text-2xl font-bold">{metrics.activeUsers.toLocaleString()}</p>
             </div>
-            <Users className="w-8 h-8 text-green-600" />
+            <Users className="w-8 h-8 text-[var(--color-success)]" />
           </div>
-          <p className="text-sm text-green-600 mt-2">↑ 8.3% from last period</p>
+          <p className="text-sm text-[var(--color-success)] mt-2">↑ 8.3% from last period</p>
         </div>
         <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -342,9 +342,9 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Page Views</p>
               <p className="text-2xl font-bold">{metrics.pageViews.toLocaleString()}</p>
             </div>
-            <Activity className="w-8 h-8 text-purple-600" />
+            <Activity className="w-8 h-8 text-[var(--color-accent)]" />
           </div>
-          <p className="text-sm text-green-600 mt-2">↑ 15.2% from last period</p>
+          <p className="text-sm text-[var(--color-success)] mt-2">↑ 15.2% from last period</p>
         </div>
         <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -352,9 +352,9 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Conversion Rate</p>
               <p className="text-2xl font-bold">{metrics.conversionRate}%</p>
             </div>
-            <TrendingUp className="w-8 h-8 text-orange-600" />
+            <TrendingUp className="w-8 h-8 text-[var(--color-warning)]" />
           </div>
-          <p className="text-sm text-red-600 mt-2">↓ 2.1% from last period</p>
+          <p className="text-sm text-[var(--color-error)] mt-2">↓ 2.1% from last period</p>
         </div>
         <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -362,9 +362,9 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Avg Session</p>
               <p className="text-2xl font-bold">{metrics.avgSessionDuration}</p>
             </div>
-            <Calendar className="w-8 h-8 text-cyan-600" />
+            <Calendar className="w-8 h-8 text-[var(--color-secondary)]" />
           </div>
-          <p className="text-sm text-green-600 mt-2">↑ 5.4% from last period</p>
+          <p className="text-sm text-[var(--color-success)] mt-2">↑ 5.4% from last period</p>
         </div>
         <div className="bg-[var(--color-surface)]  rounded-lg border p-4">
           <div className="flex items-center justify-between">
@@ -372,9 +372,9 @@ const Analytics = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Bounce Rate</p>
               <p className="text-2xl font-bold">{metrics.bounceRate}%</p>
             </div>
-            <BarChart3 className="w-8 h-8 text-red-600" />
+            <BarChart3 className="w-8 h-8 text-[var(--color-error)]" />
           </div>
-          <p className="text-sm text-green-600 mt-2">↓ 3.8% from last period</p>
+          <p className="text-sm text-[var(--color-success)] mt-2">↓ 3.8% from last period</p>
         </div>
       </div>
 
@@ -400,7 +400,7 @@ const Analytics = () => {
           </h2>
           <div className="space-y-3">
             {topPages.map((page, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded">
+              <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded">
                 <div>
                   <p className="font-medium">{page.page}</p>
                   <p className="text-sm text-[var(--color-textSecondary)]">{page.unique.toLocaleString()} unique visitors</p>

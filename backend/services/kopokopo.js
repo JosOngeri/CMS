@@ -1,6 +1,9 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const { createLogger } = require('../helpers/controllerLogger');
+const smsService = require('./hybridSMS');
+const emailService = require('../utils/emailService');
+const notificationService = require('./notificationService');
 
 const logger = createLogger('kopokopo');
 
@@ -259,22 +262,37 @@ class KopoKopoService {
   // Send payment confirmation
   async sendPaymentConfirmation(payment) {
     try {
-      // Send SMS confirmation
-      await smsService.sendSMS(
-        payment.phoneNumber,
-        `Thank you for your payment of KES ${payment.amount} to SDA Church Kiserian Main. Receipt: ${payment.mpesaReceipt}`
-      );
+      // Send SMS confirmation (non-blocking)
+      try {
+        await smsService.sendSMS({
+          recipients: [payment.phoneNumber],
+          message: `Thank you for your payment of KES ${payment.amount} to SDA Church Kiserian Main. Receipt: ${payment.mpesaReceipt}`,
+          churchId: payment.church_id || payment.churchId
+        });
+      } catch (smsError) {
+        logger.warn('sendPaymentConfirmation', 'SMS confirmation skipped:', smsError.message);
+      }
 
-      // Send email confirmation
-      await emailService.sendPaymentReceipt(payment);
+      // Send email confirmation (non-blocking)
+      try {
+        await emailService.sendPaymentReceipt(payment);
+      } catch (emailError) {
+        logger.warn('sendPaymentConfirmation', 'Email receipt skipped:', emailError.message);
+      }
 
-      // Send push notification (if member has app)
-      if (payment.memberId) {
-        await notificationService.sendPushNotification(
-          payment.memberId,
-          'Payment Received',
-          `Your payment of KES ${payment.amount} has been received successfully.`
-        );
+      // Send in-app notification (if member has an account)
+      const userId = payment.member_id || payment.memberId;
+      if (userId) {
+        try {
+          await notificationService.sendRealTimeNotification(userId, {
+            type: 'payment',
+            title: 'Payment Received',
+            message: `Your payment of KES ${payment.amount} has been received successfully.`,
+            data: { receipt: payment.mpesaReceipt, amount: payment.amount }
+          });
+        } catch (pushError) {
+          logger.warn('sendPaymentConfirmation', 'Push notification skipped:', pushError.message);
+        }
       }
     } catch (error) {
       logger.error('sendPaymentConfirmation', 'Error sending payment confirmation:', error);

@@ -27,7 +27,7 @@ const SettingNumber = ({ label, description, value, onChange, placeholder, disab
         aria-label={label}
         aria-invalid={error ? 'true' : 'false'}
         aria-describedby={error ? `${inputId}-error` : description ? `${inputId}-description` : undefined}
-        className={`input ${error ? 'border-red-500 ring-red-500' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`input ${error ? 'border-[var(--color-error)] ring-[var(--color-error)]' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       />
       {description && (
         <p id={`${inputId}-description`} className="flex items-center text-xs text-[var(--color-textSecondary)]">
@@ -36,7 +36,7 @@ const SettingNumber = ({ label, description, value, onChange, placeholder, disab
         </p>
       )}
       {error && (
-        <p id={`${inputId}-error`} className="text-xs text-red-600" role="alert">{error}</p>
+        <p id={`${inputId}-error`} className="text-xs text-[var(--color-error)]" role="alert">{error}</p>
       )}
     </div>
   )

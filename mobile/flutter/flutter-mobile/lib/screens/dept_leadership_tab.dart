@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 /// Department Leadership tab — roster of head/assistant/secretary/
 /// collector positions. Managers can appoint and revoke; everyone can see
@@ -82,7 +83,7 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
           if (_error != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              child: Text(_error!, style: const TextStyle(color: AppTheme.errorColor)),
             ),
           if (_leaders.isEmpty)
             const Padding(
@@ -98,9 +99,9 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor:
-                        const Color(0xFF3B82F6).withOpacity(0.12),
+                        const AppTheme.primaryColor.withOpacity(0.12),
                     child: Icon(_iconFor(l['position']?.toString() ?? ''),
-                        color: const Color(0xFF3B82F6)),
+                        color: const AppTheme.primaryColor),
                   ),
                   title: Text(l['user_name']?.toString() ??
                       l['name']?.toString() ??
@@ -113,7 +114,7 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
                   trailing: widget.canManage
                       ? IconButton(
                           icon: const Icon(Icons.remove_circle_outline,
-                              color: Colors.red),
+                              color: AppTheme.errorColor),
                           onPressed: () => _revoke(l),
                         )
                       : null,
@@ -197,7 +198,7 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
               onPressed: () => Navigator.pop(ctx, true),
               child: const Text('Remove')),
         ],
@@ -215,7 +216,7 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
       content: Text(res['success'] == true
           ? (res['message']?.toString() ?? 'Done')
           : (res['error']?.toString() ?? 'Failed')),
-      backgroundColor: res['success'] == true ? Colors.green : Colors.red,
+      backgroundColor: res['success'] == true ? AppTheme.successColor : AppTheme.errorColor,
     ));
     if (res['success'] == true) _load();
   }

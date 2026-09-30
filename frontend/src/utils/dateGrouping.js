@@ -1,6 +1,20 @@
 /**
- * Smart date-based grouping utility for gallery photos and events
- * Groups items into Apple Photos-style sections
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Date helpers used across the site. They sort photos and events into
+ * human-readable sections like "Today", "This Week", "Next Month",
+ * "Earlier" — the same way a photo gallery app groups by date.
+ *
+ * Main jobs:
+ *   - getDateGroup / getEventDateGroup   → which bucket a date belongs to
+ *   - formatDateHeader / formatEventDateHeader → how the label reads
+ *   - groupPhotosByDate / groupEventsByDate → build grouped lists
+ *   - getPhotosByPeriod / getEventsByPeriod → filter to a time window
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - pages/events/Events.jsx            → church calendar grouping
+ * - components/gallery/ (photo pages)  → photo date grouping
  */
 
 export const DATE_GROUPS = {
@@ -508,64 +522,6 @@ export const getEventsByPeriod = (events, period) => {
   })
 }
 
-/**
- * Create infinite loop of events for yearly plans
- * @param {Array} events - Array of event objects
- * @param {number} repeatCount - Number of times to repeat the cycle
- * @returns {Array} Events with adjusted dates for infinite loop
- */
-export const createInfiniteEventLoop = (events, repeatCount = 3) => {
-  if (!events || events.length === 0) return []
-
-  const infiniteEvents = []
-  const now = new Date()
-
-  // Sort events by date
-  const sortedEvents = [...events].sort((a, b) => {
-    const dateA = new Date(a.date + ' ' + (a.time || '00:00'))
-    const dateB = new Date(b.date + ' ' + (b.time || '00:00'))
-    return dateA - dateB
-  })
-
-  // Get the first and last event dates
-  const firstEventDate = new Date(sortedEvents[0].date)
-  const lastEventDate = new Date(sortedEvents[sortedEvents.length - 1].date)
-
-  // Calculate the year span
-  const yearSpan = lastEventDate.getFullYear() - firstEventDate.getFullYear()
-
-  // Create repeated cycles
-  for (let cycle = 0; cycle < repeatCount; cycle++) {
-    const yearOffset = cycle * (yearSpan + 1)
-
-    sortedEvents.forEach(event => {
-      const originalDate = new Date(event.date)
-      const newDate = new Date(originalDate)
-      newDate.setFullYear(originalDate.getFullYear() + yearOffset)
-
-      // Only add events that are in the future or recent past
-      const daysDiff = Math.floor((newDate - now) / (1000 * 60 * 60 * 24))
-
-      if (daysDiff >= -30) { // Include events from last 30 days
-        infiniteEvents.push({
-          ...event,
-          id: `${event.id}_cycle_${cycle}`,
-          date: newDate.toISOString().split('T')[0],
-          isRepeated: cycle > 0,
-          cycleNumber: cycle
-        })
-      }
-    })
-  }
-
-  // Sort the infinite events by date
-  return infiniteEvents.sort((a, b) => {
-    const dateA = new Date(a.date + ' ' + (a.time || '00:00'))
-    const dateB = new Date(b.date + ' ' + (b.time || '00:00'))
-    return dateA - dateB
-  })
-}
-
 export default {
   DATE_GROUPS,
   EVENT_DATE_GROUPS,
@@ -576,6 +532,5 @@ export default {
   groupPhotosByDate,
   groupEventsByDate,
   getPhotosByPeriod,
-  getEventsByPeriod,
-  createInfiniteEventLoop
+  getEventsByPeriod
 }

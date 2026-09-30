@@ -64,14 +64,14 @@ const PlatformShell = () => {
           {/* Logo */}
           <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
             <div className="flex items-center space-x-2">
-              <Building className="h-6 w-6 text-[var(--color-primary)] text-[var(--color-primary)]" />
-              <span className="font-bold text-[var(--color-text)] text-white">Platform Admin</span>
+              <Building className="h-6 w-6 text-[var(--color-primary)]" />
+              <span className="font-bold text-[var(--color-text)]">Platform Admin</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
               className="p-2 hover:bg-[var(--color-surface)] rounded-lg"
             >
-              <Menu className="h-5 w-5 text-[var(--color-text)] text-white" />
+              <Menu className="h-5 w-5 text-[var(--color-text)]" />
             </button>
           </div>
 
@@ -83,7 +83,7 @@ const PlatformShell = () => {
                 <button
                   key={item.name}
                   onClick={() => navigate(item.href)}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-[var(--color-text)] text-white rounded-lg hover:bg-[var(--color-surface)] transition-colors"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-[var(--color-text)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.name}</span>
@@ -96,14 +96,14 @@ const PlatformShell = () => {
           <div className="p-4 border-t border-[var(--color-border)]">
             {platformUser && (
               <div className="mb-4">
-                <p className="text-sm font-medium text-[var(--color-text)] text-white">{platformUser.name}</p>
+                <p className="text-sm font-medium text-[var(--color-text)]">{platformUser.name}</p>
                 <p className="text-xs text-[var(--color-textSecondary)]">{platformUser.email}</p>
-                <p className="text-xs text-[var(--color-primary)] text-[var(--color-primary)] capitalize">{platformUser.role}</p>
+                <p className="text-xs text-[var(--color-primary)] capitalize">{platformUser.role}</p>
               </div>
             )}
             <button
               onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors"
             >
               <LogOut className="h-4 w-4" />
               <span>Logout</span>
@@ -121,7 +121,7 @@ const PlatformShell = () => {
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-[var(--color-surface)] rounded-lg"
             >
-              <Menu className="h-5 w-5 text-[var(--color-text)] text-white" />
+              <Menu className="h-5 w-5 text-[var(--color-text)]" />
             </button>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-[var(--color-textSecondary)]">Platform Admin Dashboard</span>

@@ -50,10 +50,10 @@ const PlatformLogin = () => {
     <div className="min-h-screen flex items-center justify-center bg-[var(--color-background)] p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex p-4 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-full mb-4">
-            <Building className="h-8 w-8 text-[var(--color-primary)] text-[var(--color-primary)]" />
+          <div className="inline-flex p-4 bg-[var(--color-primary-light)] rounded-full mb-4">
+            <Building className="h-8 w-8 text-[var(--color-primary)]" />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white mb-2">
+          <h1 className="text-2xl font-bold text-[var(--color-text)] mb-2">
             Platform Admin
           </h1>
           <p className="text-[var(--color-textSecondary)]">
@@ -64,7 +64,7 @@ const PlatformLogin = () => {
         <Card className="p-6">
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] text-white mb-2">
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -73,14 +73,14 @@ const PlatformLogin = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] text-white placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   placeholder="admin@kmaincms.org"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] text-white mb-2">
+              <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
                 Password
               </label>
               <div className="relative">
@@ -89,7 +89,7 @@ const PlatformLogin = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] text-white placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   placeholder="••••••••"
                 />
               </div>

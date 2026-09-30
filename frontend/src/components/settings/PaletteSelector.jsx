@@ -181,7 +181,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-1">Text Secondary Color</label>
+            <label className="block text-xs font-medium text-[var(--color-textSecondary)] mb-1">Text Secondary Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
@@ -198,7 +198,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-1">Border Color</label>
+            <label className="block text-xs font-medium text-[var(--color-textSecondary)] mb-1">Border Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
@@ -215,7 +215,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-1">Success Color</label>
+            <label className="block text-xs font-medium text-[var(--color-textSecondary)] mb-1">Success Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
@@ -232,7 +232,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-1">Warning Color</label>
+            <label className="block text-xs font-medium text-[var(--color-textSecondary)] mb-1">Warning Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"
@@ -249,7 +249,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-1">Error Color</label>
+            <label className="block text-xs font-medium text-[var(--color-textSecondary)] mb-1">Error Color</label>
             <div className="flex items-center space-x-2">
               <input
                 type="color"

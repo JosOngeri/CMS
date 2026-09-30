@@ -1,3 +1,19 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The admin gallery page (route: /dashboard/gallery). Lets permitted users
+ * upload photos (directly or for approval), tag/edit them in bulk, sync
+ * photos from the church Telegram channel, and manage the Telegram
+ * authentication used for that sync.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/gallery/photos          → list, upload, bulk-update, delete
+ * - backend /telegram/*                  → auth status, start/verify auth, sync
+ * - components/gallery/PhotoGallery.jsx  → the selectable photo grid
+ * - hooks/usePermission.js               → gallery.* permission gates
+ */
+
 import { useState, useEffect } from 'react'
 import { Upload, X, Folder, Info, RefreshCw, MessageCircle, CheckCircle, AlertCircle, Shield, Tag, Filter, Lock, Unlock, Settings, AlertTriangle } from 'lucide-react'
 import Card from '../../components/common/Card'
@@ -43,8 +59,6 @@ const GalleryManagement = () => {
   const [authSubmitting, setAuthSubmitting] = useState(false)
   const [authTarget, setAuthTarget] = useState('primary') // 'primary' or 'fallback'
   const [authStatus, setAuthStatus] = useState({ primary: 'unknown', fallback: 'unknown', bot: 'unknown' })
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
-
   const baseUrl = `/api/gallery/photos?limit=20${filterUntagged ? '&untagged=true' : ''}${!canViewAll ? '&public=true' : ''}`
   const { data, loading, error, pagination, refetch, isEmpty } = usePaginatedFetch(baseUrl, {
     transform: (result) => result.data?.photos || []
@@ -236,7 +250,7 @@ const GalleryManagement = () => {
       const response = await api.post(endpoint)
       if (response.data.needsAuth) {
         setShowAuthModal(true)
-        toast.success(`Verification code sent to ${target === 'primary' ? '+254736075771' : '+254724363290'}`)
+        toast.success(`Verification code sent to the ${target === 'primary' ? 'channel owner' : 'fallback'} Telegram account`)
       } else {
         toast.info(response.data.message)
         setShowAuthModal(false)
@@ -270,22 +284,11 @@ const GalleryManagement = () => {
     }
   }
 
-  const handleEndSession = async (accountType) => {
-    try {
-      // For now, just simulate ending session
-      toast.success('Session ended successfully')
-      checkAuthStatus()
-    } catch (error) {
-      console.error('Error ending session:', error)
-      toast.error(error.response?.data?.error || 'Failed to end session')
-    }
-  }
-
   const getStatusIcon = (status) => {
     if (status === 'authenticated' || status === 'configured') {
-      return <CheckCircle className="h-5 w-5 text-green-500" />
+      return <CheckCircle className="h-5 w-5 text-[var(--color-success)]" />
     }
-    return <AlertCircle className="h-5 w-5 text-red-500" />
+    return <AlertCircle className="h-5 w-5 text-[var(--color-error)]" />
   }
 
   const getStatusText = (status) => {
@@ -361,17 +364,17 @@ const GalleryManagement = () => {
         
         {/* Error State - No Auth Methods Configured */}
         {authStatus.primary === 'unknown' && authStatus.fallback === 'unknown' && authStatus.bot === 'unknown' && (
-          <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
+          <div className="flex items-center justify-between p-4 bg-[var(--color-error-light)] rounded-lg border border-[var(--color-error)]">
             <div className="flex items-center space-x-3">
-              <AlertTriangle className="h-6 w-6 text-red-600" />
+              <AlertTriangle className="h-6 w-6 text-[var(--color-error)]" />
               <div>
-                <p className="font-medium text-red-700">Telegram Not Configured</p>
-                <p className="text-sm text-red-600">Configure Telegram authentication to enable gallery sync</p>
+                <p className="font-medium text-[var(--color-error)]">Telegram Not Configured</p>
+                <p className="text-sm text-[var(--color-error)]">Configure Telegram authentication to enable gallery sync</p>
               </div>
             </div>
             <button
               onClick={() => navigate('/dashboard/telegram/auth')}
-              className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-[var(--color-error)] hover:opacity-90 text-white px-4 py-2 rounded-lg"
             >
               <Settings className="h-4 w-4" />
               <span>Configure Telegram</span>
@@ -438,59 +441,10 @@ const GalleryManagement = () => {
             </div>
           </div>
 
-          {/* Advanced Settings - Hidden by default */}
-          {showAdvancedSettings && (
-            <div className="mt-4 pt-4 border-t border-[var(--color-border)] ">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-[var(--color-text)] ">Advanced Session Management</h3>
-                <button
-                  onClick={() => setShowAdvancedSettings(false)}
-                  className="text-sm text-[var(--color-textSecondary)] hover:text-[var(--color-text)] "
-                >
-                  Close
-                </button>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-red-700">End Primary Session</p>
-                    <p className="text-xs text-red-600">Clears channel owner authentication</p>
-                  </div>
-                  {authStatus.primary === 'authenticated' && (
-                    <button
-                      onClick={() => handleEndSession('primary')}
-                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg"
-                    >
-                      End Session
-                    </button>
-                  )}
-                </div>
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium text-red-700">End Fallback Session</p>
-                    <p className="text-xs text-red-600">Clears admin account authentication</p>
-                  </div>
-                  {authStatus.fallback === 'authenticated' && (
-                    <button
-                      onClick={() => handleEndSession('fallback')}
-                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg"
-                    >
-                      End Session
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!showAdvancedSettings && (
-            <button
-              onClick={() => setShowAdvancedSettings(true)}
-              className="mt-4 w-full text-sm text-[var(--color-textSecondary)] hover:text-[var(--color-text)]  py-2"
-            >
-              Show Advanced Settings
-            </button>
-          )}
+          {/* "End session" UI was removed: there is no backend endpoint that
+              terminates a Telegram session, so the old buttons were fake. If
+              session revocation is needed, add a route under
+              /telegram/auth first, then restore a real action here. */}
         </div>
       </Card>
       )}
@@ -523,7 +477,7 @@ const GalleryManagement = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setFilterUntagged(!filterUntagged)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${filterUntagged ? 'bg-purple-600 text-white' : 'bg-[var(--color-surface)]  text-[var(--color-text)] '}`}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${filterUntagged ? 'bg-[var(--color-accent)] text-white' : 'bg-[var(--color-surface)]  text-[var(--color-text)] '}`}
           >
             <Filter className="h-4 w-4" />
             <span>{filterUntagged ? 'Show All' : 'Untagged Only'}</span>
@@ -531,7 +485,7 @@ const GalleryManagement = () => {
           {selectedPhotos.size > 0 && (
             <button
               onClick={() => setShowBatchTagModal(true)}
-              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-[var(--color-success)] hover:opacity-90 text-white px-4 py-2 rounded-lg"
             >
               <Tag className="h-4 w-4" />
               <span>Tag {selectedPhotos.size} Photo(s)</span>
@@ -542,7 +496,7 @@ const GalleryManagement = () => {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-4">
           <Card className="w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-[var(--color-text)] ">
@@ -582,7 +536,7 @@ const GalleryManagement = () => {
                   Maximum file size: 50MB per file. Up to 10 files at once.
                 </p>
                 {uploadForm.files.length > 0 && (
-                  <p className="text-xs text-green-600 mt-1">
+                  <p className="text-xs text-[var(--color-success)] mt-1">
                     {uploadForm.files.length} file(s) selected
                   </p>
                 )}
@@ -674,7 +628,7 @@ const GalleryManagement = () => {
 
       {/* Batch Tag Modal */}
       {showBatchTagModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-4">
           <Card className="w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-[var(--color-text)] ">
@@ -753,7 +707,7 @@ const GalleryManagement = () => {
                 <button
                   type="submit"
                   disabled={batchTagging}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2 bg-[var(--color-success)] hover:opacity-90 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
                   {batchTagging ? (
                     <>
@@ -775,7 +729,7 @@ const GalleryManagement = () => {
 
       {/* Telegram Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-[var(--color-text)] ">

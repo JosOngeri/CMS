@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/update_service.dart';
+import '../app/theme.dart';
 
 class UpdateDialog extends StatefulWidget {
   const UpdateDialog({super.key});
@@ -60,7 +61,7 @@ class _UpdateDialogState extends State<UpdateDialog> {
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(color: AppTheme.errorColor),
             ),
           ],
         ],

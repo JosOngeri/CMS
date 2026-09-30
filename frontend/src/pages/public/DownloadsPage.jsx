@@ -33,7 +33,7 @@ function DownloadsPage() {
     return (
       <section className="bg-[var(--color-primary-strong)] text-white rounded-2xl p-8 md:p-12 mb-16 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="p-4 bg-white/10 rounded-2xl">
+          <div className="p-4 bg-[var(--color-surface)]/10 rounded-2xl">
             <Smartphone className="w-12 h-12" />
           </div>
           <div className="flex-1">
@@ -51,7 +51,7 @@ function DownloadsPage() {
             {v.size && <div className="text-white/70 text-sm">{formatBytes(v.size)}</div>}
             <a
               href={`/api/apk/download/${v.version}`}
-              className="mt-4 inline-flex items-center gap-2 bg-white text-[var(--color-primary)] px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition-colors shadow-lg"
+              className="mt-4 inline-flex items-center gap-2 bg-[var(--color-surface)] text-[var(--color-primary)] px-6 py-3 rounded-xl font-bold hover:bg-[var(--color-surface)]/90 transition-colors shadow-lg"
             >
               <Download className="w-5 h-5" />
               Download Latest

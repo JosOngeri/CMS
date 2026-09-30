@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class AnnouncementsScreen extends ConsumerStatefulWidget {
   const AnnouncementsScreen({super.key});
@@ -103,7 +104,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
               ),
             ),
             if (announcement['priority'] == 'urgent')
-              const Icon(Icons.priority_high, color: Colors.red),
+              const Icon(Icons.priority_high, color: AppTheme.errorColor),
           ],
         ),
         content: SingleChildScrollView(
@@ -116,7 +117,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                   'By: ${announcement['author']}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: AppTheme.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -125,7 +126,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                 _formatDate(announcement['created_at']),
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[500],
+                  color: AppTheme.textTertiary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -151,7 +152,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                         Expanded(
                           child: Text(
                             announcement['attachments'][index]['name'] ?? 'Attachment',
-                            style: const TextStyle(color: Colors.blue),
+                            style: const TextStyle(color: AppTheme.primaryColor),
                           ),
                         ),
                       ],
@@ -220,17 +221,17 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: isRead ? Colors.grey[300] : Colors.blue,
+                                backgroundColor: isRead ? AppTheme.dividerColor : AppTheme.primaryColor,
                                 child: Icon(
                                   isRead ? Icons.check : Icons.announcement,
-                                  color: isRead ? Colors.grey[600] : Colors.white,
+                                  color: isRead ? AppTheme.textSecondary : Colors.white,
                                 ),
                               ),
                               title: Text(
                                 announcement['title'] ?? 'Announcement',
                                 style: TextStyle(
                                   fontWeight: isRead ? FontWeight.normal : FontWeight.bold,
-                                  color: isRead ? Colors.grey[600] : null,
+                                  color: isRead ? AppTheme.textSecondary : null,
                                 ),
                               ),
                               subtitle: Column(
@@ -245,7 +246,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                                       'Urgent',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.red,
+                                        color: AppTheme.errorColor,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -284,7 +285,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
             const Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red,
+              color: AppTheme.errorColor,
             ),
             const SizedBox(height: 16),
             Text(
@@ -314,14 +315,14 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
             Icon(
               Icons.campaign,
               size: 64,
-              color: Colors.grey[400],
+              color: AppTheme.textTertiary,
             ),
             const SizedBox(height: 16),
             Text(
               'No announcements available',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey[600],
+                color: AppTheme.textSecondary,
               ),
             ),
             const SizedBox(height: 8),
@@ -329,7 +330,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
               'Check back later for church announcements',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[500],
+                color: AppTheme.textTertiary,
               ),
             ),
           ],

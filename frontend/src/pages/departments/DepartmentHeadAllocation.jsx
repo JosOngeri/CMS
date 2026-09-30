@@ -1,3 +1,20 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Admin page (route: /dashboard/departments/head-allocation) for appointing
+ * department leaders — head, acting head, assistant, secretary — either
+ * permanently or temporarily (temporary grants expire on a chosen date).
+ * If a position is already filled, appointing creates a handover that the
+ * incoming leader must accept.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments                    → department list
+ * - backend /users                          → people to appoint
+ * - backend /departments/:id/leadership     → current holders, appoint, revoke
+ * - backend /departments/:id/handovers      → pending handovers per dept
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -168,7 +185,7 @@ const DepartmentHeadAllocation = () => {
                         <p className="text-sm text-[var(--color-textSecondary)]">{department.category || 'Uncategorized'}</p>
                       </div>
                       {pending && (
-                        <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+                        <span className="flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-[var(--color-warning-light)] text-[var(--color-warning)]">
                           <Clock className="w-3 h-3" />
                           Handover {pending.status}: {pending.incoming_name}
                         </span>
@@ -192,7 +209,7 @@ const DepartmentHeadAllocation = () => {
                           </span>
                           <button
                             onClick={() => handleRevoke(department.id, l.id)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-[var(--color-error)] hover:text-[var(--color-error)]"
                             title="Revoke"
                           >
                             <XCircle className="w-4 h-4" />
@@ -244,7 +261,7 @@ const DepartmentHeadAllocation = () => {
                         )}
                         <button
                           onClick={() => handleAppoint(department.id)}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+                          className="flex items-center gap-1 px-3 py-2 text-sm bg-[var(--color-success)] text-white rounded-lg hover:opacity-90"
                         >
                           <UserPlus className="w-4 h-4" />
                           Appoint

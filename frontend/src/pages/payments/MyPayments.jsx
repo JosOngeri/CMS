@@ -1,4 +1,17 @@
-import React, { useState } from 'react';
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The member's payment history page. Every payment they have made shows here
+ * with its status and a "Receipt" button to download the record.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/payments/my-payments      → payment list
+ * - backend /api/payments/{id}/receipt     → PDF download
+ * - AuthContext.jsx                        → current user
+ */
+
+import React, { useState, useEffect } from 'react';
 import { DollarSign, Calendar, Download, Filter, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -24,7 +37,7 @@ const MyPayments = () => {
 
   const downloadReceipt = async (paymentId) => {
     try {
-      toast.loading('Downloading receipt...');
+      toast.info('Downloading receipt...');
       const response = await api.get(`/payments/${paymentId}/receipt`, {
         responseType: 'blob'
       });
@@ -45,18 +58,18 @@ const MyPayments = () => {
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'pending': return <Clock className="w-5 h-5 text-yellow-500" />;
-      case 'failed': return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'completed': return <CheckCircle className="w-5 h-5 text-[var(--color-success)]" />;
+      case 'pending': return <Clock className="w-5 h-5 text-[var(--color-warning)]" />;
+      case 'failed': return <XCircle className="w-5 h-5 text-[var(--color-error)]" />;
       default: return <Clock className="w-5 h-5 text-[var(--color-textSecondary)]" />;
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
+      case 'completed': return 'bg-[var(--color-success-light)] text-[var(--color-success)]';
+      case 'pending': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]';
+      case 'failed': return 'bg-[var(--color-error-light)] text-[var(--color-error)]';
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]';
     }
   };
@@ -66,7 +79,7 @@ const MyPayments = () => {
     return payment.status === filter;
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     fetchPayments();
   }, []);
 
@@ -101,22 +114,22 @@ const MyPayments = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-[var(--color-textSecondary)]">Total Paid</p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-2xl font-bold text-[var(--color-success)]">
                 KES {payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
               </p>
             </div>
-            <DollarSign className="w-8 h-8 text-green-600" />
+            <DollarSign className="w-8 h-8 text-[var(--color-success)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-[var(--color-textSecondary)]">Pending</p>
-              <p className="text-2xl font-bold text-yellow-600">
+              <p className="text-2xl font-bold text-[var(--color-warning)]">
                 KES {payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
               </p>
             </div>
-            <Clock className="w-8 h-8 text-yellow-600" />
+            <Clock className="w-8 h-8 text-[var(--color-warning)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg border p-4">
@@ -141,7 +154,7 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-2">
               {filteredPayments.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-4 bg-[var(--color-background)] bg-[var(--color-surface)] rounded">
+                <div key={payment.id} className="flex items-center justify-between p-4 bg-[var(--color-background)] rounded">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {getStatusIcon(payment.status)}

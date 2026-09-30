@@ -65,56 +65,56 @@ const SMSDashboard = () => {
       <h1 className="text-2xl font-bold mb-6">SMS Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Contacts</p>
+              <p className="text-[var(--color-textSecondary)] text-sm">Total Contacts</p>
               <p className="text-3xl font-bold">{stats.totalContacts}</p>
             </div>
-            <div className="bg-blue-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--color-primary-light)] p-3 rounded-full">
+              <svg className="w-6 h-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Total Groups</p>
+              <p className="text-[var(--color-textSecondary)] text-sm">Total Groups</p>
               <p className="text-3xl font-bold">{stats.totalGroups}</p>
             </div>
-            <div className="bg-green-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--color-success-light)] p-3 rounded-full">
+              <svg className="w-6 h-6 text-[var(--color-success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Messages Sent</p>
+              <p className="text-[var(--color-textSecondary)] text-sm">Messages Sent</p>
               <p className="text-3xl font-bold">{stats.totalMessages}</p>
             </div>
-            <div className="bg-purple-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--color-accent-light)] p-3 rounded-full">
+              <svg className="w-6 h-6 text-[var(--color-accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Active Users</p>
+              <p className="text-[var(--color-textSecondary)] text-sm">Active Users</p>
               <p className="text-3xl font-bold">{stats.totalUsers}</p>
             </div>
-            <div className="bg-orange-100 p-3 rounded-full">
-              <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--color-warning-light)] p-3 rounded-full">
+              <svg className="w-6 h-6 text-[var(--color-warning)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </div>
@@ -123,29 +123,29 @@ const SMSDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
           <div className="grid grid-cols-2 gap-4">
-            <a href="/sms/contacts" className="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
-              <svg className="w-6 h-6 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/sms/contacts" className="flex items-center p-4 bg-[var(--color-primary-light)] rounded-lg hover:bg-[var(--color-primary-light)] transition">
+              <svg className="w-6 h-6 text-[var(--color-primary)] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="font-medium">Manage Contacts</span>
             </a>
-            <a href="/sms/groups" className="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
-              <svg className="w-6 h-6 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/sms/groups" className="flex items-center p-4 bg-[var(--color-success-light)] rounded-lg hover:bg-[var(--color-success-light)] transition">
+              <svg className="w-6 h-6 text-[var(--color-success)] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
               <span className="font-medium">Manage Groups</span>
             </a>
-            <a href="/sms/send" className="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
-              <svg className="w-6 h-6 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/sms/send" className="flex items-center p-4 bg-[var(--color-accent-light)] rounded-lg hover:bg-[var(--color-accent-light)] transition">
+              <svg className="w-6 h-6 text-[var(--color-accent)] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
               <span className="font-medium">Send Message</span>
             </a>
-            <a href="/sms/templates" className="flex items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition">
-              <svg className="w-6 h-6 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="/sms/templates" className="flex items-center p-4 bg-[var(--color-warning-light)] rounded-lg hover:bg-[var(--color-warning-light)] transition">
+              <svg className="w-6 h-6 text-[var(--color-warning)] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <span className="font-medium">Message Templates</span>
@@ -153,17 +153,17 @@ const SMSDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
           {recentActivity.length === 0 ? (
-            <p className="text-gray-500">No recent activity</p>
+            <p className="text-[var(--color-textSecondary)]">No recent activity</p>
           ) : (
             <div className="space-y-3">
               {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center p-3 bg-gray-50 rounded">
+                <div key={index} className="flex items-center p-3 bg-[var(--color-background)] rounded">
                   <div className="flex-1">
                     <p className="text-sm font-medium">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.timestamp}</p>
+                    <p className="text-xs text-[var(--color-textSecondary)]">{activity.timestamp}</p>
                   </div>
                 </div>
               ))}

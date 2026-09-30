@@ -118,7 +118,7 @@ const NotificationSettings = () => {
     <div className="space-y-6">
       {/* General Settings */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           General Notifications
         </h3>
         <div className="space-y-4">
@@ -127,14 +127,14 @@ const NotificationSettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
-                    <option.icon className="h-5 w-5 text-[var(--color-primary)] text-[var(--color-primary)]" />
+                  <div className="p-2 bg-[var(--color-primary-light)] rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-primary)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>
@@ -158,7 +158,7 @@ const NotificationSettings = () => {
 
       {/* Content Notifications */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Content Notifications
         </h3>
         <div className="space-y-4">
@@ -167,14 +167,14 @@ const NotificationSettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 bg-green-900 rounded-lg">
-                    <option.icon className="h-5 w-5 text-green-600 text-green-400" />
+                  <div className="p-2 bg-[var(--color-success-light)] rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-success)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>
@@ -198,7 +198,7 @@ const NotificationSettings = () => {
 
       {/* Financial Notifications */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Financial Notifications
         </h3>
         <div className="space-y-4">
@@ -207,14 +207,14 @@ const NotificationSettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-100 bg-purple-900 rounded-lg">
-                    <option.icon className="h-5 w-5 text-purple-600 text-purple-400" />
+                  <div className="p-2  rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-accent)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>

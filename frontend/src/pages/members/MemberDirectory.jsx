@@ -31,10 +31,10 @@ const MemberDirectory = () => {
   const [showExportModal, setShowExportModal] = useState(false)
 
   const roles = [
-    { value: 'Super Admin', label: 'Super Admin', color: 'bg-red-100 text-red-800' },
-    { value: 'Pastor', label: 'Pastor', color: 'bg-purple-100 text-purple-800' },
+    { value: 'Super Admin', label: 'Super Admin', color: 'bg-[var(--color-error-light)] text-[var(--color-error)]' },
+    { value: 'Pastor', label: 'Pastor', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
     { value: 'First Elder', label: 'First Elder', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-    { value: 'Department Head', label: 'Department Head', color: 'bg-green-100 text-green-800' },
+    { value: 'Department Head', label: 'Department Head', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ]
 
@@ -230,8 +230,8 @@ const MemberDirectory = () => {
             ].map((report, index) => (
               <div key={index} className="bg-[var(--color-surface)]  p-6 rounded-lg border border-[var(--color-border)]  hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-purple-100  rounded-lg">
-                    <report.icon className="h-6 w-6 text-purple-600 " />
+                  <div className="p-3 bg-[var(--color-accent-light)]  rounded-lg">
+                    <report.icon className="h-6 w-6 text-[var(--color-accent)] " />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-semibold text-[var(--color-text)] ">{report.title}</h3>
@@ -269,8 +269,8 @@ const MemberDirectory = () => {
                 {members.filter(m => m.is_active).length}
               </p>
             </div>
-            <div className="p-3 bg-green-100  rounded-lg">
-              <UserCheck className="h-6 w-6 text-green-600 " />
+            <div className="p-3 bg-[var(--color-success-light)]  rounded-lg">
+              <UserCheck className="h-6 w-6 text-[var(--color-success)] " />
             </div>
           </div>
         </div>
@@ -283,8 +283,8 @@ const MemberDirectory = () => {
                 {members.filter(m => !m.is_active).length}
               </p>
             </div>
-            <div className="p-3 bg-red-100  rounded-lg">
-              <UserX className="h-6 w-6 text-red-600 " />
+            <div className="p-3 bg-[var(--color-error-light)]  rounded-lg">
+              <UserX className="h-6 w-6 text-[var(--color-error)] " />
             </div>
           </div>
         </div>
@@ -297,8 +297,8 @@ const MemberDirectory = () => {
                 {members.filter(m => m.role === 'Department Head').length}
               </p>
             </div>
-            <div className="p-3 bg-purple-100  rounded-lg">
-              <Shield className="h-6 w-6 text-purple-600 " />
+            <div className="p-3 bg-[var(--color-accent-light)]  rounded-lg">
+              <Shield className="h-6 w-6 text-[var(--color-accent)] " />
             </div>
           </div>
         </div>
@@ -443,8 +443,8 @@ const MemberDirectory = () => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       member.is_active 
-                        ? 'bg-green-100 text-green-800 '
-                        : 'bg-red-100 text-red-800 '
+                        ? 'bg-[var(--color-success-light)] text-[var(--color-success)] '
+                        : 'bg-[var(--color-error-light)] text-[var(--color-error)] '
                     }`}>
                       {member.is_active ? (
                         <>
@@ -506,7 +506,7 @@ const MemberDirectory = () => {
                 subtitle={member.email}
                 badge={
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${
-                    member.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    member.is_active ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                   }`}>
                     {member.is_active ? 'Active' : 'Inactive'}
                   </span>
@@ -540,7 +540,7 @@ const MemberDirectory = () => {
 
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-[var(--color-surface)]  rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[var(--color-text)] ">Export Member Directory</h3>
@@ -579,7 +579,7 @@ const MemberDirectory = () => {
 
       {/* Member Details Modal */}
       {selectedMember && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-[var(--color-surface)]  rounded-lg max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[var(--color-text)] ">Member Details</h3>
@@ -644,8 +644,8 @@ const MemberDirectory = () => {
                   <Shield className="w-4 h-4 text-[var(--color-textSecondary)]" />
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     selectedMember.is_active 
-                      ? 'bg-green-100 text-green-800 '
-                      : 'bg-red-100 text-red-800 '
+                      ? 'bg-[var(--color-success-light)] text-[var(--color-success)] '
+                      : 'bg-[var(--color-error-light)] text-[var(--color-error)] '
                   }`}>
                     {selectedMember.is_active ? 'Active' : 'Inactive'}
                   </span>

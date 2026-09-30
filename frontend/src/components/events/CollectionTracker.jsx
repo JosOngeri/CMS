@@ -24,8 +24,8 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
   const isActive = collection.status === 'active';
 
   const getStatusColor = () => {
-    if (isCompleted) return 'bg-green-100 text-green-800 bg-green-900 text-green-200';
-    if (isCancelled) return 'bg-red-100 text-red-800 bg-red-900 text-red-200';
+    if (isCompleted) return 'bg-[var(--color-success-light)] text-[var(--color-success)] bg-[var(--color-success)] text-[var(--color-success)]';
+    if (isCancelled) return 'bg-[var(--color-error-light)] text-[var(--color-error)] bg-[var(--color-error)] text-[var(--color-error)]';
     return 'bg-[var(--color-primary-light)] text-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-light)]';
   };
 
@@ -83,8 +83,8 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="w-5 h-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-[var(--color-text)] text-white">
+            <DollarSign className="w-5 h-5 text-[var(--color-success)]" />
+            <h3 className="text-lg font-semibold text-[var(--color-text)]">
               {collection.title}
             </h3>
             <span className={`px-2 py-1 text-xs font-medium rounded-full flex items-center gap-1 ${getStatusColor()}`}>
@@ -93,11 +93,11 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
             </span>
           </div>
           {collection.description && (
-            <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-2">
+            <p className="text-sm text-[var(--color-textSecondary)] mb-2">
               {collection.description}
             </p>
           )}
-          <div className="flex items-center gap-4 text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <div className="flex items-center gap-4 text-sm text-[var(--color-textSecondary)]">
             <span className="flex items-center gap-1">
               <Eye className="w-4 h-4" />
               {collection.visibility === 'church' ? 'Church-wide' : 'Department only'}
@@ -113,31 +113,31 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
       {/* Progress Bar */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)]">
+          <span className="text-sm font-medium text-[var(--color-textSecondary)]">
             Progress
           </span>
-          <span className="text-sm font-semibold text-[var(--color-text)] text-white">
+          <span className="text-sm font-semibold text-[var(--color-text)]">
             {progress}%
           </span>
         </div>
-        <div className="w-full bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-full h-3">
+        <div className="w-full bg-[var(--color-surface)] rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all duration-300 ${
-              isCompleted ? 'bg-green-600' : 'bg-[var(--color-primary)]'
+              isCompleted ? 'bg-[var(--color-success)]' : 'bg-[var(--color-primary)]'
             }`}
             style={{ width: `${Math.min(progress, 100)}%` }}
           />
         </div>
         <div className="flex justify-between items-center mt-2">
           <div>
-            <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Raised</p>
-            <p className="text-lg font-semibold text-[var(--color-text)] text-white">
+            <p className="text-xs text-[var(--color-textSecondary)]">Raised</p>
+            <p className="text-lg font-semibold text-[var(--color-text)]">
               KES {parseFloat(collection.current_amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Target</p>
-            <p className="text-lg font-semibold text-[var(--color-text)] text-white">
+            <p className="text-xs text-[var(--color-textSecondary)]">Target</p>
+            <p className="text-lg font-semibold text-[var(--color-text)]">
               KES {parseFloat(collection.target_amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
             </p>
           </div>
@@ -149,7 +149,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
         {isActive && canContribute && (
           <button
             onClick={() => setShowContributionForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Contribute
@@ -166,13 +166,13 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
 
       {/* Contribution Form */}
       {showContributionForm && (
-        <div className="mt-4 p-4 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg">
-          <h4 className="text-sm font-semibold text-[var(--color-text)] text-white mb-3">
+        <div className="mt-4 p-4 bg-[var(--color-background)] rounded-lg">
+          <h4 className="text-sm font-semibold text-[var(--color-text)] mb-3">
             Add Contribution
           </h4>
           <form onSubmit={handleContribute} className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                 Amount (KES)
               </label>
               <input
@@ -182,17 +182,17 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                 step="0.01"
                 value={contributionForm.amount}
                 onChange={(e) => setContributionForm({ ...contributionForm, amount: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                 Payment Method
               </label>
               <select
                 value={contributionForm.payment_method}
                 onChange={(e) => setContributionForm({ ...contributionForm, payment_method: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
               >
                 <option value="cash">Cash</option>
                 <option value="mobile_money">Mobile Money (M-Pesa)</option>
@@ -201,14 +201,14 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-1">
+              <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">
                 Notes (optional)
               </label>
               <textarea
                 rows={2}
                 value={contributionForm.notes}
                 onChange={(e) => setContributionForm({ ...contributionForm, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -217,9 +217,9 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                 id="anonymous"
                 checked={contributionForm.is_anonymous}
                 onChange={(e) => setContributionForm({ ...contributionForm, is_anonymous: e.target.checked })}
-                className="w-4 h-4 text-green-600 border-[var(--color-border)] rounded focus:ring-green-500"
+                className="w-4 h-4 text-[var(--color-success)] border-[var(--color-border)] rounded focus:ring-[var(--color-success)]"
               />
-              <label htmlFor="anonymous" className="text-sm text-[var(--color-text)] text-[var(--color-textSecondary)]">
+              <label htmlFor="anonymous" className="text-sm text-[var(--color-textSecondary)]">
                 Make contribution anonymous
               </label>
             </div>
@@ -233,7 +233,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex-1 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
               >
                 Submit
               </button>
@@ -245,29 +245,29 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
       {/* Contributions List */}
       {showContributions && (
         <div className="mt-4">
-          <h4 className="text-sm font-semibold text-[var(--color-text)] text-white mb-3">
+          <h4 className="text-sm font-semibold text-[var(--color-text)] mb-3">
             Contribution History
           </h4>
           {loading ? (
-            <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Loading contributions...</p>
+            <p className="text-sm text-[var(--color-textSecondary)]">Loading contributions...</p>
           ) : contributions.length === 0 ? (
-            <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">No contributions yet</p>
+            <p className="text-sm text-[var(--color-textSecondary)]">No contributions yet</p>
           ) : (
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {contributions.map((contribution) => (
                 <div
                   key={contribution.id}
-                  className="flex items-center justify-between p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded-lg"
+                  className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded-lg"
                 >
                   <div>
-                    <p className="text-sm font-medium text-[var(--color-text)] text-white">
+                    <p className="text-sm font-medium text-[var(--color-text)]">
                       {contribution.contributor_name || 'Anonymous'}
                     </p>
-                    <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-xs text-[var(--color-textSecondary)]">
                       {new Date(contribution.created_at).toLocaleDateString()} • {contribution.payment_method}
                     </p>
                   </div>
-                  <p className="text-sm font-semibold text-[var(--color-text)] text-white">
+                  <p className="text-sm font-semibold text-[var(--color-text)]">
                     KES {parseFloat(contribution.amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
                   </p>
                 </div>

@@ -1,3 +1,20 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The "What I Owe" page. A member sees every contribution their departments
+ * have assigned to them — how much is due, how much they've paid, and a
+ * button to pay the rest via M-Pesa.
+ *
+ * "Required" obligations are tracked by the department head; "Voluntary" ones
+ * are optional contributions.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/departments/me/obligations → list of obligations
+ * - backend /api/payment/initiate           → sends M-Pesa prompt
+ * - AuthContext.jsx                          → current user
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { DollarSign, CheckCircle, Clock, Building2, AlertCircle, Loader } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,12 +23,12 @@ import Breadcrumb from '../../components/common/Breadcrumb';
 
 const statusChip = (status) => {
   const map = {
-    fulfilled: 'bg-green-100 text-green-700',
-    partial: 'bg-yellow-100 text-yellow-700',
-    pending: 'bg-red-100 text-red-700',
-    waived: 'bg-gray-100 text-gray-500',
+    fulfilled: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+    partial: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
+    pending: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
+    waived: 'bg-[var(--color-background)] text-[var(--color-textSecondary)]',
   };
-  return map[status] || 'bg-gray-100 text-gray-600';
+  return map[status] || 'bg-[var(--color-background)] text-[var(--color-text)]';
 };
 
 const MyObligations = () => {
@@ -79,7 +96,7 @@ const MyObligations = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-4">
           <p className="text-xs text-[var(--color-textSecondary)]">Outstanding (required)</p>
-          <p className="text-xl font-bold text-red-600">KES {totalDue.toLocaleString()}</p>
+          <p className="text-xl font-bold text-[var(--color-error)]">KES {totalDue.toLocaleString()}</p>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-4">
           <p className="text-xs text-[var(--color-textSecondary)]">Open obligations</p>
@@ -87,13 +104,13 @@ const MyObligations = () => {
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-4 col-span-2 sm:col-span-1">
           <p className="text-xs text-[var(--color-textSecondary)]">Fulfilled</p>
-          <p className="text-xl font-bold text-green-600">{obligations.filter((o) => o.status === 'fulfilled').length}</p>
+          <p className="text-xl font-bold text-[var(--color-success)]">{obligations.filter((o) => o.status === 'fulfilled').length}</p>
         </div>
       </div>
 
       {obligations.length === 0 ? (
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-10 text-center">
-          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-green-500" />
+          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-[var(--color-success)]" />
           <p className="text-[var(--color-text)] font-medium">No obligations</p>
           <p className="text-sm text-[var(--color-textSecondary)]">When a department allocates a budget to you, it appears here.</p>
         </div>
@@ -109,7 +126,7 @@ const MyObligations = () => {
                       <Building2 className="w-4 h-4 text-[var(--color-textSecondary)] flex-shrink-0" />
                       <p className="font-medium text-[var(--color-text)]">{o.department_name}</p>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${statusChip(o.status)}`}>{o.status}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${o.obligation_type === 'target' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${o.obligation_type === 'target' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'}`}>
                         {o.obligation_type === 'target' ? 'Required' : 'Voluntary'}
                       </span>
                     </div>
@@ -135,7 +152,7 @@ const MyObligations = () => {
                   </div>
                 </div>
                 <div className="mt-3 h-2 bg-[var(--color-background)] rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-green-500' : 'bg-[var(--color-primary)]'}`}
+                  <div className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-[var(--color-success)]' : 'bg-[var(--color-primary)]'}`}
                     style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -154,7 +171,7 @@ const MyObligations = () => {
 
       {/* Pay sheet — bottom sheet on mobile */}
       {paying && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setPaying(null)}>
+        <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setPaying(null)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Pay — {paying.department_name}</h3>
             <p className="text-sm text-[var(--color-textSecondary)]">{paying.purpose || 'Department obligation'}</p>

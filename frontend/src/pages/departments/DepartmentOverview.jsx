@@ -1,3 +1,16 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Church-wide department overview (route: /dashboard/departments/overview).
+ * Shows stats across all departments plus a searchable card grid, and
+ * recent activity across departments. Admin/leadership view.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/overview     → stats, dept list, recent activity
+ * - router/dashboard.routes.jsx       → linked from DepartmentsList
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,17 +28,13 @@ import {
   Plus,
 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { FullPageLoading } from '../../components/common/Loading';
-import { API_ENDPOINTS } from '../../constants/api';
-
-const authHeaders = () => ({
-  Authorization: `Bearer ${localStorage.getItem('token')}`,
-  'Content-Type': 'application/json',
-});
 
 const DepartmentOverview = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { api } = useAuth();
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -38,12 +47,8 @@ const DepartmentOverview = () => {
       if (categoryFilter) params.append('category', categoryFilter);
       if (statusFilter) params.append('status', statusFilter);
 
-      const response = await fetch(`${API_ENDPOINTS.DEPARTMENT.ALL}/overview?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      if (!response.ok) throw new Error('Failed to fetch department overview');
-      const data = await response.json();
-      setOverview(data.data);
+      const response = await api.get(`/departments/overview?${params.toString()}`);
+      setOverview(response.data.data);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -116,7 +121,7 @@ const DepartmentOverview = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Categories</p>
               <p className="text-2xl font-bold text-[var(--color-text)]">{stats?.total_categories || 0}</p>
             </div>
-            <Filter className="w-8 h-8 text-green-600" />
+            <Filter className="w-8 h-8 text-[var(--color-success)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
@@ -125,7 +130,7 @@ const DepartmentOverview = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Total Members</p>
               <p className="text-2xl font-bold text-[var(--color-text)]">{stats?.total_members || 0}</p>
             </div>
-            <Users className="w-8 h-8 text-purple-600" />
+            <Users className="w-8 h-8 text-[var(--color-accent)]" />
           </div>
         </div>
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">
@@ -134,7 +139,7 @@ const DepartmentOverview = () => {
               <p className="text-sm text-[var(--color-textSecondary)]">Active Departments</p>
               <p className="text-2xl font-bold text-[var(--color-text)]">{stats?.active_departments || 0}</p>
             </div>
-            <Activity className="w-8 h-8 text-orange-600" />
+            <Activity className="w-8 h-8 text-[var(--color-warning)]" />
           </div>
         </div>
       </div>
@@ -194,7 +199,7 @@ const DepartmentOverview = () => {
               </div>
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 dept.activity_status === 'active' 
-                  ? 'bg-green-100 text-green-800' 
+                  ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' 
                   : 'bg-[var(--color-surface)] text-[var(--color-text)]'
               }`}>
                 {dept.activity_status}
@@ -260,11 +265,11 @@ const DepartmentOverview = () => {
             <div key={index} className="flex items-start gap-3 p-3 bg-[var(--color-background)] rounded-lg">
               <div className={`p-2 rounded-lg ${
                 activity.type === 'communication' ? 'bg-[var(--color-primary-light)]' :
-                activity.type === 'meeting' ? 'bg-green-100' :
+                activity.type === 'meeting' ? 'bg-[var(--color-success-light)]' :
                 'bg-[var(--color-surface)]'
               }`}>
                 {activity.type === 'communication' && <MessageSquare className="w-4 h-4 text-[var(--color-primary)]" />}
-                {activity.type === 'meeting' && <Calendar className="w-4 h-4 text-green-600" />}
+                {activity.type === 'meeting' && <Calendar className="w-4 h-4 text-[var(--color-success)]" />}
                 {activity.type !== 'communication' && activity.type !== 'meeting' && <FileText className="w-4 h-4 text-[var(--color-textSecondary)]" />}
               </div>
               <div className="flex-1">

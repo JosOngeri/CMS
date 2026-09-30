@@ -106,7 +106,7 @@ const DepartmentActivity = () => {
     return (
       <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-[var(--color-error)] mb-4">{error}</p>
           <button
             onClick={() => navigate('/dashboard/my-departments')}
             className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"

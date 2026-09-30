@@ -422,7 +422,7 @@ const DepartmentsList = () => {
                         <div className="flex items-center gap-3">
                           {canManageDepartments && (
                             <button onClick={() => handleSelectDepartment(dept.id)}>
-                              {selectedDepartments.includes(dept.id) ? <CheckSquare className="text-primary-600" /> : <Square className="text-gray-300" />}
+                              {selectedDepartments.includes(dept.id) ? <CheckSquare className="text-primary-600" /> : <Square className="text-[var(--color-textSecondary)]" />}
                             </button>
                           )}
                           <Building className="text-primary" />

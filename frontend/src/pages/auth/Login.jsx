@@ -127,7 +127,7 @@ const Login = () => {
                 </button>
               </div>
               {errors.password && (
-                <p id="password-error" className="mt-1 text-sm text-red-600" role="alert">{errors.password.message}</p>
+                <p id="password-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.password.message}</p>
               )}
             </div>
 

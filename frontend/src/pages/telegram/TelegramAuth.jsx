@@ -298,7 +298,7 @@ const TelegramAuth = () => {
 
       {/* Verification Modal */}
       {verificationState.step !== 'idle' && verificationState.step !== 'success' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4">
             <h2 className="text-xl font-bold mb-4">
               {verificationState.step === 'phone_sent' && 'Sending Code...'}
@@ -339,7 +339,7 @@ const TelegramAuth = () => {
 
             {verificationState.step === 'error' && (
               <>
-                <div className="flex items-center gap-2 text-red-600 mb-4">
+                <div className="flex items-center gap-2 text-[var(--color-error)] mb-4">
                   <AlertTriangle className="w-5 h-5" />
                   <p>{verificationState.error}</p>
                 </div>
@@ -363,9 +363,9 @@ const TelegramAuth = () => {
 
       {/* Success Message */}
       {verificationState.step === 'success' && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg p-6 max-w-md w-full mx-4 text-center">
-            <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+            <CheckCircle className="w-16 h-16 text-[var(--color-success)] mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Authentication Successful</h2>
             <p className="text-[var(--color-textSecondary)] mb-4">
               Your Telegram account has been successfully authenticated.
@@ -414,7 +414,7 @@ const TelegramAuth = () => {
                     : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
                 }`}
               >
-                <Smartphone className="w-8 h-8 mx-auto mb-2 text-green-600" />
+                <Smartphone className="w-8 h-8 mx-auto mb-2 text-[var(--color-success)]" />
                 <p className="font-semibold">MTProto</p>
                 <p className="text-sm text-[var(--color-textSecondary)]">For user operations</p>
               </button>
@@ -449,7 +449,7 @@ const TelegramAuth = () => {
                 {method.type === 'bot' ? (
                   <Bot className="w-8 h-8 text-[var(--color-primary)]" />
                 ) : (
-                  <Smartphone className="w-8 h-8 text-green-600" />
+                  <Smartphone className="w-8 h-8 text-[var(--color-success)]" />
                 )}
                 <div>
                   <h3 className="font-semibold text-lg">{method.name}</h3>
@@ -460,7 +460,7 @@ const TelegramAuth = () => {
                       </span>
                     )}
                     {method.isActive ? (
-                      <span className="flex items-center gap-1 text-green-600">
+                      <span className="flex items-center gap-1 text-[var(--color-success)]">
                         <CheckCircle className="w-4 h-4" />
                         Active
                       </span>
@@ -488,7 +488,7 @@ const TelegramAuth = () => {
                   onClick={() => handleToggleActive(method.id)}
                   className={`p-2 rounded ${
                     method.isActive 
-                      ? 'bg-green-100 text-green-600 hover:bg-green-200' 
+                      ? 'bg-[var(--color-success-light)] text-[var(--color-success)] hover:bg-[var(--color-success)]' 
                       : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
                   }`}
                 >
@@ -496,7 +496,7 @@ const TelegramAuth = () => {
                 </button>
                 <button
                   onClick={() => handleDeleteMethod(method.id)}
-                  className="p-2 rounded bg-red-100 text-red-600 hover:bg-red-200"
+                  className="p-2 rounded bg-[var(--color-error-light)] text-[var(--color-error)] hover:bg-[var(--color-error)]"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -627,7 +627,7 @@ const TelegramAuth = () => {
                 <button
                   onClick={() => handleTestConnection(method.id)}
                   disabled={testing}
-                  className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[var(--color-success)] text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
                 >
                   {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
                   Test Connection
@@ -635,7 +635,7 @@ const TelegramAuth = () => {
                 {method.type === 'mtproto' && (
                   <button
                     onClick={() => handleStartVerification(method.id)}
-                    className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                    className="flex items-center gap-2 bg-[var(--color-accent)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-accent)]"
                   >
                     <Shield className="w-4 h-4" />
                     Verify Account

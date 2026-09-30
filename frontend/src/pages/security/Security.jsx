@@ -48,11 +48,11 @@ const Security = () => {
 
   const getActionIcon = (action) => {
     switch (action) {
-      case 'LOGIN_SUCCESS': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'LOGIN_FAILED': return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'LOGIN_SUCCESS': return <CheckCircle className="w-4 h-4 text-[var(--color-success)]" />;
+      case 'LOGIN_FAILED': return <XCircle className="w-4 h-4 text-[var(--color-error)]" />;
       case 'PASSWORD_CHANGE': return <Lock className="w-4 h-4 text-[var(--color-primary)]" />;
-      case 'ROLE_UPDATE': return <User className="w-4 h-4 text-purple-500" />;
-      case 'UNAUTHORIZED_ACCESS': return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      case 'ROLE_UPDATE': return <User className="w-4 h-4 text-[var(--color-accent)]" />;
+      case 'UNAUTHORIZED_ACCESS': return <AlertTriangle className="w-4 h-4 text-[var(--color-error)]" />;
       default: return <Activity className="w-4 h-4 text-[var(--color-textSecondary)]" />;
     }
   };
@@ -136,7 +136,7 @@ const Security = () => {
                           {log.timestamp}
                         </span>
                         <span className={`px-2 py-1 rounded-full text-xs ${
-                          log.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          log.status === 'success' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                         }`}>
                           {log.status}
                         </span>

@@ -1,3 +1,19 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A clickable stat card used on every role dashboard: big number on top,
+ * a short explanation underneath, and an optional link to a detail page.
+ *
+ * If `linkTo` is provided the whole card navigates there on click.
+ * Pass `isLoading`, `error`, and `onRetry` to show honest empty states
+ * instead of made-up numbers.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - React Router <Link> → navigates when the card is clicked
+ * - ColorPaletteContext.jsx → reads church colours for icon backgrounds
+ */
+
 import { Link } from 'react-router-dom'
 import { ArrowRight, RefreshCw, AlertCircle, Users, DollarSign, Calendar, Heart, Building, TrendingUp } from 'lucide-react'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'

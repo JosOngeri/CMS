@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 /// Member's financial obligations across all departments — required targets
 /// and voluntary contribution options, each with its own progress bar.
@@ -57,7 +58,7 @@ class _MyObligationsScreenState extends State<MyObligationsScreen> {
                             child: Column(
                               children: [
                                 Icon(Icons.check_circle_outline,
-                                    size: 56, color: Colors.green),
+                                    size: 56, color: AppTheme.successColor),
                                 SizedBox(height: 12),
                                 Text('No outstanding obligations',
                                     style: TextStyle(fontSize: 16)),
@@ -154,7 +155,7 @@ class _MyObligationsScreenState extends State<MyObligationsScreen> {
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      backgroundColor: isError ? AppTheme.errorColor : AppTheme.successColor,
     ));
   }
 }
@@ -195,15 +196,15 @@ class _ObligationCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: voluntary
-                        ? Colors.blue.withOpacity(0.12)
-                        : Colors.orange.withOpacity(0.12),
+                        ? AppTheme.primaryColor.withOpacity(0.12)
+                        : AppTheme.warningColor.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     voluntary ? 'Voluntary' : 'Target',
                     style: TextStyle(
                         fontSize: 11,
-                        color: voluntary ? Colors.blue : Colors.orange[800],
+                        color: voluntary ? AppTheme.primaryColor : AppTheme.warningColor,
                         fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -212,7 +213,7 @@ class _ObligationCard extends StatelessWidget {
             if (ob['department_name'] != null) ...[
               const SizedBox(height: 4),
               Text(ob['department_name'].toString(),
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
             ],
             const SizedBox(height: 12),
             LinearProgressIndicator(value: progress, minHeight: 8),
@@ -230,16 +231,16 @@ class _ObligationCard extends StatelessWidget {
             if (ob['due_date'] != null) ...[
               const SizedBox(height: 4),
               Text('Due: ${ob['due_date'].toString().split('T').first}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  style: TextStyle(color: AppTheme.textSecondary, fontSize: 12)),
             ],
             const SizedBox(height: 12),
             if (done)
               const Row(children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 18),
+                Icon(Icons.check_circle, color: AppTheme.successColor, size: 18),
                 SizedBox(width: 6),
                 Text('Fulfilled',
                     style: TextStyle(
-                        color: Colors.green, fontWeight: FontWeight.w600)),
+                        color: AppTheme.successColor, fontWeight: FontWeight.w600)),
               ])
             else
               SizedBox(

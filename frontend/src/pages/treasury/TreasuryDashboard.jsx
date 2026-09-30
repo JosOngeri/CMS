@@ -90,7 +90,7 @@ const TreasuryDashboard = () => {
       title: 'Create Journal Entry',
       description: 'Record financial transactions',
       icon: Plus,
-      color: 'bg-green-100 text-green-600',
+      color: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
       link: '/dashboard/payments/journal-entries'
     },
     {
@@ -104,7 +104,7 @@ const TreasuryDashboard = () => {
       title: 'Manage Budgets',
       description: 'Budget tracking',
       icon: BarChart3,
-      color: 'bg-orange-100 text-orange-600',
+      color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
       link: '/dashboard/payments/budgets'
     }
   ]
@@ -134,8 +134,8 @@ const TreasuryDashboard = () => {
                         KES {stats.totalIncome.toLocaleString()}
                       </p>
                     </div>
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    <div className="p-3 bg-[var(--color-success-light)] rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-[var(--color-success)]" />
                     </div>
                   </div>
                 </div>
@@ -150,8 +150,8 @@ const TreasuryDashboard = () => {
                         KES {stats.totalExpenses.toLocaleString()}
                       </p>
                     </div>
-                    <div className="p-3 bg-red-100 rounded-lg">
-                      <TrendingDown className="h-6 w-6 text-red-600" />
+                    <div className="p-3 bg-[var(--color-error-light)] rounded-lg">
+                      <TrendingDown className="h-6 w-6 text-[var(--color-error)]" />
                     </div>
                   </div>
                 </div>
@@ -182,8 +182,8 @@ const TreasuryDashboard = () => {
                         KES {stats.fundBalance.toLocaleString()}
                       </p>
                     </div>
-                    <div className="p-3 bg-purple-100 rounded-lg">
-                      <DollarSign className="h-6 w-6 text-purple-600" />
+                    <div className="p-3 bg-[var(--color-accent-light)] rounded-lg">
+                      <DollarSign className="h-6 w-6 text-[var(--color-accent)]" />
                     </div>
                   </div>
                 </div>
@@ -199,11 +199,11 @@ const TreasuryDashboard = () => {
                     {recentTransactions.map((transaction, index) => (
                       <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)]  rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'}`}>
+                          <div className={`p-2 rounded-lg ${transaction.type === 'income' ? 'bg-[var(--color-success-light)]' : 'bg-[var(--color-error-light)]'}`}>
                             {transaction.type === 'income' ? (
-                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <TrendingUp className="h-4 w-4 text-[var(--color-success)]" />
                             ) : (
-                              <TrendingDown className="h-4 w-4 text-red-600" />
+                              <TrendingDown className="h-4 w-4 text-[var(--color-error)]" />
                             )}
                           </div>
                           <div>
@@ -211,7 +211,7 @@ const TreasuryDashboard = () => {
                             <p className="text-sm text-[var(--color-textSecondary)] ">{transaction.date}</p>
                           </div>
                         </div>
-                        <p className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`font-semibold ${transaction.type === 'income' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                           {transaction.type === 'income' ? '+' : '-'}KES {transaction.amount.toLocaleString()}
                         </p>
                       </div>
@@ -238,8 +238,8 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Transaction Management</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { title: 'Record Income', icon: TrendingUp, link: '/dashboard/treasury/income', color: 'bg-green-100 text-green-600' },
-                    { title: 'Record Expense', icon: TrendingDown, link: '/dashboard/treasury/expenses', color: 'bg-red-100 text-red-600' },
+                    { title: 'Record Income', icon: TrendingUp, link: '/dashboard/treasury/income', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Record Expense', icon: TrendingDown, link: '/dashboard/treasury/expenses', color: 'bg-[var(--color-error-light)] text-[var(--color-error)]' },
                     { title: 'View History', icon: FileText, link: '/dashboard/treasury/history', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' }
                   ].map((action, index) => (
                     <Link
@@ -270,9 +270,9 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Budget Management</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { title: 'Create Budget', icon: Plus, link: '/dashboard/treasury/budgets/create', color: 'bg-green-100 text-green-600' },
+                    { title: 'Create Budget', icon: Plus, link: '/dashboard/treasury/budgets/create', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
                     { title: 'View Budgets', icon: Wallet, link: '/dashboard/treasury/budgets', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Budget Reports', icon: BarChart3, link: '/dashboard/treasury/budgets/reports', color: 'bg-purple-100 text-purple-600' }
+                    { title: 'Budget Reports', icon: BarChart3, link: '/dashboard/treasury/budgets/reports', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -303,9 +303,9 @@ const TreasuryDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { title: 'My Collections', icon: Wallet, link: '/dashboard/collections', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Payment History', icon: FileText, link: '/dashboard/payment-history', color: 'bg-green-100 text-green-600' },
-                    { title: 'Payment Management', icon: DollarSign, link: '/dashboard/payment-management', color: 'bg-purple-100 text-purple-600' },
-                    { title: 'Contribution Reports', icon: BarChart3, link: '/dashboard/payments/contributions', color: 'bg-orange-100 text-orange-600' }
+                    { title: 'Payment History', icon: FileText, link: '/dashboard/payment-history', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Payment Management', icon: DollarSign, link: '/dashboard/payment-management', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
+                    { title: 'Contribution Reports', icon: BarChart3, link: '/dashboard/payments/contributions', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -369,10 +369,10 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Treasury Settings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { title: 'Currency Settings', icon: DollarSign, link: '/settings/treasury/currency', color: 'bg-green-100 text-green-600' },
+                    { title: 'Currency Settings', icon: DollarSign, link: '/settings/treasury/currency', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
                     { title: 'Account Settings', icon: Wallet, link: '/settings/treasury/accounts', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Tax Settings', icon: FileText, link: '/settings/treasury/tax', color: 'bg-purple-100 text-purple-600' },
-                    { title: 'Approval Settings', icon: CheckCircle, link: '/settings/treasury/approvals', color: 'bg-orange-100 text-orange-600' }
+                    { title: 'Tax Settings', icon: FileText, link: '/settings/treasury/tax', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
+                    { title: 'Approval Settings', icon: CheckCircle, link: '/settings/treasury/approvals', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
                   ].map((setting, index) => (
                     <Link
                       key={index}

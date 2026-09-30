@@ -1,6 +1,19 @@
 /**
- * API endpoint constants
- * Note: Vite proxy handles /api prefix, so paths should NOT include /api
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A central list of every REST endpoint the web app calls. Keeping them
+ * in one place means we never have to hunt for hard-coded URLs in components.
+ *
+ * IMPORTANT: the Axios client in AuthContext automatically adds `/api` to the
+ * front of paths that do not start with `/api`, so all constants here are the
+ * path AFTER `/api`. Because of that, singular/plural matters: the backend
+ * mounts some routes under `/department` and others under `/departments`.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - AuthContext.jsx → axios instance auto-prefixes these paths
+ * - Every page/service hook that fetches data
+ * - backend/routes/*.routes.js → the real mounted paths on the server
  */
 
 export const API_ENDPOINTS = {
@@ -16,7 +29,7 @@ export const API_ENDPOINTS = {
     VERIFY_PASSWORD: '/auth/verify-password',
   },
 
-  // Users
+  // Users & people
   USERS: {
     BASE: '/users',
     BY_ID: (id) => `/users/${id}`,
@@ -34,29 +47,43 @@ export const API_ENDPOINTS = {
   },
 
   // Departments
+  // Note the mix of `/departments` (public/crud) and `/department` (scoped).
   DEPARTMENTS: {
     BASE: '/departments',
     BY_ID: (id) => `/departments/${id}`,
-    USER_DEPARTMENTS: '/department/my-departments',
+    AVAILABLE: '/departments/available',
+    JOIN: '/departments/join',
+    LEAVE: (id) => `/departments/leave/${id}`,
+
+    // Scoped endpoints live under the singular `/department` prefix.
     MY_DEPARTMENTS: '/department/my-departments',
-    DEPARTMENT: {
-      BASE: '/department',
-      AVAILABLE: '/departments/available',
-      JOIN: '/departments/join',
-      LEAVE: (id) => `/departments/leave/${id}`,
-      PENDING_REQUESTS: (id) => `/departments/${id}/pending-requests`,
-      APPROVE_REQUEST: (deptId, userId) => `/departments/${deptId}/approve/${userId}`,
-      REJECT_REQUEST: (deptId, userId) => `/departments/${deptId}/reject/${userId}`,
-      DASHBOARD: (id) => `/department/${id}/dashboard`,
-      COMMUNICATIONS: (id) => `/department/${id}/communications`,
-      MEMBERS: (id) => `/department/${id}/members`,
-      MEETINGS: (id) => `/department/${id}/meetings`,
-      TASKS: (id) => `/department/${id}/tasks`,
-      TASK_BY_ID: (deptId, taskId) => `/department/${deptId}/tasks/${taskId}`,
-      RESOURCES: (id) => `/department/${id}/resources`,
-      ACTIVITY_FEED: (id) => `/department/${id}/activity-feed`,
-      ACTIVITY_SUMMARY: (id) => `/department/${id}/activity-summary`,
-    },
+    PENDING_REQUESTS: (id) => `/department/${id}/pending-requests`,
+    APPROVE_REQUEST: (deptId, userId) => `/department/${deptId}/approve/${userId}`,
+    REJECT_REQUEST: (deptId, userId) => `/department/${deptId}/reject/${userId}`,
+    DASHBOARD: (id) => `/department/${id}/dashboard`,
+    COMMUNICATIONS: (id) => `/department/${id}/communications`,
+    MEMBERS: (id) => `/department/${id}/members`,
+    MEETINGS: (id) => `/department/${id}/meetings`,
+    TASKS: (id) => `/department/${id}/tasks`,
+    TASK_BY_ID: (deptId, taskId) => `/department/${deptId}/tasks/${taskId}`,
+    RESOURCES: (id) => `/department/${id}/resources`,
+    ACTIVITY_FEED: (id) => `/department/${id}/activity-feed`,
+    ACTIVITY_SUMMARY: (id) => `/department/${id}/activity-summary`,
+
+    // Department finance & operations
+    BUDGETS: (id) => `/department/${id}/budgets`,
+    BUDGET_BY_ID: (deptId, budgetId) => `/department/${deptId}/budgets/${budgetId}`,
+    OBLIGATIONS: (id) => `/department/${id}/obligations`,
+    COLLECTIONS: (id) => `/department/${id}/collections`,
+    REMITTANCES: (id) => `/department/${id}/remittances`,
+    PENDING_FUNDS: (id) => `/department/${id}/remittances/pending-funds`,
+    SUBCOMMITTEES: (id) => `/department/${id}/subcommittees`,
+  },
+
+  // Obligations ("What I Owe")
+  OBLIGATIONS: {
+    MINE: '/departments/me/obligations',
+    BY_ID: (id) => `/obligations/${id}`,
   },
 
   // Payments
@@ -66,6 +93,21 @@ export const API_ENDPOINTS = {
     STATUS: (transaction_id) => `/payments/status/${transaction_id}`,
     CATEGORIES: '/payments/categories',
     CALLBACK: '/payments/mpesa/callback',
+    METHODS: '/payments/methods',
+    BY_ID: (id) => `/payments/${id}`,
+    RECEIPT: (id) => `/payments/${id}/receipt`,
+    REFUND: (id) => `/payments/${id}/refund`,
+    VERIFY: (id) => `/payments/${id}/verify`,
+    CANCEL: (id) => `/payments/${id}/cancel`,
+    PLEDGES: '/payments/pledges',
+    PLEDGE_BY_ID: (id) => `/payments/pledges/${id}`,
+    PLEDGE_PAYMENTS: (id) => `/payments/pledges/${id}/payments`,
+    SUMMARY: '/payments/summary',
+    ANALYTICS: '/payments/analytics',
+    TRENDS: '/payments/trends',
+    REFUNDS: '/payments/refunds',
+    REFUND_APPROVE: (id) => `/payments/refunds/${id}/approve`,
+    REFUND_REJECT: (id) => `/payments/refunds/${id}/reject`,
   },
 
   // Events
@@ -74,7 +116,7 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `/events/${id}`,
   },
 
-  // SMS
+  // SMS / communications
   SMS: {
     BASE: '/sms',
     HISTORY: '/sms/history',
@@ -82,13 +124,24 @@ export const API_ENDPOINTS = {
     SEND: '/sms/send',
   },
 
-  // Dashboard
+  // Dashboard summary endpoints (role-specific)
   DASHBOARD: {
     STATS: '/dashboard/stats',
     ACTIVITY: '/dashboard/activity',
+    SYSTEM_HEALTH: '/dashboard/system-health',
+    FINANCIAL_STATS: '/dashboard/financial-stats',
+    FINANCIAL_HEALTH: '/dashboard/financial-health',
+    TRANSACTIONS: '/dashboard/transactions',
+    MINISTRY_HEALTH: '/dashboard/ministry-health',
+    DEPARTMENT_STATS: '/dashboard/department-stats',
+    DEPARTMENT_HEALTH: '/dashboard/department-health',
+    DEPARTMENT_ACTIVITY: '/dashboard/department-activity',
+    PERSONAL_STATS: '/dashboard/personal-stats',
+    PERSONAL_STATUS: '/dashboard/personal-status',
+    PERSONAL_ACTIVITY: '/dashboard/personal-activity',
   },
 
-  // Notifications
+  // Notifications / messages
   NOTIFICATIONS: {
     BASE: '/notifications',
     UNREAD_COUNT: '/notifications/unread-count',
@@ -97,7 +150,7 @@ export const API_ENDPOINTS = {
     DELETE: (id) => `/notifications/${id}`,
   },
 
-  // Approvals
+  // Approvals / decisions needing me
   APPROVALS: {
     BASE: '/approvals',
     PENDING_COUNT: '/approvals/pending-count',
@@ -112,16 +165,22 @@ export const API_ENDPOINTS = {
     BY_DEPARTMENT: (id) => `/audit-logs/department/${id}`,
   },
 
-  // Collections
+  // Collections (fundraising/offering rounds)
   COLLECTIONS: {
     BASE: '/collections',
     BY_ID: (id) => `/collections/${id}`,
+    MY_COLLECTIONS: '/collections/my-collections',
+    MY_STATEMENT: '/collections/my-statement',
+    EVENT: '/collections/event',
+    STATUS: (id) => `/collections/${id}/status`,
     CONTRIBUTIONS: (id) => `/collections/${id}/contributions`,
     CONTRIBUTION_DELETE: (id, contributionId) => `/collections/${id}/contributions/${contributionId}`,
-    STATUS: (id) => `/collections/${id}/status`,
+    ANALYTICS: (id) => `/collections/${id}/analytics`,
+    CLOSE: (id) => `/collections/${id}/close`,
+    REOPEN: (id) => `/collections/${id}/reopen`,
   },
 
-  // Health
+  // Health check
   HEALTH: '/health',
 
   // Gallery
@@ -131,12 +190,12 @@ export const API_ENDPOINTS = {
     TELEGRAM_AUTH_STATUS: '/telegram/auth/status',
   },
 
-  // Documents
+  // Documents / resources
   DOCUMENTS: {
     BASE: '/documents',
   },
 
-  // Treasury
+  // Treasury / church finances
   TREASURY: {
     ACCOUNTS: '/treasury/accounts',
     TRANSACTIONS: '/treasury/transactions',
@@ -160,7 +219,7 @@ export const API_ENDPOINTS = {
       BALANCE_SHEET: '/treasury/reports/balance-sheet',
       CASH_FLOW: '/treasury/reports/cash-flow',
       FUND_BALANCE: '/treasury/reports/fund-balance',
-    }
+    },
   },
 
   // Telegram
@@ -183,22 +242,8 @@ export const API_ENDPOINTS = {
     STATUS: (id) => `/projects/${id}/status`,
   },
 
-  // Collections
-  COLLECTIONS: {
-    BASE: '/collections',
-    MY_COLLECTIONS: '/collections/my-collections',
-    MY_STATEMENT: '/collections/my-statement',
-    EVENT: '/collections/event',
-    BY_ID: (id) => `/collections/${id}`,
-    STATUS: (id) => `/collections/${id}/status`,
-    CONTRIBUTIONS: (id) => `/collections/${id}/contributions`,
-    ANALYTICS: (id) => `/collections/${id}/analytics`,
-    CLOSE: (id) => `/collections/${id}/close`,
-    REOPEN: (id) => `/collections/${id}/reopen`,
-  },
-
-  // Analytics
-  ANALYTICS: {
+  // Reports & trends (previously called analytics)
+  REPORTS: {
     DASHBOARD: '/analytics/dashboard',
     MEMBER_GROWTH: '/analytics/member-growth',
     MEMBER_DEMOGRAPHICS: '/analytics/member-demographics',
@@ -219,31 +264,7 @@ export const API_ENDPOINTS = {
     CUSTOM: '/analytics/custom',
     EXPORT: '/analytics/export',
   },
-
-  // Payments
-  PAYMENTS: {
-    BASE: '/payments',
-    METHODS: '/payments/methods',
-    CATEGORIES: '/payments/categories',
-    MY_PAYMENTS: '/payments/my-payments',
-    PAYMENTS: '/payments/payments',
-    BY_ID: (id) => `/payments/${id}`,
-    STATUS: (id) => `/payments/status/${id}`,
-    RECEIPT: (id) => `/payments/${id}/receipt`,
-    REFUND: (id) => `/payments/${id}/refund`,
-    VERIFY: (id) => `/payments/${id}/verify`,
-    CANCEL: (id) => `/payments/${id}/cancel`,
-    PLEDGES: '/payments/pledges',
-    PLEDGE_BY_ID: (id) => `/payments/pledges/${id}`,
-    PLEDGE_PAYMENTS: (id) => `/payments/pledges/${id}/payments`,
-    SUMMARY: '/payments/summary',
-    ANALYTICS: '/payments/analytics',
-    TRENDS: '/payments/trends',
-    REFUNDS: '/payments/refunds',
-    REFUND_APPROVE: (id) => `/payments/refunds/${id}/approve`,
-    REFUND_REJECT: (id) => `/payments/refunds/${id}/reject`,
-  }
-}
+};
 
 export const HTTP_METHODS = {
   GET: 'GET',
@@ -251,7 +272,7 @@ export const HTTP_METHODS = {
   PUT: 'PUT',
   PATCH: 'PATCH',
   DELETE: 'DELETE',
-}
+};
 
 export const HTTP_STATUS = {
   OK: 200,
@@ -266,4 +287,4 @@ export const HTTP_STATUS = {
   TOO_MANY_REQUESTS: 429,
   INTERNAL_SERVER_ERROR: 500,
   SERVICE_UNAVAILABLE: 503,
-}
+};

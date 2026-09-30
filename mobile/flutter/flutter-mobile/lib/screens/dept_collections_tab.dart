@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/api_service.dart';
 import '../services/sms_recon_service.dart';
+import '../app/theme.dart';
 
 /// Department Collections tab — collection target progress, milestones,
 /// budgets/obligations (heads), and the M-Pesa reconciliation + parser
@@ -166,7 +167,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                         '${b['subcommittee_name'] != null ? ' · ${b['subcommittee_name']}' : ''}'
                         '${b['collection_deadline'] != null ? ' · due ${b['collection_deadline'].toString().split('T').first}' : ''}',
                         style:
-                            TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                       ),
                     ],
                   ),
@@ -177,7 +178,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                         style: const TextStyle(
                             fontSize: 11, color: Colors.white)),
                     backgroundColor:
-                        status == 'active' ? Colors.green : Colors.grey,
+                        status == 'active' ? AppTheme.successColor : AppTheme.textSecondary,
                     padding: EdgeInsets.zero,
                     visualDensity: VisualDensity.compact,
                   ),
@@ -204,13 +205,13 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                           children: [
                             if (m['reached'] == true)
                               const Icon(Icons.check_circle,
-                                  size: 14, color: Colors.green),
+                                  size: 14, color: AppTheme.successColor),
                             Text(' ${_num(m['percent']).toInt()}%',
                                 style: TextStyle(
                                     fontSize: 11,
                                     color: m['reached'] == true
-                                        ? Colors.green
-                                        : Colors.grey)),
+                                        ? AppTheme.successColor
+                                        : AppTheme.textSecondary)),
                           ],
                         ))
                     .toList(),
@@ -219,7 +220,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             const SizedBox(height: 6),
             Text(
               '${_num(b['fulfilled_count']).toInt()}/${_num(b['member_count']).toInt()} members fulfilled',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
             ),
             if (widget.canManage && status == 'active')
               Align(
@@ -271,10 +272,10 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                           Text(
                             'KES ${collected.toStringAsFixed(0)} / ${target.toStringAsFixed(0)}',
                             style: TextStyle(
-                                fontSize: 12, color: Colors.grey[700]),
+                                fontSize: 12, color: AppTheme.textSecondary),
                           ),
                           const Icon(Icons.chevron_right,
-                              size: 18, color: Colors.grey),
+                              size: 18, color: AppTheme.textSecondary),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -328,7 +329,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
           children: [
             const Row(
               children: [
-                Icon(Icons.sms, color: Colors.grey),
+                Icon(Icons.sms, color: AppTheme.textSecondary),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text('Reconcile a payment',
@@ -341,7 +342,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             Text(
               'Copy an M-Pesa or bank payment SMS and paste it in the app — '
               'it\'s parsed on this phone and queued for review.',
-              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -388,7 +389,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             ),
             if (_budgets.isEmpty)
               const Text('No budgets yet',
-                  style: TextStyle(color: Colors.grey))
+                  style: TextStyle(color: AppTheme.textSecondary))
             else
               ..._budgets.map((b) {
                 final status = (b['status'] ?? 'pending').toString();
@@ -466,9 +467,9 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.amber.withOpacity(0.12),
+                  color: AppTheme.warningColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.amber.shade300),
+                  border: Border.all(color: AppTheme.warningColor.shade300),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,7 +482,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                     const SizedBox(height: 4),
                     Text(
                       'Reconciled funds not yet handed to the church account.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
@@ -500,10 +501,10 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
             ..._remittances.take(8).map((r) {
               final status = (r['status'] ?? 'pending').toString();
               final color = status == 'confirmed'
-                  ? Colors.green
+                  ? AppTheme.successColor
                   : status == 'disputed'
-                      ? Colors.red
-                      : Colors.orange;
+                      ? AppTheme.errorColor
+                      : AppTheme.warningColor;
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.account_balance_wallet, color: color),
@@ -522,12 +523,12 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                           IconButton(
                             tooltip: 'Confirm receipt',
                             icon: const Icon(Icons.check_circle,
-                                color: Colors.green),
+                                color: AppTheme.successColor),
                             onPressed: () => _confirmRemittance(r),
                           ),
                           IconButton(
                             tooltip: 'Dispute',
-                            icon: const Icon(Icons.flag, color: Colors.red),
+                            icon: const Icon(Icons.flag, color: AppTheme.errorColor),
                             onPressed: () => _dispute(r),
                           ),
                         ],
@@ -656,7 +657,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorColor),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Dispute'),
           ),
@@ -683,7 +684,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
               'Paste a real M-Pesa or bank SMS and AI will generate the '
               'parsing rules for this collection account. Calibrate once — '
               'future messages are parsed on-device.',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -735,7 +736,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                         onPressed: () => _waive(o),
                         child: const Text('waive',
                             style:
-                                TextStyle(fontSize: 12, color: Colors.red)),
+                                TextStyle(fontSize: 12, color: AppTheme.errorColor)),
                       ),
                   ],
                 ),
@@ -776,12 +777,12 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
               Text(
                 'Collected KES ${_num(s['collected']).toStringAsFixed(0)} '
                 'of KES ${_num(s['target_amount']).toStringAsFixed(0)} target',
-                style: TextStyle(color: Colors.grey[700]),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
               const Divider(height: 24),
               if (budget == null)
                 const Text('No spend budget set for this subcommittee.',
-                    style: TextStyle(color: Colors.grey))
+                    style: TextStyle(color: AppTheme.textSecondary))
               else ...[
                 const Text('Spend budget',
                     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -811,10 +812,10 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                             style: const TextStyle(
                                 fontSize: 10, color: Colors.white)),
                         backgroundColor: r['status'] == 'approved'
-                            ? Colors.green
+                            ? AppTheme.successColor
                             : r['status'] == 'rejected'
-                                ? Colors.red
-                                : Colors.orange,
+                                ? AppTheme.errorColor
+                                : AppTheme.warningColor,
                         padding: EdgeInsets.zero,
                         visualDensity: VisualDensity.compact,
                       ),
@@ -991,7 +992,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
   void _snack(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      backgroundColor: isError ? AppTheme.errorColor : AppTheme.successColor,
     ));
   }
 }

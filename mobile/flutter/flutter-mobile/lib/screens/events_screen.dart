@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -88,7 +89,7 @@ class _EventsScreenState extends State<EventsScreen> {
             content: Text(status == 'attending'
                 ? 'You are registered for this event'
                 : 'RSVP updated'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppTheme.successColor,
           ),
         );
       } else {
@@ -169,7 +170,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 if (isAttending)
                   const Chip(
                     label: Text('Going', style: TextStyle(fontSize: 11)),
-                    backgroundColor: Color(0xFFDCFCE7),
+                    backgroundColor: AppTheme.successLight,
                     visualDensity: VisualDensity.compact,
                   ),
               ],
@@ -177,11 +178,11 @@ class _EventsScreenState extends State<EventsScreen> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                const Icon(Icons.calendar_today, size: 14, color: AppTheme.textSecondary),
                 const SizedBox(width: 6),
                 Text(
                   _formatEventDate(event['event_date'], event['event_time']),
-                  style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                 ),
               ],
             ),
@@ -189,12 +190,12 @@ class _EventsScreenState extends State<EventsScreen> {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                  const Icon(Icons.location_on, size: 14, color: AppTheme.textSecondary),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       event['location'],
-                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                     ),
                   ),
                 ],
@@ -204,11 +205,11 @@ class _EventsScreenState extends State<EventsScreen> {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(Icons.groups, size: 14, color: Colors.grey),
+                  const Icon(Icons.groups, size: 14, color: AppTheme.textSecondary),
                   const SizedBox(width: 6),
                   Text(
                     event['department_name'],
-                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                    style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                   ),
                 ],
               ),
@@ -220,7 +221,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 event['description'],
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
               ),
             ],
             const SizedBox(height: 12),
@@ -230,7 +231,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 if (attendeeCount != null)
                   Text(
                     '$attendeeCount attending',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   )
                 else
                   const SizedBox.shrink(),
@@ -252,7 +253,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         label: Text(isAttending ? 'Cancel RSVP' : 'RSVP'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isAttending
-                              ? Colors.grey[300]
+                              ? AppTheme.dividerColor
                               : Theme.of(context).colorScheme.primary,
                           foregroundColor:
                               isAttending ? Colors.black87 : Colors.white,
@@ -297,7 +298,7 @@ class _EventsScreenState extends State<EventsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const Icon(Icons.error_outline, size: 64, color: AppTheme.errorColor),
             const SizedBox(height: 16),
             Text(
               _errorMessage!,
@@ -323,16 +324,16 @@ class _EventsScreenState extends State<EventsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
+            Icon(Icons.event_busy, size: 64, color: AppTheme.textTertiary),
             const SizedBox(height: 16),
             Text(
               'No upcoming events',
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: AppTheme.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Check back later for church events',
-              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: AppTheme.textTertiary),
             ),
           ],
         ),

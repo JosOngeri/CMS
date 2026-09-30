@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import 'dept_collections_tab.dart';
 import 'dept_leadership_tab.dart';
+import '../app/theme.dart';
 
 /// Detail view for a single department. Members get Overview / Subcommittees /
 /// Programs & Events / Messages. Heads and privileged roles also get Requests
@@ -194,7 +195,7 @@ class _OverviewTab extends StatelessWidget {
         ]),
         const SizedBox(height: 16),
         if (dept['description'] != null)
-          Text(dept['description'], style: TextStyle(color: Colors.grey[700])),
+          Text(dept['description'], style: TextStyle(color: AppTheme.textSecondary)),
         const SizedBox(height: 16),
         if (dept['role_in_department'] != null)
           ListTile(
@@ -529,7 +530,7 @@ class _MessagesTabState extends State<_MessagesTab> {
                         trailing: unread > 0
                             ? CircleAvatar(
                                 radius: 11,
-                                backgroundColor: Colors.red,
+                                backgroundColor: AppTheme.errorColor,
                                 child: Text('$unread',
                                     style: const TextStyle(fontSize: 11, color: Colors.white)))
                             : null,
@@ -735,11 +736,11 @@ class _RequestsTabState extends State<_RequestsTab> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.check_circle, color: Colors.green),
+                    icon: const Icon(Icons.check_circle, color: AppTheme.successColor),
                     onPressed: () => _act(r['user_id'], true),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.cancel, color: Colors.red),
+                    icon: const Icon(Icons.cancel, color: AppTheme.errorColor),
                     onPressed: () => _act(r['user_id'], false),
                   ),
                 ],

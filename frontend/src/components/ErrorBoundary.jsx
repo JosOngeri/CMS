@@ -56,8 +56,8 @@ class ErrorBoundary extends React.Component {
       return (
         <div className="min-h-screen bg-[var(--color-background)] flex items-center justify-center p-6">
           <div className="bg-[var(--color-surface)] rounded-2xl shadow-xl p-8 max-w-lg w-full text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertTriangle className="h-8 w-8 text-red-600" />
+            <div className="w-16 h-16 bg-[var(--color-error-light)] rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertTriangle className="h-8 w-8 text-[var(--color-error)]" />
             </div>
             <h1 className="text-2xl font-bold text-[var(--color-text)] mb-3">Something went wrong</h1>
             <p className="text-[var(--color-textSecondary)] mb-6">
@@ -66,7 +66,7 @@ class ErrorBoundary extends React.Component {
             {(import.meta.env.DEV || process.env.NODE_ENV === 'development') && this.state.error && (
               <details className="text-left bg-[var(--color-background)] rounded-xl p-4 mb-6 text-sm">
                 <summary className="font-medium text-[var(--color-text)] cursor-pointer mb-2">Error details (dev mode)</summary>
-                <pre className="text-red-600 whitespace-pre-wrap break-words">
+                <pre className="text-[var(--color-error)] whitespace-pre-wrap break-words">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </pre>

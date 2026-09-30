@@ -1,9 +1,22 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Public "forgot password" page. The user enters their email; the backend
+ * sends a reset link if the account exists.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /auth/forgot-password  → triggers the reset email
+ * - contexts/AuthContext.jsx       → api client (CSRF token attached)
+ */
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Church, Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import { useToast } from '../../contexts/ToastContext'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'
+import { useAuth } from '../../contexts/AuthContext'
 
 const ForgotPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -11,6 +24,7 @@ const ForgotPassword = () => {
   const { toast } = useToast()
   const navigate = useNavigate()
   const { colors } = useColorPalette()
+  const { api } = useAuth()
 
   const {
     register,
@@ -21,20 +35,11 @@ const ForgotPassword = () => {
   const onSubmit = async (data) => {
     setIsSubmitting(true)
     try {
-      // Simulate API call - replace with actual endpoint when available
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Here you would make an actual API call:
-      // const response = await fetch('/auth/forgot-password', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: data.email })
-      // });
-      
+      await api.post('/auth/forgot-password', { email: data.email })
       setIsSuccess(true)
       toast.success('Password reset email sent! Check your inbox.')
     } catch (error) {
-      toast.error('Failed to send reset email. Please try again.')
+      toast.error(error.response?.data?.error || 'Failed to send reset email. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -45,8 +50,8 @@ const ForgotPassword = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="p-3 bg-green-100 rounded-full">
-              <CheckCircle className="h-8 w-8 text-green-600" aria-hidden="true" />
+            <div className="p-3 bg-[var(--color-success-light)] rounded-full">
+              <CheckCircle className="h-8 w-8 text-[var(--color-success)]" aria-hidden="true" />
             </div>
           </div>
           <h2 className="text-2xl font-bold text-[var(--color-text)]">Email Sent</h2>
@@ -115,7 +120,7 @@ const ForgotPassword = () => {
               disabled={isSubmitting}
             />
             {errors.email && (
-              <p id="email-error" className="mt-1 text-sm text-red-600" role="alert">{errors.email.message}</p>
+              <p id="email-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.email.message}</p>
             )}
           </div>
 

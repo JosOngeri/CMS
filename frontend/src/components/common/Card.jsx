@@ -1,8 +1,20 @@
-import React from 'react'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * A simple container with the app's standard card look: rounded corners, a
+ * light shadow, and the current church colours applied to the border and text.
+ *
+ * Use it anywhere you want a panel that visually matches the rest of the app.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - ColorPaletteContext.jsx → reads current surface/border/text colours
+ */
+
+import { useColorPalette } from '../../contexts/ColorPaletteContext';
 
 const Card = ({ children, className = '' }) => {
-  const { colors } = useColorPalette()
+  const { colors } = useColorPalette();
 
   return (
     <div
@@ -17,7 +29,7 @@ const Card = ({ children, className = '' }) => {
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
-export default Card
+export default Card;

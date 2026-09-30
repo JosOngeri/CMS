@@ -60,15 +60,15 @@ const NewsletterSection = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
+                    <CheckCircle className="h-5 w-5 text-[var(--color-success)]" aria-hidden="true" />
                     <span className="text-[var(--color-text)]">Weekly church updates</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
+                    <CheckCircle className="h-5 w-5 text-[var(--color-success)]" aria-hidden="true" />
                     <span className="text-[var(--color-text)]">Event notifications</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600" aria-hidden="true" />
+                    <CheckCircle className="h-5 w-5 text-[var(--color-success)]" aria-hidden="true" />
                     <span className="text-[var(--color-text)]">Spiritual content</span>
                   </div>
                 </div>
@@ -81,7 +81,7 @@ const NewsletterSection = () => {
 
                 {isSuccess ? (
                   <div className="text-center py-8">
-                    <CheckCircle className="h-16 w-16 text-green-400 mx-auto mb-4" aria-hidden="true" />
+                    <CheckCircle className="h-16 w-16 text-[var(--color-success)] mx-auto mb-4" aria-hidden="true" />
                     <p className="text-white text-lg font-medium">Successfully subscribed!</p>
                     <p className="text-white/70 text-sm mt-2">Check your email for confirmation.</p>
                   </div>
@@ -96,7 +96,7 @@ const NewsletterSection = () => {
                         placeholder="Enter your email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-white text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-white text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-all"
                         aria-label="Email address for newsletter"
                         required
                         disabled={isSubmitting}
@@ -106,7 +106,7 @@ const NewsletterSection = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn bg-white text-[#1B3252] font-semibold hover:bg-gray-100 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full btn bg-[var(--color-surface)] text-[#1B3252] font-semibold hover:bg-[var(--color-background)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Subscribe to newsletter"
                     >
                       {isSubmitting ? (

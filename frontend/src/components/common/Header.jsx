@@ -108,7 +108,7 @@ function Header({ onMenuClick }) {
             aria-label="Notifications"
           >
             <Bell className="h-6 w-6" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-[var(--color-surface)]"></span>
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[var(--color-error)] rounded-full border-2 border-[var(--color-surface)]"></span>
           </button>
           <div className="relative pl-2 md:pl-4 border-l border-[var(--color-border)]">
             <button
@@ -153,7 +153,7 @@ function Header({ onMenuClick }) {
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-3 text-sm text-rose-600 hover:bg-rose-50 rounded-b-lg"
+                  className="flex items-center w-full px-4 py-3 text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-b-lg"
                 >
                   <LogOut className="h-4 w-4 mr-3" />
                   Logout

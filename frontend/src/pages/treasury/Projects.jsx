@@ -287,10 +287,10 @@ const Projects = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-700'
+      case 'active': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
       case 'completed': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
-      case 'on_hold': return 'bg-yellow-100 text-yellow-700'
-      case 'cancelled': return 'bg-red-100 text-red-700'
+      case 'on_hold': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+      case 'cancelled': return 'bg-[var(--color-error-light)] text-[var(--color-error)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
   }
@@ -383,8 +383,8 @@ const Projects = () => {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-indigo-100 rounded-lg">
-                      <FolderKanban className="h-5 w-5 text-indigo-600" />
+                    <div className="p-2 bg-[var(--color-primary-light)] rounded-lg">
+                      <FolderKanban className="h-5 w-5 text-[var(--color-primary)]" />
                     </div>
                     <div>
                       <p className="font-medium text-[var(--color-text)] ">
@@ -427,7 +427,7 @@ const Projects = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(project.id)}
-                        className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 transition-colors"
+                        className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -448,7 +448,7 @@ const Projects = () => {
 
       {/* Project Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)]  rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-xl font-bold text-[var(--color-text)]  mb-4">

@@ -4,7 +4,6 @@ import FeaturedAnnouncements from '../../components/public/FeaturedAnnouncements
 import FeaturedPhotos from '../../components/public/FeaturedPhotos';
 import MinistriesCarousel from '../../components/public/MinistriesCarousel';
 import LiveStreamSection from '../../components/public/LiveStreamSection';
-import NewsletterSection from '../../components/public/NewsletterSection';
 
 const PublicHome = () => {
   return (
@@ -15,7 +14,6 @@ const PublicHome = () => {
       <FeaturedPhotos />
       <MinistriesCarousel />
       <LiveStreamSection />
-      <NewsletterSection />
     </div>
   );
 };

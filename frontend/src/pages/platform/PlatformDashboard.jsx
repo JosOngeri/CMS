@@ -135,28 +135,28 @@ const PlatformDashboard = () => {
       title: 'Add New Church',
       description: 'Onboard a new church to the platform',
       icon: Building,
-      color: 'bg-blue-100 text-blue-600',
+      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
       link: '/platform/tenants/create'
     },
     {
       title: 'View All Tenants',
       description: 'Manage all church tenants',
       icon: Users,
-      color: 'bg-green-100 text-green-600',
+      color: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
       link: '/platform/tenants'
     },
     {
       title: 'Revenue Analytics',
       description: 'View platform revenue and subscriptions',
       icon: DollarSign,
-      color: 'bg-purple-100 text-purple-600',
+      color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
       link: '/platform/analytics/revenue'
     },
     {
       title: 'System Health',
       description: 'Monitor platform performance',
       icon: Activity,
-      color: 'bg-orange-100 text-orange-600',
+      color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
       link: '/platform/monitoring/health'
     }
   ]
@@ -165,10 +165,10 @@ const PlatformDashboard = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">
           Platform Dashboard
         </h1>
-        <p className="text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+        <p className="text-[var(--color-textSecondary)]">
           SaaS Platform Overview and Management
         </p>
       </div>
@@ -179,28 +179,28 @@ const PlatformDashboard = () => {
           title="Total Churches"
           value={stats.totalChurches}
           icon={Building}
-          color="bg-blue-100 text-blue-600"
+          color="bg-[var(--color-primary-light)] text-[var(--color-primary)]"
           trend={stats.newChurchesThisMonth > 0 ? `+${stats.newChurchesThisMonth} this month` : 'No new churches'}
         />
         <StatsCard
           title="Monthly Revenue"
           value={`$${(stats.totalMRR / 1000).toFixed(0)}K`}
           icon={DollarSign}
-          color="bg-green-100 text-green-600"
+          color="bg-[var(--color-success-light)] text-[var(--color-success)]"
           trend="MRR"
         />
         <StatsCard
           title="Active Churches"
           value={stats.activeChurches}
           icon={CheckCircle}
-          color="bg-purple-100 text-purple-600"
+          color="bg-[var(--color-accent-light)] text-[var(--color-accent)]"
           trend={`${((stats.activeChurches / stats.totalChurches) * 100).toFixed(0)}% active rate`}
         />
         <StatsCard
           title="Platform Health"
           value={`${stats.platformHealthScore}%`}
           icon={Activity}
-          color="bg-orange-100 text-orange-600"
+          color="bg-[var(--color-warning-light)] text-[var(--color-warning)]"
           trend={healthStatus.overall}
         />
       </div>
@@ -209,10 +209,10 @@ const PlatformDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-[var(--color-text)] text-white">Churn Rate</h3>
+            <h3 className="font-semibold text-[var(--color-text)]">Churn Rate</h3>
             <TrendingUp className="h-5 w-5 text-[var(--color-textSecondary)]" />
           </div>
-          <p className="text-3xl font-bold text-[var(--color-text)] text-white mb-2">
+          <p className="text-3xl font-bold text-[var(--color-text)] mb-2">
             {stats.churnRate.toFixed(1)}%
           </p>
           <p className="text-sm text-[var(--color-textSecondary)]">
@@ -222,10 +222,10 @@ const PlatformDashboard = () => {
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-[var(--color-text)] text-white">Avg Revenue/Church</h3>
+            <h3 className="font-semibold text-[var(--color-text)]">Avg Revenue/Church</h3>
             <DollarSign className="h-5 w-5 text-[var(--color-textSecondary)]" />
           </div>
-          <p className="text-3xl font-bold text-[var(--color-text)] text-white mb-2">
+          <p className="text-3xl font-bold text-[var(--color-text)] mb-2">
             ${stats.arpc.toFixed(0)}
           </p>
           <p className="text-sm text-[var(--color-textSecondary)]">
@@ -235,19 +235,19 @@ const PlatformDashboard = () => {
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-[var(--color-text)] text-white">System Status</h3>
+            <h3 className="font-semibold text-[var(--color-text)]">System Status</h3>
             <Activity className="h-5 w-5 text-[var(--color-textSecondary)]" />
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--color-textSecondary)]">API</span>
-              <span className={`text-sm font-medium ${healthStatus.api === 'healthy' ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`text-sm font-medium ${healthStatus.api === 'healthy' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                 {healthStatus.api}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--color-textSecondary)]">Database</span>
-              <span className={`text-sm font-medium ${healthStatus.database === 'healthy' ? 'text-green-400' : 'text-red-400'}`}>
+              <span className={`text-sm font-medium ${healthStatus.database === 'healthy' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
                 {healthStatus.database}
               </span>
             </div>
@@ -257,7 +257,7 @@ const PlatformDashboard = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon
@@ -270,7 +270,7 @@ const PlatformDashboard = () => {
                 <div className={`inline-flex p-3 rounded-lg ${action.color} mb-4`}>
                   <Icon className="h-6 w-6" />
                 </div>
-                <h3 className="font-semibold text-[var(--color-text)] text-white mb-2 group-hover:text-primary-600">
+                <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600">
                   {action.title}
                 </h3>
                 <p className="text-sm text-[var(--color-textSecondary)]">
@@ -284,18 +284,18 @@ const PlatformDashboard = () => {
 
       {/* Recent Activity */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">Recent Platform Activity</h2>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Recent Platform Activity</h2>
         {recentActivities.length > 0 ? (
           <div className="space-y-4">
             {recentActivities.map((activity) => {
               const Icon = activity.icon
               return (
                 <div key={activity.id} className="flex items-start space-x-4">
-                  <div className={`p-2 rounded-lg ${activity.color} bg-opacity-20`}>
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${activity.color}20`, color: activity.color }}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-[var(--color-text)] text-white">{activity.title}</p>
+                    <p className="font-medium text-[var(--color-text)]">{activity.title}</p>
                     <p className="text-sm text-[var(--color-textSecondary)]">{activity.description}</p>
                   </div>
                   <span className="text-sm text-[var(--color-textSecondary)]">{activity.time}</span>

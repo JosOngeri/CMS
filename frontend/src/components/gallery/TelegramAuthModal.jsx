@@ -87,7 +87,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
 
   if (!isAdmin) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50 p-4">
         <div className="bg-[var(--color-surface)] rounded-2xl shadow-2xl max-w-md w-full p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-[var(--color-text)]">Access Denied</h3>
@@ -104,11 +104,11 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50 p-4">
       <div className="bg-[var(--color-surface)] rounded-2xl shadow-2xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-[var(--color-primary)] rounded-full flex items-center justify-center">
               <Smartphone className="h-5 w-5 text-white" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-text)]">Telegram Authentication</h3>
@@ -133,7 +133,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+254700000000"
-                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[var(--color-background)] text-[var(--color-text)]"
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--color-background)] text-[var(--color-text)]"
                   required
                 />
                 <p className="text-xs text-[var(--color-textSecondary)] mt-1">
@@ -141,15 +141,15 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
                 </p>
               </div>
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <span className="text-sm text-red-700">{error}</span>
+                <div className="mb-4 p-3 bg-[var(--color-error-light)] border border-[var(--color-error)] rounded-lg flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-[var(--color-error)]" />
+                  <span className="text-sm text-[var(--color-error)]">{error}</span>
                 </div>
               )}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -182,7 +182,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
                   placeholder="123456"
-                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[var(--color-background)] text-[var(--color-text)] text-center text-2xl tracking-widest"
+                  className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent bg-[var(--color-background)] text-[var(--color-text)] text-center text-2xl tracking-widest"
                   maxLength={6}
                   required
                 />
@@ -191,15 +191,15 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
                 </p>
               </div>
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                  <span className="text-sm text-red-700">{error}</span>
+                <div className="mb-4 p-3 bg-[var(--color-error-light)] border border-[var(--color-error)] rounded-lg flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-[var(--color-error)]" />
+                  <span className="text-sm text-[var(--color-error)]">{error}</span>
                 </div>
               )}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -225,8 +225,8 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
 
         {step === 'success' && (
           <div className="text-center py-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="w-16 h-16 bg-[var(--color-success-light)] rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-[var(--color-success)]" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">
               Authentication Successful!
@@ -236,7 +236,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
             </p>
             <button
               onClick={handleClose}
-              className="w-full bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600"
+              className="w-full bg-[var(--color-success)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-success)]"
             >
               Done
             </button>

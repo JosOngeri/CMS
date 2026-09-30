@@ -1,151 +1,114 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * Home screen for church leadership — Pastor, First Elder, Elders, and
+ * Church Board members. It shows the health of the whole congregation:
+ * how many members, what was given, upcoming events, announcements, and
+ * recent ministry activity.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/dashboard/stats           → congregation totals
+ * - backend /api/dashboard/ministry-health → engagement percentages
+ * - backend /api/dashboard/activity        → recent church activity
+ * - components/common/Card.jsx
+ * - components/dashboard/ChurchStatsCard.jsx
+ * - components/dashboard/ChurchQuickActions.jsx
+ */
+
 import { useState, useEffect } from 'react'
 import {
-  Users, DollarSign, Calendar, Megaphone, TrendingUp,
-  Clock, CheckCircle, AlertCircle, ArrowRight, Building, Heart,
-  FileText, Users as UsersIcon, Church
+  Users, DollarSign, Calendar, Megaphone, CheckCircle, ArrowRight, Heart
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import Card from '../../components/common/Card'
 import ChurchStatsCard from '../../components/dashboard/ChurchStatsCard'
 import ChurchQuickActions from '../../components/dashboard/ChurchQuickActions'
-import MinistryHealthViz from '../../components/dashboard/MinistryHealthViz'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+
+const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
 
 const PastorDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
+
   const [stats, setStats] = useState({
     totalMembers: 0,
     totalPayments: 0,
     upcomingEvents: 0,
-    recentAnnouncements: 0
+    recentAnnouncements: 0,
+    pendingApprovals: 0,
   })
-  const [ministryHealth, setMinistryHealth] = useState({
+  const [health, setHealth] = useState({
     memberEngagement: 0,
     departmentActivity: 0,
-    spiritualGrowth: 0
+    spiritualGrowth: 0,
   })
-  const [recentActivities, setRecentActivities] = useState([])
+  const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchDashboardData()
+    load()
   }, [])
 
-  const fetchDashboardData = async () => {
+  const load = async () => {
     try {
       setLoading(true)
-      
-      // Fetch ministry-focused stats
-      const statsResponse = await api.get('/api/dashboard/stats')
-      setStats(statsResponse.data.data || {
-        totalMembers: 0,
-        totalPayments: 0,
-        upcomingEvents: 0,
-        recentAnnouncements: 0
+      const [statsRes, healthRes, activityRes] = await Promise.all([
+        api.get('/api/dashboard/stats'),
+        api.get('/api/dashboard/ministry-health'),
+        api.get('/api/dashboard/activity?limit=10'),
+      ])
+
+      const s = statsRes.data.data || {}
+      setStats({
+        totalMembers: s.totalMembers ?? 0,
+        totalPayments: s.totalPayments ?? 0,
+        upcomingEvents: s.upcomingEvents ?? 0,
+        recentAnnouncements: s.recentAnnouncements ?? 0,
+        pendingApprovals: s.pendingApprovals ?? 0,
       })
 
-      // Fetch ministry health metrics
-      const healthResponse = await api.get('/api/dashboard/ministry-health')
-      setMinistryHealth(healthResponse.data.data || {
-        memberEngagement: 0,
-        departmentActivity: 0,
-        spiritualGrowth: 0
+      const h = healthRes.data.data || {}
+      setHealth({
+        memberEngagement: parseFloat(h.memberEngagement) || 0,
+        departmentActivity: parseFloat(h.departmentActivity) || 0,
+        spiritualGrowth: parseFloat(h.spiritualGrowth) || 0,
       })
 
-      // Fetch recent ministry activities
-      const activityResponse = await api.get('/api/dashboard/activity?limit=10')
-      const iconMap = {
-        payment: DollarSign,
-        announcement: Megaphone,
-        event: Calendar,
-        member: Users,
-        ministry: Heart,
-        approval: CheckCircle
-      }
-      const colorMap = {
-        payment: colors.success,
-        announcement: colors.primary,
-        event: colors.secondary,
-        member: colors.warning,
-        ministry: colors.accent,
-        approval: colors.success
-      }
-
-      const formattedActivities = (activityResponse.data.data || []).map((activity, index) => ({
-        id: index,
-        type: activity.type,
-        title: activity.title,
-        description: activity.description,
-        time: activity.time,
-        icon: iconMap[activity.type] || Megaphone,
-        color: colorMap[activity.type] || colors.textSecondary
-      }))
-
-      setRecentActivities(formattedActivities)
+      setActivities(activityRes.data.data || [])
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
-      toast.error('Failed to load dashboard data')
+      console.error('Failed to load ministry dashboard:', error)
+      toast.error('Could not load ministry data. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  if (loading) {
-    return <FullPageLoading message="Loading dashboard..." />
-  }
+  if (loading) return <FullPageLoading message="Loading ministry overview..." />
 
   return (
     <div className="space-y-6">
-      {/* Page Header with Ministry Health */}
+      {/* Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">Pastor Dashboard</h1>
-          <p className="page-subtitle">Welcome back, {user?.first_name}! Ministry overview and pastoral tools.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          {/* Ministry Health Indicator */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary-light)] text-[var(--color-primary)] rounded-lg">
-            <Heart className="h-4 w-4" />
-            <span className="text-sm font-medium">Ministry Health: {Math.round((ministryHealth.memberEngagement + ministryHealth.departmentActivity + ministryHealth.spiritualGrowth) / 3)}%</span>
-          </div>
+          <h1 className="page-title">Ministry Overview</h1>
+          <p className="page-subtitle">
+            Welcome back, {user?.first_name}! Here is how the congregation is doing.
+          </p>
         </div>
       </div>
 
-      {/* Ministry Health Visualization - Signature Element */}
-      <MinistryHealthViz
-        ministryData={{
-          totalMembers: stats.totalMembers,
-          activeMembers: Math.round(stats.totalMembers * ministryHealth.memberEngagement / 100),
-          newMembers: 0,
-          memberRetention: ministryHealth.memberEngagement
-        }}
-        congregationData={{
-          averageAttendance: ministryHealth.memberEngagement,
-          volunteerParticipation: ministryHealth.departmentActivity,
-          smallGroupParticipation: 0,
-          ministryGrowth: ministryHealth.spiritualGrowth
-        }}
-        engagementData={{
-          prayerRequests: 0,
-          communityService: 0,
-          eventParticipation: ministryHealth.departmentActivity,
-          spiritualGrowth: ministryHealth.spiritualGrowth
-        }}
-      />
-
-      {/* Stats Grid with Church-Focused Design */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Congregation totals */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <ChurchStatsCard
           title="Total Members"
           value={stats.totalMembers}
-          change="Active congregation"
-          changeType="positive"
+          change="Registered members"
+          changeType="neutral"
           icon={Users}
           statType="members"
           linkTo="/dashboard/members"
@@ -153,64 +116,78 @@ const PastorDashboard = () => {
         <ChurchStatsCard
           title="Payments Recorded"
           value={stats.totalPayments}
-          change="Congregation giving"
+          change="Giving transactions"
           changeType="neutral"
           icon={DollarSign}
           statType="financial"
-          linkTo="/dashboard/payments"
-        />
-        <ChurchStatsCard
-          title="Recent Announcements"
-          value={stats.recentAnnouncements}
-          change="Church communications"
-          changeType="neutral"
-          icon={Megaphone}
-          statType="default"
-          linkTo="/dashboard/announcements"
+          linkTo="/dashboard/payments/management"
         />
         <ChurchStatsCard
           title="Upcoming Events"
           value={stats.upcomingEvents}
-          change="Church calendar"
+          change="On the calendar"
           changeType="neutral"
           icon={Calendar}
           statType="events"
           linkTo="/dashboard/events"
         />
+        <ChurchStatsCard
+          title="Approvals Pending"
+          value={stats.pendingApprovals}
+          change="Need your attention"
+          changeType={stats.pendingApprovals > 0 ? 'negative' : 'positive'}
+          icon={CheckCircle}
+          statType="default"
+          linkTo="/dashboard/approvals"
+        />
       </div>
 
-      {/* Church-Focused Quick Actions */}
+      {/* Ministry health */}
+      <Card>
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Congregation Health</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-[var(--color-background)] border border-[var(--color-border)]">
+            <p className="text-xs text-[var(--color-textSecondary)]">Member engagement</p>
+            <p className="text-2xl font-bold text-[var(--color-text)]">{Math.round(health.memberEngagement)}%</p>
+          </div>
+          <div className="p-4 rounded-xl bg-[var(--color-background)] border border-[var(--color-border)]">
+            <p className="text-xs text-[var(--color-textSecondary)]">Department activity</p>
+            <p className="text-2xl font-bold text-[var(--color-text)]">{Math.round(health.departmentActivity)}%</p>
+          </div>
+          <div className="p-4 rounded-xl bg-[var(--color-background)] border border-[var(--color-border)]">
+            <p className="text-xs text-[var(--color-textSecondary)]">Growth trend</p>
+            <p className="text-2xl font-bold text-[var(--color-text)]">{Math.round(health.spiritualGrowth)}%</p>
+          </div>
+        </div>
+      </Card>
+
       <ChurchQuickActions />
 
-      {/* Recent Ministry Activity Feed */}
+      {/* Recent ministry activity */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Ministry Activity</h2>
-          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
-            View all
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Activity</h2>
+          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] flex items-center gap-1">
+            View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        {recentActivities.length > 0 ? (
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
-                <div className={`p-2 rounded-lg ${activity.color} bg-opacity-10`}>
-                  <activity.icon className="h-4 w-4" aria-hidden="true" />
+        {activities.length ? (
+          <div className="space-y-3">
+            {activities.map((activity, index) => (
+              <div key={activity.id || index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
+                <div className="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                  <Heart className="h-4 w-4" aria-hidden="true" />
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--color-text)]">{activity.title}</p>
-                  <p className="text-sm text-[var(--color-textSecondary)]">{activity.description}</p>
-                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">{activity.time}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">{activity.description}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-0.5">{activity.time}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <EmptyState
-            icon={Heart}
-            title="No recent activity"
-            description="Your ministry activities will appear here"
-          />
+          <EmptyState icon={Heart} title="No recent activity" description="Church activity will appear here." />
         )}
       </Card>
     </div>

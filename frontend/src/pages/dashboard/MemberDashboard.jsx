@@ -1,7 +1,25 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * The simple home screen for members and children. It shows the things a
+ * normal church member cares about: what they owe, upcoming events,
+ * announcements, and the departments they belong to.
+ *
+ * Children see the same page without the financial sections because they do
+ * not have the 'obligations.view' or 'payments.view_own' permissions.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - AuthContext.jsx             → current user
+ * - hooks/usePermission.js      → decides if the giving section appears
+ * - hooks/useChurchBranding.js  → church name
+ * - backend dashboard + public endpoints → stats, obligations, events, etc.
+ */
+
 import { useState, useEffect } from 'react'
 import {
   DollarSign, Calendar, Megaphone, Building, ArrowRight,
-  HandCoins, Bell, CheckCircle, AlertCircle, Wallet
+  HandCoins, Bell, CheckCircle, Wallet
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
@@ -103,14 +121,14 @@ const MemberDashboard = () => {
             <div className="flex gap-3">
               <Link
                 to="/dashboard/obligations"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-white text-[var(--color-primary)] font-semibold rounded-xl hover:bg-white/90 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)] text-[var(--color-primary)] font-semibold rounded-xl hover:bg-[var(--color-surface)]/90 transition-colors"
               >
                 <HandCoins className="h-5 w-5" />
                 Give Now
               </Link>
               <Link
                 to="/dashboard/payments/my"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-white/15 text-white font-medium rounded-xl hover:bg-white/25 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)]/15 text-white font-medium rounded-xl hover:bg-[var(--color-surface)]/25 transition-colors"
               >
                 <Wallet className="h-5 w-5" />
                 History
@@ -125,7 +143,7 @@ const MemberDashboard = () => {
         {canSeeGiving && (
           <Link to="/dashboard/payments/my" className="bg-[var(--color-surface)] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-green-100 text-green-600"><DollarSign className="h-5 w-5" /></div>
+              <div className="p-2.5 rounded-lg bg-[var(--color-success-light)] text-[var(--color-success)]"><DollarSign className="h-5 w-5" /></div>
               <div className="min-w-0">
                 <p className="text-xs text-[var(--color-textSecondary)]">My giving</p>
                 <p className="font-bold text-[var(--color-text)] truncate">{fmtKES(paidThisYear)}</p>
@@ -135,7 +153,7 @@ const MemberDashboard = () => {
         )}
         <Link to="/dashboard/events" className="bg-[var(--color-surface)] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600"><Calendar className="h-5 w-5" /></div>
+            <div className="p-2.5 rounded-lg bg-[var(--color-warning-light)] text-[var(--color-warning)]"><Calendar className="h-5 w-5" /></div>
             <div className="min-w-0">
               <p className="text-xs text-[var(--color-textSecondary)]">Upcoming events</p>
               <p className="font-bold text-[var(--color-text)]">{stats?.upcomingEvents ?? events.length}</p>
@@ -144,7 +162,7 @@ const MemberDashboard = () => {
         </Link>
         <Link to="/dashboard/my-departments" className="bg-[var(--color-surface)] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-purple-100 text-purple-600"><Building className="h-5 w-5" /></div>
+            <div className="p-2.5 rounded-lg bg-[var(--color-accent-light)] text-[var(--color-accent)]"><Building className="h-5 w-5" /></div>
             <div className="min-w-0">
               <p className="text-xs text-[var(--color-textSecondary)]">My departments</p>
               <p className="font-bold text-[var(--color-text)]">{stats?.departmentAssignments ?? departments.length}</p>
@@ -153,7 +171,7 @@ const MemberDashboard = () => {
         </Link>
         <Link to="/dashboard/announcements" className="bg-[var(--color-surface)] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-blue-100 text-blue-600"><Megaphone className="h-5 w-5" /></div>
+            <div className="p-2.5 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary)]"><Megaphone className="h-5 w-5" /></div>
             <div className="min-w-0">
               <p className="text-xs text-[var(--color-textSecondary)]">Announcements</p>
               <p className="font-bold text-[var(--color-text)]">{announcements.length}</p>

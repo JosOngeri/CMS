@@ -207,7 +207,7 @@ const SMS = () => {
         <p className="page-subtitle">Send text messages to church members and groups</p>
         {balance && (
           <div className="mt-2 flex items-center gap-2 text-sm">
-            <DollarSign size={16} className="text-green-600" />
+            <DollarSign size={16} className="text-[var(--color-success)]" />
             <span className="font-medium">SMS Balance: {balance.balance} {balance.currency}</span>
             {balance.message && (
               <span className="text-[var(--color-textSecondary)]">({balance.message})</span>
@@ -349,7 +349,7 @@ const SMS = () => {
                           setCsvFileName('')
                           setCsvNumbers([])
                         }}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-[var(--color-error)] hover:text-[var(--color-error)]"
                       >
                         <X size={16} />
                       </button>
@@ -358,7 +358,7 @@ const SMS = () => {
                 </div>
                 
                 {csvNumbers.length > 0 && (
-                  <div className="text-sm text-green-600">
+                  <div className="text-sm text-[var(--color-success)]">
                     ✅ {csvNumbers.length} phone numbers loaded from CSV
                   </div>
                 )}
@@ -401,7 +401,7 @@ const SMS = () => {
       {/* Sent Messages */}
       <Card>
         <h3 className="text-lg font-bold text-[var(--color-text)] mb-4 flex items-center gap-2">
-          <span className="w-1 h-5 bg-green-500 rounded-full"></span>
+          <span className="w-1 h-5 bg-[var(--color-success)] rounded-full"></span>
           Recent Messages
         </h3>
 
@@ -422,8 +422,8 @@ const SMS = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={16} className="text-green-500" />
-                  <span className="text-sm text-green-600">
+                  <CheckCircle size={16} className="text-[var(--color-success)]" />
+                  <span className="text-sm text-[var(--color-success)]">
                     Delivered
                   </span>
                 </div>

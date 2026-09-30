@@ -131,10 +131,10 @@ const PrivacySettings = () => {
     <div className="space-y-6">
       {/* Profile Visibility */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Profile Visibility
         </h3>
-        <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mb-4">
+        <p className="text-sm text-[var(--color-textSecondary)] mb-4">
           Control who can see your profile information
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -144,27 +144,27 @@ const PrivacySettings = () => {
               onClick={() => handleVisibilityChange(option.value)}
               className={`p-4 rounded-lg border-2 transition-all ${
                 settings.profile_visibility === option.value
-                  ? 'border-primary-500 bg-primary-50 bg-primary-900/20'
+                  ? 'border-primary-500 '
                   : 'border-[var(--color-border)] hover:border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
             >
               <div className="flex flex-col items-center text-center space-y-2">
                 <div className={`p-3 rounded-full ${
                   settings.profile_visibility === option.value
-                    ? 'bg-primary-100 bg-primary-900'
+                    ? ''
                     : 'bg-[var(--color-surface)]'
                 }`}>
                   <option.icon className={`h-6 w-6 ${
                     settings.profile_visibility === option.value
                       ? 'text-primary-600 text-primary-400'
-                      : 'text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]'
+                      : 'text-[var(--color-textSecondary)]'
                   }`} />
                 </div>
                 <div>
-                  <p className="font-medium text-[var(--color-text)] text-white">
+                  <p className="font-medium text-[var(--color-text)]">
                     {option.title}
                   </p>
-                  <p className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)] mt-1">
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">
                     {option.description}
                   </p>
                 </div>
@@ -176,7 +176,7 @@ const PrivacySettings = () => {
 
       {/* Contact Information */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Contact Information
         </h3>
         <div className="space-y-4">
@@ -185,14 +185,14 @@ const PrivacySettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-[var(--color-primary-light)] bg-[var(--color-primary)] rounded-lg">
-                    <option.icon className="h-5 w-5 text-[var(--color-primary)] text-[var(--color-primary)]" />
+                  <div className="p-2 bg-[var(--color-primary-light)] rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-primary)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>
@@ -216,7 +216,7 @@ const PrivacySettings = () => {
 
       {/* Profile Information */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Profile Information
         </h3>
         <div className="space-y-4">
@@ -225,14 +225,14 @@ const PrivacySettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 bg-green-900 rounded-lg">
-                    <option.icon className="h-5 w-5 text-green-600 text-green-400" />
+                  <div className="p-2 bg-[var(--color-success-light)] rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-success)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>
@@ -256,7 +256,7 @@ const PrivacySettings = () => {
 
       {/* Interaction Settings */}
       <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
-        <h3 className="text-lg font-semibold text-[var(--color-text)] text-white mb-4">
+        <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">
           Interaction Settings
         </h3>
         <div className="space-y-4">
@@ -265,14 +265,14 @@ const PrivacySettings = () => {
             .map(option => (
               <div key={option.key} className="flex items-center justify-between py-3 border-b border-[var(--color-border)] last:border-0">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-purple-100 bg-purple-900 rounded-lg">
-                    <option.icon className="h-5 w-5 text-purple-600 text-purple-400" />
+                  <div className="p-2  rounded-lg">
+                    <option.icon className="h-5 w-5 text-[var(--color-accent)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {option.title}
                     </p>
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                    <p className="text-sm text-[var(--color-textSecondary)]">
                       {option.description}
                     </p>
                   </div>

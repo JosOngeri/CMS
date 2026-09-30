@@ -165,8 +165,8 @@ const Budgets = () => {
   }
 
   const getVarianceColor = (variance) => {
-    if (variance > 0) return 'text-green-600'
-    if (variance < 0) return 'text-red-600'
+    if (variance > 0) return 'text-[var(--color-success)]'
+    if (variance < 0) return 'text-[var(--color-error)]'
     return 'text-[var(--color-textSecondary)]'
   }
 
@@ -178,8 +178,8 @@ const Budgets = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'draft': return 'bg-yellow-100 text-yellow-700'
-      case 'active': return 'bg-green-100 text-green-700'
+      case 'draft': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+      case 'active': return 'bg-[var(--color-success-light)] text-[var(--color-success)]'
       case 'closed': return 'bg-[var(--color-surface)] text-[var(--color-text)]'
       default: return 'bg-[var(--color-surface)] text-[var(--color-text)]'
     }
@@ -194,8 +194,8 @@ const Budgets = () => {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--color-text)] text-white">Budgets</h1>
-          <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Budgets</h1>
+          <p className="text-sm text-[var(--color-textSecondary)]">
             Budget planning and variance tracking
           </p>
         </div>
@@ -220,13 +220,13 @@ const Budgets = () => {
                   placeholder="Search budgets..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <Filter className="h-4 w-4" />
               <span>Filters</span>
@@ -234,7 +234,7 @@ const Budgets = () => {
             </button>
             <button
               onClick={fetchBudgets}
-              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+              className="flex items-center space-x-2 px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Refresh</span>
@@ -244,13 +244,13 @@ const Budgets = () => {
           {showFilters && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   Fiscal Year
                 </label>
                 <select
                   value={filterYear}
                   onChange={(e) => setFilterYear(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 >
                   <option value="all">All Years</option>
                   {[2024, 2025, 2026, 2027].map(year => (
@@ -259,13 +259,13 @@ const Budgets = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                   Status
                 </label>
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -297,15 +297,15 @@ const Budgets = () => {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="p-2 bg-purple-100 bg-purple-900/20 rounded-lg">
-                    <BarChart3 className="h-5 w-5 text-purple-600" />
+                  <div className="p-2 bg-[var(--color-accent-light)] rounded-lg">
+                    <BarChart3 className="h-5 w-5 text-[var(--color-accent)]" />
                   </div>
                   <div>
-                    <p className="font-medium text-[var(--color-text)] text-white">
+                    <p className="font-medium text-[var(--color-text)]">
                       {budget.budget_name}
                     </p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <span className="text-xs text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">
+                      <span className="text-xs text-[var(--color-textSecondary)]">
                         FY {budget.fiscal_year}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(budget.status)}`}>
@@ -316,19 +316,19 @@ const Budgets = () => {
                 </div>
                 <div className="flex items-center space-x-6">
                   <div className="text-right">
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Budgeted</p>
-                    <p className="font-semibold text-[var(--color-text)] text-white">
+                    <p className="text-sm text-[var(--color-textSecondary)]">Budgeted</p>
+                    <p className="font-semibold text-[var(--color-text)]">
                       KES {parseFloat(budget?.budgeted_amount ?? 0).toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Actual</p>
-                    <p className="font-semibold text-[var(--color-text)] text-white">
+                    <p className="text-sm text-[var(--color-textSecondary)]">Actual</p>
+                    <p className="font-semibold text-[var(--color-text)]">
                       KES {parseFloat(budget?.actual_amount ?? 0).toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-[var(--color-textSecondary)] text-[var(--color-textSecondary)]">Variance</p>
+                    <p className="text-sm text-[var(--color-textSecondary)]">Variance</p>
                     <div className="flex items-center justify-end space-x-1">
                       {VarianceIcon && <VarianceIcon className={`h-4 w-4 ${getVarianceColor(variance)}`} />}
                       <p className={`font-semibold ${getVarianceColor(variance)}`}>
@@ -342,13 +342,13 @@ const Budgets = () => {
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEdit(budget)}
-                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
+                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-primary)] transition-colors"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(budget.id)}
-                      className="p-2 text-[var(--color-textSecondary)] hover:text-red-600 text-[var(--color-textSecondary)] hover:text-red-400 transition-colors"
+                      className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-textSecondary)] hover:text-[var(--color-error)] transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -370,15 +370,15 @@ const Budgets = () => {
 
       {/* Budget Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
-          <div className="bg-[var(--color-surface)] bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-[var(--color-text)] text-white mb-4">
+              <h2 className="text-xl font-bold text-[var(--color-text)] mb-4">
                 {editingBudget ? 'Edit Budget' : 'Add Budget'}
               </h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Budget Name
                   </label>
                   <input
@@ -386,12 +386,12 @@ const Budgets = () => {
                     required
                     value={formData.budget_name}
                     onChange={(e) => setFormData({ ...formData, budget_name: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Fiscal Year
                     </label>
                     <input
@@ -399,17 +399,17 @@ const Budgets = () => {
                       required
                       value={formData.fiscal_year}
                       onChange={(e) => setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                    <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                       Period Type
                     </label>
                     <select
                       value={formData.period_type}
                       onChange={(e) => setFormData({ ...formData, period_type: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                     >
                       <option value="annual">Annual</option>
                       <option value="monthly">Monthly</option>
@@ -418,13 +418,13 @@ const Budgets = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Fund
                   </label>
                   <select
                     value={formData.fund_id}
                     onChange={(e) => setFormData({ ...formData, fund_id: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   >
                     <option value="">No Fund</option>
                     {funds.map(fund => (
@@ -435,13 +435,13 @@ const Budgets = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Account
                   </label>
                   <select
                     value={formData.account_id}
                     onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   >
                     <option value="">No Account</option>
                     {accounts.map(account => (
@@ -452,7 +452,7 @@ const Budgets = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-text)] text-[var(--color-textSecondary)] mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
                     Budgeted Amount
                   </label>
                   <input
@@ -461,7 +461,7 @@ const Budgets = () => {
                     required
                     value={formData.budgeted_amount}
                     onChange={(e) => setFormData({ ...formData, budgeted_amount: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                   />
                 </div>
                 <div className="flex justify-end space-x-3 pt-4">
@@ -472,7 +472,7 @@ const Budgets = () => {
                       setEditingBudget(null)
                       resetForm()
                     }}
-                    className="px-4 py-2 border border-[var(--color-border)] border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>

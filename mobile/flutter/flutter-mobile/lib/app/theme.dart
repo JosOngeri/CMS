@@ -10,6 +10,14 @@ class AppTheme {
   static const Color surfaceColor = Color(0xFFFFFFFF);
   static const Color errorColor = Color(0xFFEF4444);
   static const Color successColor = Color(0xFF22C55E);
+  static const Color warningColor = Color(0xFFF59E0B);
+  static const Color accentColor = Color(0xFF8B5CF6);
+
+  // Tinted variants for badges, chips, and icon tiles
+  static const Color primaryLight = Color(0xFFDBEAFE);
+  static const Color successLight = Color(0xFFDCFCE7);
+  static const Color warningLight = Color(0xFFFEF3C7);
+  static const Color errorLight = Color(0xFFFEE2E2);
   
   // Text Colors
   static const Color textPrimary = Color(0xFF1F2937);

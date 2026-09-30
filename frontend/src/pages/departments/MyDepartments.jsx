@@ -1,3 +1,18 @@
+/**
+ * WHAT THIS FILE DOES
+ * -------------------
+ * "My Departments" — lists the departments the signed-in member belongs to.
+ * Each row links into that department's hub. A "Join Departments" button
+ * opens a picker for departments they have not joined yet.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /api/department/my-departments  → departments I belong to
+ * - backend /api/departments/available      → departments I can join
+ * - backend /api/departments/join           → joins the selected ones
+ * - constants/api.js                        → endpoint names
+ */
+
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Building, ChevronRight, Users, Shield, Plus, X, CheckSquare, Square, Check } from 'lucide-react'
@@ -151,10 +166,10 @@ const MyDepartments = () => {
                       {d.status && (
                         <span className={`text-xs inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${
                           d.status === 'approved' 
-                            ? 'bg-green-50 text-green-800'
+                            ? 'bg-[var(--color-success-light)] text-[var(--color-success)]'
                             : d.status === 'pending'
-                            ? 'bg-yellow-50 text-yellow-800'
-                            : 'bg-red-50 text-red-800'
+                            ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
+                            : 'bg-[var(--color-error-light)] text-[var(--color-error)]'
                         }`}>
                           {d.status === 'approved' && '✓ Approved'}
                           {d.status === 'pending' && '⏳ Pending Approval'}
@@ -162,7 +177,7 @@ const MyDepartments = () => {
                         </span>
                       )}
                       {d.can_manage && (
-                        <span className="text-xs text-amber-700">Can manage</span>
+                        <span className="text-xs text-[var(--color-warning)]">Can manage</span>
                       )}
                     </div>
                   </div>
@@ -186,7 +201,7 @@ const MyDepartments = () => {
 
       {/* Join Departments Modal */}
       {showJoinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)] rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
               <h2 className="text-xl font-semibold text-[var(--color-text)]">Join Departments</h2>

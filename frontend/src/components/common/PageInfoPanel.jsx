@@ -4,17 +4,17 @@ import { ChevronDown, ChevronUp, BookOpen, AlertTriangle, HelpCircle, XCircle, C
 const LEVEL_CONFIG = {
   error: {
     icon: XCircle,
-    bg: 'bg-red-500/10',
-    border: 'border-red-500/20',
-    text: 'text-red-500',
-    badge: 'bg-red-500 text-white',
+    bg: 'bg-[var(--color-error-light)]0/10',
+    border: 'border-[var(--color-error)]/20',
+    text: 'text-[var(--color-error)]',
+    badge: 'bg-[var(--color-error-light)]0 text-white',
   },
   warn: {
     icon: AlertTriangle,
-    bg: 'bg-amber-500/10',
-    border: 'border-amber-500/20',
-    text: 'text-amber-500',
-    badge: 'bg-amber-500 text-white',
+    bg: 'bg-[var(--color-warning-light)]0/10',
+    border: 'border-[var(--color-warning)]/20',
+    text: 'text-[var(--color-warning)]',
+    badge: 'bg-[var(--color-warning-light)]0 text-white',
   },
   info: {
     icon: Info,
@@ -25,10 +25,10 @@ const LEVEL_CONFIG = {
   },
   success: {
     icon: CheckCircle,
-    bg: 'bg-green-500/10',
-    border: 'border-green-500/20',
-    text: 'text-green-500',
-    badge: 'bg-green-500 text-white',
+    bg: 'bg-[var(--color-success)]/10',
+    border: 'border-[var(--color-success)]/20',
+    text: 'text-[var(--color-success)]',
+    badge: 'bg-[var(--color-success)] text-white',
   },
 }
 
@@ -116,8 +116,8 @@ const PageInfoPanel = ({
             <span
               className={`ml-2 text-xs font-bold rounded-full px-2 py-0.5 ${
                 errorCount > 0
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-amber-100 text-amber-700'
+                  ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
+                  : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
               }`}
             >
               {errorCount > 0
@@ -171,7 +171,7 @@ const PageInfoPanel = ({
                 {hasBadge && statusLoaded && (
                   <span
                     className={`ml-1 text-xs font-bold rounded-full px-1.5 py-0.5 ${
-                      errorCount > 0 ? 'bg-red-500 text-white' : 'bg-amber-500 text-white'
+                      errorCount > 0 ? 'bg-[var(--color-error-light)]0 text-white' : 'bg-[var(--color-warning-light)]0 text-white'
                     }`}
                   >
                     {errorCount + warnCount}
@@ -239,7 +239,7 @@ const PageInfoPanel = ({
                   </div>
                 ) : (
                   <div className="text-center py-8 text-[var(--color-textSecondary)]">
-                    <CheckCircle size={32} className="mx-auto mb-2 text-green-500" />
+                    <CheckCircle size={32} className="mx-auto mb-2 text-[var(--color-success)]" />
                     <p className="text-sm">No issues detected</p>
                   </div>
                 )}

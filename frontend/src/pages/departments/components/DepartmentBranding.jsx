@@ -1,3 +1,17 @@
+/**
+ * WHAT THIS COMPONENT DOES
+ * ------------------------
+ * Settings-tab panel for department branding: upload/remove a logo and
+ * banner image, and pick accent colors. Shows a live preview.
+ *
+ * FILES IT TALKS TO
+ * -----------------
+ * - backend /departments/:id/logo    (POST multipart) → upload logo
+ * - backend /departments/:id/banner  (POST multipart) → upload banner
+ * - backend /departments/:id/colors  (PUT)            → colors + removals
+ * - Rendered by pages/departments/DepartmentDashboard.jsx (settings tab)
+ */
+
 import React, { useState } from 'react';
 import {
   Upload,
@@ -8,31 +22,26 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useColorPalette } from '../../../contexts/ColorPaletteContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const DepartmentBranding = ({ department, onUpdate }) => {
   const toast = useToast();
   const { colors } = useColorPalette();
+  const { api } = useAuth();
   const [logoFile, setLogoFile] = useState(null);
   const [bannerFile, setBannerFile] = useState(null);
   const [logoColor, setLogoColor] = useState(department?.logo_color || 'var(--color-primary)');
   const [bannerColor, setBannerColor] = useState(department?.banner_color || 'var(--color-primary)');
   const [uploading, setUploading] = useState(false);
 
-  const fetchWithRetry = async (fetchFn, retries = 3, delay = 1000) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const result = await fetchFn()
-        return result
-      } catch (error) {
-        if (error.message?.includes('429') && i < retries - 1) {
-          // Exponential backoff for rate limiting
-          await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)))
-          continue
-        }
-        throw error
-      }
-    }
-  }
+  // The api client attaches the auth cookie + CSRF token; axios sets the
+  // multipart boundary itself when given FormData.
+  const uploadImage = async (field, file) => {
+    const formData = new FormData();
+    formData.append(field, file);
+    const res = await api.post(`/departments/${department.id}/${field}`, formData);
+    return res.data.data;
+  };
 
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0];
@@ -53,48 +62,20 @@ const DepartmentBranding = ({ department, onUpdate }) => {
     }
 
     setLogoFile(file);
-    const formData = new FormData();
-    formData.append('logo', file);
 
     try {
       setUploading(true);
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${department.id}/logo`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: formData,
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          const errorMessage = errorData.error || errorData.details || 'Failed to upload logo';
-          const error = new Error(errorMessage);
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-
-      const data = await response.json();
+      const data = await uploadImage('logo', file);
       toast.success('Logo uploaded successfully');
-      onUpdate({ logo_url: data.data.logoUrl });
+      onUpdate({ logo_url: data.logoUrl });
       setLogoFile(null);
     } catch (error) {
-      console.error('Logo upload error:', error);
-      let errorMessage = 'Failed to upload logo';
-      
-      if (error.status === 403) {
-        errorMessage = 'You do not have permission to upload logo';
-      } else if (error.status === 404) {
-        errorMessage = 'Department not found';
-      } else if (error.status === 413) {
-        errorMessage = 'File too large (max 5MB)';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+      const status = error.response?.status;
+      const errorMessage =
+        status === 403 ? 'You do not have permission to upload logo'
+        : status === 404 ? 'Department not found'
+        : status === 413 ? 'File too large (max 5MB)'
+        : error.response?.data?.error || 'Failed to upload logo';
       toast.error(errorMessage);
     } finally {
       setUploading(false);
@@ -120,48 +101,20 @@ const DepartmentBranding = ({ department, onUpdate }) => {
     }
 
     setBannerFile(file);
-    const formData = new FormData();
-    formData.append('banner', file);
 
     try {
       setUploading(true);
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${department.id}/banner`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          body: formData,
-        });
-        
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          const errorMessage = errorData.error || errorData.details || 'Failed to upload banner';
-          const error = new Error(errorMessage);
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-
-      const data = await response.json();
+      const data = await uploadImage('banner', file);
       toast.success('Banner uploaded successfully');
-      onUpdate({ banner_url: data.data.bannerUrl });
+      onUpdate({ banner_url: data.bannerUrl });
       setBannerFile(null);
     } catch (error) {
-      console.error('Banner upload error:', error);
-      let errorMessage = 'Failed to upload banner';
-      
-      if (error.status === 403) {
-        errorMessage = 'You do not have permission to upload banner';
-      } else if (error.status === 404) {
-        errorMessage = 'Department not found';
-      } else if (error.status === 413) {
-        errorMessage = 'File too large (max 5MB)';
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
+      const status = error.response?.status;
+      const errorMessage =
+        status === 403 ? 'You do not have permission to upload banner'
+        : status === 404 ? 'Department not found'
+        : status === 413 ? 'File too large (max 5MB)'
+        : error.response?.data?.error || 'Failed to upload banner';
       toast.error(errorMessage);
     } finally {
       setUploading(false);
@@ -171,28 +124,11 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const handleColorUpdate = async () => {
     try {
       setUploading(true);
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${department.id}/colors`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ logoColor, bannerColor }),
-        });
-        if (!res.ok) {
-          const error = new Error('Failed to update colors');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-
+      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor });
       toast.success('Colors updated successfully');
       onUpdate({ logo_color: logoColor, banner_color: bannerColor });
     } catch (error) {
-      console.error('Color update error:', error);
-      toast.error(error.message || 'Failed to update colors');
+      toast.error(error.response?.data?.error || 'Failed to update colors');
     } finally {
       setUploading(false);
     }
@@ -201,28 +137,11 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const removeLogo = async () => {
     try {
       setUploading(true);
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${department.id}/colors`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ logoColor, bannerColor, logoUrl: null }),
-        });
-        if (!res.ok) {
-          const error = new Error('Failed to remove logo');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-
+      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, logoUrl: null });
       toast.success('Logo removed successfully');
       onUpdate({ logo_url: null });
     } catch (error) {
-      console.error('Logo removal error:', error);
-      toast.error(error.message || 'Failed to remove logo');
+      toast.error(error.response?.data?.error || 'Failed to remove logo');
     } finally {
       setUploading(false);
     }
@@ -231,28 +150,11 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const removeBanner = async () => {
     try {
       setUploading(true);
-      const response = await fetchWithRetry(async () => {
-        const res = await fetch(`/api/departments/${department.id}/colors`, {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ logoColor, bannerColor, bannerUrl: null }),
-        });
-        if (!res.ok) {
-          const error = new Error('Failed to remove banner');
-          error.status = res.status;
-          throw error;
-        }
-        return res;
-      });
-
+      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, bannerUrl: null });
       toast.success('Banner removed successfully');
       onUpdate({ banner_url: null });
     } catch (error) {
-      console.error('Banner removal error:', error);
-      toast.error(error.message || 'Failed to remove banner');
+      toast.error(error.response?.data?.error || 'Failed to remove banner');
     } finally {
       setUploading(false);
     }

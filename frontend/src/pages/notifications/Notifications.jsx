@@ -57,9 +57,9 @@ const Notifications = () => {
 
   const getPriorityIcon = (priority) => {
     switch (priority) {
-      case 'high': return <AlertTriangle className="w-5 h-5 text-red-500" />;
-      case 'medium': return <Info className="w-5 h-5 text-yellow-500" />;
-      case 'low': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
+      case 'high': return <AlertTriangle className="w-5 h-5 text-[var(--color-error)]" />;
+      case 'medium': return <Info className="w-5 h-5 text-[var(--color-warning)]" />;
+      case 'low': return <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />;
       default: return <Bell className="w-5 h-5 text-[var(--color-primary)]" />;
     }
   };
@@ -168,7 +168,7 @@ const Notifications = () => {
                   {!notification.is_read && (
                     <button
                       onClick={() => markAsRead(notification.id)}
-                      className="p-2 text-green-600 hover:bg-green-50 rounded"
+                      className="p-2 text-[var(--color-success)] hover:bg-[var(--color-success-light)] rounded"
                       title="Mark as read"
                     >
                       <CheckCircle className="w-5 h-5" />
@@ -176,7 +176,7 @@ const Notifications = () => {
                   )}
                   <button
                     onClick={() => deleteNotification(notification.id)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded"
+                    className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded"
                     title="Delete"
                   >
                     <Trash2 className="w-5 h-5" />

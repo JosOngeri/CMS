@@ -31,7 +31,7 @@ class RouteErrorBoundary extends React.Component {
       return (
         <div className="flex items-center justify-center min-h-64 p-8">
           <div className="text-center">
-            <p className="text-red-600 mb-2">Failed to load this page</p>
+            <p className="text-[var(--color-error)] mb-2">Failed to load this page</p>
             <p className="text-sm text-[var(--color-textSecondary)] mb-4">
               {this.state.error?.message || 'An error occurred while loading this module'}
             </p>

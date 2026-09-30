@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 /// Department leadership handovers involving the current user.
 /// Incoming: accept or decline. Outgoing: review checklist and complete
@@ -49,7 +50,7 @@ class _HandoversScreenState extends State<HandoversScreen> {
       content: Text(res['success'] == true
           ? (res['message']?.toString() ?? 'Done')
           : (res['error']?.toString() ?? 'Failed')),
-      backgroundColor: res['success'] == true ? Colors.green : Colors.red,
+      backgroundColor: res['success'] == true ? AppTheme.successColor : AppTheme.errorColor,
     ));
     if (res['success'] == true) _load();
   }
@@ -69,14 +70,14 @@ class _HandoversScreenState extends State<HandoversScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(_error!,
-                          style: const TextStyle(color: Colors.red)),
+                          style: const TextStyle(color: AppTheme.errorColor)),
                     ),
                   _sectionTitle('Incoming — awaiting your response'),
                   if (_incoming == null || _incoming!.isEmpty)
                     const Padding(
                       padding: EdgeInsets.only(bottom: 16),
                       child: Text('No incoming handovers',
-                          style: TextStyle(color: Colors.grey)),
+                          style: TextStyle(color: AppTheme.textSecondary)),
                     )
                   else
                     ..._incoming!.map((h) => _IncomingCard(h, _act)),
@@ -84,7 +85,7 @@ class _HandoversScreenState extends State<HandoversScreen> {
                   _sectionTitle('Outgoing — complete to release'),
                   if (_outgoing == null || _outgoing!.isEmpty)
                     const Text('No outgoing handovers',
-                        style: TextStyle(color: Colors.grey))
+                        style: TextStyle(color: AppTheme.textSecondary))
                   else
                     ..._outgoing!.map((h) => _OutgoingCard(h, _act)),
                 ],
@@ -97,7 +98,7 @@ class _HandoversScreenState extends State<HandoversScreen> {
         padding: const EdgeInsets.only(bottom: 8),
         child: Text(t,
             style: const TextStyle(
-                fontWeight: FontWeight.w600, color: Colors.grey)),
+                fontWeight: FontWeight.w600, color: AppTheme.textSecondary)),
       );
 }
 
@@ -120,7 +121,7 @@ class _IncomingCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
                 'Position: ${h['position'] ?? ''} • From: ${h['outgoing_name'] ?? ''}',
-                style: TextStyle(color: Colors.grey[700])),
+                style: TextStyle(color: AppTheme.textSecondary)),
             if ((h['notes'] ?? '').toString().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(h['notes'].toString(),
@@ -170,7 +171,7 @@ class _OutgoingCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
                 'To: ${h['incoming_name'] ?? ''} • Status: $status',
-                style: TextStyle(color: Colors.grey[700])),
+                style: TextStyle(color: AppTheme.textSecondary)),
             if (checklist is List && checklist.isNotEmpty) ...[
               const SizedBox(height: 8),
               ...checklist.map((c) => Row(
@@ -181,8 +182,8 @@ class _OutgoingCard extends StatelessWidget {
                               : Icons.check_box_outline_blank,
                           size: 18,
                           color: c is Map && c['done'] == true
-                              ? Colors.green
-                              : Colors.grey),
+                              ? AppTheme.successColor
+                              : AppTheme.textSecondary),
                       const SizedBox(width: 6),
                       Expanded(
                           child: Text(

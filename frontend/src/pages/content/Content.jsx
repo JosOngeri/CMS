@@ -163,7 +163,7 @@ const Content = () => {
       </div>
 
       {showEditor && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-end sm:items-center justify-center z-50">
           <div className="bg-[var(--color-surface)]  rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-xl font-bold">
@@ -285,12 +285,12 @@ const Content = () => {
           ) : (
             <div className="space-y-2">
               {filteredContent.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-[var(--color-background)] bg-[var(--color-surface)] rounded">
+                <div key={item.id} className="flex items-center justify-between p-3 bg-[var(--color-background)] rounded">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-medium">{item.title}</p>
                       <span className={`px-2 py-0.5 text-xs rounded-full ${
-                        item.status === 'published' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                        item.status === 'published' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
                       }`}>
                         {item.status}
                       </span>
@@ -315,7 +315,7 @@ const Content = () => {
                         permission={PERMISSIONS.CONTENT_PUBLISH}
                         buttonProps={{
                           onClick: () => publishContent(item.id),
-                          className: "p-2 text-green-600 hover:bg-green-50 rounded",
+                          className: "p-2 text-[var(--color-success)] hover:bg-[var(--color-success-light)] rounded",
                           title: "Publish",
                         }}
                       >
@@ -336,7 +336,7 @@ const Content = () => {
                       permission={PERMISSIONS.CONTENT_DELETE}
                       buttonProps={{
                         onClick: () => deleteContent(item.id),
-                        className: "p-2 text-red-600 hover:bg-red-50 rounded",
+                        className: "p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded",
                         title: "Delete",
                       }}
                     >

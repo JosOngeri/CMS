@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../app/theme.dart';
 
 /// In-app notification history. Push notifications are transient — this
 /// screen is the durable record (handover invites, approvals, obligations).
@@ -89,13 +90,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: read
-                                    ? Colors.grey.withOpacity(0.15)
-                                    : const Color(0xFF3B82F6)
+                                    ? AppTheme.textSecondary.withOpacity(0.15)
+                                    : const AppTheme.primaryColor
                                         .withOpacity(0.12),
                                 child: Icon(_iconFor(type),
                                     color: read
-                                        ? Colors.grey
-                                        : const Color(0xFF3B82F6)),
+                                        ? AppTheme.textSecondary
+                                        : const AppTheme.primaryColor),
                               ),
                               title: Text(
                                 n['title']?.toString() ?? 'Notification',
@@ -115,7 +116,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               trailing: read
                                   ? null
                                   : const Icon(Icons.circle,
-                                      size: 10, color: Color(0xFF3B82F6)),
+                                      size: 10, color: AppTheme.primaryColor),
                               onTap: () => _markRead(n),
                             );
                           },
