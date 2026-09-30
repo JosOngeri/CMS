@@ -1,7 +1,7 @@
 name: sda_church_mobile
 description: Msabato Church Management System Mobile Application
 publish_to: 'none'
-version: 1.6.0+15
+version: 1.7.0+16
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

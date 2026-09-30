@@ -6,6 +6,20 @@ app.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-30
+
+### Added
+- **Remittance ledger** — collectors batch reconciled payments and record the handover to the church account (cash/bank/M-Pesa + reference); treasurers and department managers confirm or dispute receipt from the Collections tab
+- **AI-calibrated parser profiles on-device** — paste-to-parse now tries the church's active `mpesa_parser_profiles` rulesets before the built-in patterns; rulesets are cached locally so calibrated formats keep working offline
+- **Subcommittee collections & spend view** — per-subcommittee rollup card in the Collections tab; tapping a subcommittee opens its spend budget (total/spent/remaining) and recent spend requests
+- Propose-budget dialog gains obligation-type (target/voluntary) and subcommittee pickers
+
+### Fixed
+- Collections tab progress card always showed zero — the app was reading a response shape the API never produced; rewritten to the real `{budgets, subcommittees, members}` payload with per-budget progress, milestones, and member-fulfilment counts
+- Propose-budget sent `title`/`amount` fields the API rejects — now sends `purpose`/`target_amount`/`obligation_type`
+- Allocate button waited for `approved` status; budgets allocate from `active`
+- Member obligations list now shows real member names, paid/target amounts, and a waive action for managers
+
 ## [1.6.0] - 2026-10-02
 
 ### Changed
