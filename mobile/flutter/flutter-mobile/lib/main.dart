@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
-import 'services/auth_service.dart';
 import 'services/config.dart';
-import 'services/sms_recon_service.dart';
 // import 'services/socket_service.dart';
 // import 'services/firebase_service.dart';
 // import 'services/update_service.dart';
@@ -39,11 +37,7 @@ void main() async {
     debugPrint('Loaded saved API URL: $savedApiUrl');
   }
 
-  // Collector M-Pesa reconciliation — only starts if the user enabled
-  // "Payment alerts" on this device.
-  SmsReconService.navigatorKey = rootNavigatorKey;
-  SmsReconService.instance.init();
-  
+
   // Initialize Socket.IO service for Msabato CMS integration
   // try {
   //   SocketService().initialize();

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/sms_recon_service.dart';
 
-/// Collector's pending-payments inbox. The app listens for M-Pesa/bank SMS
-/// in the background — each payment lands here. Collector taps Accept and
-/// picks the member's obligation (auto-suggested on phone+amount match) or
-/// Decline to drop it.
+/// Collector's pending-payments inbox. The collector copies an M-Pesa or
+/// bank payment SMS and pastes it here — the app parses it on-device and
+/// queues it. Collector taps Accept and picks the member's obligation
+/// (auto-suggested on phone+amount match) or Decline to drop it.
 class CollectPaymentsScreen extends StatefulWidget {
   const CollectPaymentsScreen({super.key});
 
@@ -18,6 +18,14 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
   List<Map<String, dynamic>> _pending = [];
   List<dynamic> _myDepts = [];
   bool _loading = true;
+  bool _parsing = false;
+  final _pasteCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _pasteCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -47,32 +55,109 @@ class _CollectPaymentsScreenState extends State<CollectPaymentsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: _load,
-              child: _pending.isEmpty
-                  ? ListView(children: const [
-                      SizedBox(height: 80),
-                      Center(
-                        child: Column(children: [
-                          Icon(Icons.sms_outlined,
-                              size: 56, color: Colors.grey),
-                          SizedBox(height: 12),
-                          Text('No payments waiting',
-                              style: TextStyle(fontSize: 16)),
-                          SizedBox(height: 4),
-                          Text(
-                            'When an M-Pesa SMS arrives on this phone\nit will appear here automatically.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ]),
-                      ),
-                    ])
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _pending.length,
-                      itemBuilder: (context, i) => _txCard(_pending[i]),
-                    ),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _pasteCard(),
+                  const SizedBox(height: 12),
+                  if (_pending.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 60),
+                      child: Column(children: [
+                        Icon(Icons.sms_outlined,
+                            size: 56, color: Colors.grey),
+                        SizedBox(height: 12),
+                        Text('No payments waiting',
+                            style: TextStyle(fontSize: 16)),
+                        SizedBox(height: 4),
+                        Text(
+                          'Copy an M-Pesa or bank payment SMS and\npaste it above to reconcile it.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ]),
+                    )
+                  else
+                    ..._pending.map(_txCard),
+                ],
+              ),
             ),
     );
+  }
+
+  Widget _pasteCard() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Add a payment message',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            Text(
+              'Long-press the SMS in your messages app → Copy, then paste it '
+              'here. You can paste several messages at once.',
+              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _pasteCtrl,
+              maxLines: 4,
+              minLines: 2,
+              decoration: const InputDecoration(
+                hintText:
+                    'e.g. SGH41RT2KL Confirmed. You have received Ksh500.00 from…',
+                border: OutlineInputBorder(),
+                isDense: true,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                icon: _parsing
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.content_paste_go),
+                label: const Text('Parse & queue'),
+                onPressed: _parsing ? null : _parsePasted,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _parsePasted() async {
+    final text = _pasteCtrl.text.trim();
+    if (text.isEmpty) {
+      _snack('Paste a payment SMS first', isError: true);
+      return;
+    }
+    setState(() => _parsing = true);
+    try {
+      final result = SmsReconService.parseDump(text);
+      final added = await SmsReconService.instance.addPending(result.parsed);
+      if (!mounted) return;
+      _pasteCtrl.clear();
+      if (added > 0) {
+        _snack('$added payment${added > 1 ? 's' : ''} queued for review'
+            '${result.failed > 0 ? ' (${result.failed} message${result.failed > 1 ? 's' : ''} skipped)' : ''}');
+      } else if (result.parsed.isNotEmpty) {
+        _snack('Already queued — same transaction code');
+      } else {
+        _snack('Nothing recognized — check the message text and try again',
+            isError: true);
+      }
+      _load();
+    } finally {
+      if (mounted) setState(() => _parsing = false);
+    }
   }
 
   Widget _txCard(Map<String, dynamic> tx) {

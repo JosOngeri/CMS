@@ -27,7 +27,6 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
   List<dynamic> _budgets = [];
   List<dynamic> _reconciliations = [];
   int _pendingCount = 0;
-  bool _alertsOn = false;
   bool _loading = true;
   String? _error;
 
@@ -63,11 +62,9 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
       }
     });
     final pending = await SmsReconService.instance.getPending();
-    final enabled = await SmsReconService.instance.isEnabled();
     if (!mounted) return;
     setState(() {
       _pendingCount = pending.length;
-      _alertsOn = enabled;
     });
   }
 
@@ -167,75 +164,54 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     );
   }
 
-  /// Collector card — toggle SMS payment alerts on this phone and jump to
-  /// the pending-payments inbox. Once enabled the app watches incoming
-  /// M-Pesa/bank SMS automatically; the collector only accepts or declines.
+  /// Collector card — jump to the pending-payments inbox where a payment
+  /// SMS is pasted and reconciled. No permissions needed — the collector
+  /// copies the message and the app parses it on-device.
   Widget _collectorCard() {
     return Card(
-      color: _alertsOn ? Colors.green.withOpacity(0.06) : null,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                Icon(Icons.sms,
-                    color: _alertsOn ? Colors.green : Colors.grey),
-                const SizedBox(width: 8),
-                const Expanded(
-                  child: Text('Payment alerts on this phone',
+                Icon(Icons.sms, color: Colors.grey),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text('Reconcile a payment',
                       style: TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
-                Switch(
-                  value: _alertsOn,
-                  onChanged: _toggleAlerts,
-                ),
               ],
             ),
+            const SizedBox(height: 4),
             Text(
-              _alertsOn
-                  ? 'On — when an M-Pesa or bank SMS arrives you\'ll get a notification. Just tap Accept or Decline.'
-                  : 'Turn on to get a notification whenever a payment SMS arrives on this phone.',
+              'Copy an M-Pesa or bank payment SMS and paste it in the app — '
+              'it\'s parsed on this phone and queued for review.',
               style: TextStyle(fontSize: 13, color: Colors.grey[600]),
             ),
-            if (_pendingCount > 0) ...[
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  icon: Badge(
-                    label: Text('$_pendingCount'),
-                    child: const Icon(Icons.inbox),
-                  ),
-                  label: const Text('Review pending payments'),
-                  onPressed: () =>
-                      context.push('/collect-payments').then((_) => _load()),
-                ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                icon: _pendingCount > 0
+                    ? Badge(
+                        label: Text('$_pendingCount'),
+                        child: const Icon(Icons.content_paste_go),
+                      )
+                    : const Icon(Icons.content_paste_go),
+                label: Text(_pendingCount > 0
+                    ? 'Review $_pendingCount pending payment${_pendingCount > 1 ? 's' : ''}'
+                    : 'Paste a payment message'),
+                onPressed: () =>
+                    context.push('/collect-payments').then((_) => _load()),
               ),
-            ],
+            ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _toggleAlerts(bool on) async {
-    if (on) {
-      final ok = await SmsReconService.instance.enable();
-      if (!mounted) return;
-      if (!ok) {
-        _snack('SMS permission denied — enable it in app settings',
-            isError: true);
-        return;
-      }
-      _snack('Payment alerts on — you\'ll be notified of new payments');
-    } else {
-      await SmsReconService.instance.disable();
-      _snack('Payment alerts off');
-    }
-    setState(() => _alertsOn = on);
   }
 
   Widget _budgetCard() {

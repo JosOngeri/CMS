@@ -6,6 +6,16 @@ app.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-10-02
+
+### Changed
+- **Automatic SMS listening replaced with paste-to-parse** — no SMS permissions needed. The collector copies the M-Pesa/bank payment message and pastes it into the app; the same pesa-track parser runs on-device and queues the payment for Accept/Decline
+- Pasting works on a whole copied thread — multiple messages are split on confirmation codes and parsed in one go (Kotlin `splitMessages` port)
+- Pending Payments inbox now has a paste field at the top; Collections tab shows a "Paste a payment message" entry point with pending-count badge
+
+### Removed
+- `another_telephony` dependency, `READ_SMS`/`RECEIVE_SMS` permissions, and the background SMS receiver — the app no longer touches the SMS inbox
+
 ## [1.5.0] - 2026-10-02
 
 ### Changed
