@@ -26,9 +26,9 @@ const TreasurerDashboard = () => {
     monthlyExpenses: 0
   })
   const [financialHealth, setFinancialHealth] = useState({
-    budgetUtilization: 72,
-    collectionRate: 85,
-    expenseRatio: 68
+    budgetUtilization: 0,
+    collectionRate: 0,
+    expenseRatio: 0
   })
   const [recentTransactions, setRecentTransactions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -53,9 +53,9 @@ const TreasurerDashboard = () => {
       // Fetch financial health metrics
       const healthResponse = await api.get('/api/dashboard/financial-health')
       setFinancialHealth(healthResponse.data.data || {
-        budgetUtilization: 72,
-        collectionRate: 85,
-        expenseRatio: 68
+        budgetUtilization: 0,
+        collectionRate: 0,
+        expenseRatio: 0
       })
 
       // Fetch recent transactions
@@ -115,7 +115,7 @@ const TreasurerDashboard = () => {
       </div>
 
       {/* Stewardship Visualization - Signature Element */}
-      <StewardshipViz 
+      <StewardshipViz
         financialData={{
           totalIncome: stats.monthlyIncome,
           totalExpenses: stats.monthlyExpenses,
@@ -123,19 +123,15 @@ const TreasurerDashboard = () => {
           budgetUtilization: financialHealth.budgetUtilization
         }}
         budgetData={{
-          totalBudget: stats.monthlyIncome * 1.2,
+          totalBudget: stats.monthlyIncome + stats.totalBalance,
           spent: stats.monthlyExpenses,
           remaining: stats.totalBalance,
-          categories: [
-            { name: 'Operations', spent: Math.round(stats.monthlyExpenses * 0.5), budget: Math.round(stats.monthlyIncome * 0.6) },
-            { name: 'Ministry', spent: Math.round(stats.monthlyExpenses * 0.3), budget: Math.round(stats.monthlyIncome * 0.3) },
-            { name: 'Outreach', spent: Math.round(stats.monthlyExpenses * 0.2), budget: Math.round(stats.monthlyIncome * 0.3) }
-          ]
+          categories: []
         }}
         growthData={{
-          monthlyGrowth: Math.round(financialHealth.collectionRate * 0.2),
-          quarterlyGrowth: Math.round(financialHealth.collectionRate * 0.3),
-          yearlyGrowth: Math.round(financialHealth.collectionRate * 0.25),
+          monthlyGrowth: 0,
+          quarterlyGrowth: 0,
+          yearlyGrowth: 0,
           memberContributions: financialHealth.collectionRate
         }}
       />
@@ -149,7 +145,7 @@ const TreasurerDashboard = () => {
           changeType="positive"
           icon={Wallet}
           statType="financial"
-          linkTo="/treasury/balance"
+          linkTo="/dashboard/treasury"
         />
         <ChurchStatsCard
           title="Pending Payments"
@@ -158,7 +154,7 @@ const TreasurerDashboard = () => {
           changeType="neutral"
           icon={Clock}
           statType="default"
-          linkTo="/treasury/payments"
+          linkTo="/dashboard/treasury/reconciliations"
         />
         <ChurchStatsCard
           title="Monthly Income"
@@ -167,7 +163,7 @@ const TreasurerDashboard = () => {
           changeType="positive"
           icon={TrendingUp}
           statType="financial"
-          linkTo="/treasury/income"
+          linkTo="/dashboard/treasury/reports"
         />
         <ChurchStatsCard
           title="Monthly Expenses"
@@ -176,7 +172,7 @@ const TreasurerDashboard = () => {
           changeType="neutral"
           icon={TrendingDown}
           statType="financial"
-          linkTo="/treasury/expenses"
+          linkTo="/dashboard/treasury/expenses"
         />
       </div>
 
@@ -187,7 +183,7 @@ const TreasurerDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Financial Activity</h2>
-          <Link to="/treasury/transactions" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
+          <Link to="/dashboard/treasury/journal-entries" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>
@@ -201,7 +197,7 @@ const TreasurerDashboard = () => {
                 <div className="flex-1">
                   <p className="text-sm font-medium text-[var(--color-text)]">{transaction.title}</p>
                   <p className="text-sm text-[var(--color-textSecondary)]">{transaction.description}</p>
-                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">KES {transaction.amount.toLocaleString()} • {transaction.time}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-1">KES {Number(transaction.amount || 0).toLocaleString()} • {transaction.time}</p>
                 </div>
               </div>
             ))}

@@ -29,10 +29,11 @@ const SuperAdminDashboard = () => {
     recentAnnouncements: 0
   })
   const [systemHealth, setSystemHealth] = useState({
-    database: 'healthy',
-    api: 'healthy',
-    lastSync: '2 minutes ago',
-    activeUsers: 12
+    database: 'unknown',
+    api: 'unknown',
+    lastSync: null,
+    activeUsers: 0,
+    metrics: {}
   })
   const [recentActivities, setRecentActivities] = useState([])
   const [loading, setLoading] = useState(true)
@@ -48,7 +49,6 @@ const SuperAdminDashboard = () => {
       // Fetch system-wide stats
       try {
         const statsResponse = await api.get('/api/dashboard/stats')
-        console.log('Dashboard stats response:', statsResponse.data)
         const rawStats = statsResponse.data.data || {}
         setStats({
           totalMembers: rawStats.totalMembers || 0,
@@ -63,7 +63,7 @@ const SuperAdminDashboard = () => {
         console.error('Failed to fetch stats:', statsError)
         // Set default values if stats endpoint fails
         setStats({
-          totalMembers: 1, // At least the admin user
+          totalMembers: 0,
           activeDepartments: 0,
           pendingApprovals: 0,
           financialOverview: 0,
@@ -77,19 +77,21 @@ const SuperAdminDashboard = () => {
       try {
         const healthResponse = await api.get('/api/dashboard/system-health')
         setSystemHealth(healthResponse.data.data || {
-          database: 'healthy',
-          api: 'healthy',
-          lastSync: '2 minutes ago',
-          activeUsers: 12
+          database: 'unknown',
+          api: 'unknown',
+          lastSync: null,
+          activeUsers: 0,
+          metrics: {}
         })
       } catch (healthError) {
         console.error('Failed to fetch system health:', healthError)
         // Set default values if health endpoint fails
         setSystemHealth({
-          database: 'healthy',
-          api: 'healthy',
-          lastSync: '2 minutes ago',
-          activeUsers: 12
+          database: 'unknown',
+          api: 'unknown',
+          lastSync: null,
+          activeUsers: 0,
+          metrics: {}
         })
       }
 
@@ -158,24 +160,24 @@ const SuperAdminDashboard = () => {
       </div>
 
       {/* System Organism Visualization - Signature Element */}
-      <SystemOrganismViz 
+      <SystemOrganismViz
         systemData={{
-          totalServices: 8,
-          activeServices: systemHealth.database === 'healthy' && systemHealth.api === 'healthy' ? 7 : 6,
-          degradedServices: systemHealth.database === 'healthy' && systemHealth.api === 'healthy' ? 1 : 2,
-          systemUptime: 99.9
+          totalServices: 2,
+          activeServices: [systemHealth.database, systemHealth.api].filter(s => s === 'healthy').length,
+          degradedServices: [systemHealth.database, systemHealth.api].filter(s => s !== 'healthy').length,
+          uptimeHours: systemHealth.metrics?.uptimeHours ?? null
         }}
         healthData={{
           databaseHealth: systemHealth.database,
           apiHealth: systemHealth.api,
-          cacheHealth: 'healthy',
-          storageHealth: 'healthy'
+          cacheHealth: 'unmonitored',
+          storageHealth: 'unmonitored'
         }}
         performanceData={{
-          cpuUsage: 45,
-          memoryUsage: 60,
-          diskUsage: 55,
-          networkLatency: 25
+          cpuUsage: systemHealth.metrics?.cpuLoad ?? null,
+          memoryUsage: systemHealth.metrics?.memoryUsage ?? null,
+          diskUsage: null,
+          dbLatencyMs: systemHealth.metrics?.dbLatencyMs ?? null
         }}
       />
 
@@ -188,7 +190,7 @@ const SuperAdminDashboard = () => {
           changeType="positive"
           icon={Users}
           statType="members"
-          linkTo="/admin/members"
+          linkTo="/dashboard/users"
         />
         <ChurchStatsCard
           title="Active Departments"
@@ -197,7 +199,7 @@ const SuperAdminDashboard = () => {
           changeType="neutral"
           icon={Building}
           statType="default"
-          linkTo="/admin/departments"
+          linkTo="/dashboard/departments"
         />
         <ChurchStatsCard
           title="Pending Approvals"
@@ -206,7 +208,7 @@ const SuperAdminDashboard = () => {
           changeType="neutral"
           icon={CheckCircle}
           statType="default"
-          linkTo="/admin/approvals"
+          linkTo="/dashboard/approvals"
         />
         <ChurchStatsCard
           title="Financial Overview"
@@ -215,7 +217,7 @@ const SuperAdminDashboard = () => {
           changeType="positive"
           icon={DollarSign}
           statType="financial"
-          linkTo="/admin/finance"
+          linkTo="/dashboard/treasury"
         />
       </div>
 
@@ -226,7 +228,7 @@ const SuperAdminDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent System Activity</h2>
-          <Link to="/admin/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
+          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

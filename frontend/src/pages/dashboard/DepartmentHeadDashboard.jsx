@@ -26,9 +26,9 @@ const DepartmentHeadDashboard = () => {
     departmentBudget: 0
   })
   const [departmentHealth, setDepartmentHealth] = useState({
-    memberParticipation: 88,
-    taskCompletion: 75,
-    budgetUtilization: 65
+    memberParticipation: 0,
+    taskCompletion: 0,
+    budgetUtilization: 0
   })
   const [recentActivities, setRecentActivities] = useState([])
   const [loading, setLoading] = useState(true)
@@ -52,10 +52,11 @@ const DepartmentHeadDashboard = () => {
 
       // Fetch department health metrics
       const healthResponse = await api.get('/api/dashboard/department-health')
-      setDepartmentHealth(healthResponse.data.data || {
-        memberParticipation: 88,
-        taskCompletion: 75,
-        budgetUtilization: 65
+      const h = healthResponse.data.data || {}
+      setDepartmentHealth({
+        memberParticipation: parseFloat(h.memberParticipationCount) || 0,
+        taskCompletion: parseFloat(h.taskCompletionRate) || 0,
+        budgetUtilization: parseFloat(h.budgetUtilization) || 0
       })
 
       // Fetch recent department activities
@@ -116,23 +117,23 @@ const DepartmentHeadDashboard = () => {
       </div>
 
       {/* Department Community Visualization - Signature Element */}
-      <DepartmentCommunityViz 
+      <DepartmentCommunityViz
         teamData={{
           totalMembers: stats.departmentMembers,
-          activeMembers: Math.round(stats.departmentMembers * 0.85),
-          newMembers: Math.round(stats.departmentMembers * 0.1),
-          teamHealth: Math.round((departmentHealth.memberParticipation + departmentHealth.taskCompletion) / 2)
+          activeMembers: departmentHealth.memberParticipation,
+          newMembers: 0,
+          teamHealth: Math.round((departmentHealth.taskCompletion + departmentHealth.budgetUtilization) / 2)
         }}
         activityData={{
-          meetingsHeld: Math.round(stats.departmentEvents * 0.8),
-          projectsCompleted: Math.round(stats.pendingTasks * 0.6),
-          volunteerHours: Math.round(stats.departmentMembers * 5),
+          meetingsHeld: stats.departmentEvents,
+          projectsCompleted: 0,
+          volunteerHours: 0,
           memberParticipation: departmentHealth.memberParticipation
         }}
         coordinationData={{
-          responseRate: Math.round(departmentHealth.taskCompletion * 1.1),
+          responseRate: departmentHealth.taskCompletion,
           taskCompletion: departmentHealth.taskCompletion,
-          communicationScore: Math.round((departmentHealth.memberParticipation + departmentHealth.taskCompletion) / 2),
+          communicationScore: Math.round((departmentHealth.taskCompletion + departmentHealth.budgetUtilization) / 2),
           teamSatisfaction: Math.round((departmentHealth.memberParticipation + departmentHealth.taskCompletion + departmentHealth.budgetUtilization) / 3)
         }}
       />
@@ -146,7 +147,7 @@ const DepartmentHeadDashboard = () => {
           changeType="positive"
           icon={Users}
           statType="members"
-          linkTo="/department/members"
+          linkTo="/dashboard/departments"
         />
         <ChurchStatsCard
           title="Pending Tasks"
@@ -155,7 +156,7 @@ const DepartmentHeadDashboard = () => {
           changeType="neutral"
           icon={Target}
           statType="default"
-          linkTo="/department/tasks"
+          linkTo="/dashboard/departments"
         />
         <ChurchStatsCard
           title="Department Events"
@@ -164,7 +165,7 @@ const DepartmentHeadDashboard = () => {
           changeType="neutral"
           icon={Calendar}
           statType="events"
-          linkTo="/department/events"
+          linkTo="/dashboard/events"
         />
         <ChurchStatsCard
           title="Department Budget"
@@ -173,7 +174,7 @@ const DepartmentHeadDashboard = () => {
           changeType="neutral"
           icon={DollarSign}
           statType="financial"
-          linkTo="/department/budget"
+          linkTo="/dashboard/departments/handovers"
         />
       </div>
 
@@ -184,7 +185,7 @@ const DepartmentHeadDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Department Activity</h2>
-          <Link to="/department/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
+          <Link to="/dashboard/departments" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

@@ -1,4 +1,5 @@
 const BaseRepository = require('./BaseRepository');
+const os = require('os');
 
 class DashboardRepository extends BaseRepository {
   constructor() {
@@ -392,7 +393,9 @@ class DashboardRepository extends BaseRepository {
 
   // System health metrics for Super Admin
   async getSystemHealth(churchId = null) {
+    const dbStart = Date.now();
     const dbCheck = await this.pool.query('SELECT 1 as ok');
+    const dbLatencyMs = Date.now() - dbStart;
     const database = dbCheck.rows[0]?.ok === 1 ? 'healthy' : 'unhealthy';
 
     const userQuery = `
@@ -415,13 +418,25 @@ class DashboardRepository extends BaseRepository {
       ) t
     `);
 
+    // Real host metrics — no fabricated numbers
+    const cpuCount = os.cpus().length || 1;
+    const cpuLoad = Math.min(100, Math.round((os.loadavg()[0] / cpuCount) * 100));
+    const memoryUsage = Math.round(((os.totalmem() - os.freemem()) / os.totalmem()) * 100);
+    const uptimeHours = Math.round(os.uptime() / 3600);
+
     return {
       database,
       api: 'healthy',
       lastSync: lastApiCall.rows[0]?.last_request
         ? new Date(lastApiCall.rows[0].last_request).toISOString()
         : new Date().toISOString(),
-      activeUsers: parseInt(userResult.rows[0]?.active_users) || 0
+      activeUsers: parseInt(userResult.rows[0]?.active_users) || 0,
+      metrics: {
+        cpuLoad,
+        memoryUsage,
+        uptimeHours,
+        dbLatencyMs
+      }
     };
   }
 
@@ -457,7 +472,13 @@ class DashboardRepository extends BaseRepository {
     query += ` GROUP BY dm.department_id`;
 
     const result = await this.pool.query(query, params);
-    return result.rows[0] || {};
+    const row = result.rows[0] || {};
+    return {
+      departmentMembers: parseInt(row.department_members) || 0,
+      pendingTasks: parseInt(row.pending_tasks) || 0,
+      departmentEvents: parseInt(row.department_events) || 0,
+      departmentBudget: parseFloat(row.department_budget) || 0
+    };
   }
 
   // Ministry health metrics for Pastor
@@ -544,10 +565,10 @@ class DashboardRepository extends BaseRepository {
     ]);
 
     return {
-      total_balance: parseFloat(txResult.rows[0]?.total_balance) || 0,
-      pending_payments: parseInt(pendingResult.rows[0]?.pending_payments) || 0,
-      monthly_income: parseFloat(txResult.rows[0]?.monthly_income) || 0,
-      monthly_expenses: parseFloat(txResult.rows[0]?.monthly_expenses) || 0
+      totalBalance: parseFloat(txResult.rows[0]?.total_balance) || 0,
+      pendingPayments: parseInt(pendingResult.rows[0]?.pending_payments) || 0,
+      monthlyIncome: parseFloat(txResult.rows[0]?.monthly_income) || 0,
+      monthlyExpenses: parseFloat(txResult.rows[0]?.monthly_expenses) || 0
     };
   }
 

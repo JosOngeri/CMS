@@ -30,11 +30,14 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
 
   // Organism/body metaphor for system health
   const renderSystemOverview = () => {
+    const healthPct = defaultSystemData.totalServices > 0
+      ? (defaultSystemData.activeServices / defaultSystemData.totalServices)
+      : 0
     const systemMetrics = [
-      { label: 'Total Services', value: defaultSystemData.totalServices, icon: Server, color: 'text-[var(--color-primary)]' },
+      { label: 'Monitored Services', value: defaultSystemData.totalServices, icon: Server, color: 'text-[var(--color-primary)]' },
       { label: 'Active Services', value: defaultSystemData.activeServices, icon: CheckCircle, color: 'text-[var(--color-success)]' },
       { label: 'Degraded Services', value: defaultSystemData.degradedServices, icon: AlertTriangle, color: 'text-[var(--color-warning)]' },
-      { label: 'System Uptime', value: `${defaultSystemData.systemUptime}%`, icon: Activity, color: 'text-[var(--color-secondary)]' }
+      { label: 'Host Uptime', value: defaultSystemData.uptimeHours != null ? `${defaultSystemData.uptimeHours}h` : '—', icon: Activity, color: 'text-[var(--color-secondary)]' }
     ]
 
     return (
@@ -61,14 +64,14 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
                   fill="none"
                   stroke="var(--color-success)"
                   strokeWidth="8"
-                  strokeDasharray={`${(defaultSystemData.activeServices / defaultSystemData.totalServices) * 251.2} 251.2`}
+                  strokeDasharray={`${healthPct * 251.2} 251.2`}
                   strokeLinecap="round"
                   className="transition-all duration-1000"
                 />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-3xl font-bold text-[var(--color-text)]">
-                  {Math.round((defaultSystemData.activeServices / defaultSystemData.totalServices) * 100)}%
+                  {Math.round(healthPct * 100)}%
                 </span>
                 <span className="text-xs text-[var(--color-textSecondary)]">System Health</span>
               </div>
@@ -154,10 +157,10 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
   // Performance metrics
   const renderPerformance = () => {
     const performanceMetrics = [
-      { label: 'CPU Usage', value: `${defaultPerformanceData.cpuUsage}%`, icon: Cpu, threshold: 80 },
-      { label: 'Memory Usage', value: `${defaultPerformanceData.memoryUsage}%`, icon: HardDrive, threshold: 85 },
-      { label: 'Disk Usage', value: `${defaultPerformanceData.diskUsage}%`, icon: HardDrive, threshold: 90 },
-      { label: 'Network Latency', value: `${defaultPerformanceData.networkLatency}ms`, icon: Globe, threshold: 100 }
+      { label: 'CPU Load', value: defaultPerformanceData.cpuUsage != null ? `${defaultPerformanceData.cpuUsage}%` : null, icon: Cpu, threshold: 80 },
+      { label: 'Memory Usage', value: defaultPerformanceData.memoryUsage != null ? `${defaultPerformanceData.memoryUsage}%` : null, icon: HardDrive, threshold: 85 },
+      { label: 'Disk Usage', value: defaultPerformanceData.diskUsage != null ? `${defaultPerformanceData.diskUsage}%` : null, icon: HardDrive, threshold: 90 },
+      { label: 'DB Latency', value: defaultPerformanceData.dbLatencyMs != null ? `${defaultPerformanceData.dbLatencyMs}ms` : null, icon: Globe, threshold: 100 }
     ]
 
     return (
@@ -168,8 +171,9 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
           {performanceMetrics.map((metric, index) => {
             const Icon = metric.icon
             const value = parseInt(metric.value)
-            const isCritical = value > metric.threshold
-            const isWarning = value > metric.threshold * 0.8 && value <= metric.threshold
+            const hasValue = Number.isFinite(value)
+            const isCritical = hasValue && value > metric.threshold
+            const isWarning = hasValue && value > metric.threshold * 0.8 && value <= metric.threshold
             const statusColor = isCritical ? 'text-[var(--color-error)]' : isWarning ? 'text-[var(--color-warning)]' : 'text-[var(--color-success)]'
             const bgColor = isCritical ? 'bg-[var(--color-error-light)]' : isWarning ? 'bg-[var(--color-warning-light)]' : 'bg-[var(--color-success-light)]'
             
@@ -182,14 +186,14 @@ const SystemOrganismViz = ({ systemData, healthData, performanceData, className 
                     </div>
                     <span className="text-sm font-medium text-[var(--color-text)]">{metric.label}</span>
                   </div>
-                  <span className={`text-sm font-semibold ${statusColor}`}>{metric.value}</span>
+                  <span className={`text-sm font-semibold ${statusColor}`}>{metric.value ?? '—'}</span>
                 </div>
                 <div className="w-full bg-[var(--color-border)] rounded-full h-2">
                   <div
                     className={`h-2 rounded-full transition-all ${
                       isCritical ? 'bg-[var(--color-error)]' : isWarning ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-success)]'
                     }`}
-                    style={{ width: `${Math.min(value, 100)}%` }}
+                    style={{ width: `${hasValue ? Math.min(value, 100) : 0}%` }}
                   />
                 </div>
               </div>

@@ -21,14 +21,14 @@ const PastorDashboard = () => {
   const { colors } = useColorPalette()
   const [stats, setStats] = useState({
     totalMembers: 0,
-    activeDepartments: 0,
-    pendingApprovals: 0,
-    upcomingEvents: 0
+    totalPayments: 0,
+    upcomingEvents: 0,
+    recentAnnouncements: 0
   })
   const [ministryHealth, setMinistryHealth] = useState({
-    memberEngagement: 85,
-    departmentActivity: 92,
-    spiritualGrowth: 78
+    memberEngagement: 0,
+    departmentActivity: 0,
+    spiritualGrowth: 0
   })
   const [recentActivities, setRecentActivities] = useState([])
   const [loading, setLoading] = useState(true)
@@ -45,17 +45,17 @@ const PastorDashboard = () => {
       const statsResponse = await api.get('/api/dashboard/stats')
       setStats(statsResponse.data.data || {
         totalMembers: 0,
-        activeDepartments: 0,
-        pendingApprovals: 0,
-        upcomingEvents: 0
+        totalPayments: 0,
+        upcomingEvents: 0,
+        recentAnnouncements: 0
       })
 
       // Fetch ministry health metrics
       const healthResponse = await api.get('/api/dashboard/ministry-health')
       setMinistryHealth(healthResponse.data.data || {
-        memberEngagement: 85,
-        departmentActivity: 92,
-        spiritualGrowth: 78
+        memberEngagement: 0,
+        departmentActivity: 0,
+        spiritualGrowth: 0
       })
 
       // Fetch recent ministry activities
@@ -118,22 +118,22 @@ const PastorDashboard = () => {
       </div>
 
       {/* Ministry Health Visualization - Signature Element */}
-      <MinistryHealthViz 
+      <MinistryHealthViz
         ministryData={{
           totalMembers: stats.totalMembers,
-          activeMembers: Math.round(stats.totalMembers * 0.8),
-          newMembers: Math.round(stats.totalMembers * 0.1),
+          activeMembers: Math.round(stats.totalMembers * ministryHealth.memberEngagement / 100),
+          newMembers: 0,
           memberRetention: ministryHealth.memberEngagement
         }}
         congregationData={{
           averageAttendance: ministryHealth.memberEngagement,
           volunteerParticipation: ministryHealth.departmentActivity,
-          smallGroupParticipation: Math.round(ministryHealth.spiritualGrowth * 0.8),
-          ministryGrowth: Math.round(ministryHealth.spiritualGrowth * 0.2)
+          smallGroupParticipation: 0,
+          ministryGrowth: ministryHealth.spiritualGrowth
         }}
         engagementData={{
-          prayerRequests: Math.round(stats.totalMembers * 0.3),
-          communityService: Math.round(stats.totalMembers * 0.2),
+          prayerRequests: 0,
+          communityService: 0,
           eventParticipation: ministryHealth.departmentActivity,
           spiritualGrowth: ministryHealth.spiritualGrowth
         }}
@@ -148,25 +148,25 @@ const PastorDashboard = () => {
           changeType="positive"
           icon={Users}
           statType="members"
-          linkTo="/members"
+          linkTo="/dashboard/members"
         />
         <ChurchStatsCard
-          title="Active Departments"
-          value={stats.activeDepartments}
-          change="Ministry departments"
+          title="Payments Recorded"
+          value={stats.totalPayments}
+          change="Congregation giving"
           changeType="neutral"
-          icon={Building}
-          statType="default"
-          linkTo="/departments"
+          icon={DollarSign}
+          statType="financial"
+          linkTo="/dashboard/payments"
         />
         <ChurchStatsCard
-          title="Pending Approvals"
-          value={stats.pendingApprovals}
-          change="Requires attention"
+          title="Recent Announcements"
+          value={stats.recentAnnouncements}
+          change="Church communications"
           changeType="neutral"
-          icon={CheckCircle}
+          icon={Megaphone}
           statType="default"
-          linkTo="/approvals"
+          linkTo="/dashboard/announcements"
         />
         <ChurchStatsCard
           title="Upcoming Events"
@@ -175,7 +175,7 @@ const PastorDashboard = () => {
           changeType="neutral"
           icon={Calendar}
           statType="events"
-          linkTo="/events"
+          linkTo="/dashboard/events"
         />
       </div>
 
@@ -186,7 +186,7 @@ const PastorDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Ministry Activity</h2>
-          <Link to="/activity" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
+          <Link to="/dashboard/notifications" className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary)]">
             View all
           </Link>
         </div>

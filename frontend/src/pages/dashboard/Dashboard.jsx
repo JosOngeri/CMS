@@ -34,46 +34,19 @@ const Dashboard = () => {
   const userRoles = user?.roles || []
   const userRole = userRoles.length > 0 ? userRoles[0] : 'Member'
   
-  // Check if user has Super Admin role
-  if (userRoles.includes('Super Admin')) {
-    return (
-      <MobileWrapper mobileComponent={<MobileDashboard />}>
-        <SuperAdminDashboard />
-      </MobileWrapper>
-    )
-  }
-  
-  // Check if user has Pastor role
-  if (userRoles.includes('Pastor')) {
-    return (
-      <MobileWrapper mobileComponent={<MobileDashboard />}>
-        <PastorDashboard />
-      </MobileWrapper>
-    )
-  }
-  
-  // Check if user has Department Head role
-  if (userRoles.includes('Department Head')) {
-    return (
-      <MobileWrapper mobileComponent={<MobileDashboard />}>
-        <DepartmentHeadDashboard />
-      </MobileWrapper>
-    )
-  }
-  
-  // Check if user has Treasurer role
-  if (userRoles.includes('Treasurer')) {
-    return (
-      <MobileWrapper mobileComponent={<MobileDashboard />}>
-        <TreasurerDashboard />
-      </MobileWrapper>
-    )
-  }
-  
-  // Default dashboard for members and other roles
+  // Role → dashboard map. Complexity lives with admin/finance roles;
+  // members and children get the simple member home.
+  const hasRole = (names) => names.some(r => userRoles.includes(r))
+
+  let View = MemberDashboard
+  if (hasRole(['Super Admin'])) View = SuperAdminDashboard
+  else if (hasRole(['Treasurer'])) View = TreasurerDashboard
+  else if (hasRole(['Pastor', 'First Elder', 'Elder', 'Church Board Member'])) View = PastorDashboard
+  else if (hasRole(['Department Head', 'Assistant Department Head', 'Subcommittee Head', 'Subcommittee Collector'])) View = DepartmentHeadDashboard
+
   return (
     <MobileWrapper mobileComponent={<MobileDashboard />}>
-      <MemberDashboard />
+      <View />
     </MobileWrapper>
   )
 }
