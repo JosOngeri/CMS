@@ -176,6 +176,8 @@ async function main() {
   // ---- Member obligations (the dashboard hero + obligations page)
   await seed('member_obligations', 200, async () => {
     for (const ch of ctx.churches) {
+      const have = await q(`SELECT count(*)::int n FROM member_obligations WHERE church_id = $1`, [ch.id]);
+      if (have.rows[0].n > 0) continue;
       const budgets = (await q(
         `SELECT id, department_id, target_amount, obligation_type, collection_deadline FROM department_budgets WHERE church_id = $1`,
         [ch.id])).rows;
@@ -215,6 +217,8 @@ async function main() {
   await seed('subcommittee_members', 10, async () => {
     const subs = (await q(`SELECT id, department_id, church_id FROM department_subcommittees`)).rows;
     for (const s of subs) {
+      const have = await q(`SELECT count(*)::int n FROM subcommittee_members WHERE subcommittee_id = $1`, [s.id]);
+      if (have.rows[0].n > 0) continue;
       const ch = ctx.churches.find(c => c.id === s.church_id);
       if (!ch) continue;
       const members = ch.deptMembers.filter(m => m.department_id === s.department_id).slice(0, ri(3, 7));
