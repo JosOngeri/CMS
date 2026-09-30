@@ -31,6 +31,12 @@ function csrfTokenMiddleware(req, res, next) {
     return next();
   }
 
+  // Skip CSRF for server-to-server webhooks — Daraja posts the M-Pesa
+  // callback with no Bearer/CSRF token; it is authenticated by signature.
+  if (req.path.startsWith('/api/mpesa/callback')) {
+    return next();
+  }
+
   // Skip CSRF for Bearer-token API clients (mobile app) — CSRF only protects
   // cookie-based sessions; browsers never attach Authorization headers cross-site.
   const authHeader = req.headers.authorization || '';

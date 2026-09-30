@@ -15,5 +15,12 @@ module.exports = {
     }
   },
   setupFilesAfterEnv: ['<rootDir>/setup/global-setup.js'],
+  moduleNameMapper: {
+    '^uuid$': '<rootDir>/../setup/uuid-mock.js',
+    '^hibp$': '<rootDir>/../setup/hibp-mock.js'
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(hibp|uuid)/)'
+  ],
   testTimeout: 10000
 };
