@@ -5,6 +5,7 @@
 
 import React, { lazy, Suspense } from 'react';
 import { Navigate } from 'react-router-dom';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // Spinner shown while a lazy chunk loads
 const Loader = () => (
@@ -132,85 +133,104 @@ const MyObligations        = lazy(() => import('../pages/obligations/MyObligatio
 // const TenantList           = lazy(() => import('../pages/platform/tenants/TenantList'));
 // const TenantDetail         = lazy(() => import('../pages/platform/tenants/TenantDetail'));
 
-const W = ({ C }) => <SafeRoute><C /></SafeRoute>;
+// Role groups — mirror backend requireRole conventions
+// (MANAGER_ROLES in helpers/departmentLeadership.js).
+const ADMIN_ROLES = ['Super Admin', 'Pastor', 'First Elder'];
+const FINANCE_ROLES = [...ADMIN_ROLES, 'Treasurer'];
+const LEADERSHIP_ROLES = [
+  ...FINANCE_ROLES,
+  'Elder', 'Church Board Member', 'Department Head',
+  'Assistant Department Head', 'Deacon', 'Deaconess',
+];
+
+// Wrap each lazy component so a single bad import doesn't crash the app.
+// `roles` gates the route: authenticated users without a listed role are
+// bounced to /dashboard/overview (ProtectedRoute handles the check).
+const W = ({ C, roles }) => (
+  <SafeRoute>
+    {roles && roles.length > 0
+      ? <ProtectedRoute requiredRoles={roles}><C /></ProtectedRoute>
+      : <C />}
+  </SafeRoute>
+);
 
 export const dashboardRoutes = [
   { index: true,                    element: <Navigate to="/dashboard/overview" replace /> },
   { path: 'overview',               element: <W C={Dashboard} /> },
 
   // People & Members
-  { path: 'members',                element: <W C={MemberDirectory} /> },
-  { path: 'users',                  element: <W C={UserManagement} /> },
+  { path: 'members',                element: <W C={MemberDirectory} roles={LEADERSHIP_ROLES} /> },
+  { path: 'users',                  element: <W C={UserManagement} roles={ADMIN_ROLES} /> },
   { path: 'profile',                element: <W C={Profile} /> },
   { path: 'profile-management',     element: <W C={ProfileManagement} /> },
 
   // Treasury & Payments
-  { path: 'treasury',               element: <W C={TreasuryDashboard} /> },
+  { path: 'treasury',               element: <W C={TreasuryDashboard} roles={FINANCE_ROLES} /> },
   { path: 'payments/my',            element: <W C={MyPayments} /> },
   { path: 'obligations',            element: <W C={MyObligations} /> },
   { path: 'payments/history',       element: <W C={PaymentHistory} /> },
-  { path: 'payments/management',    element: <W C={PaymentManagement} /> },
+  { path: 'payments/management',    element: <W C={PaymentManagement} roles={FINANCE_ROLES} /> },
   { path: 'collections',            element: <W C={MyCollections} /> },
 
   // Treasury Detailed Routes
-  { path: 'treasury/accounts',      element: <W C={ChartOfAccounts} /> },
-  { path: 'treasury/journal-entries', element: <W C={JournalEntries} /> },
-  { path: 'treasury/budgets',       element: <W C={Budgets} /> },
-  { path: 'treasury/expenses',      element: <W C={Expenses} /> },
-  { path: 'treasury/reports',       element: <W C={FinancialReports} /> },
-  { path: 'treasury/funds',         element: <W C={Funds} /> },
-  { path: 'treasury/reconciliations', element: <W C={BankReconciliations} /> },
-  { path: 'treasury/contributions', element: <W C={Contributions} /> },
-  { path: 'treasury/vendors',       element: <W C={Vendors} /> },
-  { path: 'treasury/projects',      element: <W C={Projects} /> },
-  { path: 'treasury/assets',        element: <W C={FixedAssets} /> },
-  { path: 'treasury/pledges',       element: <W C={Pledges} /> },
-  { path: 'treasury/recurring',     element: <W C={RecurringPayments} /> },
-  { path: 'treasury/receipts',      element: <W C={Receipts} /> },
-  { path: 'treasury/analytics',     element: <W C={TreasuryAnalytics} /> },
+  { path: 'treasury/accounts',      element: <W C={ChartOfAccounts} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/journal-entries', element: <W C={JournalEntries} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/budgets',       element: <W C={Budgets} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/expenses',      element: <W C={Expenses} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/reports',       element: <W C={FinancialReports} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/funds',         element: <W C={Funds} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/reconciliations', element: <W C={BankReconciliations} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/contributions', element: <W C={Contributions} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/vendors',       element: <W C={Vendors} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/projects',      element: <W C={Projects} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/assets',        element: <W C={FixedAssets} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/pledges',       element: <W C={Pledges} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/recurring',     element: <W C={RecurringPayments} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/receipts',      element: <W C={Receipts} roles={FINANCE_ROLES} /> },
+  { path: 'treasury/analytics',     element: <W C={TreasuryAnalytics} roles={FINANCE_ROLES} /> },
 
   // Departments
   { path: 'departments',            element: <W C={DepartmentsList} /> },
   { path: 'departments/overview',   element: <W C={DepartmentOverview} /> },
-  { path: 'departments/head-allocation', element: <W C={DepartmentHeadAllocation} /> },
+  { path: 'departments/head-allocation', element: <W C={DepartmentHeadAllocation} roles={ADMIN_ROLES} /> },
   { path: 'departments/handovers',    element: <W C={DepartmentHandover} /> },
-  { path: 'departments/settings',   element: <W C={DepartmentSettings} /> },
-  { path: 'departments/categories', element: <W C={CategoryManagement} /> },
+  { path: 'departments/settings',   element: <W C={DepartmentSettings} roles={ADMIN_ROLES} /> },
+  { path: 'departments/categories', element: <W C={CategoryManagement} roles={ADMIN_ROLES} /> },
   { path: 'my-departments',         element: <W C={MyDepartments} /> },
   { path: 'departments/:departmentSlug',          element: <W C={DepartmentDashboard} /> },
   { path: 'departments/:departmentSlug/activity', element: <W C={DepartmentActivity} /> },
 
   // System & Administration
-  { path: 'admin',                  element: <W C={AdminDashboard} /> },
-  { path: 'admin/database',         element: <W C={AdminDatabase} /> },
-  { path: 'admin/settings',         element: <W C={SiteSettings} /> },
-  { path: 'admin/documents',        element: <W C={Documents} /> },
-  { path: 'security',               element: <W C={Security} /> },
-  { path: 'monitoring',             element: <W C={Monitoring} /> },
-  { path: 'analytics',              element: <W C={Analytics} /> },
+  { path: 'admin',                  element: <W C={AdminDashboard} roles={ADMIN_ROLES} /> },
+  { path: 'admin/database',         element: <W C={AdminDatabase} roles={ADMIN_ROLES} /> },
+  { path: 'admin/settings',         element: <W C={SiteSettings} roles={ADMIN_ROLES} /> },
+  { path: 'admin/documents',        element: <W C={Documents} roles={ADMIN_ROLES} /> },
+  { path: 'security',               element: <W C={Security} roles={ADMIN_ROLES} /> },
+  { path: 'monitoring',             element: <W C={Monitoring} roles={ADMIN_ROLES} /> },
+  { path: 'analytics',              element: <W C={Analytics} roles={ADMIN_ROLES} /> },
 
   // Communication & Media
-  { path: 'sms',                    element: <W C={SMS} /> },
-  { path: 'sms/dashboard',          element: <W C={SMSDashboard} /> },
-  { path: 'sms/contacts',           element: <W C={SMSContacts} /> },
-  { path: 'sms/groups',             element: <W C={SMSGroups} /> },
+  { path: 'sms',                    element: <W C={SMS} roles={LEADERSHIP_ROLES} /> },
+  { path: 'sms/dashboard',          element: <W C={SMSDashboard} roles={LEADERSHIP_ROLES} /> },
+  { path: 'sms/contacts',           element: <W C={SMSContacts} roles={LEADERSHIP_ROLES} /> },
+  { path: 'sms/groups',             element: <W C={SMSGroups} roles={LEADERSHIP_ROLES} /> },
   { path: 'announcements',          element: <W C={Announcements} /> },
   { path: 'notifications',          element: <W C={NotificationDashboard} /> },
-  { path: 'telegram',              element: <W C={Telegram} /> },
+  { path: 'telegram',              element: <W C={Telegram} roles={ADMIN_ROLES} /> },
   { path: 'telegram/auth',         element: <W C={TelegramAuth} /> },
-  { path: 'telegram/church',       element: <W C={TelegramChurchSettings} /> },
+  { path: 'telegram/church',       element: <W C={TelegramChurchSettings} roles={ADMIN_ROLES} /> },
   { path: 'gallery',                element: <W C={GalleryManagement} /> },
 
   // Other Modules
   { path: 'events',                 element: <W C={Events} /> },
-  { path: 'approvals',              element: <W C={ApprovalInbox} /> },
-  { path: 'reports',               element: <W C={Reports} /> },
-  { path: 'content',                element: <W C={Content} /> },
-  { path: 'mobile',                 element: <W C={Mobile} /> },
-  { path: 'seo',                   element: <W C={SEO} /> },
-  { path: 'accessibility',          element: <W C={Accessibility} /> },
-  { path: 'testing',               element: <W C={Testing} /> },
-  { path: 'documentation',          element: <W C={Documentation} /> },
+  { path: 'approvals',              element: <W C={ApprovalInbox} roles={LEADERSHIP_ROLES} /> },
+  { path: 'reports',               element: <W C={Reports} roles={FINANCE_ROLES} /> },
+  { path: 'content',                element: <W C={Content} roles={LEADERSHIP_ROLES} /> },
+  { path: 'mobile',                 element: <W C={Mobile} roles={ADMIN_ROLES} /> },
+  { path: 'seo',                   element: <W C={SEO} roles={ADMIN_ROLES} /> },
+  { path: 'accessibility',          element: <W C={Accessibility} roles={ADMIN_ROLES} /> },
+  { path: 'testing',               element: <W C={Testing} roles={ADMIN_ROLES} /> },
+  { path: 'documentation',          element: <W C={Documentation} roles={ADMIN_ROLES} /> },
 
   // Platform Admin (SaaS Owner Dashboard)
   // { path: 'platform',               element: <W C={PlatformDashboard} /> },
