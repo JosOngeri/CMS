@@ -40,7 +40,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const accounts = await TreasuryRepository.getAccounts(churchId);
-      res.json({ success: true, data: accounts });
+      res.json({ success: true, accounts });
     } catch (error) {
       this.logger.error('getAccounts', error);
       res.status(500).json({ success: false, error: 'Failed to fetch accounts' });
@@ -111,7 +111,7 @@ class TreasuryController extends BaseController {
         churchId
       );
 
-      res.json({ success: true, data: transactions });
+      res.json({ success: true, transactions });
     } catch (error) {
       this.logger.error('getTransactions', error);
       res.status(500).json({ success: false, error: 'Failed to fetch transactions' });
@@ -236,7 +236,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const categories = await TreasuryRepository.getIncomeCategories(churchId);
-      res.json({ success: true, data: categories });
+      res.json({ success: true, categories });
     } catch (error) {
       this.logger.error('getIncomeCategories', error);
       res.status(500).json({ success: false, error: 'Failed to fetch income categories' });
@@ -253,7 +253,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const categories = await TreasuryRepository.getExpenseCategories(churchId);
-      res.json({ success: true, data: categories });
+      res.json({ success: true, categories });
     } catch (error) {
       this.logger.error('getExpenseCategories', error);
       res.status(500).json({ success: false, error: 'Failed to fetch expense categories' });
@@ -273,7 +273,7 @@ class TreasuryController extends BaseController {
     try {
       const budgets = await TreasuryRepository.getBudgets(fiscalYear, status);
 
-      res.json({ success: true, data: budgets });
+      res.json({ success: true, budgets });
     } catch (error) {
       this.logger.error('getBudgets', error);
       res.status(500).json({ success: false, error: 'Failed to fetch budgets' });
@@ -334,7 +334,7 @@ class TreasuryController extends BaseController {
 
       const budgetItems = await TreasuryRepository.getBudgetItems(budgetId);
 
-      res.json({ success: true, data: budgetItems });
+      res.json({ success: true, budgetItems });
     } catch (error) {
       this.logger.error('getBudgetItems', error);
       res.status(500).json({ success: false, error: 'Failed to fetch budget items' });
@@ -483,7 +483,7 @@ class TreasuryController extends BaseController {
     try {
       const { date_from, date_to } = req.query;
       const analytics = await TreasuryRepository.getAnalytics(date_from, date_to);
-      res.json({ success: true, data: analytics });
+      res.json({ success: true, analytics });
     } catch (error) {
       this.logger.error('getAnalytics', error);
       res.status(500).json({ success: false, error: 'Failed to fetch analytics' });
@@ -1078,7 +1078,7 @@ class TreasuryController extends BaseController {
         balance,
         currency
       });
-      res.json({ success: true, data: account });
+      res.json({ success: true, account });
     } catch (error) {
       this.logger.error('updateAccount', error);
       res.status(500).json({ success: false, error: 'Failed to update account' });
@@ -1124,7 +1124,7 @@ class TreasuryController extends BaseController {
         status,
         transactionDate
       });
-      res.json({ success: true, data: transaction });
+      res.json({ success: true, transaction });
     } catch (error) {
       this.logger.error('updateTransaction', error);
       res.status(500).json({ success: false, error: 'Failed to update transaction' });
@@ -1171,7 +1171,7 @@ class TreasuryController extends BaseController {
         actualAmount,
         status
       });
-      res.json({ success: true, data: budget });
+      res.json({ success: true, budget });
     } catch (error) {
       this.logger.error('updateBudget', error);
       res.status(500).json({ success: false, error: 'Failed to update budget' });
@@ -1216,7 +1216,7 @@ class TreasuryController extends BaseController {
         actualAmount,
         description
       });
-      res.json({ success: true, data: item });
+      res.json({ success: true, item });
     } catch (error) {
       this.logger.error('updateBudgetItem', error);
       res.status(500).json({ success: false, error: 'Failed to update budget item' });
@@ -1252,7 +1252,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const funds = await TreasuryRepository.getFunds(churchId);
-      res.json({ success: true, data: funds });
+      res.json({ success: true, funds });
     } catch (error) {
       this.logger.error('getFunds', error);
       res.status(500).json({ success: false, error: 'Failed to fetch funds' });
@@ -1310,7 +1310,7 @@ class TreasuryController extends BaseController {
         fundType,
         isActive
       });
-      res.json({ success: true, data: fund });
+      res.json({ success: true, fund });
     } catch (error) {
       this.logger.error('updateFund', error);
       res.status(500).json({ success: false, error: 'Failed to update fund' });
@@ -1398,7 +1398,7 @@ class TreasuryController extends BaseController {
         endDate,
         status
       });
-      res.json({ success: true, data: campaign });
+      res.json({ success: true, campaign });
     } catch (error) {
       this.logger.error('updateCampaign', error);
       res.status(500).json({ success: false, error: 'Failed to update campaign' });
@@ -1433,7 +1433,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const assets = await TreasuryRepository.getFixedAssets(churchId);
-      res.json({ success: true, data: assets });
+      res.json({ success: true, assets });
     } catch (error) {
       this.logger.error('getFixedAssets', error);
       res.status(500).json({ success: false, error: 'Failed to fetch fixed assets' });
@@ -1498,7 +1498,7 @@ class TreasuryController extends BaseController {
         currentValue,
         status
       });
-      res.json({ success: true, data: asset });
+      res.json({ success: true, asset });
     } catch (error) {
       this.logger.error('updateFixedAsset', error);
       res.status(500).json({ success: false, error: 'Failed to update fixed asset' });
@@ -1534,7 +1534,7 @@ class TreasuryController extends BaseController {
     try {
       const churchId = req.user.church_id;
       const reconciliations = await TreasuryRepository.getReconciliations(churchId);
-      res.json({ success: true, data: reconciliations });
+      res.json({ success: true, reconciliations });
     } catch (error) {
       this.logger.error('getReconciliations', error);
       res.status(500).json({ success: false, error: 'Failed to fetch reconciliations' });
@@ -1595,7 +1595,7 @@ class TreasuryController extends BaseController {
         notes,
         status
       });
-      res.json({ success: true, data: reconciliation });
+      res.json({ success: true, reconciliation });
     } catch (error) {
       this.logger.error('updateReconciliation', error);
       res.status(500).json({ success: false, error: 'Failed to update reconciliation' });

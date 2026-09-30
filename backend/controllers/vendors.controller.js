@@ -21,7 +21,7 @@ class VendorsController extends BaseController {
 
       const vendors = await VendorsRepository.getAllVendors({ is_active, search, church_id: req.user.church_id });
 
-      res.json({ success: true, data: vendors });
+      res.json({ success: true, vendors });
     } catch (error) {
       this.logger.error('getAllVendors', error);
       res.status(500).json({ success: false, error: 'Failed to fetch vendors' });
@@ -41,7 +41,7 @@ class VendorsController extends BaseController {
         return res.status(404).json({ success: false, error: 'Vendor not found' });
       }
 
-      res.json({ success: true, data: vendor });
+      res.json({ success: true, vendor });
     } catch (error) {
       this.logger.error('getVendorById', error);
       res.status(500).json({ success: false, error: 'Failed to fetch vendor' });
@@ -76,7 +76,7 @@ class VendorsController extends BaseController {
         church_id: req.user.church_id
       });
 
-      res.json({ success: true, data: vendor });
+      res.json({ success: true, vendor });
     } catch (error) {
       this.logger.error('createVendor', error);
       res.status(500).json({ success: false, error: 'Failed to create vendor' });
@@ -103,7 +103,7 @@ class VendorsController extends BaseController {
         return res.status(404).json({ success: false, error: 'Vendor not found' });
       }
 
-      res.json({ success: true, data: vendor });
+      res.json({ success: true, vendor });
     } catch (error) {
       this.logger.error('updateVendor', error);
       res.status(500).json({ success: false, error: 'Failed to update vendor' });

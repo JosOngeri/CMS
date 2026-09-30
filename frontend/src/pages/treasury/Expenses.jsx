@@ -113,7 +113,7 @@ const Expenses = () => {
     try {
       const response = await api.get('/departments')
       if (response.data) {
-        setDepartments(response.data.departments || [])
+        setDepartments(response.data.departments || response.data.data || [])
       }
     } catch (error) {
       console.error('Failed to fetch departments:', error)

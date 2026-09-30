@@ -26,7 +26,7 @@ class ProjectsController extends BaseController {
 
       const projects = await ProjectsRepository.getAllWithDetails(filters);
 
-      return ResponseHandler.success(res, { projects });
+      return res.status(200).json({ success: true, projects  });
     } catch (error) {
       this.logger.error('getAllProjects', error);
       return ResponseHandler.error(res, 'Failed to fetch projects');
@@ -50,7 +50,7 @@ class ProjectsController extends BaseController {
       // Use ProjectService for calculated values
       const projectSummary = ProjectService.getProjectSummary(project, milestones, contributions);
 
-      return ResponseHandler.success(res, { project: projectSummary });
+      return res.status(200).json({ success: true, project: projectSummary  });
     } catch (error) {
       this.logger.error('getProjectById', error);
       return ResponseHandler.error(res, 'Failed to fetch project');
@@ -100,7 +100,7 @@ class ProjectsController extends BaseController {
         church_id: req.user.church_id
       });
 
-      return ResponseHandler.success(res, { project }, 'Project created successfully', 201);
+      return res.status(201).json({ success: true, project  });
     } catch (error) {
       this.logger.error('createProject', error);
       return ResponseHandler.error(res, 'Failed to create project');
@@ -156,7 +156,7 @@ class ProjectsController extends BaseController {
         return ResponseHandler.notFound(res, 'Project not found');
       }
 
-      return ResponseHandler.success(res, { project }, 'Project updated successfully');
+      return res.status(200).json({ success: true, project  });
     } catch (error) {
       this.logger.error('updateProject', error);
       return ResponseHandler.error(res, 'Failed to update project');
@@ -188,10 +188,10 @@ class ProjectsController extends BaseController {
       // Add progress calculation using ProjectService
       const progress = ProjectService.calculateProgress(milestones);
       
-      return ResponseHandler.success(res, { 
+      return res.status(200).json({ success: true, 
         milestones,
         progress
-      });
+       });
     } catch (error) {
       this.logger.error('getProjectMilestones', error);
       return ResponseHandler.error(res, 'Failed to fetch milestones');
@@ -215,7 +215,7 @@ class ProjectsController extends BaseController {
         title, description, due_date, status: status || 'pending'
       });
 
-      return ResponseHandler.success(res, { milestone }, 'Milestone created successfully', 201);
+      return res.status(201).json({ success: true, milestone  });
     } catch (error) {
       this.logger.error('createMilestone', error);
       return ResponseHandler.error(res, 'Failed to create milestone');
@@ -247,7 +247,7 @@ class ProjectsController extends BaseController {
         title, description, due_date, status, completed_at
       });
 
-      return ResponseHandler.success(res, { milestone }, 'Milestone updated successfully');
+      return res.status(200).json({ success: true, milestone  });
     } catch (error) {
       this.logger.error('updateMilestone', error);
       return ResponseHandler.error(res, 'Failed to update milestone');
@@ -271,7 +271,7 @@ class ProjectsController extends BaseController {
       const { id } = req.params;
       const contributions = await ProjectsRepository.getProjectContributions(id);
 
-      return ResponseHandler.success(res, { contributions });
+      return res.status(200).json({ success: true, contributions  });
     } catch (error) {
       this.logger.error('getProjectContributions', error);
       return ResponseHandler.error(res, 'Failed to fetch contributions');
@@ -286,7 +286,7 @@ class ProjectsController extends BaseController {
         amount, contributor_id, date, notes
       });
 
-      return ResponseHandler.success(res, { contribution }, 'Contribution added successfully', 201);
+      return res.status(201).json({ success: true, contribution  });
     } catch (error) {
       this.logger.error('addContribution', error);
       return ResponseHandler.error(res, 'Failed to add contribution');
@@ -322,7 +322,7 @@ class ProjectsController extends BaseController {
         )
       };
 
-      return ResponseHandler.success(res, { analytics });
+      return res.status(200).json({ success: true, analytics  });
     } catch (error) {
       this.logger.error('getProjectAnalytics', error);
       return ResponseHandler.error(res, 'Failed to fetch analytics');
@@ -345,7 +345,7 @@ class ProjectsController extends BaseController {
 
       const project = await ProjectsRepository.updateProjectStatus(id, status);
 
-      return ResponseHandler.success(res, { project }, 'Project status updated successfully');
+      return res.status(200).json({ success: true, project  });
     } catch (error) {
       this.logger.error('updateProjectStatus', error);
       return ResponseHandler.error(res, 'Failed to update status');

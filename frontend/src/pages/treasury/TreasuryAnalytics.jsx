@@ -37,7 +37,7 @@ const TreasuryAnalytics = () => {
         params: { date_from: dateFrom, date_to: dateTo }
       })
       if (response.data) {
-        setAnalytics(response.data)
+        setAnalytics(response.data.analytics || response.data.data || response.data)
       }
     } catch (error) {
       console.error('Failed to fetch analytics:', error)

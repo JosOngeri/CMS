@@ -25,7 +25,7 @@ class RecurringPaymentsController extends BaseController {
 
       const payments = await RecurringPaymentsRepository.getAllWithDetails(filters);
 
-      return ResponseHandler.success(res, { payments });
+      return res.status(200).json({ success: true, payments  });
     } catch (error) {
       this.logger.error('getAllRecurringPayments', error);
       return ResponseHandler.error(res, 'Failed to fetch recurring payments');
@@ -42,7 +42,7 @@ class RecurringPaymentsController extends BaseController {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
       }
 
-      return ResponseHandler.success(res, { payment });
+      return res.status(200).json({ success: true, payment  });
     } catch (error) {
       this.logger.error('getRecurringPaymentById', error);
       return ResponseHandler.error(res, 'Failed to fetch recurring payment');
@@ -87,7 +87,7 @@ class RecurringPaymentsController extends BaseController {
         church_id: req.user.church_id
       });
 
-      return ResponseHandler.success(res, { payment }, 'Recurring payment created successfully', 201);
+      return res.status(201).json({ success: true, payment  });
     } catch (error) {
       this.logger.error('createRecurringPayment', error);
       return ResponseHandler.error(res, 'Failed to create recurring payment');
@@ -138,7 +138,7 @@ class RecurringPaymentsController extends BaseController {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
       }
 
-      return ResponseHandler.success(res, { payment }, 'Recurring payment updated successfully');
+      return res.status(200).json({ success: true, payment  });
     } catch (error) {
       this.logger.error('updateRecurringPayment', error);
       return ResponseHandler.error(res, 'Failed to update recurring payment');
@@ -172,7 +172,7 @@ class RecurringPaymentsController extends BaseController {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
       }
 
-      return ResponseHandler.success(res, { payment }, 'Recurring payment paused successfully');
+      return res.status(200).json({ success: true, payment  });
     } catch (error) {
       this.logger.error('pauseRecurringPayment', error);
       return ResponseHandler.error(res, 'Failed to pause recurring payment');
@@ -189,7 +189,7 @@ class RecurringPaymentsController extends BaseController {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
       }
 
-      return ResponseHandler.success(res, { payment }, 'Recurring payment resumed successfully');
+      return res.status(200).json({ success: true, payment  });
     } catch (error) {
       this.logger.error('resumeRecurringPayment', error);
       return ResponseHandler.error(res, 'Failed to resume recurring payment');
@@ -221,21 +221,21 @@ class RecurringPaymentsController extends BaseController {
         await RecurringPaymentsRepository.updateStatus(id, 'cancelled');
         await RecurringPaymentsRepository.updateRetryCount(id, failureAction.retryCount);
         
-        return ResponseHandler.success(res, { 
+        return res.status(200).json({ success: true, 
           action: 'cancelled',
           reason: failureAction.reason,
           retryCount: failureAction.retryCount
-        }, 'Recurring payment cancelled due to payment failures');
+         });
       } else {
         await RecurringPaymentsRepository.updateNextRetryDate(id, failureAction.nextRetryDate);
         await RecurringPaymentsRepository.updateRetryCount(id, failureAction.retryCount);
         
-        return ResponseHandler.success(res, { 
+        return res.status(200).json({ success: true, 
           action: 'retry_scheduled',
           nextRetryDate: failureAction.nextRetryDate,
           retryCount: failureAction.retryCount,
           reason: failureAction.reason
-        }, 'Payment retry scheduled');
+         });
       }
     } catch (error) {
       this.logger.error('handlePaymentFailure', error);
