@@ -1,4 +1,4 @@
-const CACHE_NAME = 'msabato-v1';
+const CACHE_NAME = 'msabato-v2';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,8 +7,13 @@ const urlsToCache = [
   '/logo.png'
 ];
 
-// Never cache auth or other sensitive endpoints
-const NEVER_CACHE = ['/api/auth/', '/api/settings/bulk', '/api/users'];
+// Never cache auth, financial, or member-data endpoints
+const NEVER_CACHE = [
+  '/api/auth/', '/api/settings/bulk', '/api/users',
+  '/api/payments', '/api/mpesa', '/api/treasury', '/api/members',
+  '/api/collections', '/api/reconciliations', '/api/obligations',
+  '/api/platform', '/api/audit-logs'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

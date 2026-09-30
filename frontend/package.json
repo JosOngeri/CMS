@@ -43,7 +43,6 @@
     "@testing-library/react": "^16.1.0",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.20",
-    "cypress": "^15.17.0",
     "eslint": "^9.17.0",
     "eslint-plugin-react": "^7.37.3",
     "eslint-plugin-react-hooks": "^5.1.0",
@@ -57,7 +56,6 @@
     "vite-bundle-visualizer": "^1.2.1",
     "vitest": "^4.1.9"
   },
-  "main": "cypress.config.js",
   "keywords": [],
   "author": "",
   "license": "ISC",

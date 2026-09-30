@@ -62,7 +62,7 @@ Delete in batches; for each file grep its name once repo-wide and confirm only d
 | D2 | `invalidateUserCache()` at every role/permission mutation (leadership, handover, admin role routes) | security §7 | [ ] |
 | D3 | Shared pagination — adopt rescued `middleware/pagination.js`; apply to members, users, departments, payments, notifications, audit-logs, sms-logs, gallery | security §10 | [ ] |
 | D4 | Index audit — composite `(church_id, is_active)` + `(church_id, created_at)` on members, users, department_members, notifications, payments, events, sms_logs | security §12 | [ ] |
-| D5 | Redis-backed identity cache + rate-limit store (deps already installed) — only when >1 backend process | security §11 | [ ] |
+| D5 | Redis-backed identity cache + rate-limit store — **DEFERRED (verified)**: PM2 `ecosystem.config.cjs` runs `instances: 1` fork mode, so in-memory is correct. Rate limiter already auto-switches to RedisStore when `REDIS_URL` is set. **Revisit trigger**: changing `instances` >1 or `exec_mode: 'cluster'` — then `identityCache` in `middleware/auth.js` must move to `redisCache` too | security §11 | [x] deferred |
 | D6 | Frontend deps: lazy `xlsx` if sms components kept (else gone with C1); remove `react-toastify` (2 usages → ToastContext); remove `cypress` devDep; `vendor-charts` manualChunk; versioned `sw.js` cache | lean §12-16 | [ ] |
 | D7 | IDOR regression tests — church A cannot read/write church B (departments, members, payments) | security §15 | [ ] |
 | D8 | Regenerate `GRANULAR_AUDIT_CLUSTERS.md` for KMainCMS + wire `npm run security-audit` into CI/pre-push | security §14-15 | [ ] |
