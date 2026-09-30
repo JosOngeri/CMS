@@ -48,6 +48,21 @@ function readFile(filePath) {
   }
 }
 
+// List git-tracked files; empty array when not inside a git checkout
+// (e.g. a deployed artifact bundle), in which case callers should fall
+// back to filesystem checks.
+function listTrackedFiles(repoRoot) {
+  try {
+    const out = require('child_process').execSync('git ls-files', {
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString();
+    return out.split('\n').map((l) => l.trim()).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 function checkForSecrets(content) {
   const secretPatterns = [
     /password\s*=\s*['"][^'"]+['"]/gi,
@@ -97,21 +112,31 @@ async function runSecurityAudit() {
   console.log('🔒 Starting Security Audit for Msabato CMS Backend\n');
   console.log('='.repeat(60));
 
-  const backendDir = path.join(__dirname);
+  // Script lives in backend/scripts — audit targets the backend root,
+  // and gitignore rules may live at either level.
+  const backendDir = path.join(__dirname, '..');
+  const repoRoot = path.join(backendDir, '..');
 
-  // Check 1: .env file should not be committed
-  console.log('\n🔍 Checking for .env file in repository...');
-  const envFile = path.join(backendDir, '.env');
-  if (checkFileExists(envFile)) {
-    addCheck('.env file not in repository', 'FAIL', '.env file found - should be in .gitignore', 'high');
+  // Check 1: .env file must not be git-tracked (a local .env is expected
+  // in dev — the fail condition is committing it)
+  console.log('\n🔍 Checking for tracked .env files...');
+  const trackedEnv = listTrackedFiles(repoRoot).filter((f) => {
+    const base = f.replace(/\\/g, '/').split('/').pop();
+    // .env and .env.<environment> are secrets; .env.example/.sample/.template are docs
+    return /^\.env($|\.(?!example|sample|template|dist)[^.]+$)/.test(base);
+  });
+  if (trackedEnv.length > 0) {
+    addCheck('.env file not in repository', 'FAIL',
+      `Tracked env file(s): ${trackedEnv.join(', ')}`, 'high');
   } else {
-    addCheck('.env file not in repository', 'PASS', '.env file not found in repository', 'high');
+    addCheck('.env file not in repository', 'PASS', 'No .env files are git-tracked', 'high');
   }
 
   // Check 2: .gitignore exists and includes sensitive files
   console.log('\n🔍 Checking .gitignore configuration...');
-  const gitignoreFile = path.join(backendDir, '.gitignore');
-  const gitignoreContent = readFile(gitignoreFile);
+  const gitignoreContent =
+    readFile(path.join(backendDir, '.gitignore')) ||
+    readFile(path.join(repoRoot, '.gitignore'));
   
   if (gitignoreContent) {
     const requiredIgnores = ['.env', '*.key', '*.pem', 'credentials', 'secrets'];

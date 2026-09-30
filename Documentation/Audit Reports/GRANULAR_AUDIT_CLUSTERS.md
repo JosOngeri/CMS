@@ -1,4 +1,9 @@
-﻿# Msabato CMS Master Audit Map (755 Files)
+> **Regenerated 2026-09-30** — file references validated against the tracked
+> repository after the Phase C dead-code purge. Entries marked
+> 📦 ARCHIVED refer to files moved to `../_archive/dead-code/` (see its
+> MANIFEST.md); their audit findings no longer apply to the live tree.
+
+# Msabato CMS Master Audit Map (755 Files)
 
 ### Cluster 01: Core Backend Infrastructure ✅ FIXED
 **Prompt:** Audit for lean architecture, configuration integrity, and operational reliability. Focus on: (1) Eliminating redundant code patterns like duplicate static serving logic; (2) Ensuring proper error handling and process exit mechanisms to prevent zombie processes; (3) Implementing proper logging with PII redaction; (4) Validating environment variable fallback support; (5) Checking for aggressive timeout configurations; (6) Ensuring database connection resilience with appropriate timeouts and query logging; (7) Removing any global.io usage in favor of app.set patterns; (8) Verifying that all configuration files use standardized logging helpers rather than console.log.
@@ -192,7 +197,7 @@ Cluster 01 (Core Backend Infrastructure) focused on ensuring lean architecture, 
 - `.\backend\controllers\socialAuth.controller.js` 
   - Gaps: Business logic for user creation, account linking, and role assignment in controller.
   - Remedy: Move social registration and linking flow to `IdentityService` or `SocialAuthRepository`.
-- `.\backend\controllers\stub.controller.js` 
+- `.\backend\controllers\stub.controller.js` 📦 ARCHIVED 
   - Gaps: File missing/not found in directory.
   - Remedy: Remove reference from audit map as it appears to have been cleaned up.
 - `.\backend\controllers\sync.controller.js` 
@@ -1018,7 +1023,7 @@ Cluster 02 (Backend API - General Controllers) focused on lean architecture, con
 - `.\frontend\src\components\mobile\MobileApp.jsx`
   - Gaps: All tabs show "coming soon" placeholder. Component is essentially a stub/placeholder with no actual functionality implemented.
   - Remedy: Implement actual functionality for mobile app tabs or remove placeholder component.
-- `.\frontend\src\components\monitoring\MonitoringDashboard.jsx`
+- `.\frontend\src\components\monitoring\MonitoringDashboard.jsx` 📦 ARCHIVED
   - Gaps: Uses console.error instead of centralized logging. No retry mechanism for failed API calls. Export button non-functional.
   - Remedy: Replace console.error with centralized logging. Implement retry mechanism for failed API calls. Implement export functionality or remove placeholder button.
 - `.\frontend\src\components\notifications\NotificationCenter.jsx`

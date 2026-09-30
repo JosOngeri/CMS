@@ -98,3 +98,18 @@ jobs:
       with:
         name: backend-test-results
         path: backend/coverage/
+
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    # Static analysis only — no DB or node_modules required
+    - name: Run security audit
+      working-directory: ./backend
+      run: node scripts/security_audit.js
