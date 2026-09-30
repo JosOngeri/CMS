@@ -1,5 +1,6 @@
 const axios = require('axios');
 const crypto = require('crypto');
+const { pool } = require('../config/database');
 const { createLogger } = require('../helpers/controllerLogger');
 const smsService = require('./hybridSMS');
 const emailService = require('../utils/emailService');
@@ -60,7 +61,7 @@ class KopoKopoService {
       amount: paymentData.amount,
       account_reference: paymentData.reference || 'SDA_CHURCH',
       transaction_desc: paymentData.description || 'Church Payment',
-      callback_url: `${process.env.BACKEND_URL}/api/payments/kopokopo/callback`,
+      callback_url: `${process.env.BACKEND_URL}/api/payment/kopokopo/webhook`,
     };
 
     try {
@@ -87,7 +88,7 @@ class KopoKopoService {
       currency: 'KES',
       description: paymentData.description || 'Church Payment',
       redirect_url: paymentData.redirectUrl || `${process.env.FRONTEND_URL}/payment/success`,
-      callback_url: `${process.env.BACKEND_URL}/api/payments/kopokopo/callback`,
+      callback_url: `${process.env.BACKEND_URL}/api/payment/kopokopo/webhook`,
       metadata: {
         memberId: paymentData.memberId,
         paymentCategory: paymentData.category,
@@ -192,44 +193,30 @@ class KopoKopoService {
   // Handle successful payment
   async handleSuccessfulPayment(transactionData) {
     try {
-      // Update payment in database
-      const payment = await Payment.findOneAndUpdate(
-        { 
-          transactionId: transactionData.id,
-          status: 'pending' 
-        },
-        {
-          status: 'completed',
-          completedAt: new Date(),
-          mpesaReceipt: transactionData.receipt_number,
-          phoneNumber: transactionData.phone_number,
-          amount: transactionData.amount,
-        },
-        { new: true }
+      // Mark the pending payment complete. Match on the KopoKopo transaction id
+      // we stored at STK-initiation time; fall back to the SDA-{id} reference.
+      const referenceId = String(transactionData.account_reference || '').replace(/^SDA-/i, '') || null;
+      const result = await pool.query(
+        `UPDATE payments
+         SET status = 'completed',
+             mpesa_receipt = COALESCE($1, mpesa_receipt),
+             mpesa_receipt_number = COALESCE($1, mpesa_receipt_number),
+             completed_at = CURRENT_TIMESTAMP,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE status = 'pending'
+           AND (transaction_id = $2 OR id::text = $3)
+         RETURNING *`,
+        [transactionData.receipt_number || null, transactionData.id, referenceId]
       );
 
+      const payment = result.rows[0];
       if (payment) {
-        // Update member's payment history
-        await Member.findByIdAndUpdate(
-          payment.memberId,
-          {
-            $push: {
-              paymentHistory: {
-                paymentId: payment._id,
-                amount: payment.amount,
-                category: payment.category,
-                date: payment.completedAt,
-                method: 'M-Pesa',
-              },
-            },
-            $inc: {
-              totalContributions: payment.amount,
-            },
-          }
-        );
-
-        // Send confirmation notification
         await this.sendPaymentConfirmation(payment);
+      } else {
+        logger.warn('handleSuccessfulPayment', 'No pending payment matched webhook', {
+          transactionId: transactionData.id,
+          reference: transactionData.account_reference,
+        });
       }
 
       return { processed: true, payment };
@@ -242,14 +229,14 @@ class KopoKopoService {
   // Handle failed payment
   async handleFailedPayment(transactionData) {
     try {
-      // Update payment status to failed
-      await Payment.findOneAndUpdate(
-        { transactionId: transactionData.id },
-        {
-          status: 'failed',
-          failureReason: transactionData.failure_reason,
-          failedAt: new Date(),
-        }
+      const referenceId = String(transactionData.account_reference || '').replace(/^SDA-/i, '') || null;
+      await pool.query(
+        `UPDATE payments
+         SET status = 'failed',
+             notes = COALESCE(notes, '') || ' [FAILED: ' || $1 || ']',
+             updated_at = CURRENT_TIMESTAMP
+         WHERE transaction_id = $2 OR id::text = $3`,
+        [transactionData.failure_reason || 'unknown', transactionData.id, referenceId]
       );
 
       return { processed: true };
@@ -262,33 +249,55 @@ class KopoKopoService {
   // Send payment confirmation
   async sendPaymentConfirmation(payment) {
     try {
+      const phoneNumber = payment.phone_number || payment.phoneNumber;
+      const receipt = payment.mpesa_receipt || payment.mpesa_receipt_number || payment.mpesaReceipt;
+      const amount = payment.amount;
+
       // Send SMS confirmation (non-blocking)
       try {
-        await smsService.sendSMS({
-          recipients: [payment.phoneNumber],
-          message: `Thank you for your payment of KES ${payment.amount} to SDA Church Kiserian Main. Receipt: ${payment.mpesaReceipt}`,
-          churchId: payment.church_id || payment.churchId
-        });
+        if (phoneNumber) {
+          await smsService.sendSMS({
+            recipients: [phoneNumber],
+            message: `Thank you for your payment of KES ${amount} to SDA Church Kiserian Main. Receipt: ${receipt || '-'}`,
+            churchId: payment.church_id || payment.churchId
+          });
+        }
       } catch (smsError) {
         logger.warn('sendPaymentConfirmation', 'SMS confirmation skipped:', smsError.message);
       }
 
-      // Send email confirmation (non-blocking)
+      // Send email confirmation (non-blocking) — needs the member's email
       try {
-        await emailService.sendPaymentReceipt(payment);
+        const userIdForEmail = payment.user_id || payment.member_id || payment.memberId;
+        if (userIdForEmail) {
+          const userResult = await pool.query(
+            'SELECT email, first_name, last_name FROM users WHERE id = $1',
+            [userIdForEmail]
+          );
+          const member = userResult.rows[0];
+          if (member?.email) {
+            await emailService.sendPaymentReceipt({
+              ...payment,
+              email: member.email,
+              memberName: `${member.first_name || ''} ${member.last_name || ''}`.trim(),
+              mpesaReceipt: receipt,
+              amount
+            });
+          }
+        }
       } catch (emailError) {
         logger.warn('sendPaymentConfirmation', 'Email receipt skipped:', emailError.message);
       }
 
       // Send in-app notification (if member has an account)
-      const userId = payment.member_id || payment.memberId;
+      const userId = payment.user_id || payment.member_id || payment.memberId;
       if (userId) {
         try {
           await notificationService.sendRealTimeNotification(userId, {
             type: 'payment',
             title: 'Payment Received',
-            message: `Your payment of KES ${payment.amount} has been received successfully.`,
-            data: { receipt: payment.mpesaReceipt, amount: payment.amount }
+            message: `Your payment of KES ${amount} has been received successfully.`,
+            data: { receipt, amount }
           });
         } catch (pushError) {
           logger.warn('sendPaymentConfirmation', 'Push notification skipped:', pushError.message);

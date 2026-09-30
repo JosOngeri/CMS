@@ -1,5 +1,6 @@
 const BaseController = require('./BaseController');
 const PaymentsRepository = require('../repositories/PaymentsRepository');
+const kopokopoService = require('../services/kopokopo');
 const { createLogger } = require('../helpers/controllerLogger');
 const auditService = require('../services/auditService');
 
@@ -97,11 +98,15 @@ class PaymentsController extends BaseController {
           return res.status(400).json({ success: false, error: 'Phone number is required' });
         }
 
-        // Validate phone number format (E.164: +254XXXXXXXXX)
-        const phoneRegex = /^\+[1-9]\d{1,14}$/;
-        if (!phoneRegex.test(req.body.phone_number)) {
-          return res.status(400).json({ success: false, error: 'Phone number must be in E.164 format (e.g., +254712345678)' });
+        // Normalize Kenyan phone input: accepts 2547..., +2547..., 07..., 7...,
+        // with spaces/dashes — converts to E.164 (+2547XXXXXXXX)
+        const digits = String(req.body.phone_number).replace(/[^\d]/g, '');
+        let normalized = digits;
+        if (/^0?7\d{8}$/.test(digits)) normalized = `254${digits.slice(-9)}`;
+        if (!/^2547\d{8}$/.test(normalized)) {
+          return res.status(400).json({ success: false, error: 'Enter a valid Safaricom number (e.g., 0712 345 678 or 254712345678)' });
         }
+        const e164Phone = `+${normalized}`;
 
         if (!Array.isArray(req.body.payment_items) || req.body.payment_items.length === 0) {
           return res.status(400).json({ success: false, error: 'Payment items must be a non-empty array' });
@@ -119,13 +124,37 @@ class PaymentsController extends BaseController {
           userId,
           churchId,
           churchSlug,
-          phoneNumber: req.body.phone_number,
+          phoneNumber: e164Phone,
           amount: totalAmount,
           category,
           notes: req.body.notes || null,
           paymentType: 'mpesa',
           currency: 'KES'
         });
+
+        // Actually send the M-Pesa STK push — creating the record alone
+        // would leave the member waiting for a prompt that never comes.
+        const stkPhone = normalized;
+        try {
+          const stkResult = await kopokopoService.initiateSTKPush({
+            phoneNumber: stkPhone,
+            amount: totalAmount,
+            reference: `SDA-${payment.id}`,
+            description: `${category} payment`,
+          });
+
+          if (!stkResult.success) {
+            await PaymentsRepository.updatePaymentStatus(payment.id, 'failed');
+            return res.status(400).json({ success: false, error: stkResult.error || 'M-Pesa prompt failed to send' });
+          }
+
+          await PaymentsRepository.updatePaymentStatus(payment.id, 'pending', stkResult.transactionId || null);
+          payment.transaction_id = stkResult.transactionId || null;
+        } catch (stkError) {
+          this.logger.error('createPayment.stk', stkError);
+          await PaymentsRepository.updatePaymentStatus(payment.id, 'failed').catch(() => {});
+          return res.status(502).json({ success: false, error: 'Could not reach M-Pesa. Please try again.' });
+        }
       } else {
         const { paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, notes } = req.body;
 

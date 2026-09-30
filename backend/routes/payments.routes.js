@@ -19,16 +19,26 @@ router.get('/categories', paymentsController.getPaymentCategories);
 router.get('/my-payments', paymentsController.getMyPayments);
 
 // Payments – root aliases used by frontend (POST /api/payments)
+// Members may initiate their own M-Pesa giving (phone_number + payment_items);
+// all other payment creation stays restricted to finance roles.
+const memberInitiationOrFinance = (req, res, next) => {
+  const isMemberInitiation = req.body.phone_number && Array.isArray(req.body.payment_items);
+  if (isMemberInitiation) return next();
+  return requireRole(['Super Admin', 'Pastor', 'Treasurer'])(req, res, next);
+};
+
 router.get('/', paymentsController.getPayments);
-router.post('/', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.createPayment);
+router.post('/', memberInitiationOrFinance, paymentsController.createPayment);
 
 // Payments – legacy sub-paths
 router.get('/payments', paymentsController.getPayments);
-router.post('/payments', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.createPayment);
+router.post('/payments', memberInitiationOrFinance, paymentsController.createPayment);
 router.put('/payments/:id/status', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePaymentStatus);
 router.put('/status/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePaymentStatus); // Alias for frontend compatibility
 router.put('/payments/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePayment);
+router.put('/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePayment); // Flat alias
 router.delete('/payments/:id', requireRole(['Super Admin', 'Pastor']), paymentsController.deletePayment);
+router.delete('/:id', requireRole(['Super Admin', 'Pastor']), paymentsController.deletePayment); // Flat alias
 
 // Pledges
 router.get('/pledges', paymentsController.getPledges);

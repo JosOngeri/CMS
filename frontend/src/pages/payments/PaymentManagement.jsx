@@ -68,7 +68,7 @@ const PaymentManagement = () => {
   const fetchPayments = async () => {
     try {
       const response = await api.get('/payments')
-      setPayments(response.data.payments || [])
+      setPayments(response.data?.data || response.data?.payments || [])
     } catch (error) {
       console.error('Error fetching payments:', error)
     } finally {
@@ -83,12 +83,12 @@ const PaymentManagement = () => {
       const response = editingPayment
         ? await api.put(`/payments/${editingPayment.id}`, formData)
         : await api.post('/payments', formData)
-      const result = response.data
+      const result = response.data?.data || response.data?.payment
 
       if (editingPayment) {
-        setPayments(payments.map(p => p.id === editingPayment.id ? result.payment : p))
-      } else {
-        setPayments([result.payment, ...payments])
+        setPayments(payments.map(p => p.id === editingPayment.id ? result : p))
+      } else if (result) {
+        setPayments([result, ...payments])
       }
 
       // Reset form

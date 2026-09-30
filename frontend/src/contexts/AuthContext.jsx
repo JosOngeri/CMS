@@ -180,6 +180,11 @@ export const AuthProvider = ({ children }) => {
   // Guard against missing fields from the backend.
   const normalizeUser = (data) => ({
     ...data,
+    // Login returns camelCase; /profile returns snake_case — expose both
+    first_name: data.first_name ?? data.firstName ?? null,
+    last_name: data.last_name ?? data.lastName ?? null,
+    church_id: data.church_id ?? data.churchId ?? null,
+    avatar_url: data.avatar_url ?? data.avatarUrl ?? null,
     roles: data.roles || [],
     permissions: data.permissions || [],
   });

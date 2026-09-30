@@ -217,13 +217,13 @@ class PaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updatePaymentStatus(id, status) {
+  async updatePaymentStatus(id, status, transactionId = null) {
     const result = await this.pool.query(
       `UPDATE payments
-       SET status = $1
+       SET status = $1, transaction_id = COALESCE($3, transaction_id)
        WHERE id = $2
        RETURNING *`,
-      [status, id]
+      [status, id, transactionId]
     );
     return result.rows[0];
   }
