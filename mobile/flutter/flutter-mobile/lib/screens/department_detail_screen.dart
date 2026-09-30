@@ -23,6 +23,7 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
   ApiService? _api;
   TabController? _tabController;
   bool _canManage = false;
+  bool _canCollect = false;
   bool _ready = false;
 
   @override
@@ -50,6 +51,10 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
           'First Elder'
         ].contains(r)) ||
         (roles.contains('Department Head') && roleInDept.contains('head'));
+    // Collectors get the reconcile + remit UI but not the manager tabs.
+    _canCollect = _canManage ||
+        roles.contains('Collector') ||
+        roleInDept.contains('collector');
     _tabController = TabController(
       length: _canManage ? 7 : 6,
       vsync: this,
@@ -93,7 +98,7 @@ class _DepartmentDetailScreenState extends ConsumerState<DepartmentDetailScreen>
         controller: _tabController,
         children: [
           _OverviewTab(dept: widget.department),
-          DeptCollectionsTab(api: _api!, deptId: _deptId, canManage: _canManage),
+          DeptCollectionsTab(api: _api!, deptId: _deptId, canManage: _canManage, canCollect: _canCollect),
           _SubcommitteesTab(api: _api!, deptId: _deptId, canManage: _canManage),
           _ProgramsEventsTab(api: _api!, deptId: _deptId, canManage: _canManage),
           DeptLeadershipTab(api: _api!, deptId: _deptId, canManage: _canManage),

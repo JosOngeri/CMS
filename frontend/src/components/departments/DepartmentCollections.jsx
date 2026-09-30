@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   DollarSign, Plus, Users, CheckCircle, TrendingUp, Smartphone,
-  Link2, Sparkles, AlertCircle, X, Loader, Inbox
+  Link2, Sparkles, AlertCircle, X, Loader, Inbox, Landmark, Flag
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -29,16 +29,27 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
   const [assignTarget, setAssignTarget] = useState('');
   const [showAddTx, setShowAddTx] = useState(false);
   const [txForm, setTxForm] = useState({ tx_code: '', amount: '', payer_name: '', payer_phone: '' });
+  const [pendingFunds, setPendingFunds] = useState([]);
+  const [remittances, setRemittances] = useState([]);
+  const [showRemit, setShowRemit] = useState(false);
+  const [remitSel, setRemitSel] = useState(new Set());
+  const [remitForm, setRemitForm] = useState({ method: 'cash', reference: '', notes: '' });
+  const [disputing, setDisputing] = useState(null); // remittance row
+  const [disputeReason, setDisputeReason] = useState('');
 
   const load = useCallback(async () => {
     if (!departmentId) return;
     try {
-      const [col, rec] = await Promise.all([
+      const [col, rec, funds, rems] = await Promise.all([
         api.get(`/departments/${departmentId}/collections`),
         api.get(`/departments/${departmentId}/reconciliations`).catch(() => ({ data: { data: { reconciliations: [] } } })),
+        api.get(`/departments/${departmentId}/remittances/pending-funds`).catch(() => ({ data: { data: { items: [] } } })),
+        api.get(`/departments/${departmentId}/remittances`).catch(() => ({ data: { data: { remittances: [] } } })),
       ]);
       setData(col.data.data || { budgets: [] });
       setRecons(rec.data.data?.reconciliations || []);
+      setPendingFunds(funds.data.data?.items || []);
+      setRemittances(rems.data.data?.remittances || []);
     } catch {
       toast.error('Failed to load collections');
     } finally {
@@ -134,6 +145,50 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
       load();
     } catch (e) {
       toast.error(e.response?.data?.error || 'Failed to record transaction');
+    } finally { setBusy(false); }
+  };
+
+  const submitRemittance = async () => {
+    setBusy(true);
+    try {
+      await api.post(`/departments/${departmentId}/remittances`, {
+        reconciliation_ids: [...remitSel],
+        method: remitForm.method,
+        reference: remitForm.reference.trim() || null,
+        notes: remitForm.notes.trim() || null,
+      });
+      toast.success('Remittance recorded — awaiting treasurer confirmation');
+      setShowRemit(false);
+      setRemitSel(new Set());
+      setRemitForm({ method: 'cash', reference: '', notes: '' });
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to record remittance');
+    } finally { setBusy(false); }
+  };
+
+  const confirmRemittance = async (id) => {
+    setBusy(true);
+    try {
+      await api.put(`/departments/${departmentId}/remittances/${id}/confirm`);
+      toast.success('Remittance confirmed');
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to confirm');
+    } finally { setBusy(false); }
+  };
+
+  const submitDispute = async () => {
+    if (!disputeReason.trim()) return;
+    setBusy(true);
+    try {
+      await api.put(`/departments/${departmentId}/remittances/${disputing.id}/dispute`, { reason: disputeReason.trim() });
+      toast.success('Remittance flagged as disputed');
+      setDisputing(null);
+      setDisputeReason('');
+      load();
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to dispute');
     } finally { setBusy(false); }
   };
 
@@ -344,6 +399,139 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
           </div>
         )}
       </div>
+
+      {/* Remittance ledger — reconciled funds handed to the church account */}
+      {(pendingFunds.length > 0 || remittances.length > 0) && (
+        <div className="bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] p-4 sm:p-5">
+          <h3 className="font-semibold text-[var(--color-text)] flex items-center gap-2 mb-3">
+            <Landmark className="w-4 h-4" /> Remittances
+          </h3>
+
+          {pendingFunds.length > 0 && (
+            <div className="mb-4 border border-amber-300 bg-amber-50/50 dark:bg-amber-900/10 rounded-lg p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">
+                    KES {pendingFunds.reduce((s, x) => s + Number(x.amount), 0).toLocaleString()} in hand
+                  </p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">
+                    {pendingFunds.length} reconciled transaction{pendingFunds.length > 1 ? 's' : ''} awaiting handover to the church account
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setRemitSel(new Set(pendingFunds.map((x) => x.id))); setShowRemit(true); }}
+                  className="text-xs px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-white flex-shrink-0">
+                  Hand over
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="divide-y divide-[var(--color-border)]">
+            {remittances.map((r) => (
+              <div key={r.id} className="py-2 flex items-center justify-between gap-2 text-sm">
+                <div className="min-w-0">
+                  <p className="font-medium text-[var(--color-text)]">
+                    KES {Number(r.amount).toLocaleString()} · {r.method}
+                    {r.reference ? ` · ref ${r.reference}` : ''}
+                  </p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">
+                    {r.collector_name || 'Collector'}{r.treasurer_name ? ` · confirmed by ${r.treasurer_name}` : ''}
+                    {r.dispute_reason ? ` · ⚠ ${r.dispute_reason}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {r.status === 'pending' && canManage ? (
+                    <>
+                      <button onClick={() => confirmRemittance(r.id)} disabled={busy}
+                        className="text-xs px-2.5 py-1 rounded-lg bg-green-600 text-white flex items-center gap-1">
+                        <CheckCircle className="w-3 h-3" /> Confirm
+                      </button>
+                      <button onClick={() => { setDisputing(r); setDisputeReason(''); }} disabled={busy}
+                        className="text-xs px-2.5 py-1 rounded-lg border border-red-300 text-red-600 flex items-center gap-1">
+                        <Flag className="w-3 h-3" /> Dispute
+                      </button>
+                    </>
+                  ) : (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${
+                      r.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                      r.status === 'disputed' ? 'bg-red-100 text-red-700' :
+                      'bg-orange-100 text-orange-700'}`}>
+                      {r.status}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Hand-over modal */}
+      {showRemit && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowRemit(false)}>
+          <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-[var(--color-text)]">Hand over funds to church account</h3>
+            <div className="max-h-48 overflow-y-auto divide-y divide-[var(--color-border)] border border-[var(--color-border)] rounded-lg">
+              {pendingFunds.map((x) => (
+                <label key={x.id} className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-[var(--color-surfaceHover)]">
+                  <input type="checkbox" checked={remitSel.has(x.id)}
+                    onChange={(e) => {
+                      const next = new Set(remitSel);
+                      e.target.checked ? next.add(x.id) : next.delete(x.id);
+                      setRemitSel(next);
+                    }} />
+                  <span className="font-mono text-[var(--color-text)]">{x.tx_code}</span>
+                  <span className="ml-auto text-[var(--color-text)]">KES {Number(x.amount).toLocaleString()}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-sm font-medium text-[var(--color-text)]">
+              Total: KES {pendingFunds.filter((x) => remitSel.has(x.id)).reduce((s, x) => s + Number(x.amount), 0).toLocaleString()}
+            </p>
+            <select value={remitForm.method} onChange={(e) => setRemitForm({ ...remitForm, method: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]">
+              <option value="cash">Cash</option>
+              <option value="bank">Bank deposit</option>
+              <option value="mpesa">M-Pesa</option>
+            </select>
+            <input value={remitForm.reference} onChange={(e) => setRemitForm({ ...remitForm, reference: e.target.value })}
+              placeholder="Reference (slip no. / tx code)"
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
+            <input value={remitForm.notes} onChange={(e) => setRemitForm({ ...remitForm, notes: e.target.value })}
+              placeholder="Notes (optional)"
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowRemit(false)}
+                className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)]">Cancel</button>
+              <button onClick={submitRemittance} disabled={busy || remitSel.size === 0}
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                {busy ? 'Submitting…' : 'Submit handover'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute modal */}
+      {disputing && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setDisputing(null)}>
+          <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-semibold text-[var(--color-text)]">Dispute remittance — KES {Number(disputing.amount).toLocaleString()}</h3>
+            <textarea value={disputeReason} onChange={(e) => setDisputeReason(e.target.value)} rows={3}
+              placeholder="What is the discrepancy?"
+              className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setDisputing(null)}
+                className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)]">Cancel</button>
+              <button onClick={submitDispute} disabled={busy || !disputeReason.trim()}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm disabled:opacity-50">
+                {busy ? 'Submitting…' : 'Flag as disputed'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Assign reconciliation modal */}
       {assigning && (

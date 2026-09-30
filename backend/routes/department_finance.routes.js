@@ -651,4 +651,229 @@ router.get('/:id/parser/profiles', authenticateToken, async (req, res) => {
   }
 });
 
+// ===========================================================================
+// REMITTANCE LEDGER — collector batches reconciled funds → church account
+// ===========================================================================
+
+/** Funds sitting with collectors: reconciled but not yet remitted. */
+router.get('/:id/remittances/pending-funds', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartmentForUser(req.params.id, req.user);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const manager = await canManageDepartment(req.user, dept.id);
+    const collector = await isCollector(req.user, dept.id, null);
+    if (!manager && !collector) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+    const r = await pool.query(
+      `SELECT r.id, r.tx_code, r.amount, r.payer_name, r.payer_phone,
+              r.sms_timestamp, r.created_at, r.reconciled_by,
+              u.first_name || ' ' || u.last_name AS reconciled_by_name
+       FROM mpesa_reconciliations r
+       LEFT JOIN users u ON u.id = r.reconciled_by
+       WHERE r.department_id = $1 AND r.status = 'reconciled' AND r.remittance_id IS NULL
+       ${manager ? '' : 'AND r.reconciled_by = $2'}
+       ORDER BY r.created_at ASC`,
+      manager ? [dept.id] : [dept.id, req.user.id]
+    );
+    const total = r.rows.reduce((s, x) => s + Number(x.amount), 0);
+    res.json({ success: true, data: { items: r.rows, total } });
+  } catch (e) {
+    logger.error('pendingFunds', e);
+    res.status(500).json({ success: false, error: 'Failed to load pending funds' });
+  }
+});
+
+/** List remittance batches for the department. */
+router.get('/:id/remittances', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartmentForUser(req.params.id, req.user);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const manager = await canManageDepartment(req.user, dept.id);
+    const collector = await isCollector(req.user, dept.id, null);
+    if (!manager && !collector) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+    const { status } = req.query;
+    const r = await pool.query(
+      `SELECT rem.*,
+              c.first_name || ' ' || c.last_name AS collector_name,
+              t.first_name || ' ' || t.last_name AS treasurer_name
+       FROM remittances rem
+       LEFT JOIN users c ON c.id = rem.collector_id
+       LEFT JOIN users t ON t.id = rem.treasurer_id
+       WHERE rem.department_id = $1
+         ${status ? 'AND rem.status = $2' : ''}
+         ${manager ? '' : `AND rem.collector_id = ${status ? '$3' : '$2'}`}
+       ORDER BY rem.created_at DESC LIMIT 200`,
+      manager
+        ? (status ? [dept.id, status] : [dept.id])
+        : (status ? [dept.id, status, req.user.id] : [dept.id, req.user.id])
+    );
+    res.json({ success: true, data: { remittances: r.rows } });
+  } catch (e) {
+    logger.error('listRemittances', e);
+    res.status(500).json({ success: false, error: 'Failed to load remittances' });
+  }
+});
+
+/** Collector declares a batch handover. */
+router.post('/:id/remittances', authenticateToken, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const dept = await getDepartmentForUser(req.params.id, req.user);
+    if (!dept) {
+      client.release();
+      return res.status(404).json({ success: false, error: 'Department not found' });
+    }
+    const manager = await canManageDepartment(req.user, dept.id);
+    const collector = await isCollector(req.user, dept.id, null);
+    if (!manager && !collector) {
+      client.release();
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+
+    const { reconciliation_ids, method = 'cash', reference, notes } = req.body;
+    if (!Array.isArray(reconciliation_ids) || reconciliation_ids.length === 0) {
+      client.release();
+      return res.status(400).json({ success: false, error: 'reconciliation_ids[] required' });
+    }
+
+    await client.query('BEGIN');
+
+    // Lock the items: must be this dept, reconciled, unremitted, and — for
+    // collectors — reconciled by themselves (managers may remit anyone's).
+    const items = await client.query(
+      `SELECT id, amount, reconciled_by FROM mpesa_reconciliations
+       WHERE id = ANY($1) AND department_id = $2
+         AND status = 'reconciled' AND remittance_id IS NULL
+       FOR UPDATE`,
+      [reconciliation_ids, dept.id]
+    );
+    if (items.rows.length !== reconciliation_ids.length) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(400).json({
+        success: false,
+        error: 'Some transactions are missing, already remitted, or not reconciled',
+      });
+    }
+    if (!manager && items.rows.some((x) => x.reconciled_by !== req.user.id)) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(403).json({ success: false, error: 'Collectors may only remit their own reconciliations' });
+    }
+
+    const amount = items.rows.reduce((s, x) => s + Number(x.amount), 0);
+    const rem = await client.query(
+      `INSERT INTO remittances
+         (church_id, department_id, collector_id, amount, item_count, method, reference, notes)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [dept.church_id, dept.id, req.user.id, amount, items.rows.length,
+       method, reference || null, notes || null]
+    );
+    const remittanceId = rem.rows[0].id;
+
+    await client.query(
+      `INSERT INTO remittance_items (remittance_id, reconciliation_id)
+       SELECT $1, unnest($2::uuid[])`,
+      [remittanceId, reconciliation_ids]
+    );
+    await client.query(
+      `UPDATE mpesa_reconciliations
+       SET status = 'remitted', remittance_id = $1
+       WHERE id = ANY($2::uuid[])`,
+      [remittanceId, reconciliation_ids]
+    );
+
+    await client.query('COMMIT');
+    client.release();
+
+    await logDeptActivity(dept.id, req.user.id, 'remittance_created',
+      `Remittance ${remittanceId.slice(0, 8)} — KES ${amount} (${items.rows.length} txns, ${method})`);
+    await notifyDepartmentAdmins(pool, dept.id, {
+      type: 'remittance_pending',
+      title: 'Remittance awaiting confirmation',
+      body: `KES ${Number(amount).toLocaleString()} handed over for ${dept.name} — please confirm receipt.`,
+      relatedEntityType: 'department', relatedEntityId: dept.id,
+    }).catch(() => {});
+
+    res.status(201).json({ success: true, data: rem.rows[0] });
+  } catch (e) {
+    await client.query('ROLLBACK').catch(() => {});
+    client.release();
+    logger.error('createRemittance', e);
+    res.status(500).json({ success: false, error: 'Failed to create remittance' });
+  }
+});
+
+/** Treasurer/manager confirms the money actually arrived. Church
+ *  Treasurers confirm even without a dept-management position. */
+router.put('/:id/remittances/:rid/confirm', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartmentForUser(req.params.id, req.user);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const isTreasurer = (req.user.roles || []).includes('Treasurer');
+    if (!isTreasurer && !(await canManageDepartment(req.user, dept.id))) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+    const r = await pool.query(
+      `UPDATE remittances
+       SET status = 'confirmed', treasurer_id = $1, confirmed_at = NOW()
+       WHERE id = $2 AND department_id = $3 AND status = 'pending'
+       RETURNING *`,
+      [req.user.id, req.params.rid, dept.id]
+    );
+    if (!r.rows[0]) {
+      return res.status(404).json({ success: false, error: 'Pending remittance not found' });
+    }
+    await logDeptActivity(dept.id, req.user.id, 'remittance_confirmed',
+      `Remittance ${req.params.rid.slice(0, 8)} confirmed — KES ${r.rows[0].amount}`);
+    res.json({ success: true, data: r.rows[0] });
+  } catch (e) {
+    logger.error('confirmRemittance', e);
+    res.status(500).json({ success: false, error: 'Failed to confirm remittance' });
+  }
+});
+
+/** Treasurer/manager flags a discrepancy — items stay 'remitted' but the
+ *  batch is marked disputed for follow-up. */
+router.put('/:id/remittances/:rid/dispute', authenticateToken, async (req, res) => {
+  try {
+    const dept = await getDepartmentForUser(req.params.id, req.user);
+    if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
+    const isTreasurer = (req.user.roles || []).includes('Treasurer');
+    if (!isTreasurer && !(await canManageDepartment(req.user, dept.id))) {
+      return res.status(403).json({ success: false, error: 'Not authorized' });
+    }
+    const { reason } = req.body;
+    if (!reason) {
+      return res.status(400).json({ success: false, error: 'reason is required' });
+    }
+    const r = await pool.query(
+      `UPDATE remittances
+       SET status = 'disputed', treasurer_id = $1, dispute_reason = $4
+       WHERE id = $2 AND department_id = $3 AND status = 'pending'
+       RETURNING *`,
+      [req.user.id, req.params.rid, dept.id, reason]
+    );
+    if (!r.rows[0]) {
+      return res.status(404).json({ success: false, error: 'Pending remittance not found' });
+    }
+    await sendNotification(pool, {
+      recipientId: r.rows[0].collector_id,
+      type: 'remittance_disputed',
+      title: 'Remittance disputed',
+      body: `Your KES ${Number(r.rows[0].amount).toLocaleString()} handover for ${dept.name} was flagged: ${reason}`,
+      relatedEntityType: 'department', relatedEntityId: dept.id,
+    }).catch(() => {});
+    await logDeptActivity(dept.id, req.user.id, 'remittance_disputed',
+      `Remittance ${req.params.rid.slice(0, 8)} disputed — ${reason}`);
+    res.json({ success: true, data: r.rows[0] });
+  } catch (e) {
+    logger.error('disputeRemittance', e);
+    res.status(500).json({ success: false, error: 'Failed to dispute remittance' });
+  }
+});
+
 module.exports = router;

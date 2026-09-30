@@ -870,6 +870,19 @@ class ApiService {
   Future<Map<String, dynamic>> assignReconciliation(String deptId, String reconId, Map<String, dynamic> data) =>
       _deptSend('put', '/$deptId/reconciliations/$reconId/assign', data);
 
+  // ---- Remittance ledger (collector → church account handover) ----
+
+  Future<Map<String, dynamic>> getPendingFunds(String deptId) =>
+      _deptGet('/$deptId/remittances/pending-funds');
+  Future<Map<String, dynamic>> getRemittances(String deptId, {String? status}) =>
+      _deptGet('/$deptId/remittances${status != null ? '?status=$status' : ''}');
+  Future<Map<String, dynamic>> createRemittance(String deptId, Map<String, dynamic> data) =>
+      _deptSend('post', '/$deptId/remittances', data);
+  Future<Map<String, dynamic>> confirmRemittance(String deptId, String remittanceId) =>
+      _deptSend('put', '/$deptId/remittances/$remittanceId/confirm');
+  Future<Map<String, dynamic>> disputeRemittance(String deptId, String remittanceId, String reason) =>
+      _deptSend('put', '/$deptId/remittances/$remittanceId/dispute', {'reason': reason});
+
   // ---- Parser profiles (AI calibration) ----
 
   Future<Map<String, dynamic>> calibrateParser(String scopeId, Map<String, dynamic> data) =>

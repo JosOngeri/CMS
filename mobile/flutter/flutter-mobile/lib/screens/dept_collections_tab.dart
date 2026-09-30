@@ -10,12 +10,14 @@ class DeptCollectionsTab extends StatefulWidget {
   final ApiService api;
   final String deptId;
   final bool canManage;
+  final bool canCollect;
 
   const DeptCollectionsTab({
     super.key,
     required this.api,
     required this.deptId,
     required this.canManage,
+    this.canCollect = false,
   });
 
   @override
@@ -26,6 +28,8 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
   Map<String, dynamic>? _collections;
   List<dynamic> _budgets = [];
   List<dynamic> _reconciliations = [];
+  List<dynamic> _pendingFunds = [];
+  List<dynamic> _remittances = [];
   int _pendingCount = 0;
   bool _loading = true;
   String? _error;
@@ -47,6 +51,13 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
     final rec = widget.canManage
         ? await widget.api.getReconciliations(widget.deptId)
         : {'success': false};
+    final canRemit = widget.canManage || widget.canCollect;
+    final funds = canRemit
+        ? await widget.api.getPendingFunds(widget.deptId)
+        : {'success': false};
+    final rems = canRemit
+        ? await widget.api.getRemittances(widget.deptId)
+        : {'success': false};
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -59,6 +70,13 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
       if (rec['success'] == true) {
         final d = rec['data'];
         _reconciliations = d is List ? d : (d?['reconciliations'] as List? ?? []);
+      }
+      if (funds['success'] == true) {
+        _pendingFunds = (funds['data']?['items'] as List?) ?? [];
+      }
+      if (rems['success'] == true) {
+        final d = rems['data'];
+        _remittances = d is List ? d : (d?['remittances'] as List? ?? []);
       }
     });
     final pending = await SmsReconService.instance.getPending();
@@ -88,11 +106,13 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
           _progressCard(target, collected, progress),
           const SizedBox(height: 12),
           if (milestones.isNotEmpty) _milestonesCard(milestones),
-          if (widget.canManage) ...[
+          if (widget.canManage || widget.canCollect) ...[
             _collectorCard(),
-            _budgetCard(),
+            if (widget.canManage) _budgetCard(),
             if (_reconciliations.isNotEmpty) _reconCard(),
-            _parserCard(),
+            if (_pendingFunds.isNotEmpty || _remittances.isNotEmpty)
+              _remittanceCard(),
+            if (widget.canManage) _parserCard(),
           ],
           if (obligations.isNotEmpty) _obligationsCard(obligations),
         ],
@@ -280,6 +300,229 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
         ),
       ),
     );
+  }
+
+  /// Remittance ledger — reconciled funds sitting with collectors and the
+  /// handover trail to the church account. Collectors batch their
+  /// reconciled txns; treasurers confirm or dispute receipt.
+  Widget _remittanceCard() {
+    final pendingTotal = _pendingFunds.fold<double>(
+        0, (s, x) => s + _num(x['amount']));
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Remittances',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            if (_pendingFunds.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'KES ${pendingTotal.toStringAsFixed(0)} in hand '
+                      '(${_pendingFunds.length} txn${_pendingFunds.length > 1 ? 's' : ''})',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Reconciled funds not yet handed to the church account.',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.account_balance),
+                        label: const Text('Hand over to church'),
+                        onPressed: _handOver,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            ..._remittances.take(8).map((r) {
+              final status = (r['status'] ?? 'pending').toString();
+              final color = status == 'confirmed'
+                  ? Colors.green
+                  : status == 'disputed'
+                      ? Colors.red
+                      : Colors.orange;
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.account_balance_wallet, color: color),
+                title: Text(
+                    'KES ${_num(r['amount']).toStringAsFixed(0)} • ${r['method'] ?? 'cash'}'),
+                subtitle: Text(
+                  '${r['collector_name'] ?? 'Collector'} → church'
+                  '${r['reference'] != null ? ' • ref ${r['reference']}' : ''}'
+                  '${r['dispute_reason'] != null ? '\n⚠ ${r['dispute_reason']}' : ''}',
+                ),
+                isThreeLine: r['dispute_reason'] != null,
+                trailing: status == 'pending' && widget.canManage
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            tooltip: 'Confirm receipt',
+                            icon: const Icon(Icons.check_circle,
+                                color: Colors.green),
+                            onPressed: () => _confirmRemittance(r),
+                          ),
+                          IconButton(
+                            tooltip: 'Dispute',
+                            icon: const Icon(Icons.flag, color: Colors.red),
+                            onPressed: () => _dispute(r),
+                          ),
+                        ],
+                      )
+                    : Chip(
+                        label: Text(status,
+                            style: const TextStyle(
+                                fontSize: 11, color: Colors.white)),
+                        backgroundColor: color,
+                        padding: EdgeInsets.zero,
+                        visualDensity: VisualDensity.compact,
+                      ),
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Batch handover: pick which pending txns are being handed over,
+  /// how (cash/bank/M-Pesa), and an optional reference.
+  Future<void> _handOver() async {
+    final selected = _pendingFunds.map((x) => x['id'].toString()).toSet();
+    String method = 'cash';
+    final refCtrl = TextEditingController();
+    final notesCtrl = TextEditingController();
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('Hand over funds'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Transactions included:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                ..._pendingFunds.map((x) => CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(
+                          '${x['tx_code']} — KES ${_num(x['amount']).toStringAsFixed(0)}'),
+                      value: selected.contains(x['id'].toString()),
+                      onChanged: (v) => setDlg(() {
+                        if (v == true) {
+                          selected.add(x['id'].toString());
+                        } else {
+                          selected.remove(x['id'].toString());
+                        }
+                      }),
+                    )),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: method,
+                  decoration:
+                      const InputDecoration(labelText: 'Handover method'),
+                  items: const [
+                    DropdownMenuItem(value: 'cash', child: Text('Cash')),
+                    DropdownMenuItem(value: 'bank', child: Text('Bank deposit')),
+                    DropdownMenuItem(value: 'mpesa', child: Text('M-Pesa')),
+                  ],
+                  onChanged: (v) => setDlg(() => method = v ?? 'cash'),
+                ),
+                TextField(
+                  controller: refCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Reference (slip no. / tx code)'),
+                ),
+                TextField(
+                  controller: notesCtrl,
+                  decoration:
+                      const InputDecoration(labelText: 'Notes (optional)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancel')),
+            FilledButton(
+              onPressed:
+                  selected.isEmpty ? null : () => Navigator.pop(ctx, true),
+              child: const Text('Submit'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (ok != true) return;
+    final res = await widget.api.createRemittance(widget.deptId, {
+      'reconciliation_ids': selected.toList(),
+      'method': method,
+      if (refCtrl.text.trim().isNotEmpty) 'reference': refCtrl.text.trim(),
+      if (notesCtrl.text.trim().isNotEmpty) 'notes': notesCtrl.text.trim(),
+    });
+    _result(res, successMsg: 'Remittance recorded — awaiting treasurer confirmation');
+  }
+
+  Future<void> _confirmRemittance(Map<String, dynamic> r) async {
+    final res = await widget.api
+        .confirmRemittance(widget.deptId, r['id'].toString());
+    _result(res, successMsg: 'Remittance confirmed');
+  }
+
+  Future<void> _dispute(Map<String, dynamic> r) async {
+    final reasonCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Dispute remittance'),
+        content: TextField(
+          controller: reasonCtrl,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: 'What is the discrepancy?',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Dispute'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || reasonCtrl.text.trim().isEmpty) return;
+    final res = await widget.api.disputeRemittance(
+        widget.deptId, r['id'].toString(), reasonCtrl.text.trim());
+    _result(res, successMsg: 'Remittance flagged as disputed');
   }
 
   Widget _parserCard() {
