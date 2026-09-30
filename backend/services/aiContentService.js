@@ -716,12 +716,18 @@ class AIContentService {
         throw new Error(`Daily AI usage limit exceeded (${this.dailyLimit} requests per day). Please try again tomorrow.`);
       }
 
-      // Mask PII in the sample BEFORE sending: phones, names after from/to,
-      // and any long digit runs that could be account numbers.
-      let masked = this.maskPII(this.sanitizePrompt(sampleSms));
-      masked = masked
-        .replace(/\b\d{9,13}\b/g, '[PHONE]')
-        .replace(/\b\d{4}\*{2,}\d{2,}\b/g, '[ACCOUNT]');
+      // Mask PII in the sample BEFORE sending — but with format-preserving
+      // dummies (0700000000, JANE DOE) so generated regexes still match real
+      // SMS messages. Real names/phones/accounts never leave the server.
+      let masked = this.sanitizePrompt(sampleSms)
+        .replace(/\b(?:254|\+254|0)(7\d{8}|1\d{8})\b/g, '0700000000') // KE mobiles → dummy
+        .replace(/\b\d{4}\*{2,}\d{2,}\b/g, '0000****00')             // masked accounts
+        .replace(/\b\d{9,13}\b/g, '0700000000');                      // other long numbers
+      masked = this.maskPII(masked)
+        .replace(/\[NAME_REDACTED\]/g, 'JANE DOE')
+        .replace(/\[PHONE_REDACTED\]/g, '0700000000')
+        .replace(/\[EMAIL_REDACTED\]/g, 'member@example.com')
+        .replace(/\[ID_REDACTED\]/g, '00000000');
 
       const generativeModel = this.genAI.getGenerativeModel({ model: this.model });
 
