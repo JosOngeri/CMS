@@ -215,6 +215,7 @@ export const dashboardRoutes = [
   { path: 'sms/contacts',           element: <W C={SMSContacts} roles={LEADERSHIP_ROLES} /> },
   { path: 'sms/groups',             element: <W C={SMSGroups} roles={LEADERSHIP_ROLES} /> },
   { path: 'announcements',          element: <W C={Announcements} /> },
+  { path: 'documents',              element: <W C={Documents} /> },
   { path: 'notifications',          element: <W C={NotificationDashboard} /> },
   { path: 'telegram',              element: <W C={Telegram} roles={ADMIN_ROLES} /> },
   { path: 'telegram/auth',         element: <W C={TelegramAuth} /> },

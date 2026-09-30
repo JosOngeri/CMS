@@ -37,7 +37,7 @@ export const API_ENDPOINTS = {
   DEPARTMENTS: {
     BASE: '/departments',
     BY_ID: (id) => `/departments/${id}`,
-    USER_DEPARTMENTS: '/departments/user',
+    USER_DEPARTMENTS: '/department/my-departments',
     MY_DEPARTMENTS: '/department/my-departments',
     DEPARTMENT: {
       BASE: '/department',
