@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
 const { authenticateToken, optionalAuth, requireRole } = require('../middleware/auth');
+const { passwordResetLimiter } = require('../middleware/rateLimiter');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
@@ -85,9 +86,9 @@ router.post('/mfa/verify', authenticateToken, authController.verifyMFA);
 router.post('/mfa/disable', authenticateToken, authController.disableMFA);
 router.get('/audit-log', authenticateToken, authController.getAuditLog);
 
-// Public routes
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+// Public routes — reset endpoints get the stricter limiter
+router.post('/forgot-password', passwordResetLimiter, authController.forgotPassword);
+router.post('/reset-password', passwordResetLimiter, authController.resetPassword);
 router.post('/verify-email', authController.verifyEmail);
 
 // Username validation (public endpoint for real-time validation)

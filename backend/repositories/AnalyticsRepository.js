@@ -481,10 +481,11 @@ class AnalyticsRepository extends BaseRepository {
     const params = churchId ? [churchId] : [];
 
     for (const metric of metrics) {
-      if (metricMap[metric]) {
-        const result = await this.pool.query(`${metricMap[metric]}${churchFilter}`, params);
-        results[metric] = result.rows[0];
+      if (!metricMap[metric]) {
+        throw new Error(`Unknown analytics metric: ${metric}`);
       }
+      const result = await this.pool.query(`${metricMap[metric]}${churchFilter}`, params);
+      results[metric] = result.rows[0];
     }
 
     return results;

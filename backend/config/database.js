@@ -33,7 +33,11 @@ async function queryWithLogging(text, params) {
     return result;
   } catch (error) {
     const duration = Date.now() - start;
-    logger.error({ query: text, params, duration, error: error.message }, 'Query failed');
+    // Never log raw params — they can carry passwords, tokens, phone numbers.
+    logger.error(
+      { query: text, paramCount: Array.isArray(params) ? params.length : 0, duration, error: error.message },
+      'Query failed'
+    );
     throw error;
   }
 }

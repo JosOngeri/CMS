@@ -3,7 +3,6 @@ const router = express.Router();
 
 const {
   authLimiter,
-  passwordResetLimiter,
   apiLimiter,
   uploadLimiter,
   generalLimiter,
@@ -63,7 +62,6 @@ const smsSyncRoutes = require('./smsSync.routes');
 // Mount routes with appropriate middleware
 // Note: route modules apply their own auth (authenticateToken, identityGuard, etc.)
 router.use('/auth', authLimiter, authRoutes);
-router.use('/auth/reset-password', passwordResetLimiter, authRoutes);
 router.use('/churches', generalLimiter, churchRoutes);
 router.use('/users', generalLimiter, usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);

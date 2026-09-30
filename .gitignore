@@ -114,6 +114,10 @@ tools/
 # Credential exports - never commit
 USER_LOGINS.md
 cms_users_export.txt
+users_export.txt
+login-body.json
+login-body*.json
+*_export.txt
 /releases/
 deployment test/
 **/.kotlin/
