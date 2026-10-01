@@ -21,6 +21,7 @@ class AccountController {
       const { account_type, is_active, include_balance } = req.query;
       
       const accounts = await this.accountRepo.findAll({
+        churchId: req.user.church_id,
         account_type,
         is_active: is_active !== undefined ? is_active === 'true' : undefined,
         include_balance: include_balance === 'true'
@@ -39,7 +40,7 @@ class AccountController {
   async getAccountById(req, res) {
     try {
       const { id } = req.params;
-      const account = await this.accountRepo.findById(id);
+      const account = await this.accountRepo.findById(id, req.user.church_id);
       
       if (!account) {
         return res.status(404).json({ error: 'Account not found' });
@@ -63,7 +64,7 @@ class AccountController {
       }
 
       const account = new Account(req.body);
-      const created = await this.accountRepo.create(account);
+      const created = await this.accountRepo.create(account, req.user.church_id);
       
       logger.info(`Account created: ${created.account_number} - ${created.account_name}`);
       res.status(201).json({ account: created });
@@ -86,7 +87,7 @@ class AccountController {
       const { id } = req.params;
       const account = new Account({ ...req.body, id });
       
-      const updated = await this.accountRepo.update(id, account);
+      const updated = await this.accountRepo.update(id, account, req.user.church_id);
       
       if (!updated) {
         return res.status(404).json({ error: 'Account not found' });
@@ -106,7 +107,7 @@ class AccountController {
   async deleteAccount(req, res) {
     try {
       const { id } = req.params;
-      const deleted = await this.accountRepo.delete(id);
+      const deleted = await this.accountRepo.delete(id, req.user.church_id);
       
       if (!deleted) {
         return res.status(404).json({ error: 'Account not found' });
@@ -125,7 +126,7 @@ class AccountController {
    */
   async getHierarchy(req, res) {
     try {
-      const hierarchy = await this.accountRepo.getHierarchy();
+      const hierarchy = await this.accountRepo.getHierarchy(req.user.church_id);
       res.json({ hierarchy });
     } catch (error) {
       logger.error('Get hierarchy error:', error);
@@ -139,7 +140,7 @@ class AccountController {
   async getTrialBalance(req, res) {
     try {
       const { as_of_date } = req.query;
-      const trialBalance = await this.accountRepo.getTrialBalance(as_of_date);
+      const trialBalance = await this.accountRepo.getTrialBalance(as_of_date, req.user.church_id);
       
       // Calculate totals
       const totals = trialBalance.reduce((acc, account) => {

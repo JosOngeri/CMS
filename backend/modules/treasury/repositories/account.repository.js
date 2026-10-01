@@ -47,6 +47,7 @@ class AccountRepository extends BaseRepository {
     const where = {};
     if (account_type) where['a.account_type'] = account_type;
     if (is_active !== undefined) where['a.is_active'] = is_active;
+    if (options.churchId) where['a.church_id'] = options.churchId;
     
     const query = this.buildQuery({
       alias: 'a',
@@ -63,7 +64,7 @@ class AccountRepository extends BaseRepository {
   /**
    * Find account by ID with related data
    */
-  async findById(id) {
+  async findById(id, churchId = null) {
     const joins = [
       {
         table: 'accounts p',
@@ -79,9 +80,11 @@ class AccountRepository extends BaseRepository {
       }
     ];
     
+    const where = { 'a.id': id };
+    if (churchId) where['a.church_id'] = churchId;
     const query = this.buildQuery({
       alias: 'a',
-      where: { 'a.id': id },
+      where,
       joins,
       single: true
     });
@@ -93,10 +96,10 @@ class AccountRepository extends BaseRepository {
   /**
    * Find account by account number
    */
-  async findByAccountNumber(accountNumber) {
+  async findByAccountNumber(accountNumber, churchId = null) {
     const result = await this.pool.query(
-      'SELECT * FROM accounts WHERE account_number = $1',
-      [accountNumber]
+      `SELECT * FROM accounts WHERE account_number = $1 ${churchId ? 'AND church_id = $2' : ''}`,
+      churchId ? [accountNumber, churchId] : [accountNumber]
     );
     return result.rows[0] ? Account.fromDatabase(result.rows[0]) : null;
   }
@@ -104,10 +107,10 @@ class AccountRepository extends BaseRepository {
   /**
    * Find child accounts by parent ID
    */
-  async findByParentId(parentId) {
+  async findByParentId(parentId, churchId = null) {
     const result = await this.pool.query(
-      'SELECT * FROM accounts WHERE parent_account_id = $1 ORDER BY account_number',
-      [parentId]
+      `SELECT * FROM accounts WHERE parent_account_id = $1 ${churchId ? 'AND church_id = $2' : ''} ORDER BY account_number`,
+      churchId ? [parentId, churchId] : [parentId]
     );
     return result.rows.map(row => Account.fromDatabase(row));
   }
@@ -115,10 +118,10 @@ class AccountRepository extends BaseRepository {
   /**
    * Find accounts by fund ID
    */
-  async findByFundId(fundId) {
+  async findByFundId(fundId, churchId = null) {
     const result = await this.pool.query(
-      'SELECT * FROM accounts WHERE fund_id = $1 ORDER BY account_number',
-      [fundId]
+      `SELECT * FROM accounts WHERE fund_id = $1 ${churchId ? 'AND church_id = $2' : ''} ORDER BY account_number`,
+      churchId ? [fundId, churchId] : [fundId]
     );
     return result.rows.map(row => Account.fromDatabase(row));
   }
@@ -126,19 +129,20 @@ class AccountRepository extends BaseRepository {
   /**
    * Get account hierarchy
    */
-  async getHierarchy() {
+  async getHierarchy(churchId = null) {
+    const churchFilter = churchId ? 'AND a.church_id = $1' : '';
     const query = `
       WITH RECURSIVE account_tree AS (
-        SELECT 
+        SELECT
           a.*,
           0 as level,
           a.id::text as path
         FROM accounts a
-        WHERE parent_account_id IS NULL
-        
+        WHERE parent_account_id IS NULL ${churchFilter}
+
         UNION ALL
-        
-        SELECT 
+
+        SELECT
           a.*,
           at.level + 1,
           at.path || ',' || a.id::text
@@ -147,8 +151,8 @@ class AccountRepository extends BaseRepository {
       )
       SELECT * FROM account_tree ORDER BY path;
     `;
-    
-    const result = await this.pool.query(query);
+
+    const result = await this.pool.query(query, churchId ? [churchId] : []);
     return result.rows.map(row => ({
       ...Account.fromDatabase(row),
       level: row.level,
@@ -159,14 +163,22 @@ class AccountRepository extends BaseRepository {
   /**
    * Get trial balance (all accounts with balances)
    */
-  async getTrialBalance(asOfDate = null) {
-    const dateCondition = asOfDate 
-      ? 'AND je.entry_date <= $1' 
-      : '';
-    const params = asOfDate ? [asOfDate] : [];
-    
+  async getTrialBalance(asOfDate = null, churchId = null) {
+    const conditions = [];
+    const params = [];
+    if (asOfDate) {
+      params.push(asOfDate);
+      conditions.push(`je.entry_date <= $${params.length}`);
+    }
+    if (churchId) {
+      params.push(churchId);
+      conditions.push(`je.church_id = $${params.length}`);
+    }
+    const extra = conditions.length ? `AND ${conditions.join(' AND ')}` : '';
+    const accountChurch = churchId ? `AND a.church_id = $${params.length}` : '';
+
     const query = `
-      SELECT 
+      SELECT
         a.id,
         a.account_number,
         a.account_name,
@@ -176,12 +188,12 @@ class AccountRepository extends BaseRepository {
         COALESCE(SUM(jel.debit_amount - jel.credit_amount), 0) as balance
       FROM accounts a
       LEFT JOIN journal_entry_lines jel ON a.id = jel.account_id
-      LEFT JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' ${dateCondition}
-      WHERE a.is_active = true
+      LEFT JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' ${extra}
+      WHERE a.is_active = true ${accountChurch}
       GROUP BY a.id, a.account_number, a.account_name, a.account_type
       ORDER BY a.account_number;
     `;
-    
+
     const result = await this.pool.query(query, params);
     return result.rows;
   }
@@ -189,21 +201,21 @@ class AccountRepository extends BaseRepository {
   /**
    * Create new account
    */
-  async create(account) {
+  async create(account, churchId = null) {
     const validation = account.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
     }
-    
+
     const data = account.toDatabase();
     const query = `
       INSERT INTO accounts (
         account_number, account_name, account_type, sub_type,
-        parent_account_id, fund_id, description, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        parent_account_id, fund_id, description, is_active, church_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
-    
+
     const result = await this.pool.query(query, [
       data.account_number,
       data.account_name,
@@ -212,7 +224,8 @@ class AccountRepository extends BaseRepository {
       data.parent_account_id,
       data.fund_id,
       data.description,
-      data.is_active
+      data.is_active,
+      churchId
     ]);
     
     return Account.fromDatabase(result.rows[0]);
@@ -221,7 +234,7 @@ class AccountRepository extends BaseRepository {
   /**
    * Update account
    */
-  async update(id, account) {
+  async update(id, account, churchId = null) {
     const data = account.toDatabase();
     const query = `
       UPDATE accounts SET
@@ -234,11 +247,11 @@ class AccountRepository extends BaseRepository {
         description = $7,
         is_active = $8,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $9
+      WHERE id = $9 ${churchId ? 'AND church_id = $10' : ''}
       RETURNING *
     `;
-    
-    const result = await this.pool.query(query, [
+
+    const params = [
       data.account_number,
       data.account_name,
       data.account_type,
@@ -248,7 +261,10 @@ class AccountRepository extends BaseRepository {
       data.description,
       data.is_active,
       id
-    ]);
+    ];
+    if (churchId) params.push(churchId);
+
+    const result = await this.pool.query(query, params);
     
     return result.rows[0] ? Account.fromDatabase(result.rows[0]) : null;
   }
@@ -256,22 +272,22 @@ class AccountRepository extends BaseRepository {
   /**
    * Delete account (only if no transactions)
    */
-  async delete(id) {
+  async delete(id, churchId = null) {
     // Check for transactions first
     const checkQuery = `
-      SELECT COUNT(*) as count 
-      FROM journal_entry_lines 
+      SELECT COUNT(*) as count
+      FROM journal_entry_lines
       WHERE account_id = $1
     `;
     const checkResult = await this.pool.query(checkQuery, [id]);
-    
+
     if (parseInt(checkResult.rows[0].count) > 0) {
       throw new Error('Cannot delete account with transactions. Deactivate instead.');
     }
-    
+
     const result = await this.pool.query(
-      'DELETE FROM accounts WHERE id = $1 RETURNING *',
-      [id]
+      `DELETE FROM accounts WHERE id = $1 ${churchId ? 'AND church_id = $2' : ''} RETURNING *`,
+      churchId ? [id, churchId] : [id]
     );
     
     return result.rows[0] ? Account.fromDatabase(result.rows[0]) : null;

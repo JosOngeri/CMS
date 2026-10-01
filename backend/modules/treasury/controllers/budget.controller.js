@@ -21,6 +21,7 @@ class BudgetController {
       const { fiscal_year, status, department_id, fund_id, limit = 50, offset = 0 } = req.query;
       
       const budgets = await this.budgetRepo.findAll({
+        churchId: req.user.church_id,
         fiscal_year: fiscal_year ? parseInt(fiscal_year) : undefined,
         status,
         department_id,
@@ -49,7 +50,7 @@ class BudgetController {
   async getBudgetById(req, res) {
     try {
       const { id } = req.params;
-      const budget = await this.budgetRepo.findById(id);
+      const budget = await this.budgetRepo.findById(id, req.user.church_id);
       
       if (!budget) {
         return res.status(404).json({ error: 'Budget not found' });
@@ -86,7 +87,7 @@ class BudgetController {
         });
       }
       
-      const created = await this.budgetRepo.create(budget);
+      const created = await this.budgetRepo.create(budget, req.user.church_id);
       
       logger.info(`Budget created: ${created.budget_name} by ${req.user.email}`);
       res.status(201).json({ budget: created });
@@ -103,7 +104,7 @@ class BudgetController {
     try {
       const { id } = req.params;
       
-      const existing = await this.budgetRepo.findById(id);
+      const existing = await this.budgetRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Budget not found' });
       }
@@ -116,7 +117,7 @@ class BudgetController {
 
       const budget = new Budget({ ...req.body, id });
       
-      const updated = await this.budgetRepo.update(id, budget);
+      const updated = await this.budgetRepo.update(id, budget, req.user.church_id);
       
       logger.info(`Budget updated: ${id}`);
       res.json({ budget: updated });
@@ -133,14 +134,14 @@ class BudgetController {
     try {
       const { id } = req.params;
       
-      const existing = await this.budgetRepo.findById(id);
+      const existing = await this.budgetRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Budget not found' });
       }
       
       existing.activate();
       
-      const updated = await this.budgetRepo.update(id, existing);
+      const updated = await this.budgetRepo.update(id, existing, req.user.church_id);
       
       logger.info(`Budget activated: ${id} by ${req.user.email}`);
       res.json({ budget: updated });
@@ -157,14 +158,14 @@ class BudgetController {
     try {
       const { id } = req.params;
       
-      const existing = await this.budgetRepo.findById(id);
+      const existing = await this.budgetRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Budget not found' });
       }
       
       existing.close();
       
-      const updated = await this.budgetRepo.update(id, existing);
+      const updated = await this.budgetRepo.update(id, existing, req.user.church_id);
       
       logger.info(`Budget closed: ${id} by ${req.user.email}`);
       res.json({ budget: updated });
@@ -181,7 +182,7 @@ class BudgetController {
     try {
       const { threshold = 80 } = req.query;
       
-      const alerts = await this.budgetRepo.getBudgetAlerts(parseInt(threshold));
+      const alerts = await this.budgetRepo.getBudgetAlerts(parseInt(threshold), req.user.church_id);
       
       const categorized = alerts.reduce((acc, budget) => {
         if (budget.isOverBudget()) {
@@ -215,16 +216,17 @@ class BudgetController {
       const { fiscal_year = new Date().getFullYear() } = req.query;
       
       // First update all actual spending
-      const budgets = await this.budgetRepo.findAll({ 
+      const budgets = await this.budgetRepo.findAll({
+        churchId: req.user.church_id, 
         fiscal_year: parseInt(fiscal_year),
         status: 'active'
       });
       
       for (const budget of budgets) {
-        await this.budgetRepo.updateActualSpending(budget.id);
+        await this.budgetRepo.updateActualSpending(budget.id, req.user.church_id);
       }
       
-      const comparison = await this.budgetRepo.getBudgetComparison(parseInt(fiscal_year));
+      const comparison = await this.budgetRepo.getBudgetComparison(parseInt(fiscal_year), req.user.church_id);
       
       const summary = comparison.reduce((acc, item) => {
         acc.total_budgeted += parseFloat(item.total_budgeted);

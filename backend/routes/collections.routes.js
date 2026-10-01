@@ -7,6 +7,7 @@ const { authenticateToken } = require('../middleware/auth');
 router.use(authenticateToken);
 
 // Personal collections routes
+router.get('/', collectionController.getCollections);
 router.get('/my-collections', collectionController.getMyCollections);
 router.get('/my-statement', collectionController.getMyStatement);
 router.post('/', collectionController.createPersonalCollection);

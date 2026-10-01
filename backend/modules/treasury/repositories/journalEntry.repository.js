@@ -12,12 +12,8 @@ class JournalEntryRepository extends BaseRepository {
   }
 
   async findAll(options = {}) {
-    const { status, start_date, end_date, reference_type, account_id, limit = 50, offset = 0 } = options;
-    
-    const where = {};
-    if (status) where.status = status;
-    if (reference_type) where.reference_type = reference_type;
-    
+    const { status, start_date, end_date, reference_type, account_id, churchId, limit = 50, offset = 0 } = options;
+
     let query = `
       SELECT je.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM journal_entries je
@@ -26,7 +22,12 @@ class JournalEntryRepository extends BaseRepository {
     `;
     let params = [];
     let paramIndex = 1;
-    
+
+    if (churchId) {
+      query += ` AND je.church_id = $${paramIndex++}`;
+      params.push(churchId);
+    }
+
     if (status) {
       query += ` AND je.status = $${paramIndex++}`;
       params.push(status);
@@ -69,14 +70,14 @@ class JournalEntryRepository extends BaseRepository {
     return entries;
   }
 
-  async findById(id) {
+  async findById(id, churchId = null) {
     const query = `
       SELECT je.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM journal_entries je
       LEFT JOIN users u ON je.created_by = u.id
-      WHERE je.id = $1
+      WHERE je.id = $1 ${churchId ? 'AND je.church_id = $2' : ''}
     `;
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
     
     if (!result.rows[0]) return null;
     
@@ -96,27 +97,27 @@ class JournalEntryRepository extends BaseRepository {
     return result.rows.map(row => new JournalEntryLine(row));
   }
 
-  async create(entry, client = null) {
+  async create(entry, churchId = null, client = null) {
     const validation = entry.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
     }
-    
+
     const data = entry.toDatabase();
     const queryExecutor = client || this.pool;
-    
+
     // Insert journal entry
     const entryQuery = `
       INSERT INTO journal_entries (
         entry_date, description, reference_type, reference_id,
-        status, total_debits, total_credits, created_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        status, total_debits, total_credits, created_by, church_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
-    
+
     const entryResult = await queryExecutor.query(entryQuery, [
       data.entry_date, data.description, data.reference_type, data.reference_id,
-      data.status, entry.total_debits, entry.total_credits, data.created_by
+      data.status, entry.total_debits, entry.total_credits, data.created_by, churchId
     ]);
     
     const entryId = entryResult.rows[0].id;
@@ -136,25 +137,26 @@ class JournalEntryRepository extends BaseRepository {
       ]);
     }
     
-    return this.findById(entryId);
+    return this.findById(entryId, churchId);
   }
 
-  async update(id, entry) {
+  async update(id, entry, churchId = null) {
     const data = entry.toDatabase();
-    
+
     await this.transaction(async client => {
-      // Update journal entry
+      // Update journal entry (church-scoped)
       const entryQuery = `
         UPDATE journal_entries SET
           entry_date = $1, description = $2, reference_type = $3,
           reference_id = $4, status = $5, total_debits = $6, total_credits = $7,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $8
+        WHERE id = $8 ${churchId ? 'AND church_id = $9' : ''}
       `;
-      
+
       await client.query(entryQuery, [
         data.entry_date, data.description, data.reference_type, data.reference_id,
-        data.status, entry.total_debits, entry.total_credits, id
+        data.status, entry.total_debits, entry.total_credits, id,
+        ...(churchId ? [churchId] : [])
       ]);
       
       // Delete existing lines
@@ -175,18 +177,18 @@ class JournalEntryRepository extends BaseRepository {
       }
     });
     
-    return this.findById(id);
+    return this.findById(id, churchId);
   }
 
-  async reverse(id, userId) {
-    const original = await this.findById(id);
+  async reverse(id, userId, churchId = null) {
+    const original = await this.findById(id, churchId);
     if (!original) throw new Error('Journal entry not found');
-    
+
     return this.transaction(async client => {
       // Mark original as reversed
       await client.query(
-        "UPDATE journal_entries SET status = 'reversed' WHERE id = $1",
-        [id]
+        `UPDATE journal_entries SET status = 'reversed' WHERE id = $1 ${churchId ? 'AND church_id = $2' : ''}`,
+        churchId ? [id, churchId] : [id]
       );
       
       // Create reversing entry
@@ -206,12 +208,20 @@ class JournalEntryRepository extends BaseRepository {
         lines: reversalLines
       });
       
-      return this.create(reversal, client);
+      return this.create(reversal, churchId, client);
     });
   }
 
+  async delete(id, churchId = null) {
+    const query = churchId
+      ? 'DELETE FROM journal_entries WHERE id = $1 AND church_id = $2 RETURNING *'
+      : 'DELETE FROM journal_entries WHERE id = $1 RETURNING *';
+    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+    return result.rows[0] || null;
+  }
+
   async getAccountTransactions(accountId, options = {}) {
-    const { start_date, end_date, limit = 50 } = options;
+    const { start_date, end_date, churchId, limit = 50 } = options;
     
     let query = `
       SELECT 
@@ -230,6 +240,11 @@ class JournalEntryRepository extends BaseRepository {
     `;
     let params = [accountId];
     let paramIndex = 2;
+
+    if (churchId) {
+      query += ` AND je.church_id = $${paramIndex++}`;
+      params.push(churchId);
+    }
     
     if (start_date) {
       query += ` AND je.entry_date >= $${paramIndex++}`;

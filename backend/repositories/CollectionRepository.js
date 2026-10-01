@@ -66,6 +66,20 @@ class CollectionRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  // All collections for a church (used by DepartmentDashboard to find the
+  // collection linked to an event)
+  async getCollectionsByChurch(churchId) {
+    const query = `
+      SELECT ec.*, e.title as event_title
+      FROM event_collections ec
+      LEFT JOIN events e ON ec.event_id = e.id
+      WHERE ec.church_id = $1
+      ORDER BY ec.created_at DESC
+    `;
+    const result = await this.pool.query(query, [churchId]);
+    return result.rows;
+  }
+
   async getEventCollectionWithProgress(id) {
     const collection = await this.getEventCollectionWithDetails(id);
     if (!collection) return null;

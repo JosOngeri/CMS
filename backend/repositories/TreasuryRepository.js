@@ -441,7 +441,7 @@ class TreasuryRepository extends BaseRepository {
       `SELECT p.id,
               COALESCE(p.user_id, p.member_id) AS member_id,
               COALESCE(m.first_name || ' ' || m.last_name, u.first_name || ' ' || u.last_name) AS member_name,
-              p.amount, p.payment_type AS category, p.description,
+              p.amount, p.payment_type AS category, p.notes AS description,
               COALESCE(p.completed_at, p.payment_date) AS date,
               EXTRACT(YEAR FROM COALESCE(p.completed_at, p.payment_date))::int AS year
        FROM payments p
@@ -459,7 +459,7 @@ class TreasuryRepository extends BaseRepository {
       `SELECT p.id,
               COALESCE(p.mpesa_receipt_number, p.reference_number, 'REC-' || p.id::text) AS receipt_number,
               COALESCE(m.first_name || ' ' || m.last_name, u.first_name || ' ' || u.last_name) AS member_name,
-              p.amount, p.description, p.payment_type,
+              p.amount, p.notes AS description, p.payment_type,
               pm.name AS payment_method,
               COALESCE(p.completed_at, p.payment_date) AS receipt_date
        FROM payments p
@@ -478,7 +478,7 @@ class TreasuryRepository extends BaseRepository {
       `SELECT p.id,
               COALESCE(p.mpesa_receipt_number, p.reference_number, 'REC-' || p.id::text) AS receipt_number,
               COALESCE(m.first_name || ' ' || m.last_name, u.first_name || ' ' || u.last_name) AS member_name,
-              p.amount, p.description, p.payment_type,
+              p.amount, p.notes AS description, p.payment_type,
               pm.name AS payment_method, p.reference_number, p.status,
               COALESCE(p.completed_at, p.payment_date) AS receipt_date
        FROM payments p

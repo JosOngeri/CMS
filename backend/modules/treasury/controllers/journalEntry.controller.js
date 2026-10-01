@@ -21,6 +21,7 @@ class JournalEntryController {
       const { status, start_date, end_date, reference_type, account_id, limit = 50, offset = 0 } = req.query;
       
       const entries = await this.journalRepo.findAll({
+        churchId: req.user.church_id,
         status,
         start_date,
         end_date,
@@ -50,7 +51,7 @@ class JournalEntryController {
   async getJournalEntryById(req, res) {
     try {
       const { id } = req.params;
-      const entry = await this.journalRepo.findById(id);
+      const entry = await this.journalRepo.findById(id, req.user.church_id);
       
       if (!entry) {
         return res.status(404).json({ error: 'Journal entry not found' });
@@ -90,7 +91,7 @@ class JournalEntryController {
         });
       }
       
-      const created = await this.journalRepo.create(entry);
+      const created = await this.journalRepo.create(entry, req.user.church_id);
       
       logger.info(`Journal entry created: ${created.id} by ${req.user.email}`);
       res.status(201).json({ entry: created });
@@ -108,7 +109,7 @@ class JournalEntryController {
       const { id } = req.params;
       
       // Check if entry exists and is editable
-      const existing = await this.journalRepo.findById(id);
+      const existing = await this.journalRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Journal entry not found' });
       }
@@ -127,7 +128,7 @@ class JournalEntryController {
       
       entry.calculateTotals();
       
-      const updated = await this.journalRepo.update(id, entry);
+      const updated = await this.journalRepo.update(id, entry, req.user.church_id);
       
       logger.info(`Journal entry updated: ${id}`);
       res.json({ entry: updated });
@@ -145,7 +146,7 @@ class JournalEntryController {
       const { id } = req.params;
       const { reason } = req.body;
       
-      const existing = await this.journalRepo.findById(id);
+      const existing = await this.journalRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Journal entry not found' });
       }
@@ -156,7 +157,7 @@ class JournalEntryController {
         });
       }
       
-      const reversal = await this.journalRepo.reverse(id, req.user.id);
+      const reversal = await this.journalRepo.reverse(id, req.user.id, req.user.church_id);
       
       logger.info(`Journal entry reversed: ${id} -> ${reversal.id} by ${req.user.email}. Reason: ${reason}`);
       res.json({ 
@@ -179,6 +180,7 @@ class JournalEntryController {
       const { start_date, end_date, limit = 50 } = req.query;
       
       const transactions = await this.journalRepo.getAccountTransactions(account_id, {
+        churchId: req.user.church_id,
         start_date,
         end_date,
         limit: parseInt(limit)
@@ -202,7 +204,7 @@ class JournalEntryController {
   async deleteJournalEntry(req, res) {
     try {
       const { id } = req.params;
-      const entry = await this.journalRepo.findById(id);
+      const entry = await this.journalRepo.findById(id, req.user.church_id);
 
       if (!entry) {
         return res.status(404).json({ error: 'Journal entry not found' });
@@ -211,7 +213,7 @@ class JournalEntryController {
         return res.status(409).json({ error: 'Only draft journal entries can be deleted. Post a reversing entry instead.' });
       }
 
-      await this.journalRepo.delete(id);
+      await this.journalRepo.delete(id, req.user.church_id);
       logger.info(`Journal entry deleted: ${id} by ${req.user.email}`);
       res.json({ success: true });
     } catch (error) {

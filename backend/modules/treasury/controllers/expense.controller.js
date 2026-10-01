@@ -21,6 +21,7 @@ class ExpenseController {
       const { status, department_id, vendor_id, fund_id, start_date, end_date, limit = 50, offset = 0 } = req.query;
       
       const expenses = await this.expenseRepo.findAll({
+        churchId: req.user.church_id,
         status,
         department_id,
         vendor_id,
@@ -51,7 +52,7 @@ class ExpenseController {
   async getExpenseById(req, res) {
     try {
       const { id } = req.params;
-      const expense = await this.expenseRepo.findById(id);
+      const expense = await this.expenseRepo.findById(id, req.user.church_id);
       
       if (!expense) {
         return res.status(404).json({ error: 'Expense not found' });
@@ -88,7 +89,7 @@ class ExpenseController {
         });
       }
       
-      const created = await this.expenseRepo.create(expense);
+      const created = await this.expenseRepo.create(expense, req.user.church_id);
       
       logger.info(`Expense created: ${created.id} by ${req.user.email}`);
       res.status(201).json({ expense: created });
@@ -105,7 +106,7 @@ class ExpenseController {
     try {
       const { id } = req.params;
       
-      const existing = await this.expenseRepo.findById(id);
+      const existing = await this.expenseRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Expense not found' });
       }
@@ -118,7 +119,7 @@ class ExpenseController {
 
       const expense = new Expense({ ...req.body, id });
       
-      const updated = await this.expenseRepo.update(id, expense);
+      const updated = await this.expenseRepo.update(id, expense, req.user.church_id);
       
       logger.info(`Expense updated: ${id}`);
       res.json({ expense: updated });
@@ -135,7 +136,7 @@ class ExpenseController {
     try {
       const { id } = req.params;
       
-      const existing = await this.expenseRepo.findById(id);
+      const existing = await this.expenseRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Expense not found' });
       }
@@ -146,7 +147,7 @@ class ExpenseController {
         });
       }
       
-      const approved = await this.expenseRepo.approve(id, req.user.id);
+      const approved = await this.expenseRepo.approve(id, req.user.id, req.user.church_id);
       
       logger.info(`Expense approved: ${id} by ${req.user.email}`);
       res.json({ expense: approved });
@@ -168,7 +169,7 @@ class ExpenseController {
         return res.status(400).json({ error: 'Rejection reason is required' });
       }
       
-      const existing = await this.expenseRepo.findById(id);
+      const existing = await this.expenseRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Expense not found' });
       }
@@ -179,7 +180,7 @@ class ExpenseController {
         });
       }
       
-      const rejected = await this.expenseRepo.reject(id, reason);
+      const rejected = await this.expenseRepo.reject(id, reason, req.user.church_id);
       
       logger.info(`Expense rejected: ${id} by ${req.user.email}. Reason: ${reason}`);
       res.json({ expense: rejected });
@@ -196,7 +197,7 @@ class ExpenseController {
     try {
       const { id } = req.params;
       
-      const existing = await this.expenseRepo.findById(id);
+      const existing = await this.expenseRepo.findById(id, req.user.church_id);
       if (!existing) {
         return res.status(404).json({ error: 'Expense not found' });
       }
@@ -207,7 +208,7 @@ class ExpenseController {
         });
       }
       
-      const paid = await this.expenseRepo.markAsPaid(id);
+      const paid = await this.expenseRepo.markAsPaid(id, req.user.church_id);
       
       logger.info(`Expense paid: ${id} by ${req.user.email}`);
       res.json({ expense: paid });
@@ -222,7 +223,7 @@ class ExpenseController {
    */
   async getPendingApprovals(req, res) {
     try {
-      const expenses = await this.expenseRepo.getPendingApprovals();
+      const expenses = await this.expenseRepo.getPendingApprovals(req.user.church_id);
       
       const totalAmount = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       
@@ -244,7 +245,7 @@ class ExpenseController {
    */
   async getExpenseSummary(req, res) {
     try {
-      const summary = await this.expenseRepo.getExpensesByStatus();
+      const summary = await this.expenseRepo.getExpensesByStatus(req.user.church_id);
       res.json({ summary });
     } catch (error) {
       logger.error('Get expense summary error:', error);
@@ -263,7 +264,7 @@ class ExpenseController {
         return res.status(400).json({ error: 'Start date and end date are required' });
       }
       
-      const report = await this.expenseRepo.getExpenseSummary(start_date, end_date);
+      const report = await this.expenseRepo.getExpenseSummary(start_date, end_date, req.user.church_id);
       
       const totalAmount = report.reduce((sum, item) => sum + parseFloat(item.total_amount), 0);
       
@@ -288,7 +289,7 @@ class ExpenseController {
   async deleteExpense(req, res) {
     try {
       const { id } = req.params;
-      const expense = await this.expenseRepo.findById(id);
+      const expense = await this.expenseRepo.findById(id, req.user.church_id);
 
       if (!expense) {
         return res.status(404).json({ error: 'Expense not found' });
@@ -297,7 +298,7 @@ class ExpenseController {
         return res.status(409).json({ error: 'Approved or paid expenses cannot be deleted' });
       }
 
-      await this.expenseRepo.delete(id);
+      await this.expenseRepo.delete(id, req.user.church_id);
       logger.info(`Expense deleted: ${id} by ${req.user.email}`);
       res.json({ success: true });
     } catch (error) {

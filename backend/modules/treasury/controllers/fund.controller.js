@@ -21,6 +21,7 @@ class FundController {
       const { fund_type, is_active } = req.query;
       
       const funds = await this.fundRepo.findAll({
+        churchId: req.user.church_id,
         fund_type,
         is_active: is_active !== undefined ? is_active === 'true' : undefined
       });
@@ -38,7 +39,7 @@ class FundController {
   async getFundById(req, res) {
     try {
       const { id } = req.params;
-      const fund = await this.fundRepo.findById(id);
+      const fund = await this.fundRepo.findById(id, req.user.church_id);
       
       if (!fund) {
         return res.status(404).json({ error: 'Fund not found' });
@@ -62,7 +63,7 @@ class FundController {
       }
 
       const fund = new Fund(req.body);
-      const created = await this.fundRepo.create(fund);
+      const created = await this.fundRepo.create(fund, req.user.church_id);
       
       logger.info(`Fund created: ${created.fund_code} - ${created.fund_name}`);
       res.status(201).json({ fund: created });
@@ -85,7 +86,7 @@ class FundController {
       const { id } = req.params;
       const fund = new Fund({ ...req.body, id });
       
-      const updated = await this.fundRepo.update(id, fund);
+      const updated = await this.fundRepo.update(id, fund, req.user.church_id);
       
       if (!updated) {
         return res.status(404).json({ error: 'Fund not found' });
@@ -107,7 +108,7 @@ class FundController {
       const { id } = req.params;
       
       // Check if fund has transactions
-      const fund = await this.fundRepo.findById(id);
+      const fund = await this.fundRepo.findById(id, req.user.church_id);
       if (!fund) {
         return res.status(404).json({ error: 'Fund not found' });
       }
@@ -118,7 +119,7 @@ class FundController {
         });
       }
       
-      await this.fundRepo.delete(id);
+      await this.fundRepo.delete(id, req.user.church_id);
       
       logger.info(`Fund deleted: ${fund.fund_code}`);
       res.json({ message: 'Fund deleted successfully' });
@@ -133,7 +134,7 @@ class FundController {
    */
   async getFundBalances(req, res) {
     try {
-      const balances = await this.fundRepo.getFundBalances();
+      const balances = await this.fundRepo.getFundBalances(req.user.church_id);
       
       const summary = balances.reduce((acc, fund) => {
         acc.total_contributions += parseFloat(fund.total_contributions);

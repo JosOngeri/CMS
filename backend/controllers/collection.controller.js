@@ -34,6 +34,18 @@ class CollectionController extends BaseController {
     }
   }
 
+  // GET /collections — all collections for the caller's church (flat array
+  // under data, DepartmentDashboard filters by event_id client-side)
+  async getCollections(req, res) {
+    try {
+      const collections = await CollectionRepository.getCollectionsByChurch(req.user.church_id);
+      return ResponseHandler.success(res, collections);
+    } catch (error) {
+      this.logger.error('getCollections', error);
+      return ResponseHandler.error(res, 'Failed to fetch collections');
+    }
+  }
+
   /**
    * Create a personal collection
    * @param {Object} req - Express request object

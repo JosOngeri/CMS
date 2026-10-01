@@ -11,8 +11,8 @@ class ChartOfAccountsRepository extends BaseRepository {
              parent.account_name as parent_name,
              parent.account_code as parent_code,
              (SELECT COUNT(*) FROM chart_of_accounts WHERE parent_id = coa.id) as child_count,
-             (SELECT COALESCE(SUM(debit), 0) FROM journal_entries WHERE account_id = coa.id) as total_debit,
-             (SELECT COALESCE(SUM(credit), 0) FROM journal_entries WHERE account_id = coa.id) as total_credit
+             (SELECT COALESCE(SUM(jel.debit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = coa.id) as total_debit,
+             (SELECT COALESCE(SUM(jel.credit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = coa.id) as total_credit
       FROM ${this.tableName} coa
       LEFT JOIN chart_of_accounts parent ON coa.parent_id = parent.id
       WHERE 1=1
@@ -39,7 +39,7 @@ class ChartOfAccountsRepository extends BaseRepository {
       params.push(churchId);
     }
 
-    query += ` ORDER BY account_number`;
+    query += ` ORDER BY account_code`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -54,22 +54,22 @@ class ChartOfAccountsRepository extends BaseRepository {
       params.push(churchId);
     }
 
-    query += ` ORDER BY account_number`;
+    query += ` ORDER BY account_code`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async getAccountBalance(accountId, churchId = null) {
+  async getAccountBalanceDeprecated(accountId, churchId = null) {
     let query = `
       SELECT
-        (SELECT COALESCE(SUM(debit), 0) FROM journal_entries WHERE account_id = $1) as total_debit,
-        (SELECT COALESCE(SUM(credit), 0) FROM journal_entries WHERE account_id = $1) as total_credit
+        (SELECT COALESCE(SUM(jel.debit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = $1) as total_debit,
+        (SELECT COALESCE(SUM(jel.credit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = $1) as total_credit
     `;
     const params = [accountId];
 
     if (churchId) {
-      query += ` AND church_id = $2`;
+      query += ` AND je.church_id = $2`;
       params.push(churchId);
     }
 
@@ -86,7 +86,7 @@ class ChartOfAccountsRepository extends BaseRepository {
       params.push(churchId);
     }
 
-    query += ` ORDER BY account_number`;
+    query += ` ORDER BY account_code`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -115,7 +115,7 @@ class ChartOfAccountsRepository extends BaseRepository {
       params.push(filters.is_active);
     }
 
-    query += ` ORDER BY account_number`;
+    query += ` ORDER BY account_code`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
