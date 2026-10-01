@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,6 +8,14 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     // Google Services plugin for Firebase (commented out until Firebase is configured)
     // id("com.google.gms.google-services")
+}
+
+// Load the upload-keystore credentials (android/key.properties, not committed to git).
+// When absent (e.g. CI or a fresh clone), release builds fall back to debug signing.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -34,13 +45,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = keystoreProperties["storeFile"]?.let { file(it) }
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Currently using debug keys for development builds only
-            // Production builds should use proper signing configuration
-            signingConfig = signingConfigs.getByName("debug")
-            
+            signingConfig = if (keystorePropertiesFile.exists())
+                signingConfigs.getByName("release")
+            else
+                signingConfigs.getByName("debug")
+
             // Enable code shrinking and obfuscation for release builds
             isMinifyEnabled = true
             proguardFiles(
