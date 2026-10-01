@@ -1,28 +1,22 @@
-// Comprehensive Flutter widget test suite.
+// Smoke test: the app boots and lands on the login screen.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sda_church_mobile/main.dart';
 
 void main() {
-  testWidgets('App smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const SDAChurchApp());
+  testWidgets('App boots to the login screen', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
 
-    // Verify app title is present.
-    expect(find.text('SDA Church Kiserian'), findsOneWidget);
-    
-    // Verify app loads without crashing
-    await tester.pumpAndSettle();
-  });
+    await tester.pumpWidget(
+      const ProviderScope(child: SDAChurchApp()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
 
-  testWidgets('App initializes Firebase', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const SDAChurchApp());
-
-    // Verify app loads (Firebase initialization is non-blocking)
-    await tester.pumpAndSettle();
-    
-    // App should still work even if Firebase fails to initialize
-    expect(find.text('SDA Church Kiserian'), findsOneWidget);
+    // The router redirects unauthenticated users to /login.
+    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(find.text('Msabato'), findsOneWidget);
   });
 }
