@@ -36,7 +36,8 @@ const MyDepartments = () => {
     const load = async () => {
       try {
         const res = await api.get(API_ENDPOINTS.DEPARTMENTS.USER_DEPARTMENTS)
-        setDepartments(Array.isArray(res.data.data) ? res.data.data : [])
+        const list = res.data.data?.departments ?? res.data.data ?? []
+        setDepartments(Array.isArray(list) ? list : [])
       } catch (e) {
         console.error(e)
         toast.error(e.response?.data?.error || e.message || 'Failed to load departments')
@@ -75,7 +76,8 @@ const MyDepartments = () => {
       setSelectedDepartments([])
       // Reload departments
       const reload = await api.get(API_ENDPOINTS.DEPARTMENTS.USER_DEPARTMENTS)
-      setDepartments(Array.isArray(reload.data.data) ? reload.data.data : [])
+      const reloaded = reload.data.data?.departments ?? reload.data.data ?? []
+      setDepartments(Array.isArray(reloaded) ? reloaded : [])
     } catch (e) {
       console.error(e)
       toast.error(e.response?.data?.error || e.message || 'Failed to join departments')

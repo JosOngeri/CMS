@@ -3,6 +3,7 @@
  */
 
 import React, { lazy, Suspense } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthProvider } from '../contexts/AuthContext';
 
 const Loader = () => (
@@ -50,8 +51,9 @@ class RouteErrorBoundary extends React.Component {
 }
 
 function SafeRoute({ children }) {
+  const { pathname } = useLocation();
   return (
-    <RouteErrorBoundary>
+    <RouteErrorBoundary key={pathname}>
       <Suspense fallback={<Loader />}>
         {children}
       </Suspense>

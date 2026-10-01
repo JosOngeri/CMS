@@ -15,7 +15,7 @@
  */
 
 import React, { lazy, Suspense } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const Loader = () => (
@@ -62,8 +62,11 @@ class RouteErrorBoundary extends React.Component {
 }
 
 function SafeRoute({ children }) {
+  // Keying by pathname remounts the boundary on navigation so one page's
+  // crash can't leave the error screen stuck on every subsequent tab.
+  const { pathname } = useLocation();
   return (
-    <RouteErrorBoundary>
+    <RouteErrorBoundary key={pathname}>
       <Suspense fallback={<Loader />}>
         {children}
       </Suspense>

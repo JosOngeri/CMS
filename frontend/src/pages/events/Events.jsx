@@ -14,7 +14,7 @@
  * - PermissionButton.jsx         → hides New/Edit/Delete without permission
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Calendar, Plus, Edit, Trash2, Clock, MapPin, Users, Filter, User, ChevronDown, ChevronRight, CheckCircle, XCircle, CalendarCheck } from 'lucide-react'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
@@ -68,7 +68,17 @@ const Events = () => {
     try {
       setLoading(true)
       const response = await api.get('/events')
-      setEvents(response.data.events || [])
+      const list = response.data?.events || response.data?.data?.events || []
+      setEvents(list.map(e => {
+        const dt = e.event_date ? new Date(e.event_date) : null
+        return {
+          ...e,
+          date: dt ? dt.toISOString().split('T')[0] : e.date,
+          time: e.event_time || (dt ? dt.toTimeString().slice(0, 5) : ''),
+          category: e.category || 'service',
+          organizer: e.organizer || [e.organizer_first_name, e.organizer_last_name].filter(Boolean).join(' ')
+        }
+      }))
     } catch (error) {
       console.error('Failed to fetch events:', error)
       toast.error('Failed to load events')
@@ -107,11 +117,12 @@ const Events = () => {
 
     try {
       const formDataToSend = new FormData()
-      Object.keys(formData).forEach(key => {
-        if (key !== 'poster' && formData[key]) {
-          formDataToSend.append(key, formData[key])
-        }
-      })
+      formDataToSend.append('title', formData.title)
+      formDataToSend.append('description', formData.description)
+      formDataToSend.append('event_date', `${formData.date}T${formData.time || '00:00'}:00`)
+      formDataToSend.append('location', formData.location)
+      formDataToSend.append('is_public', 'true')
+      if (formData.time) formDataToSend.append('event_time', formData.time)
 
       if (formData.poster) {
         formDataToSend.append('poster', formData.poster)
@@ -184,7 +195,19 @@ const Events = () => {
     ? events
     : events.filter(event => event.category === filterCategory)
 
-  const groupedEvents = groupEventsByDate(filteredEvents)
+  const groupedEvents = useMemo(() => {
+    const groups = {}
+    let current = null
+    groupEventsByDate(filteredEvents).forEach(item => {
+      if (item.type === 'header') {
+        current = item.title
+        groups[current] = []
+      } else if (current && item.data) {
+        groups[current].push(item.data)
+      }
+    })
+    return groups
+  }, [filteredEvents])
 
   const toggleGroup = (groupTitle) => {
     setCollapsedGroups(prev => ({
