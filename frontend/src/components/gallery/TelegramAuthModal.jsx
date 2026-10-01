@@ -31,7 +31,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
       setLoading(true);
       setError('');
       
-      const response = await api.post('/telegram/start-auth', {
+      const response = await api.post('/telegramAuth/start-auth', {
         phoneNumber: phoneNumber
       });
 
@@ -59,7 +59,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
       setLoading(true);
       setError('');
       
-      const response = await api.post('/telegram/verify-auth', {
+      const response = await api.post('/telegramAuth/verify-auth', {
         code: verificationCode,
         phoneNumber: phoneNumber
       });

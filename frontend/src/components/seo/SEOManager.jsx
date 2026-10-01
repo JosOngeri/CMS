@@ -22,10 +22,34 @@ const SEOManager = () => {
     fetchSEOData();
   }, []);
 
+  // SEO values persist as church settings under seo_* keys
+  const SEO_KEY_MAP = {
+    metaTitle: 'seo_meta_title',
+    metaDescription: 'seo_meta_description',
+    keywords: 'seo_keywords',
+    ogImage: 'seo_og_image',
+    canonicalUrl: 'seo_canonical_url',
+    robots: 'seo_robots',
+    sitemapEnabled: 'seo_sitemap_enabled',
+  };
+
   const fetchSEOData = async () => {
     try {
-      const response = await api.get('/seo/settings');
-      setSeoData(response.data.seoData || seoData);
+      const response = await api.get('/settings');
+      const list = response.data?.data?.settings || response.data?.settings || [];
+      const saved = {};
+      (Array.isArray(list) ? list : []).forEach((s) => {
+        Object.entries(SEO_KEY_MAP).forEach(([field, key]) => {
+          if (s.key === key) {
+            saved[field] = field === 'keywords'
+              ? (Array.isArray(s.value) ? s.value : String(s.value).split(',').map(k => k.trim()).filter(Boolean))
+              : field === 'sitemapEnabled'
+                ? s.value === true || s.value === 'true'
+                : s.value;
+          }
+        });
+      });
+      if (Object.keys(saved).length) setSeoData((prev) => ({ ...prev, ...saved }));
     } catch (error) {
       console.error('Failed to fetch SEO data:', error);
     } finally {
@@ -33,18 +57,45 @@ const SEOManager = () => {
     }
   };
 
-  const analyzeSEO = async () => {
-    try {
-      const response = await api.post('/seo/analyze', seoData);
-      setAnalysis(response.data.analysis);
-    } catch (error) {
-      toast.error('Failed to analyze SEO');
+  // Real heuristic analysis — no backend round-trip needed
+  const analyzeSEO = () => {
+    const issues = [];
+    const t = seoData.metaTitle.trim();
+    const d = seoData.metaDescription.trim();
+
+    if (!t) issues.push({ severity: 'error', title: 'Missing meta title', description: 'Every page needs a title tag — it is the first thing searchers see.' });
+    else if (t.length < 30) issues.push({ severity: 'warning', title: 'Meta title too short', description: `${t.length} characters — aim for 30–60.` });
+    else if (t.length > 60) issues.push({ severity: 'warning', title: 'Meta title too long', description: `${t.length} characters — Google truncates past ~60.` });
+    else issues.push({ severity: 'ok', title: 'Meta title length is good', description: `${t.length} characters.` });
+
+    if (!d) issues.push({ severity: 'error', title: 'Missing meta description', description: 'Search engines show this as the page snippet.' });
+    else if (d.length < 120) issues.push({ severity: 'warning', title: 'Meta description too short', description: `${d.length} characters — aim for 120–160.` });
+    else if (d.length > 160) issues.push({ severity: 'warning', title: 'Meta description too long', description: `${d.length} characters — it will be truncated.` });
+    else issues.push({ severity: 'ok', title: 'Meta description length is good', description: `${d.length} characters.` });
+
+    issues.push(seoData.keywords.length === 0
+      ? { severity: 'warning', title: 'No keywords set', description: 'Add a few terms members and visitors might search for.' }
+      : { severity: 'ok', title: 'Keywords configured', description: `${seoData.keywords.length} keyword(s).` });
+
+    issues.push(!seoData.ogImage
+      ? { severity: 'warning', title: 'No Open Graph image', description: 'Links shared on social media will have no preview image.' }
+      : { severity: 'ok', title: 'OG image configured', description: 'Social shares will show a preview image.' });
+
+    if (seoData.canonicalUrl) {
+      try { new URL(seoData.canonicalUrl); issues.push({ severity: 'ok', title: 'Canonical URL valid', description: seoData.canonicalUrl }); }
+      catch { issues.push({ severity: 'error', title: 'Canonical URL invalid', description: 'Must be a full URL like https://example.com/page' }); }
     }
+
+    setAnalysis({ issues });
   };
 
   const saveSEO = async () => {
     try {
-      await api.put('/seo/settings', seoData);
+      const settings = Object.entries(SEO_KEY_MAP).map(([field, key]) => ({
+        key,
+        value: field === 'keywords' ? seoData.keywords.join(', ') : String(seoData[field]),
+      }));
+      await api.put('/settings/bulk', { settings });
       toast.success('SEO settings saved');
     } catch (error) {
       toast.error('Failed to save SEO settings');

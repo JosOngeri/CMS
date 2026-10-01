@@ -56,12 +56,12 @@ const TelegramAuth = () => {
   const fetchAuthMethods = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/telegram/auth-methods');
-      setAuthMethods(response.data.methods || []);
+      const response = await api.get('/telegramAuth/auth-methods');
+      setAuthMethods(response.data?.data?.methods || response.data?.methods || []);
       
       // Initialize form data for each method
       const initialFormData = {};
-      (response.data.methods || []).forEach(method => {
+      (response.data?.data?.methods || response.data?.methods || []).forEach(method => {
         initialFormData[method.id] = {
           botToken: method.config?.botToken || '',
           apiId: method.config?.apiId || '',
@@ -110,7 +110,7 @@ const TelegramAuth = () => {
     }
 
     try {
-      await api.delete(`/telegram/auth-methods/${methodId}`);
+      await api.delete(`/telegramAuth/auth-methods/${methodId}`);
       setAuthMethods(authMethods.filter(m => m.id !== methodId));
       const newFormData = { ...formData };
       delete newFormData[methodId];
@@ -138,15 +138,15 @@ const TelegramAuth = () => {
 
       if (methodId.startsWith('new-')) {
         // Create new method
-        const response = await api.post('/telegram/auth-methods', payload);
+        const response = await api.post('/telegramAuth/auth-methods', payload);
         // Update with real ID
         const updatedMethods = authMethods.map(m => 
-          m.id === methodId ? { ...m, id: response.data.id } : m
+          m.id === methodId ? { ...m, id: response.data?.data?.id || response.data?.id } : m
         );
         setAuthMethods(updatedMethods);
       } else {
         // Update existing method
-        await api.put(`/telegram/auth-methods/${methodId}`, payload);
+        await api.put(`/telegramAuth/auth-methods/${methodId}`, payload);
       }
 
       toast.success('Authentication method saved successfully');
@@ -161,12 +161,12 @@ const TelegramAuth = () => {
   const handleTestConnection = async (methodId) => {
     try {
       setTesting(true);
-      const response = await api.post(`/telegram/auth-methods/${methodId}/test`);
+      const response = await api.post(`/telegramAuth/auth-methods/${methodId}/test`);
       
       if (response.data.success) {
         toast.success('Connection test successful');
       } else {
-        toast.error('Connection test failed: ' + response.data.error);
+        toast.error('Connection test failed: ' + (response.data?.data?.error || response.data?.error));
       }
     } catch (error) {
       console.error('Connection test failed:', error);
@@ -194,7 +194,7 @@ const TelegramAuth = () => {
         error: null
       });
 
-      const response = await api.post('/telegram/start-auth', {
+      const response = await api.post('/telegramAuth/start-auth', {
         phoneNumber: data.phoneNumber,
         methodId: methodId
       });
@@ -204,7 +204,7 @@ const TelegramAuth = () => {
         setVerificationState(prev => ({
           ...prev,
           step: 'code_sent',
-          code: response.data.code // For testing
+          code: response.data?.data?.code || response.data?.code // For testing
         }));
       }
     } catch (error) {
@@ -220,7 +220,7 @@ const TelegramAuth = () => {
 
   const handleVerifyCode = async () => {
     try {
-      const response = await api.post('/telegram/verify-auth', {
+      const response = await api.post('/telegramAuth/verify-auth', {
         code: verificationState.code,
         phoneNumber: verificationState.phoneNumber,
         methodId: verificationState.methodId
@@ -250,7 +250,7 @@ const TelegramAuth = () => {
 
   const handleSetDefault = async (methodId) => {
     try {
-      await api.put(`/telegram/auth-methods/${methodId}/set-default`);
+      await api.put(`/telegramAuth/auth-methods/${methodId}/set-default`);
       setAuthMethods(authMethods.map(m => ({
         ...m,
         isDefault: m.id === methodId
@@ -265,7 +265,7 @@ const TelegramAuth = () => {
   const handleToggleActive = async (methodId) => {
     try {
       const method = authMethods.find(m => m.id === methodId);
-      await api.put(`/telegram/auth-methods/${methodId}`, {
+      await api.put(`/telegramAuth/auth-methods/${methodId}`, {
         ...method,
         isActive: !method.isActive
       });

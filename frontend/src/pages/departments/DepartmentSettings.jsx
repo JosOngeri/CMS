@@ -27,7 +27,25 @@ const DepartmentSettings = () => {
       setLoading(true);
       const deptRes = await api.get('/departments');
       setDepartments(deptRes.data.departments || []);
-      
+
+      // Hydrate saved global department settings (stored under dept_* keys)
+      try {
+        const settingsRes = await api.get('/settings');
+        const list = settingsRes.data?.data?.settings || settingsRes.data?.settings || [];
+        const saved = {};
+        (Array.isArray(list) ? list : []).forEach((s) => {
+          const key = s.key?.replace(/^dept_/, '');
+          if (key && key in { allow_self_join: 1, require_approval: 1, max_members_per_department: 1, default_category: 1 }) {
+            saved[key] = s.value;
+          }
+        });
+        if (Object.keys(saved).length) {
+          setGlobalSettings((prev) => ({ ...prev, ...saved }));
+        }
+      } catch {
+        // Settings not readable — keep defaults
+      }
+
       // Initialize department settings
       const initialDeptSettings = {};
       (deptRes.data.departments || []).forEach(dept => {
@@ -65,7 +83,12 @@ const DepartmentSettings = () => {
 
   const handleSaveGlobalSettings = async () => {
     try {
-      await api.put('/admin/settings', { department_settings: globalSettings });
+      await api.put('/settings/bulk', {
+        settings: Object.entries(globalSettings).map(([key, value]) => ({
+          key: `dept_${key}`,
+          value
+        }))
+      });
       toast.success('Global department settings saved successfully');
     } catch (error) {
       console.error('Error saving global settings:', error);

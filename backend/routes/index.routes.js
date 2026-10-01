@@ -99,6 +99,7 @@ router.use('/approvals', strictLimiter, approvalsRoutes);
 router.use('/comments', generalLimiter, commentsRoutes);
 router.use('/field-permissions', generalLimiter, fieldPermissionsRoutes);
 router.use('/audit-logs', strictLimiter, clampQueryPagination(), auditLogsRoutes);
+router.use('/logs', strictLimiter, require('./logs.routes'));
 router.use('/security', strictLimiter, securityRoutes);
 router.use('/collections', generalLimiter, collectionsRoutes);
 router.use('/reports', generalLimiter, reportsRoutes);

@@ -750,32 +750,18 @@ class TelegramController extends BaseController {
   async initMTProtoAuth(req, res) {
     try {
       const { channelId } = req.params;
-      const { phoneNumber, password } = req.body;
+      const { phoneNumber } = req.body;
 
       if (!phoneNumber) {
         return this.badRequest(res, 'Phone number is required');
       }
 
-      // Hash the password for storage
-      const crypto = require('crypto');
-      const passwordHash = password ? crypto.createHash('sha256').update(password).digest('hex') : null;
-
-      // Update channel with MTProto credentials
-      await TelegramRepository.updateChannelMTProtoAuth(channelId, phoneNumber, passwordHash);
-
-      // In a real implementation, this would use the telegram-mtproto library
-      // to perform the actual authentication flow
-      // For now, we'll simulate the process
-      this.logger.info('initMTProtoAuth', { channelId, phoneNumber, status: 'pending' });
-
-      this.success(res, {
-        success: true,
-        message: 'MTProto authentication initiated',
-        data: {
-          status: 'pending',
-          phoneNumber: phoneNumber,
-          requiresCode: true
-        }
+      // MTProto user-account auth requires a Telegram client library (e.g.
+      // gramjs) which is not installed. Bot-token auth via /telegramAuth is
+      // the supported flow; refuse here instead of writing fake credentials.
+      return res.status(501).json({
+        success: false,
+        error: 'MTProto authentication is not available on this server. Use bot token authentication instead.'
       });
     } catch (error) {
       this.logger.error('initMTProtoAuth', error);
@@ -802,39 +788,15 @@ class TelegramController extends BaseController {
         return this.badRequest(res, 'Verification code is required');
       }
 
-      // Get channel data
       const channel = await TelegramRepository.getChannelById(channelId);
-
       if (!channel) {
         return this.notFound(res, 'Channel not found');
       }
 
-      // In a real implementation, this would use telegram-mtproto to verify the code
-      // For now, we'll simulate successful verification if code is 6 digits
-      const isValidCode = /^\d{6}$/.test(code);
-
-      if (isValidCode) {
-        // Generate a mock auth key
-        const crypto = require('crypto');
-        const authKey = crypto.randomBytes(32).toString('hex');
-
-        await TelegramRepository.updateChannelMTProtoAuthSuccess(channelId, authKey);
-
-        this.logger.info('verifyMTProtoAuth', { channelId, status: 'authenticated' });
-
-        this.success(res, {
-          success: true,
-          message: 'MTProto authentication successful',
-          data: {
-            status: 'authenticated',
-            authKey: authKey.substring(0, 8) + '...' // Only show partial key
-          }
-        });
-      } else {
-        await TelegramRepository.updateChannelMTProtoAuthFailed(channelId);
-
-        this.badRequest(res, 'Invalid verification code');
-      }
+      return res.status(501).json({
+        success: false,
+        error: 'MTProto verification is not available on this server. Use bot token authentication instead.'
+      });
     } catch (error) {
       this.logger.error('verifyMTProtoAuth', error);
       this.error(res, 'Failed to verify MTProto authentication');

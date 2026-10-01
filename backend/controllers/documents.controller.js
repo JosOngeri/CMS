@@ -1,5 +1,6 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const BaseController = require('./BaseController');
 const DocumentsRepository = require('../repositories/DocumentsRepository');
 const { createLogger } = require('../helpers/controllerLogger');
@@ -311,10 +312,20 @@ class DocumentsController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
-      // In a real implementation, this would upload to actual cloud storage
-      // For now, we'll simulate it and store the reference
-      const cloud_url = `https://${storage_provider}.example.com/${file_name}`;
-      const storage_key = `${Date.now()}-${file_name}`;
+      if (!file_content) {
+        return res.status(400).json({ success: false, error: 'file_content is required' });
+      }
+
+      // Decode the base64 payload and persist it under /uploads/documents/
+      // so the stored URL actually serves the file. The storage_provider
+      // field is kept on the record for a future real cloud backend.
+      const buffer = Buffer.from(String(file_content).replace(/^data:[^;]+;base64,/, ''), 'base64');
+      const dir = path.join(__dirname, '..', 'uploads', 'documents');
+      fs.mkdirSync(dir, { recursive: true });
+      const storage_key = `${Date.now()}-${Math.round(Math.random() * 1e9)}-${path.basename(file_name || 'file')}`;
+      fs.writeFileSync(path.join(dir, storage_key), buffer);
+
+      const cloud_url = `/uploads/documents/${storage_key}`;
 
       const document = await DocumentsRepository.uploadToCloud({
         file_name,

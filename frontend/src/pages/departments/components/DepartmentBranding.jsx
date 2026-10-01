@@ -39,7 +39,7 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const uploadImage = async (field, file) => {
     const formData = new FormData();
     formData.append(field, file);
-    const res = await api.post(`/departments/${department.id}/${field}`, formData);
+    const res = await api.post(`/department/${department.id}/${field}`, formData);
     return res.data.data;
   };
 
@@ -124,7 +124,7 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const handleColorUpdate = async () => {
     try {
       setUploading(true);
-      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor });
+      await api.put(`/department/${department.id}/colors`, { logoColor, bannerColor });
       toast.success('Colors updated successfully');
       onUpdate({ logo_color: logoColor, banner_color: bannerColor });
     } catch (error) {
@@ -137,7 +137,7 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const removeLogo = async () => {
     try {
       setUploading(true);
-      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, logoUrl: null });
+      await api.put(`/department/${department.id}/colors`, { logoColor, bannerColor, logoUrl: null });
       toast.success('Logo removed successfully');
       onUpdate({ logo_url: null });
     } catch (error) {
@@ -150,7 +150,7 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const removeBanner = async () => {
     try {
       setUploading(true);
-      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, bannerUrl: null });
+      await api.put(`/department/${department.id}/colors`, { logoColor, bannerColor, bannerUrl: null });
       toast.success('Banner removed successfully');
       onUpdate({ banner_url: null });
     } catch (error) {
