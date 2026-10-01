@@ -469,7 +469,7 @@ class _DeptCollectionsTabState extends State<DeptCollectionsTab> {
                 decoration: BoxDecoration(
                   color: AppTheme.warningColor.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.warningColor.shade300),
+                  border: Border.all(color: AppTheme.warningColor),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

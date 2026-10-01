@@ -99,9 +99,9 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor:
-                        const AppTheme.primaryColor.withOpacity(0.12),
+                        AppTheme.primaryColor.withOpacity(0.12),
                     child: Icon(_iconFor(l['position']?.toString() ?? ''),
-                        color: const AppTheme.primaryColor),
+                        color: AppTheme.primaryColor),
                   ),
                   title: Text(l['user_name']?.toString() ??
                       l['name']?.toString() ??

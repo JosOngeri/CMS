@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/config.dart';
+import '../services/api_service.dart';
 
 class ServerUrlScreen extends StatefulWidget {
   const ServerUrlScreen({super.key});
@@ -12,7 +13,7 @@ class ServerUrlScreen extends StatefulWidget {
 
 class _ServerUrlScreenState extends State<ServerUrlScreen> {
   final _urlController = TextEditingController();
-  static const String _savedUrlKey = 'saved_api_url';
+  static const String _savedUrlKey = 'api_url';
 
   @override
   void initState() {
@@ -42,6 +43,9 @@ class _ServerUrlScreenState extends State<ServerUrlScreen> {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_savedUrlKey, normalized);
+
+    final api = await ApiService.getInstance();
+    api.updateBaseUrl(normalized);
 
     if (mounted) {
       _showMessage('Server URL saved');

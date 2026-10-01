@@ -776,7 +776,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 dense: true,
                 leading: CircleAvatar(
                   backgroundColor:
-                      isIncome ? AppTheme.successColor.shade50 : AppTheme.errorColor.shade50,
+                      isIncome ? AppTheme.successLight : AppTheme.errorLight,
                   child: Icon(
                     isIncome ? Icons.arrow_downward : Icons.arrow_upward,
                     color: isIncome ? AppTheme.successColor : AppTheme.errorColor,

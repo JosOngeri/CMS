@@ -190,7 +190,7 @@ class SocketService {
 
   // Cleanup resources
   void dispose() {
-    _socket?.off();
+    _socket?.clearListeners();
     disconnect();
     _messageController.close();
     _statusController.close();

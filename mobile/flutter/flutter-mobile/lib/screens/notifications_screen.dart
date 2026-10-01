@@ -91,12 +91,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               leading: CircleAvatar(
                                 backgroundColor: read
                                     ? AppTheme.textSecondary.withOpacity(0.15)
-                                    : const AppTheme.primaryColor
+                                    : AppTheme.primaryColor
                                         .withOpacity(0.12),
                                 child: Icon(_iconFor(type),
                                     color: read
                                         ? AppTheme.textSecondary
-                                        : const AppTheme.primaryColor),
+                                        : AppTheme.primaryColor),
                               ),
                               title: Text(
                                 n['title']?.toString() ?? 'Notification',

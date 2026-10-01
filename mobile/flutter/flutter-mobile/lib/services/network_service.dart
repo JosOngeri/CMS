@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class NetworkService {
   static final NetworkService _instance = NetworkService._internal();
@@ -53,18 +55,37 @@ class NetworkService {
     final shouldGoOnline = await _showOnlineRequirementDialog(context, featureName);
     
     if (shouldGoOnline) {
-      // Open network settings
-      debugPrint('=== NetworkService: Opening network settings ===');
-      // In a real implementation, this would open network settings
-      // For now, we'll just return false and let the user handle it
+      debugPrint('=== NetworkService: Opening app settings ===');
+      await openAppSettings();
       return false;
     }
-    
+
     return false;
   }
 
   Future<bool> _showOnlineRequirementDialog(BuildContext context, String? featureName) async {
-    return false; // Placeholder - would show actual dialog
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('No Internet Connection'),
+        content: Text(
+          featureName != null
+              ? '$featureName requires an internet connection. Please connect and try again.'
+              : 'This feature requires an internet connection. Please connect and try again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Open Settings'),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   void dispose() {

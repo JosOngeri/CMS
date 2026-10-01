@@ -62,6 +62,9 @@ dependencies:
 
   # SMS inbox access for collector M-Pesa reconciliation
   # (another_telephony = maintained fork of the discontinued telephony plugin)
+  firebase_core: ^3.8.0
+  firebase_messaging: ^15.1.6
+  socket_io_client: ^2.0.3+1
   flutter_local_notifications: ^17.0.0
 
 dev_dependencies:
