@@ -392,7 +392,8 @@ class GalleryController extends BaseController {
       const limit = Math.min(parseInt(req.query.limit) || 6, 50);
       const canViewAll = (req.user?.roles || []).some(r => ['Super Admin', 'Pastor', 'Department Head'].includes(r));
       const photos = await GalleryRepository.getRecent(churchId, limit, !canViewAll);
-      this.success(res, { photos });
+      const annotated = await GalleryRepository.annotatePhotosForUser(photos, req.user?.id);
+      this.success(res, { photos: annotated });
     } catch (error) {
       this.logger.error('getPublicPhotos', error);
       this.error(res, 'Failed to fetch photos');
@@ -462,8 +463,9 @@ class GalleryController extends BaseController {
 
       const rows = await GalleryRepository.executePaginatedQuery(query, params);
       const { data, pagination } = CursorPagination.processResults(rows, parseInt(limit), 0);
+      const annotated = await GalleryRepository.annotatePhotosForUser(data, req.user?.id);
 
-      this.success(res, { data, pagination });
+      this.success(res, { data: annotated, pagination });
     } catch (error) {
       this.logger.error('getPublicPhotosPaginated', error);
       this.error(res, 'Failed to fetch photos');
@@ -1036,6 +1038,81 @@ class GalleryController extends BaseController {
     } catch (error) {
       this.logger.error('batchUpdatePhotos', error);
       this.error(res, 'Failed to update photos');
+    }
+  }
+
+  /**
+   * Toggle the current member's favourite on a photo
+   */
+  async toggleFavorite(req, res) {
+    try {
+      const photo = await GalleryRepository.getById(req.params.id, req.user.church_id);
+      if (!photo) return this.notFound(res, 'Photo not found');
+      const result = await GalleryRepository.toggleFavorite(req.params.id, req.user.id);
+      res.json({ success: true, favorited: result.favorited });
+    } catch (error) {
+      this.logger.error('toggleFavorite', error);
+      this.error(res, 'Failed to update favourite');
+    }
+  }
+
+  /**
+   * List the current member's favourited photos (published only)
+   */
+  async getMyFavorites(req, res) {
+    try {
+      const photos = await GalleryRepository.getFavoritesByUser(req.user.id);
+      const annotated = await GalleryRepository.annotatePhotosForUser(photos, req.user.id);
+      res.json({ success: true, photos: annotated });
+    } catch (error) {
+      this.logger.error('getMyFavorites', error);
+      this.error(res, 'Failed to fetch favourites');
+    }
+  }
+
+  /**
+   * Add a private label to a photo (visible only to this member)
+   */
+  async addPhotoLabel(req, res) {
+    try {
+      const { label } = req.body;
+      if (!label || !String(label).trim()) {
+        return this.badRequest(res, 'Label is required');
+      }
+      const photo = await GalleryRepository.getById(req.params.id, req.user.church_id);
+      if (!photo) return this.notFound(res, 'Photo not found');
+      const row = await GalleryRepository.addLabel(req.params.id, req.user.id, label);
+      res.status(201).json({ success: true, label: row.label });
+    } catch (error) {
+      this.logger.error('addPhotoLabel', error);
+      this.error(res, 'Failed to add label');
+    }
+  }
+
+  /**
+   * Remove one of the current member's private labels from a photo
+   */
+  async removePhotoLabel(req, res) {
+    try {
+      const label = decodeURIComponent(req.params.label || '');
+      await GalleryRepository.removeLabel(req.params.id, req.user.id, label);
+      res.json({ success: true, label });
+    } catch (error) {
+      this.logger.error('removePhotoLabel', error);
+      this.error(res, 'Failed to remove label');
+    }
+  }
+
+  /**
+   * List the current member's distinct private labels
+   */
+  async getMyLabels(req, res) {
+    try {
+      const labels = await GalleryRepository.getMyLabels(req.user.id);
+      res.json({ success: true, labels });
+    } catch (error) {
+      this.logger.error('getMyLabels', error);
+      this.error(res, 'Failed to fetch labels');
     }
   }
 }

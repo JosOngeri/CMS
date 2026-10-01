@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Grid, List, Play, X, ChevronLeft, ChevronRight, Upload, Trash2, Calendar, Folder, CheckSquare, Square } from 'lucide-react'
+import { Search, Grid, List, Play, X, ChevronLeft, ChevronRight, Upload, Trash2, Calendar, Folder, CheckSquare, Square, Heart, Tag, Plus } from 'lucide-react'
 import Card from '../common/Card'
 import { EmptyState } from '../common/EmptyState'
 import { useToast } from '../../contexts/ToastContext'
@@ -29,6 +29,52 @@ const PhotoGallery = ({
   const [slideshowIndex, setSlideshowIndex] = useState(0)
   const [isSlideshowPlaying, setIsSlideshowPlaying] = useState(false)
   const [failedImages, setFailedImages] = useState(new Set())
+  // Per-member state: local overrides on top of server-annotated photo fields
+  const [favOverrides, setFavOverrides] = useState({})
+  const [labelOverrides, setLabelOverrides] = useState({})
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [selectedLabel, setSelectedLabel] = useState('')
+  const [newLabel, setNewLabel] = useState('')
+
+  const isFav = (photo) => favOverrides[photo.id] ?? photo.is_favorited ?? false
+  const photoLabels = (photo) => labelOverrides[photo.id] ?? photo.my_labels ?? []
+
+  const toggleFavorite = async (photo) => {
+    const previous = isFav(photo)
+    setFavOverrides(prev => ({ ...prev, [photo.id]: !previous }))
+    try {
+      const res = await api.post(`/gallery/photos/${photo.id}/favorite`)
+      const favorited = res.data?.favorited ?? !previous
+      setFavOverrides(prev => ({ ...prev, [photo.id]: favorited }))
+    } catch {
+      setFavOverrides(prev => ({ ...prev, [photo.id]: previous }))
+      toast.error('Failed to update favourite')
+    }
+  }
+
+  const addLabel = async (photo) => {
+    const label = newLabel.trim()
+    if (!label || photoLabels(photo).includes(label)) return
+    try {
+      await api.post(`/gallery/photos/${photo.id}/labels`, { label })
+      setLabelOverrides(prev => ({ ...prev, [photo.id]: [...photoLabels(photo), label] }))
+      setNewLabel('')
+      toast.success(`Label "${label}" added`)
+    } catch {
+      toast.error('Failed to add label')
+    }
+  }
+
+  const removeLabel = async (photo, label) => {
+    try {
+      await api.delete(`/gallery/photos/${photo.id}/labels/${encodeURIComponent(label)}`)
+      setLabelOverrides(prev => ({ ...prev, [photo.id]: photoLabels(photo).filter(l => l !== label) }))
+    } catch {
+      toast.error('Failed to remove label')
+    }
+  }
+
+  const myLabels = [...new Set(photos.flatMap(p => photoLabels(p)))]
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -60,7 +106,9 @@ const PhotoGallery = ({
       photo.caption?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       photo.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = !selectedCategory || photo.category === selectedCategory
-    return matchesSearch && matchesCategory
+    const matchesFavorites = !favoritesOnly || isFav(photo)
+    const matchesLabel = !selectedLabel || photoLabels(photo).includes(selectedLabel)
+    return matchesSearch && matchesCategory && matchesFavorites && matchesLabel
   })
 
   const displayedPhotos = limit ? filteredPhotos.slice(0, limit) : filteredPhotos
@@ -172,6 +220,32 @@ const PhotoGallery = ({
                   <option key={category} value={category}>{category}</option>
                 ))}
               </select>
+              {isAuthenticated && (
+                <>
+                  <button
+                    onClick={() => setFavoritesOnly(v => !v)}
+                    className={`flex items-center space-x-1 px-3 py-2 border rounded-lg ${favoritesOnly ? 'bg-primary-100 text-primary-600 border-[var(--color-primary)]' : 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'}`}
+                    aria-label="Show only favourites"
+                    aria-pressed={favoritesOnly}
+                  >
+                    <Heart className={`h-4 w-4 ${favoritesOnly ? 'fill-current' : ''}`} />
+                    <span className="text-sm">Favourites</span>
+                  </button>
+                  {myLabels.length > 0 && (
+                    <select
+                      value={selectedLabel}
+                      onChange={(e) => setSelectedLabel(e.target.value)}
+                      className="px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-primary-500"
+                      aria-label="Filter by your labels"
+                    >
+                      <option value="">My Labels</option>
+                      {myLabels.map(label => (
+                        <option key={label} value={label}>{label}</option>
+                      ))}
+                    </select>
+                  )}
+                </>
+              )}
             </div>
           )}
           
@@ -253,18 +327,33 @@ const PhotoGallery = ({
                     </p>
                   )}
                 </div>
-                {canUpload && onDelete && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDelete(photo.id)
-                    }}
-                    className="absolute top-2 right-2 p-2 bg-[var(--color-error)] hover:opacity-90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Delete photo"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                )}
+                <div className="absolute top-2 right-2 flex space-x-1">
+                  {isAuthenticated && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleFavorite(photo)
+                      }}
+                      className={`p-2 rounded-full transition-opacity shadow-md ${isFav(photo) ? 'bg-[var(--color-error)] text-white opacity-100' : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] opacity-0 group-hover:opacity-100'}`}
+                      aria-label={isFav(photo) ? 'Remove from favourites' : 'Add to favourites'}
+                      aria-pressed={isFav(photo)}
+                    >
+                      <Heart className={`h-4 w-4 ${isFav(photo) ? 'fill-current' : ''}`} />
+                    </button>
+                  )}
+                  {canUpload && onDelete && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(photo.id)
+                      }}
+                      className="p-2 bg-[var(--color-error)] hover:opacity-90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Delete photo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -302,16 +391,41 @@ const PhotoGallery = ({
                       <span>Uploaded by {photo.first_name || photo.username}</span>
                     )}
                   </div>
+                  {isAuthenticated && photoLabels(photo).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {photoLabels(photo).map(label => (
+                        <span
+                          key={label}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary-100 text-primary-600"
+                        >
+                          <Tag className="h-3 w-3 mr-1" />
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                {canUpload && onDelete && (
-                  <button
-                    onClick={() => handleDelete(photo.id)}
-                    className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg"
-                    aria-label="Delete photo"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
-                )}
+                <div className="flex flex-col space-y-1">
+                  {isAuthenticated && (
+                    <button
+                      onClick={() => toggleFavorite(photo)}
+                      className={`p-2 rounded-lg ${isFav(photo) ? 'text-[var(--color-error)] bg-[var(--color-error-light)]' : 'text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'}`}
+                      aria-label={isFav(photo) ? 'Remove from favourites' : 'Add to favourites'}
+                      aria-pressed={isFav(photo)}
+                    >
+                      <Heart className={`h-5 w-5 ${isFav(photo) ? 'fill-current' : ''}`} />
+                    </button>
+                  )}
+                  {canUpload && onDelete && (
+                    <button
+                      onClick={() => handleDelete(photo.id)}
+                      className="p-2 text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg"
+                      aria-label="Delete photo"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </Card>
           ))}
@@ -381,13 +495,25 @@ const PhotoGallery = ({
         >
           <div className="relative max-w-4xl max-h-full">
             {renderImage(selectedPhoto, 'max-w-full max-h-[90vh] object-contain')}
-            <button
-              onClick={() => setSelectedPhoto(null)}
-              className="absolute top-2 right-2 p-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface)] text-[var(--color-text)] rounded-full"
-              aria-label="Close lightbox"
-            >
-              <X className="h-6 w-6" />
-            </button>
+            <div className="absolute top-2 right-2 flex space-x-2">
+              {isAuthenticated && (
+                <button
+                  onClick={() => toggleFavorite(selectedPhoto)}
+                  className={`p-2 rounded-full ${isFav(selectedPhoto) ? 'bg-[var(--color-error)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text)]'}`}
+                  aria-label={isFav(selectedPhoto) ? 'Remove from favourites' : 'Add to favourites'}
+                  aria-pressed={isFav(selectedPhoto)}
+                >
+                  <Heart className={`h-6 w-6 ${isFav(selectedPhoto) ? 'fill-current' : ''}`} />
+                </button>
+              )}
+              <button
+                onClick={() => setSelectedPhoto(null)}
+                className="p-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface)] text-[var(--color-text)] rounded-full"
+                aria-label="Close lightbox"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
               <h3 className="font-semibold text-lg">{selectedPhoto.caption || 'Untitled'}</h3>
               {selectedPhoto.description && (
@@ -398,6 +524,50 @@ const PhotoGallery = ({
                   <Folder className="h-4 w-4 mr-1" />
                   {selectedPhoto.category}
                 </p>
+              )}
+              {isAuthenticated && (
+                <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                  {photoLabels(selectedPhoto).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {photoLabels(selectedPhoto).map(label => (
+                        <span
+                          key={label}
+                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-primary-100 text-primary-600"
+                        >
+                          <Tag className="h-3 w-3 mr-1" />
+                          {label}
+                          <button
+                            onClick={() => removeLabel(selectedPhoto, label)}
+                            className="ml-1 hover:opacity-70"
+                            aria-label={`Remove label ${label}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="text"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && addLabel(selectedPhoto)}
+                      placeholder="Add a private label…"
+                      maxLength={100}
+                      className="px-3 py-1.5 text-sm rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] border border-[var(--color-border)] focus:ring-2 focus:ring-primary-500"
+                      aria-label="New private label"
+                    />
+                    <button
+                      onClick={() => addLabel(selectedPhoto)}
+                      className="p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg"
+                      aria-label="Add label"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs opacity-60 mt-1">Labels are private — only you can see them.</p>
+                </div>
               )}
             </div>
           </div>

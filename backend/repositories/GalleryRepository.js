@@ -262,6 +262,96 @@ class GalleryRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  // ---------------------------------------------------------------------------
+  // Per-member favourites + private labels
+  // ---------------------------------------------------------------------------
+
+  async annotatePhotosForUser(photos, userId) {
+    if (!userId || !Array.isArray(photos) || photos.length === 0) return photos;
+    const ids = photos.map(p => p.id);
+    const [favResult, labelResult] = await Promise.all([
+      this.pool.query(
+        'SELECT photo_id FROM gallery_favorites WHERE user_id = $1 AND photo_id = ANY($2)',
+        [userId, ids]
+      ),
+      this.pool.query(
+        'SELECT photo_id, label FROM gallery_photo_labels WHERE user_id = $1 AND photo_id = ANY($2)',
+        [userId, ids]
+      )
+    ]);
+    const favSet = new Set(favResult.rows.map(r => r.photo_id));
+    const labelMap = {};
+    for (const row of labelResult.rows) {
+      (labelMap[row.photo_id] ||= []).push(row.label);
+    }
+    return photos.map(p => ({
+      ...p,
+      is_favorited: favSet.has(p.id),
+      my_labels: labelMap[p.id] || []
+    }));
+  }
+
+  async toggleFavorite(photoId, userId) {
+    const existing = await this.pool.query(
+      'SELECT id FROM gallery_favorites WHERE user_id = $1 AND photo_id = $2',
+      [userId, photoId]
+    );
+    if (existing.rows.length > 0) {
+      await this.pool.query(
+        'DELETE FROM gallery_favorites WHERE user_id = $1 AND photo_id = $2',
+        [userId, photoId]
+      );
+      return { favorited: false };
+    }
+    await this.pool.query(
+      `INSERT INTO gallery_favorites (user_id, photo_id) VALUES ($1, $2)
+       ON CONFLICT (user_id, photo_id) DO NOTHING`,
+      [userId, photoId]
+    );
+    return { favorited: true };
+  }
+
+  async getFavoritesByUser(userId) {
+    const result = await this.pool.query(
+      `SELECT gp.*, ga.title as album_name, gf.created_at as favorited_at
+       FROM gallery_favorites gf
+       JOIN gallery_photos gp ON gf.photo_id = gp.id
+       LEFT JOIN gallery_albums ga ON gp.album_id = ga.id
+       WHERE gf.user_id = $1 AND (gp.status = 'approved' OR gp.status IS NULL)
+       ORDER BY gf.created_at DESC`,
+      [userId]
+    );
+    return result.rows.map(p => ({ ...p, is_favorited: true }));
+  }
+
+  async addLabel(photoId, userId, label) {
+    const clean = String(label).trim().slice(0, 100);
+    if (!clean) return null;
+    const result = await this.pool.query(
+      `INSERT INTO gallery_photo_labels (user_id, photo_id, label)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, photo_id, label) DO NOTHING
+       RETURNING *`,
+      [userId, photoId, clean]
+    );
+    return result.rows[0] || { label: clean, photo_id: photoId };
+  }
+
+  async removeLabel(photoId, userId, label) {
+    await this.pool.query(
+      'DELETE FROM gallery_photo_labels WHERE user_id = $1 AND photo_id = $2 AND label = $3',
+      [userId, photoId, label]
+    );
+  }
+
+  async getMyLabels(userId) {
+    const result = await this.pool.query(
+      `SELECT DISTINCT label FROM gallery_photo_labels WHERE user_id = $1 ORDER BY label`,
+      [userId]
+    );
+    return result.rows.map(r => r.label);
+  }
+
   async searchPhotos(searchPattern, limit, offset) {
     const result = await this.pool.query(
       `SELECT DISTINCT gp.*, 

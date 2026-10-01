@@ -16,6 +16,13 @@ router.get('/photos/filter/date', authenticateToken, galleryController.filterPho
 // All routes require authentication
 router.use(authenticateToken);
 
+// Per-member favourites and private labels (scoped to the caller)
+router.post('/photos/:id/favorite', galleryController.toggleFavorite);
+router.get('/favorites', galleryController.getMyFavorites);
+router.get('/labels', galleryController.getMyLabels);
+router.post('/photos/:id/labels', galleryController.addPhotoLabel);
+router.delete('/photos/:id/labels/:label', galleryController.removePhotoLabel);
+
 // Categories route
 router.get('/categories', galleryController.getCategories);
 
