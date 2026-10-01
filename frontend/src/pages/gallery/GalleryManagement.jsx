@@ -70,7 +70,7 @@ const GalleryManagement = () => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await api.get('/telegram/auth-methods')
+      const response = await api.get('/telegramAuth/auth-methods')
       const methods = response.data.methods || []
       
       // Check if there are any active auth methods
@@ -271,7 +271,7 @@ const GalleryManagement = () => {
 
     try {
       setAuthSubmitting(true)
-      const response = await api.post('/telegram/auth/verify', { code: authCode, accountType: authTarget })
+      const response = await api.post('/telegramAuth/verify-auth', { code: authCode, accountType: authTarget })
       toast.success(response.data.message)
       setShowAuthModal(false)
       setAuthCode('')

@@ -5,7 +5,7 @@ class GalleryRepository extends BaseRepository {
     super('gallery_photos');
   }
 
-  async getRecent(churchId = null, limit = 20) {
+  async getRecent(churchId = null, limit = 20, approvedOnly = false) {
     let query = `
       SELECT gp.*, ga.title as album_name
       FROM ${this.tableName} gp
@@ -13,6 +13,10 @@ class GalleryRepository extends BaseRepository {
       WHERE 1=1
     `;
     const params = [];
+
+    if (approvedOnly) {
+      query += ` AND (gp.status = 'approved' OR gp.status IS NULL)`;
+    }
 
     if (churchId) {
       query += ` AND gp.church_id = $1`;
@@ -446,6 +450,46 @@ class GalleryRepository extends BaseRepository {
   async executePaginatedQuery(query, params) {
     const result = await this.pool.query(query, params);
     return result.rows;
+  }
+
+  // Insert a photo row for a directly-uploaded file (multipart upload,
+  // not Telegram-sourced). album_id may be null — the photo still shows
+  // in the church gallery.
+  async createUploadedPhoto({ churchId, fileUrl, caption, description, category, status, fileSize, fileType, uploadedBy }) {
+    const result = await this.pool.query(
+      `INSERT INTO gallery_photos
+         (church_id, file_url, thumbnail_url, title, caption, description, category, status, file_size, file_type, uploaded_by)
+       VALUES ($1, $2, $2, $3, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING *`,
+      [churchId, fileUrl, caption || null, description || null, category || null, status || 'pending', fileSize || null, fileType || null, uploadedBy]
+    );
+    return result.rows[0];
+  }
+
+  // Batch-update shared fields across a set of photos (church-scoped)
+  async batchUpdatePhotos(photoIds, { category, caption, description }, churchId) {
+    const updated = [];
+    const errors = [];
+    for (const id of photoIds) {
+      try {
+        const result = await this.pool.query(
+          `UPDATE gallery_photos
+           SET category = COALESCE($1, category),
+               caption = COALESCE($2, caption),
+               title = COALESCE($2, title),
+               description = COALESCE($3, description),
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $4 AND church_id = $5
+           RETURNING *`,
+          [category || null, caption || null, description || null, id, churchId]
+        );
+        if (result.rows[0]) updated.push(result.rows[0]);
+        else errors.push({ id, error: 'Not found' });
+      } catch (e) {
+        errors.push({ id, error: e.message });
+      }
+    }
+    return { updated, errors };
   }
 }
 

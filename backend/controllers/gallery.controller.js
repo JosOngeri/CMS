@@ -4,6 +4,31 @@ const GalleryRepository = require('../repositories/GalleryRepository');
 const GalleryAlbumsRepository = require('../repositories/GalleryAlbumsRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 const CursorPagination = require('../utils/cursorPagination');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Disk storage for direct photo uploads (web/admin). Files land in
+// uploads/gallery/ and are served from /uploads/* by app.js.
+const galleryStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '..', 'uploads', 'gallery');
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const safe = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname).toLowerCase()}`;
+    cb(null, safe);
+  }
+});
+
+const imageOnly = (req, file, cb) => {
+  const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+  if (allowed.includes(path.extname(file.originalname).toLowerCase())) return cb(null, true);
+  cb(new Error('Only image files are allowed'));
+};
+
+const galleryUpload = multer({ storage: galleryStorage, fileFilter: imageOnly, limits: { fileSize: 10 * 1024 * 1024, files: 10 } });
 
 /**
  * Gallery Controller
@@ -365,7 +390,8 @@ class GalleryController extends BaseController {
     try {
       const churchId = req.user?.church_id || req.query.church_id || null;
       const limit = Math.min(parseInt(req.query.limit) || 6, 50);
-      const photos = await GalleryRepository.getRecent(churchId, limit);
+      const canViewAll = (req.user?.roles || []).some(r => ['Super Admin', 'Pastor', 'Department Head'].includes(r));
+      const photos = await GalleryRepository.getRecent(churchId, limit, !canViewAll);
       this.success(res, { photos });
     } catch (error) {
       this.logger.error('getPublicPhotos', error);
@@ -421,14 +447,16 @@ class GalleryController extends BaseController {
     try {
       const churchId = req.user?.church_id || req.query.church_id || null;
       const { cursor, limit = 20 } = req.query;
-      
+      const canViewAll = (req.user?.roles || []).some(r => ['Super Admin', 'Pastor', 'Department Head'].includes(r));
+      const extraWhere = canViewAll ? 'church_id = $2' : `church_id = $2 AND (status = 'approved' OR status IS NULL)`;
+
       const { query, params } = CursorPagination.buildSQLQuery('gallery_photos', {
         cursor,
         limit: Math.min(parseInt(limit), 50),
         orderBy: 'uploaded_at',
         orderDirection: 'DESC',
         timestampColumn: 'uploaded_at',
-        additionalWhere: 'church_id = $2',
+        additionalWhere: extraWhere,
         additionalParams: [churchId]
       });
 
@@ -947,7 +975,71 @@ class GalleryController extends BaseController {
       this.error(res, 'Failed to set cover photo');
     }
   }
+
+  /**
+   * Direct photo upload (multipart) — used by GalleryManagement's upload modal.
+   * Accepts up to 10 images under field name "photos".
+   */
+  async uploadPhotos(req, res) {
+    try {
+      const files = req.files || [];
+      if (!files.length) return this.badRequest(res, 'No files uploaded');
+
+      const churchId = req.user.church_id;
+      const { caption, description, category, status } = req.body;
+      const safeStatus = status === 'approved' ? 'approved' : 'pending';
+
+      const uploaded = [];
+      const errors = [];
+      for (const file of files) {
+        try {
+          const fileUrl = `/uploads/gallery/${path.basename(file.path)}`;
+          const photo = await GalleryRepository.createUploadedPhoto({
+            churchId,
+            fileUrl,
+            caption,
+            description,
+            category,
+            status: safeStatus,
+            fileSize: file.size,
+            fileType: file.mimetype,
+            uploadedBy: req.user.id
+          });
+          uploaded.push(photo);
+        } catch (e) {
+          errors.push({ file: file.originalname, error: e.message });
+        }
+      }
+
+      res.status(201).json({ success: true, uploaded, errors });
+    } catch (error) {
+      this.logger.error('uploadPhotos', error);
+      this.error(res, 'Failed to upload photos');
+    }
+  }
+
+  /**
+   * Batch update category/caption/description across selected photos.
+   */
+  async batchUpdatePhotos(req, res) {
+    try {
+      const { photoIds, category, caption, description } = req.body;
+      if (!Array.isArray(photoIds) || photoIds.length === 0) {
+        return this.badRequest(res, 'photoIds must be a non-empty array');
+      }
+      const result = await GalleryRepository.batchUpdatePhotos(
+        photoIds,
+        { category, caption, description },
+        req.user.church_id
+      );
+      res.json({ success: true, updated: result.updated, errors: result.errors, message: 'Photos updated' });
+    } catch (error) {
+      this.logger.error('batchUpdatePhotos', error);
+      this.error(res, 'Failed to update photos');
+    }
+  }
 }
 
 module.exports = new GalleryController();
+module.exports.galleryUpload = galleryUpload;
 

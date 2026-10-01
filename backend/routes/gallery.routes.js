@@ -1,11 +1,11 @@
 ﻿const express = require('express');
 const router = express.Router();
 const galleryController = require('../controllers/gallery.controller');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken, requireRole, optionalAuth } = require('../middleware/auth');
 
-// Public route - no authentication required
-router.get('/photos', galleryController.getPublicPhotos);
-router.get('/photos/paginated', galleryController.getPublicPhotosPaginated);
+// Public route - no authentication required (optional auth used to hide pending photos from anonymous viewers)
+router.get('/photos', optionalAuth, galleryController.getPublicPhotos);
+router.get('/photos/paginated', optionalAuth, galleryController.getPublicPhotosPaginated);
 router.get('/image/:id', galleryController.getImage);
 
 // Search and filtering routes (public access for search, auth for advanced filtering)
@@ -27,6 +27,8 @@ router.put('/albums/:id', requireRole(['Super Admin', 'Pastor', 'Department Head
 router.delete('/albums/:id', requireRole(['Super Admin', 'Pastor']), galleryController.deleteAlbum);
 
 // Photos routes
+router.post('/upload', galleryController.galleryUpload.array('photos', 10), galleryController.uploadPhotos.bind(galleryController));
+router.put('/photos/batch', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.batchUpdatePhotos.bind(galleryController));
 router.post('/albums/:albumId/photos', authenticateToken, galleryController.uploadPhoto);
 router.put('/photos/:id', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.updatePhoto);
 router.delete('/photos/:id', requireRole(['Super Admin', 'Pastor']), galleryController.deletePhoto);
