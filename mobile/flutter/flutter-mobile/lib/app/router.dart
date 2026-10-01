@@ -19,6 +19,7 @@ import '../screens/my_obligations_screen.dart';
 import '../screens/handovers_screen.dart';
 import '../screens/notifications_screen.dart';
 import '../screens/collect_payments_screen.dart';
+import '../screens/gallery_screen.dart';
 import '../widgets/main_shell.dart';
 import '../services/auth_service.dart';
 
@@ -63,7 +64,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // Protected routes - redirect to login if not authenticated
-      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications', '/collect-payments'];
+      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications', '/collect-payments', '/gallery'];
       if (protectedRoutes.contains(state.matchedLocation) && !isAuthenticated) {
         debugPrint('=== Router: Redirecting to /login (protected route) ===');
         return '/login';
@@ -162,6 +163,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/documents',
         builder: (context, state) => const DocumentsScreen(),
+      ),
+      GoRoute(
+        path: '/gallery',
+        builder: (context, state) => const GalleryScreen(),
       ),
       GoRoute(
         path: '/members',

@@ -424,6 +424,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onTap: () => context.push('/documents'),
           ),
         ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.photo_library, color: AppTheme.secondaryColor),
+            title: const Text('Photo Gallery'),
+            subtitle: const Text('Published photos, favourites & your labels'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/gallery'),
+          ),
+        ),
       ],
     );
   }

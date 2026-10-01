@@ -953,4 +953,121 @@ class ApiService {
       return {'success': false, 'error': e.toString()};
     }
   }
+
+  // ---- Gallery: published photos, member favourites, private labels ----
+
+  /// Public/published gallery photos. Authenticated responses are annotated
+  /// with `is_favorited` and `my_labels` for the current member.
+  Future<Map<String, dynamic>> getGalleryPhotos({int limit = 100}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get(
+        '/gallery/photos',
+        queryParameters: {'limit': limit},
+      );
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = _unwrapData(response.data['data']);
+        final photos = data is List ? data : (data?['photos'] ?? []);
+        return {'success': true, 'photos': photos};
+      }
+      return {'success': false, 'error': 'Failed to load gallery'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Toggle the current member's favourite on a photo.
+  Future<Map<String, dynamic>> toggleGalleryFavorite(String photoId) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post('/gallery/photos/$photoId/favorite');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'favorited': response.data['favorited'] == true};
+      }
+      return {
+        'success': false,
+        'error': response.data['error'] ?? 'Failed to update favourite',
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Photos the current member has favourited.
+  Future<Map<String, dynamic>> getGalleryFavorites() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/gallery/favorites');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'photos': response.data['photos'] ?? []};
+      }
+      return {'success': false, 'error': 'Failed to load favourites'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Add a private label to a photo (visible only to this member).
+  Future<Map<String, dynamic>> addGalleryLabel(String photoId, String label) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/gallery/photos/$photoId/labels',
+        data: {'label': label},
+      );
+      if (response.statusCode == 201 && response.data['success'] == true) {
+        return {'success': true, 'label': response.data['label']};
+      }
+      return {
+        'success': false,
+        'error': response.data['error'] ?? 'Failed to add label',
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Remove one of the current member's private labels from a photo.
+  Future<Map<String, dynamic>> removeGalleryLabel(String photoId, String label) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.delete(
+        '/gallery/photos/$photoId/labels/${Uri.encodeComponent(label)}',
+      );
+      return {'success': response.statusCode == 200 && response.data['success'] == true};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// The current member's distinct private labels.
+  Future<Map<String, dynamic>> getGalleryLabels() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/gallery/labels');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return {'success': true, 'labels': response.data['labels'] ?? []};
+      }
+      return {'success': false, 'error': 'Failed to load labels'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  /// Resolves a photo to its served image URL (handles Telegram + uploads).
+  String galleryImageUrl(String photoId) {
+    return '${_dio.options.baseUrl}/gallery/image/$photoId';
+  }
 }
