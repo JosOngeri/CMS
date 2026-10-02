@@ -141,21 +141,14 @@ class AccountController {
     try {
       const { as_of_date } = req.query;
       const trialBalance = await this.accountRepo.getTrialBalance(as_of_date, req.user.church_id);
-      
-      // Calculate totals
-      const totals = trialBalance.reduce((acc, account) => {
-        if (['asset', 'expense'].includes(account.account_type)) {
-          acc.total_debits += parseFloat(account.total_debits);
-        } else {
-          acc.total_credits += parseFloat(account.total_credits);
-        }
-        return acc;
-      }, { total_debits: 0, total_credits: 0 });
-      
-      res.json({ 
+
+      // Totals and balance validation delegated to the repository
+      const { totals, is_balanced } = this.accountRepo.summarizeTrialBalance(trialBalance);
+
+      res.json({
         trial_balance: trialBalance,
         totals,
-        is_balanced: Math.abs(totals.total_debits - totals.total_credits) < 0.01
+        is_balanced
       });
     } catch (error) {
       logger.error('Get trial balance error:', error);

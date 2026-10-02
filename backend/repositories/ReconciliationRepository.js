@@ -58,6 +58,24 @@ class ReconciliationRepository extends BaseRepository {
     const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
+
+  /**
+   * Verify a transaction while appending a forensic edit-history entry.
+   * Audit trail assembly lives here so controllers stay HTTP-only.
+   */
+  async verifyWithAuditTrail(id, status, notes, userId, churchId) {
+    const currentTx = await this.findById(id, churchId);
+    if (!currentTx) return null;
+
+    const editHistory = currentTx.edit_history || [];
+    editHistory.push({
+      editor_id: userId,
+      timestamp: new Date().toISOString(),
+      old_status: currentTx.status
+    });
+
+    return this.verifyTransaction(id, status, notes, userId, editHistory, churchId);
+  }
 }
 
 module.exports = new ReconciliationRepository();

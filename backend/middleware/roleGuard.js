@@ -1,6 +1,8 @@
 /**
  * Role/permission guards throwing AppError via IdentityService.
- * hasRole takes ONE array argument — hasRole(['A','B']). Callers passing varargs (smsHub/documentApproval routes) deadlock the check — ledger.
+ * hasRole accepts an array OR varargs — hasRole(['A','B']) or hasRole('A','B').
+ * Varargs used to silently take only the first arg (a string), which crashed
+ * IdentityService.hasAnyRole on '.some' — now flattened for tolerance.
  * @exports {hasRole, hasPermission, requireSuperAdmin}
  * @deps services/IdentityService
  */
@@ -13,7 +15,8 @@ const { AppError } = require('../helpers/errorHandler');
  * Standardized to throw AppError for consistent error handling
  */
 
-const hasRole = (allowedRoles) => {
+const hasRole = (...args) => {
+  const allowedRoles = args.flat().filter(Boolean);
   return (req, res, next) => {
     if (!req.user) {
       throw new AppError('Authentication required', 401);

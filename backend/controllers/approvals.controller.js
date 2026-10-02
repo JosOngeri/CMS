@@ -1,3 +1,10 @@
+/**
+ * @audit Approvals controller — approval requests, workflows, delegation.
+ * @known All mutations + reads are church-scoped via req.user.church_id.
+ *        Workflow exec/step/status delegate to helpers/workflowEngine (churchId
+ *        param added). DELETE removes pending requests only (audit trail kept).
+ * @deps   ApprovalsRepository, workflowEngine, migrations/052_approval_workflow_tables.sql
+ */
 const workflowEngine = require('../helpers/workflowEngine');
 const BaseController = require('./BaseController');
 const ApprovalsRepository = require('../repositories/ApprovalsRepository');
@@ -240,6 +247,46 @@ class ApprovalsController extends BaseController {
   }
 
   /**
+   * Delete a pending approval request. Only pending requests are removable —
+   * approved/rejected rows are audit history. Church-scoped.
+   * @param {Object} req - Express request object
+   * @param {Object} req.params - Route parameters
+   * @param {string} req.params.id - Approval ID
+   * @param {Object} req.user - Authenticated user
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>}
+   */
+  async deleteApproval(req, res) {
+    try {
+      const { id } = req.params;
+      const churchId = req.user.church_id;
+
+      const deleted = await ApprovalsRepository.deleteById(id, churchId);
+
+      if (!deleted) {
+        return ResponseHandler.notFound(res, 'Pending approval request not found — only pending requests can be deleted');
+      }
+
+      await auditService.log(
+        churchId,
+        req.user.id,
+        'DELETE',
+        'approvals',
+        id,
+        null,
+        null,
+        req.ip,
+        req.get('user-agent')
+      );
+
+      return ResponseHandler.success(res, null, 'Approval request deleted');
+    } catch (error) {
+      this.logger.error('deleteApproval', error);
+      return ResponseHandler.error(res, 'Failed to delete approval request');
+    }
+  }
+
+  /**
    * Activate a proposed department budget once its approval request passes.
    * request_data carries budget_id + department_id.
    * @param {Object} approval - The approval request row
@@ -447,7 +494,7 @@ class ApprovalsController extends BaseController {
         description,
         steps,
         created_by: req.user.id
-      });
+      }, req.user.church_id);
       return ResponseHandler.success(res, { workflow }, 'Workflow created successfully');
     } catch (error) {
       this.logger.error('createWorkflow', error);
@@ -463,7 +510,7 @@ class ApprovalsController extends BaseController {
    */
   async getWorkflows(req, res) {
     try {
-      const workflows = await ApprovalsRepository.getActiveWorkflows();
+      const workflows = await ApprovalsRepository.getActiveWorkflows(req.user.church_id);
       return ResponseHandler.success(res, { workflows });
     } catch (error) {
       this.logger.error('getWorkflows', error);
@@ -479,7 +526,7 @@ class ApprovalsController extends BaseController {
    */
   async getApprovalAnalytics(req, res) {
     try {
-      const analytics = await ApprovalsRepository.getApprovalAnalytics();
+      const analytics = await ApprovalsRepository.getApprovalAnalytics(req.user.church_id);
       return ResponseHandler.success(res, { analytics });
     } catch (error) {
       this.logger.error('getApprovalAnalytics', error);
@@ -505,7 +552,8 @@ class ApprovalsController extends BaseController {
         workflowId,
         entityId,
         entityType,
-        req.user.id
+        req.user.id,
+        req.user.church_id
       );
       
       return ResponseHandler.success(res, result, 'Workflow executed successfully');
@@ -538,7 +586,8 @@ class ApprovalsController extends BaseController {
         stepIndex,
         req.user.id,
         action,
-        comment
+        comment,
+        req.user.church_id
       );
       
       return ResponseHandler.success(res, result, 'Workflow step processed successfully');
@@ -560,7 +609,7 @@ class ApprovalsController extends BaseController {
     try {
       const { approvalId } = req.params;
       
-      const result = await workflowEngine.getWorkflowStatus(approvalId);
+      const result = await workflowEngine.getWorkflowStatus(approvalId, req.user.church_id);
       
       return ResponseHandler.success(res, result);
     } catch (error) {

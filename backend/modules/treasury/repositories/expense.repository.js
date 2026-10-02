@@ -218,6 +218,28 @@ class ExpenseRepository extends BaseRepository {
     const result = await this.pool.query(query, params);
     return result.rows;
   }
+
+  /**
+   * Summarize pending-approval expenses into count + total amount
+   * (keeps reporting aggregation out of the controller)
+   */
+  summarizePendingApprovals(expenses) {
+    return {
+      count: expenses.length,
+      total_amount: expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0)
+    };
+  }
+
+  /**
+   * Summarize an expense report into total amount + category count
+   * (keeps reporting aggregation out of the controller)
+   */
+  summarizeExpenseReport(report) {
+    return {
+      total_amount: report.reduce((sum, item) => sum + parseFloat(item.total_amount), 0),
+      categories: report.length
+    };
+  }
 }
 
 module.exports = ExpenseRepository;

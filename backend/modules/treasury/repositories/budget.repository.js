@@ -229,6 +229,46 @@ class BudgetRepository extends BaseRepository {
     const result = await this.pool.query(query, churchId ? [fiscalYear, churchId] : [fiscalYear]);
     return result.rows;
   }
+
+  /**
+   * Categorize budget alerts into over-budget and at-risk buckets
+   * (uses Budget model rules; keeps categorization out of the controller)
+   */
+  categorizeAlerts(alerts) {
+    return alerts.reduce((acc, budget) => {
+      if (budget.isOverBudget()) {
+        acc.over.push(budget);
+      } else if (budget.isAtRisk()) {
+        acc.at_risk.push(budget);
+      }
+      return acc;
+    }, { over: [], at_risk: [] });
+  }
+
+  /**
+   * Summarize a budget comparison report into totals and status counts
+   * (keeps comparison math out of the controller)
+   */
+  summarizeComparison(comparison) {
+    return comparison.reduce((acc, item) => {
+      acc.total_budgeted += parseFloat(item.total_budgeted);
+      acc.total_actual += parseFloat(item.total_actual);
+      acc.total_variance += parseFloat(item.variance);
+
+      if (item.status === 'over') acc.over_count++;
+      else if (item.status === 'at_risk') acc.at_risk_count++;
+      else acc.on_track_count++;
+
+      return acc;
+    }, {
+      total_budgeted: 0,
+      total_actual: 0,
+      total_variance: 0,
+      over_count: 0,
+      at_risk_count: 0,
+      on_track_count: 0
+    });
+  }
 }
 
 module.exports = BudgetRepository;

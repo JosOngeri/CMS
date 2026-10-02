@@ -199,6 +199,26 @@ class AccountRepository extends BaseRepository {
   }
 
   /**
+   * Compute trial balance totals and balance check from fetched rows
+   * (keeps financial aggregation out of the controller)
+   */
+  summarizeTrialBalance(trialBalance) {
+    const totals = trialBalance.reduce((acc, account) => {
+      if (['asset', 'expense'].includes(account.account_type)) {
+        acc.total_debits += parseFloat(account.total_debits);
+      } else {
+        acc.total_credits += parseFloat(account.total_credits);
+      }
+      return acc;
+    }, { total_debits: 0, total_credits: 0 });
+
+    return {
+      totals,
+      is_balanced: Math.abs(totals.total_debits - totals.total_credits) < 0.01
+    };
+  }
+
+  /**
    * Create new account
    */
   async create(account, churchId = null) {

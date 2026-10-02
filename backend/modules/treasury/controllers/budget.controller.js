@@ -183,15 +183,8 @@ class BudgetController {
       const { threshold = 80 } = req.query;
       
       const alerts = await this.budgetRepo.getBudgetAlerts(parseInt(threshold), req.user.church_id);
-      
-      const categorized = alerts.reduce((acc, budget) => {
-        if (budget.isOverBudget()) {
-          acc.over.push(budget);
-        } else if (budget.isAtRisk()) {
-          acc.at_risk.push(budget);
-        }
-        return acc;
-      }, { over: [], at_risk: [] });
+
+      const categorized = this.budgetRepo.categorizeAlerts(alerts);
       
       res.json({ 
         alerts: categorized,
@@ -227,25 +220,8 @@ class BudgetController {
       }
       
       const comparison = await this.budgetRepo.getBudgetComparison(parseInt(fiscal_year), req.user.church_id);
-      
-      const summary = comparison.reduce((acc, item) => {
-        acc.total_budgeted += parseFloat(item.total_budgeted);
-        acc.total_actual += parseFloat(item.total_actual);
-        acc.total_variance += parseFloat(item.variance);
-        
-        if (item.status === 'over') acc.over_count++;
-        else if (item.status === 'at_risk') acc.at_risk_count++;
-        else acc.on_track_count++;
-        
-        return acc;
-      }, { 
-        total_budgeted: 0, 
-        total_actual: 0, 
-        total_variance: 0,
-        over_count: 0,
-        at_risk_count: 0,
-        on_track_count: 0
-      });
+
+      const summary = this.budgetRepo.summarizeComparison(comparison);
       
       res.json({ 
         comparison,

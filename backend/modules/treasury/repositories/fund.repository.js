@@ -120,6 +120,19 @@ class FundRepository extends BaseRepository {
     const result = await this.pool.query(query, churchId ? [churchId] : []);
     return result.rows;
   }
+
+  /**
+   * Summarize fund balance rows into aggregate totals
+   * (keeps balance math out of the controller)
+   */
+  summarizeBalances(balances) {
+    return balances.reduce((acc, fund) => {
+      acc.total_contributions += parseFloat(fund.total_contributions);
+      acc.total_expenses += parseFloat(fund.total_expenses);
+      acc.net_balance += parseFloat(fund.current_balance);
+      return acc;
+    }, { total_contributions: 0, total_expenses: 0, net_balance: 0 });
+  }
 }
 
 module.exports = FundRepository;

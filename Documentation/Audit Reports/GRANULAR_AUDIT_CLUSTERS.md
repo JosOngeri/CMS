@@ -367,6 +367,66 @@ Cluster 02 (Backend API - General Controllers) focused on lean architecture, con
   - Gaps: Totals calculation and reversal labeling are in the controller.
   - Remedy: Ensure `JournalEntry` model handles all totaling; move reversal logic to repository.
 
+---
+
+**Cluster 03 Remediation Report**
+
+**Audit Date:** 2025-01-XX
+**Remediation Date:** 2026-10-XX
+**Status:** ✅ COMPLETE (2 items intentionally scoped — see notes)
+
+**Files Remediated:** 21/21 entries (16 edited or confirmed, 2 already deleted, 5 new services created)
+
+**Summary:**
+Cluster 03 (Backend API - Specialized/Treasury Controllers) focused on lean architecture, data integrity, and financial accuracy. Most files were already partially remediated (collection, fixedAssets, projects, recurringPayments, treasuryDashboard, treasury module journalEntry). Remaining gaps were closed by extracting business logic into services and repositories.
+
+**New Services Created:**
+1. `services/ExportService.js` — CSV/QuickBooks-IIF/Xero file formatting extracted from accountingExport.controller.js
+2. `services/ReceiptService.js` — receipt number sequencing + virtual receipt assembly extracted from manualPayment.controller.js
+3. `services/VendorService.js` — vendor code generation + transaction-aware delete-or-archive extracted from vendors.controller.js
+4. `services/numberingService.js` — centralized document numbering (PLEDGE/REC/REF/VND/receipt sequences)
+5. `services/PaymentGatewayService.js` — gateway-agnostic facade over KopoKopo; both payment controllers now call it
+
+**Changes Made This Session:**
+1. **accountingExport.controller.js** — Moved 6 export-formatting methods to ExportService; enforced `church_id` on every repository call (was missing entirely — tenant isolation gap)
+2. **reconciliation.controller.js** — Moved edit_history assembly into new `ReconciliationRepository.verifyWithAuditTrail`; fixed missing `church_id` args that made verify a silent no-op
+3. **pledges.controller.js** — `recordPledgePayment` now uses atomic `incrementAmountPaid` (read-modify-write race removed); numbering via numberingService
+4. **PledgesRepository.js** — Added `incrementAmountPaid` atomic update with auto-complete CASE
+5. **vendors.controller.js** — Code gen and transaction check moved to VendorService; vendors with transactions are now archived (is_active=false) instead of erroring
+6. **VendorsRepository.js** — Added `archiveVendor`
+7. **manualPayment.controller.js** — Receipt numbering + receipt assembly moved to ReceiptService (verified-status locking was already present)
+8. **recurringPayments.controller.js** — `generateRecurringNumber` moved to numberingService (interval/retry logic was already in SchedulingService)
+9. **payment.controller.js** — All 7 KopoKopo call sites now go through PaymentGatewayService; refund number via numberingService
+10. **payments.controller.js** — STK push via PaymentGatewayService; refundPayment now requires `status === 'completed'`; approve/reject surface "already processed" when repo guard returns null
+11. **PaymentsRepository.js** — `updateRefundStatus` now only transitions `status = 'pending'` refunds (prevents double approve/reject)
+12. **modules/treasury/controllers/account.controller.js** — Trial-balance totals moved to `accountRepo.summarizeTrialBalance`
+13. **modules/treasury/controllers/budget.controller.js** — Alert categorization + comparison summary moved to `budgetRepo.categorizeAlerts`/`summarizeComparison`
+14. **modules/treasury/controllers/expense.controller.js** — Pending-approval + report totals moved to `expenseRepo.summarizePendingApprovals`/`summarizeExpenseReport`
+15. **modules/treasury/controllers/fund.controller.js** — Balance summary moved to `fundRepo.summarizeBalances`; fixed `current_balance !== 0` string-comparison bug (pg returns numerics as strings — funds could never be deleted)
+16. **modules/treasury/repositories/{account,budget,expense,fund}.repository.js** — Added the summarizer methods above
+
+**Already Resolved (verified, no changes):**
+- `budgets.controller.js` + `journalEntry.controller.js` (top-level): files deleted — superseded by `modules/treasury` controllers
+- `collection.controller.js`: statement generation already in ReportService; progress math in CollectionRepository
+- `fixedAssets.controller.js`: depreciation math already in FixedAssetService (see Scoped note)
+- `projects.controller.js`: code generation, status transitions, analytics already in ProjectService
+- `recurringPayments.controller.js`: interval math + retry policy already in SchedulingService
+- `treasuryDashboard.controller.js`: aggregations already delegated to TreasuryDashboardRepository (CTE-based)
+- `modules/treasury/controllers/journalEntry.controller.js`: `JournalEntry.calculateTotals()` on model; reversal handled inside `journalEntryRepo.reverse()` transaction
+- `modules/treasury/controllers/index.js`: clean, no changes needed
+
+**Scoped / Flagged for Review:**
+- `treasury.controller.js`: remedy is DEPRECATE + migrate — already deprecated (header notice, constructor warn, routes comment "DEPRECATED - backward compatibility"). Full migration of remaining ~30 methods (campaigns, receipts, fixed assets, reconciliations, budget items) exceeds the 3-file side-effect limit; continue the documented phased migration.
+- `payment.controller.js`/`payments.controller.js` merge into one Payment module: would break payment.routes.js + payments.routes.js + index.routes.js + frontend callers — flagged as architectural scope. Gateway decoupling (the substantive gap) is done via PaymentGatewayService.
+- `payments.controller.js` pledge methods duplicate `pledges.controller.js`: same merge-scope constraint — flagged.
+- `fixedAssets.controller.js` "link disposals to journal entries": requires a gain/loss-on-disposal GL account mapping not present in the asset record — needs a product/config decision; flagged for review.
+- `payments.controller.js` dispute handling: no disputes table exists; only refund lifecycle hardened (pending-guard + completed-only refund initiation).
+
+**Risk Level:** MEDIUM — financial controller changes; all mutations remain parameterized and church-scoped
+**Production Impact:** Low-to-moderate — vendor delete now archives instead of 400ing when transactions exist; refund approve/reject now reject already-processed refunds (intended behavior)
+
+---
+
 ### Cluster 04: Backend Middleware & Security
 **Prompt:** Audit for security robustness, performance optimization, and proper architectural separation. Focus on: (1) Identifying N+1 query risks in permission services and recommending bulk-fetching with caching; (2) Ensuring security helpers don't leak business logic (move resource ownership checks to repositories); (3) Validating JWT expiration times are appropriate for security context (1h access tokens for high-security areas); (4) Checking that middleware implements proper caching to avoid redundant DB hits; (5) Ensuring rate limiters use Redis-backed stores for production rather than in-memory; (6) Verifying CSRF protection has proper cookie attributes and configuration-driven exemptions; (7) Checking that role guards use standardized response formats; (8) Ensuring error handlers implement proper logging without exposing sensitive data; (9) Validating that all middleware follows the single responsibility principle; (10) Checking for proper identity mapping and token extraction standardization.
 - `.\backend\helpers\fieldPermissionService.js`

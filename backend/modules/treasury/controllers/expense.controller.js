@@ -264,15 +264,12 @@ class ExpenseController {
   async getPendingApprovals(req, res) {
     try {
       const expenses = await this.expenseRepo.getPendingApprovals(req.user.church_id);
-      
-      const totalAmount = expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-      
-      res.json({ 
+
+      const summary = this.expenseRepo.summarizePendingApprovals(expenses);
+
+      res.json({
         expenses,
-        summary: {
-          count: expenses.length,
-          total_amount: totalAmount
-        }
+        summary
       });
     } catch (error) {
       logger.error('Get pending approvals error:', error);
@@ -305,15 +302,12 @@ class ExpenseController {
       }
       
       const report = await this.expenseRepo.getExpenseSummary(start_date, end_date, req.user.church_id);
-      
-      const totalAmount = report.reduce((sum, item) => sum + parseFloat(item.total_amount), 0);
-      
-      res.json({ 
+
+      const summary = this.expenseRepo.summarizeExpenseReport(report);
+
+      res.json({
         report,
-        summary: {
-          total_amount: totalAmount,
-          categories: report.length
-        },
+        summary,
         period: { start_date, end_date }
       });
     } catch (error) {

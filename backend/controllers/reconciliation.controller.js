@@ -41,20 +41,17 @@ class ReconciliationController extends BaseController {
   async verifyTransaction(req, res) {
     const { transactionId, status, notes } = req.body;
     const userId = req.user.id;
+    const churchId = req.user.church_id;
 
     try {
-      // Forensic Audit: Update with history
-      const currentTx = await ReconciliationRepository.findById(transactionId);
-      const oldVal = currentTx;
+      // Forensic Audit: history assembly handled by the repository
+      const updated = await ReconciliationRepository.verifyWithAuditTrail(
+        transactionId, status, notes, userId, churchId
+      );
 
-      const editHistory = oldVal.edit_history || [];
-      editHistory.push({
-        editor_id: userId,
-        timestamp: new Date().toISOString(),
-        old_status: oldVal.status
-      });
-
-      await ReconciliationRepository.verifyTransaction(transactionId, status, notes, userId, editHistory);
+      if (!updated) {
+        return res.status(404).json({ success: false, error: 'Transaction not found' });
+      }
 
       res.json({ success: true });
     } catch (error) {

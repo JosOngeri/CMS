@@ -3,6 +3,7 @@ const ResponseHandler = require('../utils/ResponseHandler');
 const { createLogger } = require('../helpers/controllerLogger');
 const NameMatcher = require('../services/nameMatcher');
 const ManualPaymentRepository = require('../repositories/ManualPaymentRepository');
+const ReceiptService = require('../services/ReceiptService');
 
 /**
  * Manual Payment Controller (Phase 12)
@@ -36,8 +37,8 @@ class ManualPaymentController extends BaseController {
         return ResponseHandler.error(res, 'Amount and payment method are required', 400);
       }
 
-      // Generate virtual receipt number
-      const receiptNumber = await this.generateReceiptNumber(churchId);
+      // Generate virtual receipt number (ReceiptService handles sequencing)
+      const receiptNumber = await ReceiptService.generateReceiptNumber(churchId);
 
       // Insert manual payment
       const result = await ManualPaymentRepository.createManualPayment({
@@ -66,22 +67,6 @@ class ManualPaymentController extends BaseController {
       this.logger.error('createManualPayment', error);
       return ResponseHandler.error(res, 'Failed to record manual payment');
     }
-  }
-
-  /**
-   * Generate unique receipt number
-   */
-  async generateReceiptNumber(churchId) {
-    const prefix = 'KMC';
-    const date = new Date();
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-
-    // Get sequential number for today
-    const count = await ManualPaymentRepository.getTodayPaymentCount(churchId);
-
-    const sequence = (count + 1).toString().padStart(4, '0');
-
-    return `${prefix}-${dateStr}-${sequence}`;
   }
 
   /**
@@ -142,25 +127,8 @@ class ManualPaymentController extends BaseController {
         return ResponseHandler.error(res, 'Payment not found', 404);
       }
 
-      // Generate receipt data
-      const receipt = {
-        receiptNumber: payment.receipt_number,
-        churchName: payment.church_name,
-        churchAddress: payment.church_address,
-        churchPhone: payment.church_phone,
-        memberName: payment.member_name || 'Walk-in',
-        memberPhone: payment.member_phone,
-        memberAddress: payment.member_address,
-        amount: payment.amount,
-        paymentMethod: payment.payment_method,
-        referenceNumber: payment.reference_number,
-        paymentType: payment.payment_type,
-        paymentDate: payment.payment_date,
-        recordedBy: payment.recorded_by_name,
-        recordedAt: payment.created_at,
-        notes: payment.notes,
-        status: payment.status
-      };
+      // Generate receipt data (assembled by ReceiptService)
+      const receipt = ReceiptService.buildVirtualReceipt(payment);
 
       return ResponseHandler.success(res, receipt);
     } catch (error) {

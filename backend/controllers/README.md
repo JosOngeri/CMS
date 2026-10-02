@@ -9,7 +9,7 @@ Request handlers — thin layer over repositories; one file per domain.
 | `ai.controller.js` | AI Assistant Controller (REQ-FR-005) |
 | `analytics.controller.js` | Analytics Controller |
 | `announcements.controller.js` | Announcement Controller |
-| `approvals.controller.js` | Approvals Controller |
+| `approvals.controller.js` | Workflow exec/step/status delegate to helpers/workflowEngine (churchId |
 | `auth.controller.js` | AuthController |
 | `chartOfAccounts.controller.js` | Chart of Accounts Controller |
 | `chat.controller.js` | Chat Controller (Phase 10) |
@@ -28,19 +28,19 @@ Request handlers — thin layer over repositories; one file per domain.
 | `gallery.controller.js` | Gallery Controller |
 | `gateway.controller.js` | Gateway Controller (Phase 9) |
 | `manualPayment.controller.js` | Manual Payment Controller (Phase 12) |
-| `members.controller.js` | deleteMember run unconditionally even when the scoped existence read returns null -> |
+| `members.controller.js` | updateMember/deleteMember abort 404 when the scoped read returns null and the |
 | `mobile.controller.js` | Mobile Controller |
 | `notifications.controller.js` | Notifications Controller |
 | `palette.controller.js` | Palette Controller |
-| `payment.controller.js` | Payment Controller |
-| `payments.controller.js` | every non-M-Pesa create; updatePaymentStatus(id,status,churchId) writes church UUID into |
+| `payment.controller.js` | through the parent payment (legacy NULL-church refund rows covered). |
+| `payments.controller.js` | (id,status,null,churchId) with 404-before-mutate; createPayment inserts |
 | `platform.controller.js` | Platform Controller (SaaS Owner Dashboard) |
 | `platformAuth.controller.js` | Platform Auth Controller |
 | `pledges.controller.js` | Pledges Controller |
 | `projects.controller.js` | Projects Controller |
 | `reconciliation.controller.js` | Reconciliation Controller (REQ-FR-004) |
 | `recurringPayments.controller.js` | Recurring Payments Controller |
-| `reports.controller.js` | Reports Controller |
+| `reports.controller.js` | custom builder + scheduling). |
 | `security.controller.js` | Security Controller |
 | `settings.controller.js` | Settings Controller |
 | `sms.controller.js` | SMS Controller |
@@ -51,7 +51,7 @@ Request handlers — thin layer over repositories; one file per domain.
 | `smsPush.controller.js` | SmsPushController |
 | `smsSync.controller.js` | SmsSyncController |
 | `sync.controller.js` | Sync Controller (Phase 13) |
-| `telegram.controller.js` | even when none was requested (!storedData -> success). Channel ops unscoped; |
+| `telegram.controller.js` | codes logged plaintext; global.verificationCodes map (lost on restart). |
 | `telegramAuth.controller.js` | Telegram Auth Controller |
 | `telegramChurch.controller.js` | Get the current church's Telegram config |
 | `treasury.controller.js` | Treasury Controller (DEPRECATED) |

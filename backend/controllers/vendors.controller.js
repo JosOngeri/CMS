@@ -1,5 +1,6 @@
 const BaseController = require('./BaseController');
 const VendorsRepository = require('../repositories/VendorsRepository');
+const VendorService = require('../services/VendorService');
 const { createLogger } = require('../helpers/controllerLogger');
 
 /**
@@ -58,11 +59,8 @@ class VendorsController extends BaseController {
         address, city, country, tax_id, payment_terms
       } = req.body;
 
-      // Generate vendor code if not provided
-      const code = vendor_code || `VND-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
-
-      const vendor = await VendorsRepository.createVendor({
-        vendor_code: code,
+      const vendor = await VendorService.createVendor({
+        vendor_code,
         vendor_name,
         contact_person,
         phone,
@@ -111,29 +109,26 @@ class VendorsController extends BaseController {
   }
 
   /**
-   * Delete vendor
+   * Delete vendor — vendors with transactions are archived instead
+   * (VendorService decides; preserves the financial audit trail)
    */
   async deleteVendor(req, res) {
     try {
       const { id } = req.params;
 
-      // Check if vendor has transactions
-      const transactionCount = await VendorsRepository.getVendorTransactionCount(id);
-
-      if (transactionCount > 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'Cannot delete vendor with transactions. Archive instead.'
-        });
-      }
-
-      const vendor = await VendorsRepository.deleteVendor(id);
+      const { vendor, archived } = await VendorService.deleteOrArchiveVendor(id);
 
       if (!vendor) {
         return res.status(404).json({ success: false, error: 'Vendor not found' });
       }
 
-      res.json({ success: true, message: 'Vendor deleted successfully' });
+      res.json({
+        success: true,
+        vendor,
+        message: archived
+          ? 'Vendor has transactions and was archived instead of deleted'
+          : 'Vendor deleted successfully'
+      });
     } catch (error) {
       this.logger.error('deleteVendor', error);
       res.status(500).json({ success: false, error: 'Failed to delete vendor' });

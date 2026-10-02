@@ -84,6 +84,14 @@ class VendorsRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
+  async archiveVendor(id) {
+    const result = await this.pool.query(
+      `UPDATE vendors SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
+      [id]
+    );
+    return result.rows[0];
+  }
+
   async deleteVendor(id) {
     const result = await this.pool.query('DELETE FROM vendors WHERE id = $1 RETURNING *', [id]);
     return result.rows[0];

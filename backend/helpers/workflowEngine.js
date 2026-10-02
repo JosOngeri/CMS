@@ -1,8 +1,11 @@
 /**
  * @audit Approval workflow engine.
- * @known ISSUE: processStep computes approvalCount+1 >= requiredApprovals BEFORE checking the
- *        assignment UPDATE matched — unassigned approver completes a step with 0 rows updated;
- *        no church scoping; steps[stepIndex] undefined-step unhandled.
+ * @fixed processStep verifies the assignment UPDATE actually matched a pending
+ *        row (unassigned/duplicate approvers can no longer count), recounts after
+ *        the write, guards out-of-range steps, and church-scopes all lookups.
+ * @deps  migrations/052_approval_workflow_tables.sql — the three workflow tables
+ *        and approval_requests.workflow_id/approved_by/rejected_by did not
+ *        exist before that migration.
  */
 const { pool } = require('../config/database');
 const { createLogger } = require('./controllerLogger');
@@ -10,12 +13,18 @@ const { createLogger } = require('./controllerLogger');
 const logger = createLogger('workflowEngine');
 
 class WorkflowExecutionEngine {
-  async executeWorkflow(workflowId, entityId, entityType, initiatorId) {
+  async executeWorkflow(workflowId, entityId, entityType, initiatorId, churchId = null) {
     try {
-      // Fetch workflow definition
+      // Fetch workflow definition — scoped to the caller's church when given
+      const params = [workflowId];
+      let where = 'id = $1 AND is_active = true';
+      if (churchId) {
+        where += ' AND (church_id = $2 OR church_id IS NULL)';
+        params.push(churchId);
+      }
       const workflowResult = await pool.query(
-        `SELECT * FROM approval_workflows WHERE id = $1 AND is_active = true`,
-        [workflowId]
+        `SELECT * FROM approval_workflows WHERE ${where}`,
+        params
       );
 
       if (workflowResult.rows.length === 0) {
@@ -25,10 +34,10 @@ class WorkflowExecutionEngine {
       const workflow = workflowResult.rows[0];
       const steps = workflow.steps;
 
-      // Create approval request
+      // Create approval request — real column is request_type (not type)
       const approvalResult = await pool.query(
-        `INSERT INTO approval_requests (title, description, type, status, priority, requester_id, entity_type, entity_id, workflow_id, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+        `INSERT INTO approval_requests (title, description, request_type, status, priority, requester_id, entity_type, entity_id, workflow_id, church_id, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
          RETURNING *`,
         [
           workflow.name,
@@ -39,7 +48,8 @@ class WorkflowExecutionEngine {
           initiatorId,
           entityType,
           entityId,
-          workflowId
+          workflowId,
+          churchId
         ]
       );
 
@@ -83,14 +93,20 @@ class WorkflowExecutionEngine {
     }
   }
 
-  async processStep(approvalId, stepIndex, approverId, action, comment) {
+  async processStep(approvalId, stepIndex, approverId, action, comment, churchId = null) {
     try {
-      // Get workflow and current step
+      // Get workflow and current step — church-scoped when provided
+      const params = [approvalId];
+      let where = 'ar.id = $1';
+      if (churchId) {
+        where += ' AND ar.church_id = $2';
+        params.push(churchId);
+      }
       const approvalResult = await pool.query(
         `SELECT ar.*, aw.steps FROM approval_requests ar
          JOIN approval_workflows aw ON ar.workflow_id = aw.id
-         WHERE ar.id = $1`,
-        [approvalId]
+         WHERE ${where}`,
+        params
       );
 
       if (approvalResult.rows.length === 0) {
@@ -98,30 +114,38 @@ class WorkflowExecutionEngine {
       }
 
       const approval = approvalResult.rows[0];
-      const steps = approval.steps;
+      const steps = approval.steps || [];
       const currentStep = steps[stepIndex];
+      if (!currentStep) {
+        throw new Error(`Invalid step index: ${stepIndex}`);
+      }
 
-      // Check if all required approvers have approved
       const requiredApprovals = currentStep.required_approvals || 1;
-      const currentApprovals = await pool.query(
-        `SELECT COUNT(*) as count FROM workflow_assignments
-         WHERE approval_id = $1 AND step_index = $2 AND status = 'approved'`,
-        [approvalId, stepIndex]
-      );
-
-      const approvalCount = parseInt(currentApprovals.rows[0].count);
 
       if (action === 'approve') {
-        // Record approval
-        await pool.query(
-          `UPDATE workflow_assignments 
+        // Record approval — must match a PENDING assignment for this approver;
+        // a 0-row update previously still counted toward step completion
+        const updateResult = await pool.query(
+          `UPDATE workflow_assignments
            SET status = 'approved', approved_at = CURRENT_TIMESTAMP, comment = $1
-           WHERE approval_id = $2 AND step_index = $3 AND approver_id = $4`,
+           WHERE approval_id = $2 AND step_index = $3 AND approver_id = $4
+             AND status = 'pending'`,
           [comment, approvalId, stepIndex, approverId]
         );
 
-        // Check if step is complete
-        if (approvalCount + 1 >= requiredApprovals) {
+        if (updateResult.rowCount === 0) {
+          throw new Error('No pending assignment found for this approver at this step');
+        }
+
+        // Recount AFTER the write — authoritative step-completion check
+        const currentApprovals = await pool.query(
+          `SELECT COUNT(*) as count FROM workflow_assignments
+           WHERE approval_id = $1 AND step_index = $2 AND status = 'approved'`,
+          [approvalId, stepIndex]
+        );
+        const approvalCount = parseInt(currentApprovals.rows[0].count);
+
+        if (approvalCount >= requiredApprovals) {
           await this.completeStep(approvalId, stepIndex, steps, approverId);
         }
       } else if (action === 'reject') {
@@ -240,18 +264,24 @@ class WorkflowExecutionEngine {
     }
   }
 
-  async getWorkflowStatus(approvalId) {
+  async getWorkflowStatus(approvalId, churchId = null) {
     try {
+      const params = [approvalId];
+      let where = 'ar.id = $1';
+      if (churchId) {
+        where += ' AND ar.church_id = $2';
+        params.push(churchId);
+      }
       const result = await pool.query(
-        `SELECT 
+        `SELECT
           ar.*,
           aw.steps,
           (SELECT COUNT(*) FROM workflow_assignments WHERE approval_id = ar.id AND status = 'approved') as total_approvals,
           (SELECT COUNT(*) FROM workflow_assignments WHERE approval_id = ar.id AND status = 'pending') as pending_approvals
          FROM approval_requests ar
          JOIN approval_workflows aw ON ar.workflow_id = aw.id
-         WHERE ar.id = $1`,
-        [approvalId]
+         WHERE ${where}`,
+        params
       );
 
       if (result.rows.length === 0) {

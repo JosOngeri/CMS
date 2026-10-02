@@ -1,3 +1,10 @@
+/**
+ * @audit Repository over approval_requests + approval_workflows.
+ * @known Every method takes churchId — do not call without it (controllers
+ *        pass req.user.church_id). getAll JOINs users for requester/approver
+ *        names; sort column is allowlisted. deleteById is pending-only.
+ * @deps   migrations/052_approval_workflow_tables.sql
+ */
 const BaseRepository = require('./BaseRepository');
 
 class ApprovalsRepository extends BaseRepository {
@@ -6,12 +13,18 @@ class ApprovalsRepository extends BaseRepository {
   }
 
   async getAll(filters = {}, churchId) {
-    let query = `SELECT * FROM ${this.tableName} WHERE church_id = $1`;
+    let query = `SELECT ar.*,
+        COALESCE(u1.first_name || ' ' || u1.last_name, 'Unknown') as requester_name,
+        COALESCE(u2.first_name || ' ' || u2.last_name, 'Unknown') as approver_name
+      FROM ${this.tableName} ar
+      LEFT JOIN users u1 ON ar.requester_id = u1.id
+      LEFT JOIN users u2 ON ar.approver_id = u2.id
+      WHERE ar.church_id = $1`;
     const params = [churchId];
     let paramIndex = 2;
 
     if (filters.status) {
-      query += ` AND status = $${paramIndex}`;
+      query += ` AND ar.status = $${paramIndex}`;
       params.push(filters.status);
       paramIndex++;
     }
@@ -20,10 +33,19 @@ class ApprovalsRepository extends BaseRepository {
     const allowedSortColumns = ['created_at', 'updated_at', 'status', 'priority'];
     const sort = allowedSortColumns.includes(filters.sort) ? filters.sort : 'created_at';
     const order = (filters.order || 'desc').toLowerCase() === 'asc' ? 'ASC' : 'DESC';
-    query += ` ORDER BY ${sort} ${order}`;
+    query += ` ORDER BY ar.${sort} ${order}`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
+  }
+
+  // Pending requests only — approved/rejected rows are audit history and stay.
+  async deleteById(approvalId, churchId) {
+    const result = await this.pool.query(
+      `DELETE FROM ${this.tableName} WHERE id = $1 AND church_id = $2 AND status = 'pending' RETURNING id`,
+      [approvalId, churchId]
+    );
+    return result.rows[0];
   }
 
   async getById(approvalId, churchId) {
@@ -157,7 +179,7 @@ class ApprovalsRepository extends BaseRepository {
 
   async getActiveWorkflows(churchId) {
     const result = await this.pool.query(
-      'SELECT * FROM approval_workflows WHERE church_id = $1 AND is_active = true ORDER BY created_at DESC',
+      'SELECT * FROM approval_workflows WHERE (church_id = $1 OR church_id IS NULL) AND is_active = true ORDER BY created_at DESC',
       [churchId]
     );
     return result.rows;
@@ -170,7 +192,8 @@ class ApprovalsRepository extends BaseRepository {
          COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
          COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
          COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected,
-         AVG(EXTRACT(EPOCH FROM (approved_at - created_at))/3600) as avg_processing_hours
+         AVG(CASE WHEN approved_at > created_at
+              THEN EXTRACT(EPOCH FROM (approved_at - created_at))/3600 END) as avg_processing_hours
        FROM approval_requests
        WHERE church_id = $1 AND created_at >= CURRENT_DATE - INTERVAL '30 days'`,
       [churchId]

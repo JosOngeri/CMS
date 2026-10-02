@@ -33,14 +33,14 @@ router.get('/document/:documentId/history', documentApprovalController.getDocume
  * @desc    Approve document
  * @access  Private
  */
-router.post('/:approvalRequestId/approve', hasRole('admin', 'moderator'), documentApprovalController.approveDocument);
+router.post('/:approvalRequestId/approve', hasRole('Super Admin', 'Pastor'), documentApprovalController.approveDocument);
 
 /**
  * @route   POST /api/document-approval/:approvalRequestId/reject
  * @desc    Reject document
  * @access  Private
  */
-router.post('/:approvalRequestId/reject', hasRole('admin', 'moderator'), documentApprovalController.rejectDocument);
+router.post('/:approvalRequestId/reject', hasRole('Super Admin', 'Pastor'), documentApprovalController.rejectDocument);
 
 /**
  * @route   GET /api/document-approval/:approvalRequestId

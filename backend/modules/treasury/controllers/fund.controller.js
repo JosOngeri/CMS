@@ -1,7 +1,7 @@
 /**
  * @audit Treasury fund controller (modular surface — church-scoped).
- * @known ISSUE: deleteFund compares fund.current_balance !== 0 — pg returns numerics as strings
- *        ("0.00" !== 0 is always true) -> funds can never be deleted.
+ * @fixed deleteFund now compares parseFloat(current_balance) !== 0 — pg returns numerics
+ *        as strings, so strict comparison against 0 never matched ("0.00" !== 0).
  */
 /**
  * Fund Controller
@@ -118,7 +118,8 @@ class FundController {
         return res.status(404).json({ error: 'Fund not found' });
       }
       
-      if (fund.current_balance !== 0) {
+      // pg returns numerics as strings — compare as float, not !== 0
+      if (parseFloat(fund.current_balance) !== 0) {
         return res.status(400).json({ 
           error: 'Cannot delete fund with balance. Deactivate instead.' 
         });
@@ -140,15 +141,10 @@ class FundController {
   async getFundBalances(req, res) {
     try {
       const balances = await this.fundRepo.getFundBalances(req.user.church_id);
-      
-      const summary = balances.reduce((acc, fund) => {
-        acc.total_contributions += parseFloat(fund.total_contributions);
-        acc.total_expenses += parseFloat(fund.total_expenses);
-        acc.net_balance += parseFloat(fund.current_balance);
-        return acc;
-      }, { total_contributions: 0, total_expenses: 0, net_balance: 0 });
-      
-      res.json({ 
+
+      const summary = this.fundRepo.summarizeBalances(balances);
+
+      res.json({
         funds: balances,
         summary
       });

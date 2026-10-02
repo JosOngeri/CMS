@@ -5,7 +5,8 @@
  *        Callback/webhook handlers are unauthenticated by design — they scope
  *        via the payment's own church_id, not req.user.
  */
-const kopokopoService = require('../services/kopokopo');
+const paymentGateway = require('../services/PaymentGatewayService');
+const numberingService = require('../services/numberingService');
 const BaseController = require('./BaseController');
 const PaymentRepository = require('../repositories/PaymentRepository');
 const { createLogger } = require('../helpers/controllerLogger');
@@ -70,7 +71,7 @@ class PaymentController extends BaseController {
       const paymentId = payment.id;
 
       // Initiate STK Push
-      const paymentResultData = await kopokopoService.initiateSTKPush({
+      const paymentResultData = await paymentGateway.initiateSTKPush({
         phoneNumber,
         amount,
         reference: `SDA-${paymentId}`,
@@ -136,7 +137,7 @@ class PaymentController extends BaseController {
 
       const paymentId = payment.id;
 
-      const linkResult = await kopokopoService.generatePaymentLink({
+      const linkResult = await paymentGateway.generatePaymentLink({
         amount,
         description: description || `${category} payment`,
         redirectUrl: `${process.env.FRONTEND_URL}/payment/success/${paymentId}`,
@@ -199,7 +200,7 @@ class PaymentController extends BaseController {
 
       const paymentId = payment.id;
 
-      const qrResult = await kopokopoService.generateQRCode({
+      const qrResult = await paymentGateway.generateQRCode({
         amount,
         description: description || `${category} payment`,
         memberId,
@@ -258,7 +259,7 @@ class PaymentController extends BaseController {
 
       // If payment is still pending, check with KopoKopo
       if (payment.status === 'pending' && payment.transaction_id) {
-        const statusResult = await kopokopoService.checkTransactionStatus(
+        const statusResult = await paymentGateway.checkTransactionStatus(
           payment.transaction_id
         );
 
@@ -411,7 +412,7 @@ class PaymentController extends BaseController {
         });
       }
 
-      await kopokopoService.processWebhook(payload, signature);
+      await paymentGateway.processWebhook(payload, signature);
 
       res.json({ success: true, message: 'Webhook processed successfully' });
     } catch (error) {
@@ -437,7 +438,7 @@ class PaymentController extends BaseController {
       const { startDate, endDate } = req.query;
 
       // Get analytics from KopoKopo
-      const kopokopoAnalytics = await kopokopoService.getPaymentAnalytics(
+      const kopokopoAnalytics = await paymentGateway.getPaymentAnalytics(
         startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
         endDate || new Date()
       );
@@ -503,7 +504,7 @@ class PaymentController extends BaseController {
       }
 
       // Generate refund number
-      const refundNumber = `REF-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`;
+      const refundNumber = numberingService.generateRefundNumber();
 
       // Create refund record with pending status
       const refund = await PaymentRepository.createRefundWithNumber(
@@ -576,8 +577,8 @@ class PaymentController extends BaseController {
       // Get payment details
       const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id, churchId);
 
-      // Process refund with KopoKopo
-      const refundResultData = await kopokopoService.refundPayment(
+      // Process refund through the payment gateway
+      const refundResultData = await paymentGateway.refundPayment(
         payment.transaction_id,
         { amount: refund.amount, reason: refund.reason }
       );

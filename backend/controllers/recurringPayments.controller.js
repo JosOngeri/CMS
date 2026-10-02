@@ -2,6 +2,7 @@ const BaseController = require('./BaseController');
 const RecurringPaymentsRepository = require('../repositories/RecurringPaymentsRepository');
 const ResponseHandler = require('../utils/ResponseHandler');
 const SchedulingService = require('../services/SchedulingService');
+const numberingService = require('../services/numberingService');
 const { createLogger } = require('../helpers/controllerLogger');
 
 /**
@@ -64,8 +65,8 @@ class RecurringPaymentsController extends BaseController {
         }]);
       }
 
-      // Generate recurring number using service
-      const recurringNumber = this.generateRecurringNumber();
+      // Generate recurring number using numbering service
+      const recurringNumber = numberingService.generateRecurringNumber();
 
       // Calculate next payment date using SchedulingService
       const nextPaymentDate = SchedulingService.calculateNextPaymentDate(start_date, frequency);
@@ -241,16 +242,6 @@ class RecurringPaymentsController extends BaseController {
       this.logger.error('handlePaymentFailure', error);
       return ResponseHandler.error(res, 'Failed to handle payment failure');
     }
-  }
-
-  /**
-   * Generate recurring payment number
-   * @returns {string} Recurring payment number
-   */
-  generateRecurringNumber() {
-    const year = new Date().getFullYear();
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `REC-${year}-${random}`;
   }
 }
 

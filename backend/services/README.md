@@ -7,17 +7,21 @@ Business logic + external integrations (M-Pesa, SMS, Telegram, cache).
 | `ChartOfAccountsService.js` | Chart of Accounts Service |
 | `ChurchService.js` | Church Service |
 | `ContentService.js` | Content Service |
+| `ExportService.js` | Export Service |
 | `FixedAssetService.js` | ReferenceError in generateDepreciationSchedule for ALL methods (line 79 is straight-line). |
 | `IdentityService.js` | IdentityService (Phase 5) |
 | `MessagingService.js` | Messaging Service |
 | `MpesaService.js` | MpesaService (Phase 12) |
+| `PaymentGatewayService.js` | Payment Gateway Service |
 | `ProjectService.js` | Project Service |
+| `ReceiptService.js` | Receipt Service |
 | `ReportService.js` | Report Service |
 | `RollingUpdateService.js` | RollingUpdateService |
 | `SchedulingService.js` | Scheduling Service |
 | `SettingsService.js` | Settings Service |
 | `SmsHub.js` | SmsHub Service (REQ-FR-003) |
 | `SnapshotService.js` | SnapshotService |
+| `VendorService.js` | Vendor Service |
 | `aiContentService.js` | AI Content Generation Service (Phase 13) |
 | `apiHub.js` | API Hub Service (Phase 9) |
 | `auditService.js` | Audit Service |
@@ -27,6 +31,7 @@ Business logic + external integrations (M-Pesa, SMS, Telegram, cache).
 | `kopokopo.js` | KopoKopoService |
 | `nameMatcher.js` | Name Matcher Service (Phase 12) |
 | `notificationService.js` | Notification Service (Phase 10) |
+| `numberingService.js` | Numbering Service |
 | `platformAudit.service.js` | — |
 | `reconciliationService.js` | Reconciliation Service (Phase 12) |
 | `redisCache.js` | RedisCache Service (Phase 11) - Modified for Hybrid In-Memory/Redis support |

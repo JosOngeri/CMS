@@ -7,7 +7,7 @@
  */
 const BaseController = require('./BaseController');
 const PaymentsRepository = require('../repositories/PaymentsRepository');
-const kopokopoService = require('../services/kopokopo');
+const paymentGateway = require('../services/PaymentGatewayService');
 const { createLogger } = require('../helpers/controllerLogger');
 const auditService = require('../services/auditService');
 
@@ -143,7 +143,7 @@ class PaymentsController extends BaseController {
         // would leave the member waiting for a prompt that never comes.
         const stkPhone = normalized;
         try {
-          const stkResult = await kopokopoService.initiateSTKPush({
+          const stkResult = await paymentGateway.initiateSTKPush({
             phoneNumber: stkPhone,
             amount: totalAmount,
             reference: `SDA-${payment.id}`,
@@ -573,6 +573,11 @@ class PaymentsController extends BaseController {
         return res.status(404).json({ success: false, error: 'Payment not found' });
       }
 
+      // Standardized refund workflow: only completed payments can be refunded
+      if (payment.status !== 'completed') {
+        return res.status(400).json({ success: false, error: 'Only completed payments can be refunded' });
+      }
+
       const refund = await PaymentsRepository.createRefund(paymentId, payment.amount, reason, userId, churchId);
 
       res.json({ success: true, refund });
@@ -597,10 +602,11 @@ class PaymentsController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
+      // updateRefundStatus only transitions pending refunds (repo-level guard)
       const refund = await PaymentsRepository.updateRefundStatus(refundId, 'approved', userId, churchId);
 
       if (!refund) {
-        return res.status(404).json({ success: false, error: 'Refund not found' });
+        return res.status(404).json({ success: false, error: 'Refund not found or already processed' });
       }
 
       res.json({ success: true, refund });
@@ -625,10 +631,11 @@ class PaymentsController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
+      // updateRefundStatus only transitions pending refunds (repo-level guard)
       const refund = await PaymentsRepository.updateRefundStatus(refundId, 'rejected', userId, churchId);
 
       if (!refund) {
-        return res.status(404).json({ success: false, error: 'Refund not found' });
+        return res.status(404).json({ success: false, error: 'Refund not found or already processed' });
       }
 
       res.json({ success: true, refund });

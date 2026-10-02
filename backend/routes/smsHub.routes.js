@@ -12,41 +12,41 @@ router.use(authenticateToken);
  * @desc    Send SMS with automatic provider selection
  * @access  Private
  */
-router.post('/send', hasRole('admin', 'treasurer'), smsHubController.sendSMS);
+router.post('/send', hasRole('Super Admin', 'Pastor', 'Treasurer', 'Department Head'), smsHubController.sendSMS);
 
 /**
  * @route   GET /api/sms-hub/providers/:provider/status
  * @desc    Get SMS provider status
  * @access  Private
  */
-router.get('/providers/:provider/status', hasRole('admin'), smsHubController.getProviderStatus);
+router.get('/providers/:provider/status', hasRole('Super Admin'), smsHubController.getProviderStatus);
 
 /**
  * @route   GET /api/sms-hub/providers/status
  * @desc    Get all SMS provider statuses
  * @access  Private
  */
-router.get('/providers/status', hasRole('admin'), smsHubController.getAllProviderStatuses);
+router.get('/providers/status', hasRole('Super Admin'), smsHubController.getAllProviderStatuses);
 
 /**
  * @route   POST /api/sms-hub/providers/reload
  * @desc    Reload SMS providers from database
  * @access  Private
  */
-router.post('/providers/reload', hasRole('admin'), smsHubController.reloadProviders);
+router.post('/providers/reload', hasRole('Super Admin'), smsHubController.reloadProviders);
 
 /**
  * @route   GET /api/sms-hub/integrations/:integration/health
  * @desc    Check API Hub integration health
  * @access  Private
  */
-router.get('/integrations/:integration/health', hasRole('admin'), smsHubController.checkIntegrationHealth);
+router.get('/integrations/:integration/health', hasRole('Super Admin'), smsHubController.checkIntegrationHealth);
 
 /**
  * @route   GET /api/sms-hub/integrations/status
  * @desc    Get all API Hub integration statuses
  * @access  Private
  */
-router.get('/integrations/status', hasRole('admin'), smsHubController.getAllIntegrationStatuses);
+router.get('/integrations/status', hasRole('Super Admin'), smsHubController.getAllIntegrationStatuses);
 
 module.exports = router;

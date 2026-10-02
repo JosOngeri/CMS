@@ -8,7 +8,7 @@ Data access — the only layer that should touch SQL.
 | `ActivityFeedRepository.js` | ActivityFeedRepository |
 | `AnalyticsRepository.js` | AnalyticsRepository |
 | `AnnouncementsRepository.js` | AnnouncementsRepository |
-| `ApprovalsRepository.js` | ApprovalsRepository |
+| `ApprovalsRepository.js` | pass req.user.church_id). getAll JOINs users for requester/approver |
 | `AuditLogRepository.js` | AuditLogRepository |
 | `AuthRepository.js` | AuthRepository |
 | `BaseRepository.js` | Base Repository for standardized data access |
@@ -33,18 +33,18 @@ Data access — the only layer that should touch SQL.
 | `GalleryRepository.js` | GalleryRepository |
 | `GatewayRepository.js` | GatewayRepository |
 | `ManualPaymentRepository.js` | Create manual payment entry |
-| `MembersRepository.js` | invisible to the scoped list queries (which DO filter church_id). |
+| `MembersRepository.js` | INSERT sets church_id, UPDATE/DELETE scope WHERE by it when provided. |
 | `MobileRepository.js` | MobileRepository |
 | `MpesaRepository.js` | MpesaRepository |
 | `NotificationsRepository.js` | NotificationsRepository |
 | `PaletteRepository.js` | PaletteRepository |
-| `PaymentRepository.js` | Recompute a member_obligation's paid_amount/status from all completed |
-| `PaymentsRepository.js` | omits church_id; updatePaymentStatus(id,status,transactionId) — callers pass churchId into |
-| `PledgesRepository.js` | PledgesRepository |
+| `PaymentRepository.js` | PaymentsRepository.js serves the standard payments controller). |
+| `PaymentsRepository.js` | inserts church_id/payment_date; updatePaymentStatus takes optional churchId |
+| `PledgesRepository.js` | Atomically increment amount_paid — avoids read-modify-write races. |
 | `ProjectsRepository.js` | ProjectsRepository |
-| `ReconciliationRepository.js` | ReconciliationRepository |
+| `ReconciliationRepository.js` | Verify a transaction while appending a forensic edit-history entry. |
 | `RecurringPaymentsRepository.js` | RecurringPaymentsRepository |
-| `ReportsRepository.js` | ReportsRepository |
+| `ReportsRepository.js` | table has no church_id). generateCustomReport uses REPORT_SOURCES |
 | `SMSProviderRepository.js` | SMS Provider Repository (Phase 9) |
 | `SMSRepository.js` | SmsRepository |
 | `SecurityRepository.js` | SecurityRepository |
@@ -52,7 +52,7 @@ Data access — the only layer that should touch SQL.
 | `SnapshotRepository.js` | SnapshotRepository |
 | `SyncRepository.js` | SyncRepository |
 | `TelegramAuthRepository.js` | TelegramAuthRepository |
-| `TelegramRepository.js` | TelegramRepository |
+| `TelegramRepository.js` | read telegram_channel_posts (telegram_posts is an orphan — no writer). |
 | `TreasuryDashboardRepository.js` | TreasuryDashboardRepository |
 | `TreasuryRepository.js` | TreasuryRepository |
 | `UserRepository.js` | UserRepository |

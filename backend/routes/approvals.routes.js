@@ -1,3 +1,9 @@
+/**
+ * @audit Approval routes — all authenticated; approve/reject/delegate/delete
+ *        gated to Super Admin/Pastor/Department Head.
+ * @known Static routes (/workflows, /analytics, /pending-count, /execute) must
+ *        stay above /:id or they are shadowed.
+ */
 const express = require('express');
 const router = express.Router();
 const approvalsController = require('../controllers/approvals.controller');
@@ -26,9 +32,7 @@ router.get('/:id', approvalsController.getApprovalById);
 router.put('/:id/approve', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.approveRequest);
 router.put('/:id/reject', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.rejectRequest);
 router.post('/:id/reject', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.rejectRequest);
-router.delete('/:id', requireRole(['Super Admin', 'Pastor', 'Department Head']), (req, res) => {
-  res.json({ success: true, message: 'Approval request deleted' });
-});
+router.delete('/:id', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.deleteApproval);
 router.put('/:id/delegate', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.delegateRequest);
 router.put('/:approvalId/step', approvalsController.processWorkflowStep);
 router.get('/:approvalId/status', approvalsController.getWorkflowStatus);

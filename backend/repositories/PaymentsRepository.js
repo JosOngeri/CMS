@@ -433,7 +433,8 @@ class PaymentsRepository extends BaseRepository {
 
   async updateRefundStatus(refundId, status, processedBy, churchId = null) {
     const params = [status, processedBy, refundId];
-    let where = 'id = $3';
+    // Only pending refunds may transition — prevents double approve/reject
+    let where = "id = $3 AND status = 'pending'";
     if (churchId) {
       where += ' AND church_id = $4';
       params.push(churchId);
