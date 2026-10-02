@@ -2,7 +2,9 @@
  * Express app assembly — security headers, tenant-aware CORS, tenant resolution, CSRF, /api router, SPA static serve.
  * @exports express app
  * @deps routes/index.routes.js, middleware/{tenantResolver,csrf,standardResponse,errorHandler}
- * @known CSP frameSrc malformed; no global rate limiter is mounted; /uploads misses fall through to index.html; churchContext imported but disabled — ledger Batch-1 re-audit.
+ * @fixed CSP frameSrc quote; global apiLimiter mounted on /api (100/min baseline);
+ *        /uploads misses now 404 instead of falling through to index.html.
+ * @known churchContext imported but disabled (RLS session vars not configured).
  */
 const express = require('express');
 const cors = require('cors');
@@ -47,7 +49,7 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:"],
       scriptSrc: ["'self'"],
       connectSrc: ["'self'", process.env.API_ORIGIN].filter(Boolean),
-      frameSrc: ["'none"],
+      frameSrc: ["'none'"],
       objectSrc: ["'none"],
       mediaSrc: ["'self'"],
       manifestSrc: ["'self'"]
@@ -206,10 +208,18 @@ app.use(tenantResolver);
 // Note: We don't apply it globally here yet to allow public routes
 // It will be used in specific route modules or as a secondary middleware
 
-// Static files for uploads
+// Static files for uploads — 404 on miss so /uploads/* doesn't fall through
+// to the SPA fallback (was returning 200 index.html for missing images)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1d'
 }));
+app.use('/uploads', (req, res) => {
+  res.status(404).json({ success: false, error: 'File not found' });
+});
+
+// Global API baseline rate limit (100 req/min per IP in prod) — per-route
+// stricter limiters still apply on top of this for sensitive mounts.
+app.use('/api', apiLimiter);
 
 // Normalize every JSON API response through ResponseHandler while preserving
 // legacy named top-level fields during the route-response migration.
