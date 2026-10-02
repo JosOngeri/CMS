@@ -321,13 +321,18 @@ class PaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getPaymentSummary(startDate, endDate) {
-    let dateFilter = "WHERE status = 'completed'";
+  async getPaymentSummary(startDate, endDate, churchId = null) {
+    let where = "status = 'completed'";
     const params = [];
 
     if (startDate && endDate) {
-      dateFilter = 'WHERE payment_date BETWEEN $1 AND $2 AND status = \'completed\'';
+      where += ' AND payment_date BETWEEN $1 AND $2';
       params.push(startDate, endDate);
+    }
+
+    if (churchId) {
+      where += ` AND church_id = $${params.length + 1}`;
+      params.push(churchId);
     }
 
     const result = await this.pool.query(
@@ -336,7 +341,7 @@ class PaymentsRepository extends BaseRepository {
          COUNT(*) as count,
          COALESCE(SUM(amount), 0) as total_amount
        FROM payments
-       ${dateFilter}
+       WHERE ${where}
        GROUP BY payment_type
        ORDER BY total_amount DESC`,
       params
@@ -427,15 +432,19 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async updateRefundStatus(refundId, status, processedBy, churchId = null) {
-    let query = `UPDATE refunds SET status = $1, processed_by = $2 WHERE id = $3 RETURNING *`;
     const params = [status, processedBy, refundId];
-
+    let where = 'id = $3';
     if (churchId) {
-      query += ' AND church_id = $4';
+      where += ' AND church_id = $4';
       params.push(churchId);
     }
 
-    const result = await this.pool.query(query, params);
+    // AND clause must sit inside WHERE — the old code appended it after
+    // RETURNING, which was invalid SQL whenever churchId was passed
+    const result = await this.pool.query(
+      `UPDATE refunds SET status = $1, processed_by = $2 WHERE ${where} RETURNING *`,
+      params
+    );
     return result.rows[0] || null;
   }
 
@@ -461,36 +470,70 @@ class PaymentsRepository extends BaseRepository {
     await this.pool.query('DELETE FROM payment_methods WHERE id = $1', [id]);
   }
 
-  async updatePayment(id, data) {
+  async updatePayment(id, data, churchId = null) {
     const { amount, paymentMethodId, paymentType, status, notes } = data;
+    const params = [amount, paymentMethodId, paymentType, status, notes, id];
+    let where = 'id = $6';
+    if (churchId) {
+      where += ' AND church_id = $7';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE payments SET amount = COALESCE($1, amount), payment_method_id = COALESCE($2, payment_method_id), payment_type = COALESCE($3, payment_type), status = COALESCE($4, status), notes = COALESCE($5, notes) WHERE id = $6 RETURNING *',
-      [amount, paymentMethodId, paymentType, status, notes, id]
+      `UPDATE payments SET amount = COALESCE($1, amount), payment_method_id = COALESCE($2, payment_method_id), payment_type = COALESCE($3, payment_type), status = COALESCE($4, status), notes = COALESCE($5, notes) WHERE ${where} RETURNING *`,
+      params
     );
     return result.rows[0];
   }
 
-  async deletePayment(id) {
-    await this.pool.query('DELETE FROM payments WHERE id = $1', [id]);
+  async deletePayment(id, churchId = null) {
+    const params = [id];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    await this.pool.query(`DELETE FROM payments WHERE ${where}`, params);
   }
 
-  async updatePledge(id, data) {
+  async updatePledge(id, data, churchId = null) {
     const { amount, pledgeType, startDate, endDate, frequency, status } = data;
+    const params = [amount, pledgeType, startDate, endDate, frequency, status, id];
+    let where = 'id = $7';
+    if (churchId) {
+      where += ' AND church_id = $8';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE pledges SET amount = COALESCE($1, amount), pledge_type = COALESCE($2, pledge_type), start_date = COALESCE($3, start_date), end_date = COALESCE($4, end_date), frequency = COALESCE($5, frequency), status = COALESCE($6, status) WHERE id = $7 RETURNING *',
-      [amount, pledgeType, startDate, endDate, frequency, status, id]
+      `UPDATE pledges SET amount = COALESCE($1, amount), pledge_type = COALESCE($2, pledge_type), start_date = COALESCE($3, start_date), end_date = COALESCE($4, end_date), frequency = COALESCE($5, frequency), status = COALESCE($6, status) WHERE ${where} RETURNING *`,
+      params
     );
     return result.rows[0];
   }
 
-  async deletePledge(id) {
-    await this.pool.query('DELETE FROM pledges WHERE id = $1', [id]);
+  async deletePledge(id, churchId = null) {
+    const params = [id];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    await this.pool.query(`DELETE FROM pledges WHERE ${where}`, params);
   }
 
-  async getPledgePayments(pledgeId) {
+  async getPledgePayments(pledgeId, churchId = null) {
+    const params = [pledgeId];
+    let where = 'pp.pledge_id = $1';
+    if (churchId) {
+      where += ' AND pl.church_id = $2';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'SELECT pp.*, p.payment_date, p.amount as payment_amount FROM pledge_payments pp LEFT JOIN payments p ON pp.payment_id = p.id WHERE pp.pledge_id = $1 ORDER BY pp.created_at DESC',
-      [pledgeId]
+      `SELECT pp.*, p.payment_date, p.amount as payment_amount
+       FROM pledge_payments pp
+       LEFT JOIN payments p ON pp.payment_id = p.id
+       JOIN pledges pl ON pp.pledge_id = pl.id
+       WHERE ${where} ORDER BY pp.created_at DESC`,
+      params
     );
     return result.rows;
   }
@@ -555,18 +598,31 @@ class PaymentsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async verifyPayment(id) {
+  // payments has no verified_at/cancelled_at columns — updated_at only
+  async verifyPayment(id, churchId = null) {
+    const params = [id];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE payments SET status = \'verified\', verified_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
-      [id]
+      `UPDATE payments SET status = 'verified', updated_at = CURRENT_TIMESTAMP WHERE ${where} RETURNING *`,
+      params
     );
     return result.rows[0];
   }
 
-  async cancelPayment(id) {
+  async cancelPayment(id, churchId = null) {
+    const params = [id];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE payments SET status = \'cancelled\', cancelled_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
-      [id]
+      `UPDATE payments SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE ${where} RETURNING *`,
+      params
     );
     return result.rows[0];
   }

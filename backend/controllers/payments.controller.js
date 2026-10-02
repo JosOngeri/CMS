@@ -2,8 +2,8 @@
  * @audit Payments controller (standard path; M-Pesa flow in payment.controller.js).
  * @fixed checkDuplicatePayment implemented on repo; updatePaymentStatus passes
  *        (id,status,null,churchId) with 404-before-mutate; createPayment inserts
- *        church_id+payment_date. @known remaining: updatePayment/deletePayment/
- *        verifyPayment/cancelPayment/pledge mutations + getPaymentSummary unscoped.
+ *        church_id+payment_date; all remaining mutations + getPaymentSummary
+ *        church-scoped (2026-10-03).
  */
 const BaseController = require('./BaseController');
 const PaymentsRepository = require('../repositories/PaymentsRepository');
@@ -401,7 +401,7 @@ class PaymentsController extends BaseController {
     try {
       const { startDate, endDate } = req.query;
 
-      const summary = await PaymentsRepository.getPaymentSummary(startDate, endDate);
+      const summary = await PaymentsRepository.getPaymentSummary(startDate, endDate, req.user.church_id);
 
       res.json({ success: true, data: summary });
     } catch (error) {
@@ -679,10 +679,15 @@ class PaymentsController extends BaseController {
   async updatePayment(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
       const { amount, paymentMethodId, paymentType, status, notes } = req.body;
+      const existing = await PaymentsRepository.getPaymentById(id, churchId);
+      if (!existing) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
       const payment = await PaymentsRepository.updatePayment(id, {
         amount, paymentMethodId, paymentType, status, notes
-      });
+      }, churchId);
       res.json({ success: true, data: payment });
     } catch (error) {
       this.logger.error('updatePayment', error);
@@ -693,7 +698,12 @@ class PaymentsController extends BaseController {
   async deletePayment(req, res) {
     try {
       const { id } = req.params;
-      await PaymentsRepository.deletePayment(id);
+      const churchId = req.user.church_id;
+      const existing = await PaymentsRepository.getPaymentById(id, churchId);
+      if (!existing) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
+      await PaymentsRepository.deletePayment(id, churchId);
       res.json({ success: true, message: 'Payment deleted' });
     } catch (error) {
       this.logger.error('deletePayment', error);
@@ -707,7 +717,10 @@ class PaymentsController extends BaseController {
       const { amount, pledgeType, startDate, endDate, frequency, status } = req.body;
       const pledge = await PaymentsRepository.updatePledge(id, {
         amount, pledgeType, startDate, endDate, frequency, status
-      });
+      }, req.user.church_id);
+      if (!pledge) {
+        return res.status(404).json({ success: false, error: 'Pledge not found' });
+      }
       res.json({ success: true, data: pledge });
     } catch (error) {
       this.logger.error('updatePledge', error);
@@ -718,7 +731,7 @@ class PaymentsController extends BaseController {
   async deletePledge(req, res) {
     try {
       const { id } = req.params;
-      await PaymentsRepository.deletePledge(id);
+      await PaymentsRepository.deletePledge(id, req.user.church_id);
       res.json({ success: true, message: 'Pledge deleted' });
     } catch (error) {
       this.logger.error('deletePledge', error);
@@ -729,7 +742,7 @@ class PaymentsController extends BaseController {
   async getPledgePayments(req, res) {
     try {
       const { pledgeId } = req.params;
-      const payments = await PaymentsRepository.getPledgePayments(pledgeId);
+      const payments = await PaymentsRepository.getPledgePayments(pledgeId, req.user.church_id);
       res.json({ success: true, data: payments });
     } catch (error) {
       this.logger.error('getPledgePayments', error);
@@ -764,7 +777,10 @@ class PaymentsController extends BaseController {
   async verifyPayment(req, res) {
     try {
       const { id } = req.params;
-      const payment = await PaymentsRepository.verifyPayment(id);
+      const payment = await PaymentsRepository.verifyPayment(id, req.user.church_id);
+      if (!payment) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
       res.json({ success: true, data: payment });
     } catch (error) {
       this.logger.error('verifyPayment', error);
@@ -775,7 +791,10 @@ class PaymentsController extends BaseController {
   async cancelPayment(req, res) {
     try {
       const { id } = req.params;
-      const payment = await PaymentsRepository.cancelPayment(id);
+      const payment = await PaymentsRepository.cancelPayment(id, req.user.church_id);
+      if (!payment) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
       res.json({ success: true, data: payment });
     } catch (error) {
       this.logger.error('cancelPayment', error);

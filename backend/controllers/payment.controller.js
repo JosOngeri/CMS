@@ -1,3 +1,10 @@
+/**
+ * @audit M-Pesa/KopoKopo payment controller (STK push, links, QR, refunds).
+ * @fixed All handlers church-scoped via req.user.church_id — refunds scope
+ *        through the parent payment (legacy NULL-church refund rows covered).
+ *        Callback/webhook handlers are unauthenticated by design — they scope
+ *        via the payment's own church_id, not req.user.
+ */
 const kopokopoService = require('../services/kopokopo');
 const BaseController = require('./BaseController');
 const PaymentRepository = require('../repositories/PaymentRepository');
@@ -139,7 +146,7 @@ class PaymentController extends BaseController {
       });
 
       if (!linkResult.success) {
-        await PaymentRepository.updateStatusWithFailureReason(paymentId, 'failed', linkResult.error);
+        await PaymentRepository.updateStatusWithFailureReason(paymentId, 'failed', linkResult.error, req.user.church_id);
 
         return res.status(400).json({
           success: false,
@@ -200,7 +207,7 @@ class PaymentController extends BaseController {
       });
 
       if (!qrResult.success) {
-        await PaymentRepository.updateStatusWithFailureReason(paymentId, 'failed', qrResult.error);
+        await PaymentRepository.updateStatusWithFailureReason(paymentId, 'failed', qrResult.error, req.user.church_id);
 
         return res.status(400).json({
           success: false,
@@ -317,7 +324,7 @@ class PaymentController extends BaseController {
       if (startDate) filters.startDate = new Date(startDate);
       if (endDate) filters.endDate = new Date(endDate);
 
-      const { payments, totalCount } = await PaymentRepository.getPaymentsWithFilters(filters, null, limit, (page - 1) * limit);
+      const { payments, totalCount } = await PaymentRepository.getPaymentsWithFilters(filters, req.user.church_id, limit, (page - 1) * limit);
 
       res.json({
         success: true,
@@ -439,21 +446,7 @@ class PaymentController extends BaseController {
       const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const end = endDate || new Date();
 
-      const localAnalyticsQuery = `
-        SELECT 
-          category,
-          SUM(amount) as total_amount,
-          COUNT(*) as count,
-          AVG(amount) as average_amount
-        FROM payments
-        WHERE status = 'completed'
-          AND created_at >= $1
-          AND created_at <= $2
-        GROUP BY category
-        ORDER BY total_amount DESC
-      `;
-
-      const localAnalyticsResult = await PaymentRepository.getPaymentAnalyticsByCategory(start, end);
+      const localAnalyticsResult = await PaymentRepository.getPaymentAnalyticsByCategory(start, end, req.user.church_id);
       const localAnalytics = localAnalyticsResult.map(row => ({
         _id: row.category,
         totalAmount: parseFloat(row.total_amount),
@@ -492,8 +485,9 @@ class PaymentController extends BaseController {
     try {
       const { paymentId } = req.params;
       const { amount, reason } = req.body;
+      const churchId = req.user.church_id;
 
-      const payment = await PaymentRepository.getPaymentByIdSimple(paymentId);
+      const payment = await PaymentRepository.getPaymentByIdSimple(paymentId, churchId);
       if (!payment) {
         return res.status(404).json({
           success: false,
@@ -517,7 +511,8 @@ class PaymentController extends BaseController {
         amount || payment.amount,
         reason,
         refundNumber,
-        req.user.id
+        req.user.id,
+        churchId
       );
 
       // Create approval request for refund
@@ -527,7 +522,8 @@ class PaymentController extends BaseController {
         amount || payment.amount,
         `Refund for payment ${paymentId}: ${reason}`,
         req.user.id,
-        { refund_id: refund.id, payment_id: paymentId }
+        { refund_id: refund.id, payment_id: paymentId },
+        churchId
       );
 
       res.json({
@@ -560,8 +556,9 @@ class PaymentController extends BaseController {
   async approveRefund(req, res) {
     try {
       const { refundId } = req.params;
+      const churchId = req.user.church_id;
 
-      const refund = await PaymentRepository.getRefundById(refundId);
+      const refund = await PaymentRepository.getRefundById(refundId, churchId);
       if (!refund) {
         return res.status(404).json({
           success: false,
@@ -577,7 +574,7 @@ class PaymentController extends BaseController {
       }
 
       // Get payment details
-      const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id);
+      const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id, churchId);
 
       // Process refund with KopoKopo
       const refundResultData = await kopokopoService.refundPayment(
@@ -593,10 +590,10 @@ class PaymentController extends BaseController {
       }
 
       // Update refund record
-      await PaymentRepository.approveRefund(refundId, refundResultData.refundId, req.user.id);
+      await PaymentRepository.approveRefund(refundId, refundResultData.refundId, req.user.id, churchId);
 
       // Update payment status
-      await PaymentRepository.updatePaymentStatus(refund.payment_id, 'refunded');
+      await PaymentRepository.updatePaymentStatus(refund.payment_id, 'refunded', churchId);
 
       // Send SMS notification for refund approval
       sendRefundStatusSMS({ ...refund, status: 'approved' }, payment).catch(smsError => {
@@ -631,8 +628,9 @@ class PaymentController extends BaseController {
     try {
       const { refundId } = req.params;
       const { rejectionReason } = req.body;
+      const churchId = req.user.church_id;
 
-      const refund = await PaymentRepository.getRefundById(refundId);
+      const refund = await PaymentRepository.getRefundById(refundId, churchId);
       if (!refund) {
         return res.status(404).json({
           success: false,
@@ -648,10 +646,10 @@ class PaymentController extends BaseController {
       }
 
       // Update refund record
-      await PaymentRepository.rejectRefund(refundId, req.user.id, refund.reason, rejectionReason);
+      await PaymentRepository.rejectRefund(refundId, req.user.id, refund.reason, rejectionReason, churchId);
 
       // Get payment details for SMS notification
-      const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id);
+      const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id, churchId);
 
       // Send SMS notification for refund rejection
       sendRefundStatusSMS({ ...refund, status: 'rejected' }, payment).catch(smsError => {
@@ -683,7 +681,7 @@ class PaymentController extends BaseController {
     try {
       const { status } = req.query;
 
-      const refunds = await PaymentRepository.getRefundsWithStatus(status);
+      const refunds = await PaymentRepository.getRefundsWithStatus(status, req.user.church_id);
 
       res.json({ success: true, data: refunds });
     } catch (error) {

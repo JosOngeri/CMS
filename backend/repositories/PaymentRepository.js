@@ -1,3 +1,9 @@
+/**
+ * @audit PaymentRepository (singular — M-Pesa/KopoKopo flows; sibling
+ *        PaymentsRepository.js serves the standard payments controller).
+ * @fixed All read/mutation methods accept optional churchId — refund ops scope
+ *        via parent-payment join; inserts write church_id.
+ */
 const BaseRepository = require('./BaseRepository');
 
 class PaymentRepository extends BaseRepository {
@@ -151,10 +157,16 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateStatusWithFailureReason(paymentId, status, failureReason) {
+  async updateStatusWithFailureReason(paymentId, status, failureReason, churchId = null) {
+    const params = [status, failureReason, paymentId];
+    let where = 'id = $3';
+    if (churchId) {
+      where += ' AND church_id = $4';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE payments SET status = $1, failure_reason = $2 WHERE id = $3',
-      [status, failureReason, paymentId]
+      `UPDATE payments SET status = $1, failure_reason = $2 WHERE ${where}`,
+      params
     );
     return result.rows[0];
   }
@@ -163,6 +175,12 @@ class PaymentRepository extends BaseRepository {
     let query = `SELECT * FROM ${this.tableName} WHERE 1=1`;
     const params = [];
     let paramCount = 0;
+
+    if (filters.member_id) {
+      paramCount++;
+      query += ` AND member_id = $${paramCount}`;
+      params.push(filters.member_id);
+    }
 
     if (filters.status) {
       paramCount++;
@@ -242,8 +260,16 @@ class PaymentRepository extends BaseRepository {
     return approvalResult.rows[0];
   }
 
-  async getRefundById(refundId) {
-    const result = await this.pool.query('SELECT * FROM refunds WHERE id = $1', [refundId]);
+  async getRefundById(refundId, churchId = null) {
+    // Scope via the parent payment — covers legacy refund rows whose own
+    // church_id is NULL
+    const params = [refundId];
+    let query = `SELECT r.* FROM refunds r JOIN payments p ON r.payment_id = p.id WHERE r.id = $1`;
+    if (churchId) {
+      query += ' AND p.church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
@@ -263,55 +289,73 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createRefundWithNumber(paymentId, amount, reason, refundNumber, userId) {
+  async createRefundWithNumber(paymentId, amount, reason, refundNumber, userId, churchId = null) {
     const query = `
-      INSERT INTO refunds (payment_id, amount, reason, refund_number, status, initiated_by)
-      VALUES ($1, $2, $3, $4, 'pending', $5)
+      INSERT INTO refunds (payment_id, amount, reason, refund_number, status, initiated_by, church_id)
+      VALUES ($1, $2, $3, $4, 'pending', $5, $6)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [paymentId, amount, reason, refundNumber, userId]);
+    const result = await this.pool.query(query, [paymentId, amount, reason, refundNumber, userId, churchId]);
     return result.rows[0];
   }
 
-  async createApprovalRequest(requestType, module, amount, description, userId, metadata) {
+  async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId = null) {
     const query = `
-      INSERT INTO approval_requests (request_type, module, amount, description, requested_by, status, metadata)
-      VALUES ($1, $2, $3, $4, $5, 'pending', $6)
+      INSERT INTO approval_requests (request_type, module, amount, description, requested_by, status, metadata, church_id)
+      VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7)
       RETURNING id
     `;
-    const result = await this.pool.query(query, [requestType, module, amount, description, userId, JSON.stringify(metadata)]);
+    const result = await this.pool.query(query, [requestType, module, amount, description, userId, JSON.stringify(metadata), churchId]);
     return result.rows[0].id;
   }
 
-  async getPaymentByIdSimple(paymentId) {
-    const result = await this.pool.query('SELECT * FROM payments WHERE id = $1', [paymentId]);
+  async getPaymentByIdSimple(paymentId, churchId = null) {
+    const params = [paymentId];
+    let query = 'SELECT * FROM payments WHERE id = $1';
+    if (churchId) {
+      query += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async updatePaymentStatus(paymentId, status) {
+  async updatePaymentStatus(paymentId, status, churchId = null) {
+    const params = [paymentId, status];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $3';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      'UPDATE payments SET status = $2 WHERE id = $1',
-      [paymentId, status]
+      `UPDATE payments SET status = $2 WHERE ${where}`,
+      params
     );
     return result.rows[0];
   }
 
-  async rejectRefund(refundId, userId, reason, rejectionReason) {
+  async rejectRefund(refundId, userId, reason, rejectionReason, churchId = null) {
+    const params = [userId, reason, rejectionReason, refundId];
+    let where = 'id = $4';
+    if (churchId) {
+      where += ' AND payment_id IN (SELECT id FROM payments WHERE church_id = $5)';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      `UPDATE refunds 
-       SET status = 'rejected', 
+      `UPDATE refunds
+       SET status = 'rejected',
           approved_by = $1,
           approved_at = CURRENT_TIMESTAMP,
           reason = COALESCE($2, reason) || ' - Rejected: ' || $3
-       WHERE id = $4`,
-      [userId, reason, rejectionReason, refundId]
+       WHERE ${where}`,
+      params
     );
     return result.rows[0];
   }
 
-  async getRefundsWithStatus(status) {
+  async getRefundsWithStatus(status, churchId = null) {
     let query = `
-      SELECT r.*, 
+      SELECT r.*,
              p.amount as original_amount,
              p.phone_number,
              u.first_name || ' ' || u.last_name as initiated_by_name,
@@ -331,39 +375,55 @@ class PaymentRepository extends BaseRepository {
       params.push(status);
     }
 
+    if (churchId) {
+      paramCount++;
+      query += ` AND p.church_id = $${paramCount}`;
+      params.push(churchId);
+    }
+
     query += ` ORDER BY r.created_at DESC`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async getPaymentAnalyticsByCategory(start, end) {
+  async getPaymentAnalyticsByCategory(start, end, churchId = null) {
+    const params = [start, end];
+    let where = `status = 'completed' AND created_at >= $1 AND created_at <= $2`;
+    if (churchId) {
+      where += ` AND church_id = $3`;
+      params.push(churchId);
+    }
     const query = `
-      SELECT 
+      SELECT
         category,
         SUM(amount) as total_amount,
         COUNT(*) as count,
         AVG(amount) as average_amount
       FROM payments
-      WHERE status = 'completed'
-        AND created_at >= $1
-        AND created_at <= $2
+      WHERE ${where}
       GROUP BY category
       ORDER BY total_amount DESC
     `;
-    const result = await this.pool.query(query, [start, end]);
+    const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async approveRefund(refundId, kopokopoRefundId, userId) {
+  async approveRefund(refundId, kopokopoRefundId, userId, churchId = null) {
+    const params = [kopokopoRefundId, userId, refundId];
+    let where = 'id = $3';
+    if (churchId) {
+      where += ' AND payment_id IN (SELECT id FROM payments WHERE church_id = $4)';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      `UPDATE refunds 
-       SET status = 'approved', 
+      `UPDATE refunds
+       SET status = 'approved',
           refund_id = $1,
           approved_by = $2,
           approved_at = CURRENT_TIMESTAMP
-       WHERE id = $3`,
-      [kopokopoRefundId, userId, refundId]
+       WHERE ${where}`,
+      params
     );
     return result.rows[0];
   }

@@ -1,3 +1,10 @@
+/**
+ * @audit Reports controller (financial/department/attendance/SMS/approval +
+ *        custom builder + scheduling).
+ * @fixed generateCustomReport is allowlisted+church-scoped; exports and all
+ *        getters thread req.user.church_id; save/schedule write church_id.
+ *        Report tables created by migrations/050_reports_tables.sql.
+ */
 const { jsPDF } = require('jspdf');
 const autoTable = require('jspdf-autotable');
 const BaseController = require('./BaseController');
@@ -54,7 +61,7 @@ class ReportsController extends BaseController {
     try {
       const { departmentId, startDate, endDate } = req.query;
 
-      const report = await ReportsRepository.getDepartmentReportExtended(departmentId, startDate, endDate);
+      const report = await ReportsRepository.getDepartmentReportExtended(departmentId, startDate, endDate, req.user.church_id);
 
       this.success(res, { data: report });
     } catch (error) {
@@ -101,7 +108,7 @@ class ReportsController extends BaseController {
     try {
       const { startDate, endDate, status } = req.query;
 
-      const report = await ReportsRepository.getSMSReport(startDate, endDate, status);
+      const report = await ReportsRepository.getSMSReport(startDate, endDate, status, req.user.church_id);
 
       this.success(res, { data: report });
     } catch (error) {
@@ -125,7 +132,7 @@ class ReportsController extends BaseController {
     try {
       const { startDate, endDate, status, entityType } = req.query;
 
-      const report = await ReportsRepository.getApprovalReport(startDate, endDate, status, entityType);
+      const report = await ReportsRepository.getApprovalReport(startDate, endDate, status, entityType, req.user.church_id);
 
       this.success(res, { data: report });
     } catch (error) {
@@ -215,19 +222,21 @@ class ReportsController extends BaseController {
       let data = [];
       let filename = '';
 
+      const churchId = req.user.church_id;
+
       switch (reportType) {
         case 'financial':
-          const financialResult = await this.getFinancialReportData(startDate, endDate);
+          const financialResult = await this.getFinancialReportData(startDate, endDate, churchId);
           data = financialResult;
           filename = 'financial_report';
           break;
         case 'department':
-          const deptResult = await this.getDepartmentReportData(startDate, endDate);
+          const deptResult = await this.getDepartmentReportData(startDate, endDate, churchId);
           data = deptResult;
           filename = 'department_report';
           break;
         case 'attendance':
-          const attendanceResult = await this.getAttendanceReportData(startDate, endDate);
+          const attendanceResult = await this.getAttendanceReportData(startDate, endDate, churchId);
           data = attendanceResult;
           filename = 'attendance_report';
           break;
@@ -259,8 +268,8 @@ class ReportsController extends BaseController {
    * @param {string} endDate - End date
    * @returns {Promise<Array>} Report data rows
    */
-  async getFinancialReportData(startDate, endDate) {
-    return await ReportsRepository.getFinancialReportData(startDate, endDate);
+  async getFinancialReportData(startDate, endDate, churchId = null) {
+    return await ReportsRepository.getFinancialReportData(startDate, endDate, churchId);
   }
 
   /**
@@ -269,8 +278,8 @@ class ReportsController extends BaseController {
    * @param {string} endDate - End date
    * @returns {Promise<Array>} Report data rows
    */
-  async getDepartmentReportData(startDate, endDate) {
-    return await ReportsRepository.getDepartmentReportData(startDate, endDate);
+  async getDepartmentReportData(startDate, endDate, churchId = null) {
+    return await ReportsRepository.getDepartmentReportData(startDate, endDate, churchId);
   }
 
   /**
@@ -279,8 +288,8 @@ class ReportsController extends BaseController {
    * @param {string} endDate - End date
    * @returns {Promise<Array>} Report data rows
    */
-  async getAttendanceReportData(startDate, endDate) {
-    return await ReportsRepository.getAttendanceReportData(startDate, endDate);
+  async getAttendanceReportData(startDate, endDate, churchId = null) {
+    return await ReportsRepository.getAttendanceReportData(startDate, endDate, churchId);
   }
 
   /**
@@ -312,7 +321,8 @@ class ReportsController extends BaseController {
         groupBy,
         sortBy,
         format,
-        created_by: req.user.id
+        created_by: req.user.id,
+        church_id: req.user.church_id
       });
 
       this.success(res, { report });
@@ -408,7 +418,8 @@ class ReportsController extends BaseController {
         scheduleConfig,
         reportConfig,
         recipients,
-        created_by: req.user.id
+        created_by: req.user.id,
+        church_id: req.user.church_id
       });
 
       // Schedule the report
@@ -431,7 +442,7 @@ class ReportsController extends BaseController {
    */
   async getScheduledReports(req, res) {
     try {
-      const reports = await ReportsRepository.getScheduledReportsByUser(req.user.id);
+      const reports = await ReportsRepository.getScheduledReportsByUser(req.user.id, req.user.church_id);
 
       this.success(res, { reports });
     } catch (error) {
@@ -452,7 +463,7 @@ class ReportsController extends BaseController {
     try {
       const { reportId } = req.params;
 
-      const executions = await ReportsRepository.getReportExecutions(reportId);
+      const executions = await ReportsRepository.getReportExecutions(reportId, req.user.church_id);
 
       this.success(res, { executions });
     } catch (error) {

@@ -111,9 +111,9 @@ class ReportScheduler {
       
       // Record execution
       await pool.query(
-        `INSERT INTO report_executions (report_id, filename, status, executed_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
-        [report.id, filename, 'completed']
+        `INSERT INTO report_executions (report_id, filename, status, church_id, executed_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
+        [report.id, filename, 'completed', report.church_id]
       );
       
       logger.info('executeScheduledReport', `Report "${report.name}" executed successfully: ${filename}`);
@@ -125,9 +125,9 @@ class ReportScheduler {
       
       // Record failure
       await pool.query(
-        `INSERT INTO report_executions (report_id, status, error_message, executed_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP)`,
-        [report.id, 'failed', error.message]
+        `INSERT INTO report_executions (report_id, status, error_message, church_id, executed_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
+        [report.id, 'failed', error.message, report.church_id]
       );
     }
   }

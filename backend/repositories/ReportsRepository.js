@@ -1,3 +1,10 @@
+/**
+ * @audit Reports repository.
+ * @fixed All queries church-scoped (sms_logs scopes via sender→users join —
+ *        table has no church_id). generateCustomReport uses REPORT_SOURCES
+ *        allowlists — never interpolate client identifiers into SQL.
+ * @deps  migrations/050_reports_tables.sql (tables were missing until then).
+ */
 const BaseRepository = require('./BaseRepository');
 
 class ReportsRepository extends BaseRepository {
@@ -52,11 +59,13 @@ class ReportsRepository extends BaseRepository {
   }
 
   async getSavedReports(userId, churchId = null) {
+    // AND binds tighter than OR — church filter must wrap the whole predicate,
+    // otherwise own reports leak across tenants and public scoping is bypassed
     let query = `
       SELECT sr.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM saved_reports sr
       LEFT JOIN users u ON sr.created_by = u.id
-      WHERE sr.created_by = $1 OR sr.is_public = true
+      WHERE (sr.created_by = $1 OR sr.is_public = true)
     `;
     const params = [userId];
 
@@ -72,6 +81,11 @@ class ReportsRepository extends BaseRepository {
   }
 
   async getFinancialReport(startDate, endDate, groupBy, churchId = null) {
+    // date_trunc unit is a text param — restrict to valid units so a bad
+    // ?groupBy= value can't error out (or smuggle anything odd)
+    const validGroups = ['hour', 'day', 'week', 'month', 'quarter', 'year'];
+    const safeGroupBy = validGroups.includes(groupBy) ? groupBy : 'month';
+
     let query = `
       SELECT
         DATE_TRUNC($1, transaction_date) as period,
@@ -82,7 +96,7 @@ class ReportsRepository extends BaseRepository {
       FROM transactions
       WHERE status = 'approved'
     `;
-    const params = [groupBy];
+    const params = [safeGroupBy];
 
     if (startDate && endDate) {
       query += ' AND transaction_date BETWEEN $2 AND $3';
@@ -156,7 +170,7 @@ class ReportsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getDepartmentReportExtended(departmentId, startDate, endDate) {
+  async getDepartmentReportExtended(departmentId, startDate, endDate, churchId = null) {
     let query = `
       SELECT
         d.name as department_name,
@@ -174,14 +188,19 @@ class ReportsRepository extends BaseRepository {
     `;
     const params = [];
 
+    if (churchId) {
+      params.push(churchId);
+      query += ` AND d.church_id = $${params.length}`;
+    }
+
     if (departmentId) {
-      query += ' AND d.id = $1';
       params.push(departmentId);
+      query += ` AND d.id = $${params.length}`;
     }
 
     if (startDate && endDate) {
-      query += ' AND dmeet.meeting_date BETWEEN $2 AND $3';
       params.push(startDate, endDate);
+      query += ` AND dmeet.meeting_date BETWEEN $${params.length - 1} AND $${params.length}`;
     }
 
     query += ' GROUP BY d.id, d.name ORDER BY d.name';
@@ -190,37 +209,44 @@ class ReportsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getSMSReport(startDate, endDate, status) {
+  async getSMSReport(startDate, endDate, status, churchId = null) {
+    // sms_logs has no church_id — scope through the sender's user row
     let query = `
       SELECT
-        DATE_TRUNC('day', sent_at) as date,
+        DATE_TRUNC('day', sl.sent_at) as date,
         COUNT(*) as total_sent,
-        SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered,
-        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-        SUM(cost) as total_cost
-      FROM sms_logs
+        SUM(CASE WHEN sl.status = 'delivered' THEN 1 ELSE 0 END) as delivered,
+        SUM(CASE WHEN sl.status = 'failed' THEN 1 ELSE 0 END) as failed,
+        SUM(CASE WHEN sl.status = 'pending' THEN 1 ELSE 0 END) as pending,
+        0 as total_cost -- sms_logs has no cost column; keep response shape stable
+      FROM sms_logs sl
+      LEFT JOIN users su ON sl.sender_id = su.id
       WHERE 1=1
     `;
     const params = [];
 
+    if (churchId) {
+      params.push(churchId);
+      query += ` AND su.church_id = $${params.length}`;
+    }
+
     if (startDate && endDate) {
-      query += ' AND sent_at BETWEEN $1 AND $2';
       params.push(startDate, endDate);
+      query += ` AND sl.sent_at BETWEEN $${params.length - 1} AND $${params.length}`;
     }
 
     if (status) {
-      query += ' AND status = $3';
       params.push(status);
+      query += ` AND sl.status = $${params.length}`;
     }
 
-    query += ' GROUP BY DATE_TRUNC(\'day\', sent_at) ORDER BY date DESC';
+    query += ' GROUP BY DATE_TRUNC(\'day\', sl.sent_at) ORDER BY date DESC';
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async getApprovalReport(startDate, endDate, status, entityType) {
+  async getApprovalReport(startDate, endDate, status, entityType, churchId = null) {
     let query = `
       SELECT
         DATE_TRUNC('day', created_at) as date,
@@ -233,19 +259,24 @@ class ReportsRepository extends BaseRepository {
     `;
     const params = [];
 
+    if (churchId) {
+      params.push(churchId);
+      query += ` AND church_id = $${params.length}`;
+    }
+
     if (startDate && endDate) {
-      query += ' AND created_at BETWEEN $1 AND $2';
       params.push(startDate, endDate);
+      query += ` AND created_at BETWEEN $${params.length - 1} AND $${params.length}`;
     }
 
     if (status) {
-      query += ' AND status = $3';
       params.push(status);
+      query += ` AND status = $${params.length}`;
     }
 
     if (entityType) {
-      query += ' AND entity_type = $4';
       params.push(entityType);
+      query += ` AND entity_type = $${params.length}`;
     }
 
     query += ' GROUP BY DATE_TRUNC(\'day\', created_at), entity_type, status ORDER BY date DESC';
@@ -300,7 +331,19 @@ class ReportsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getFinancialReportData(startDate, endDate) {
+  async getFinancialReportData(startDate, endDate, churchId = null) {
+    const params = [];
+    let where = `status = 'approved'`;
+
+    if (churchId) {
+      params.push(churchId);
+      where += ` AND church_id = $${params.length}`;
+    }
+    if (startDate && endDate) {
+      params.push(startDate, endDate);
+      where += ` AND transaction_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
     const query = `
       SELECT
         DATE_TRUNC('month', transaction_date) as period,
@@ -309,17 +352,27 @@ class ReportsRepository extends BaseRepository {
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) as total_expense,
         COUNT(*) as transaction_count
       FROM transactions
-      WHERE status = 'approved'
-      ${startDate && endDate ? 'AND transaction_date BETWEEN $1 AND $2' : ''}
+      WHERE ${where}
       GROUP BY DATE_TRUNC('month', transaction_date), transaction_type
       ORDER BY period DESC
     `;
-    const params = startDate && endDate ? [startDate, endDate] : [];
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async getDepartmentReportData(startDate, endDate) {
+  async getDepartmentReportData(startDate, endDate, churchId = null) {
+    const params = [];
+    let where = '1=1';
+
+    if (churchId) {
+      params.push(churchId);
+      where += ` AND d.church_id = $${params.length}`;
+    }
+    if (startDate && endDate) {
+      params.push(startDate, endDate);
+      where += ` AND dmeet.meeting_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
     const query = `
       SELECT
         d.name as department_name,
@@ -330,41 +383,49 @@ class ReportsRepository extends BaseRepository {
       LEFT JOIN department_members dm ON d.id = dm.department_id
       LEFT JOIN department_meetings dmeet ON d.id = dmeet.department_id
       LEFT JOIN department_tasks dtask ON d.id = dtask.department_id
-      WHERE 1=1
-      ${startDate && endDate ? 'AND dmeet.meeting_date BETWEEN $1 AND $2' : ''}
+      WHERE ${where}
       GROUP BY d.id, d.name
       ORDER BY d.name
     `;
-    const params = startDate && endDate ? [startDate, endDate] : [];
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async getAttendanceReportData(startDate, endDate) {
+  async getAttendanceReportData(startDate, endDate, churchId = null) {
+    const params = [];
+    let where = '1=1';
+
+    if (churchId) {
+      params.push(churchId);
+      where += ` AND church_id = $${params.length}`;
+    }
+    if (startDate && endDate) {
+      params.push(startDate, endDate);
+      where += ` AND attendance_date BETWEEN $${params.length - 1} AND $${params.length}`;
+    }
+
     const query = `
       SELECT
         DATE_TRUNC('week', attendance_date) as week,
         COUNT(DISTINCT member_id) as unique_attendees,
         COUNT(*) as total_attendance
       FROM member_attendance
-      WHERE 1=1
-      ${startDate && endDate ? 'AND attendance_date BETWEEN $1 AND $2' : ''}
+      WHERE ${where}
       GROUP BY DATE_TRUNC('week', attendance_date)
       ORDER BY week DESC
     `;
-    const params = startDate && endDate ? [startDate, endDate] : [];
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
   async saveReport(data) {
-    const { name, description, dataSource, filters, columns, groupBy, sortBy, format, created_by } = data;
+    const { name, description, dataSource, filters, columns, groupBy, sortBy, format, created_by, church_id } = data;
 
     const result = await this.pool.query(
-      `INSERT INTO saved_reports (name, description, data_source, filters, columns, group_by, sort_by, format, created_by, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+      `INSERT INTO saved_reports (name, description, data_source, filters, columns, group_by, sort_by, format, created_by, church_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
        RETURNING *`,
-      [name, description, dataSource, JSON.stringify(filters), JSON.stringify(columns), groupBy, sortBy, format, created_by]
+      [name, description, dataSource, JSON.stringify(filters), JSON.stringify(columns), groupBy, sortBy, format, created_by, church_id]
     );
     return result.rows[0];
   }
@@ -489,45 +550,66 @@ class ReportsRepository extends BaseRepository {
   }
 
   async scheduleReport(data) {
-    const { name, description, scheduleConfig, reportConfig, recipients, created_by } = data;
+    const { name, description, scheduleConfig, reportConfig, recipients, created_by, church_id } = data;
 
     const result = await this.pool.query(
-      `INSERT INTO scheduled_reports (name, description, schedule_config, report_config, recipients, created_by, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
+      `INSERT INTO scheduled_reports (name, description, schedule_config, report_config, recipients, created_by, church_id, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
        RETURNING *`,
-      [name, description, scheduleConfig, JSON.stringify(reportConfig), JSON.stringify(recipients), created_by]
+      [name, description, scheduleConfig, JSON.stringify(reportConfig), JSON.stringify(recipients), created_by, church_id]
     );
     return result.rows[0];
   }
 
-  async getScheduledReportsByUser(userId) {
+  async getScheduledReportsByUser(userId, churchId = null) {
+    const params = [userId];
+    let where = '(sr.created_by = $1 OR sr.is_public = true)';
+    if (churchId) {
+      where += ' AND sr.church_id = $2';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
       `SELECT sr.*, u.first_name || ' ' || u.last_name as created_by_name
        FROM scheduled_reports sr
        LEFT JOIN users u ON sr.created_by = u.id
-       WHERE sr.created_by = $1 OR sr.is_public = true
+       WHERE ${where}
        ORDER BY sr.created_at DESC`,
-      [userId]
+      params
     );
     return result.rows;
   }
 
-  async getScheduledReports() {
+  async getScheduledReports(churchId = null) {
+    const params = [];
+    let where = '1=1';
+    if (churchId) {
+      where = 'sr.church_id = $1';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
       `SELECT sr.*, u.first_name || ' ' || u.last_name as created_by_name
        FROM scheduled_reports sr
        LEFT JOIN users u ON sr.created_by = u.id
-       ORDER BY sr.created_at DESC`
+       WHERE ${where}
+       ORDER BY sr.created_at DESC`,
+      params
     );
     return result.rows;
   }
 
-  async getReportExecutions(reportId) {
+  async getReportExecutions(reportId, churchId = null) {
+    const params = [reportId];
+    let where = 're.report_id = $1';
+    if (churchId) {
+      // scope via the owning scheduled report's church
+      where += ' AND re.report_id IN (SELECT id FROM scheduled_reports WHERE church_id = $2)';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
       `SELECT re.* FROM report_executions re
-       WHERE re.report_id = $1
+       WHERE ${where}
        ORDER BY re.executed_at DESC`,
-      [reportId]
+      params
     );
     return result.rows;
   }

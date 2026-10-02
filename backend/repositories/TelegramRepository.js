@@ -1,3 +1,9 @@
+/**
+ * @audit Telegram channel repository.
+ * @fixed Channel CRUD/post reads church-scoped; getChannelPosts/getChannelStats
+ *        read telegram_channel_posts (telegram_posts is an orphan — no writer).
+ *        telegram_settings is deployment-global BY DESIGN (CHECK id=1).
+ */
 const BaseRepository = require('./BaseRepository');
 
 class TelegramRepository extends BaseRepository {
@@ -34,28 +40,33 @@ class TelegramRepository extends BaseRepository {
   }
 
   async getChannelPosts(channelId, churchId = null) {
+    // All post writes land in telegram_channel_posts; telegram_posts is an
+    // orphan read target (no writer). Scope via the channel's church.
     let query = `
-      SELECT tp.*, u.first_name || ' ' || u.last_name as posted_by_name
-      FROM telegram_posts tp
-      LEFT JOIN users u ON tp.posted_by = u.id
+      SELECT tp.*
+      FROM telegram_channel_posts tp
+      JOIN telegram_channels tc ON tp.channel_id = tc.id
       WHERE tp.channel_id = $1
     `;
     const params = [channelId];
 
     if (churchId) {
-      query += ` AND tp.church_id = $2`;
+      query += ` AND tc.church_id = $2`;
       params.push(churchId);
     }
 
-    query += ` ORDER BY tp.posted_at DESC`;
+    query += ` ORDER BY tp.post_date DESC`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
+  // telegram_settings is deployment-global (single row id=1, one bot token) —
+  // channelId/churchId accepted for signature compatibility but not needed
   async getChannelSettings(channelId, churchId = null) {
-    let query = `SELECT * FROM telegram_settings WHERE channel_id = $1`;
-    const params = [channelId];
+    void channelId; void churchId;
+    let query = `SELECT * FROM telegram_settings WHERE id = 1`;
+    const params = [];
 
     if (churchId) {
       query += ` AND church_id = $2`;
@@ -67,28 +78,32 @@ class TelegramRepository extends BaseRepository {
   }
 
   async getChannelStats(channelId, churchId = null) {
-    let query = `
-      SELECT
-        (SELECT COUNT(*) FROM telegram_posts WHERE channel_id = $1) as total_posts,
-        (SELECT COUNT(*) FROM telegram_posts WHERE channel_id = $1 AND posted_at >= CURRENT_DATE - INTERVAL '30 days') as posts_30_days,
-        (SELECT COUNT(*) FROM telegram_post_views WHERE channel_id = $1) as total_views
-    `;
     const params = [channelId];
-
+    // Old code appended "AND church_id" to a FROM-less SELECT — invalid SQL.
+    // Scope via the channel's church instead.
+    let scope = '';
     if (churchId) {
-      query += ` AND church_id = $2`;
+      scope = ` AND EXISTS (SELECT 1 FROM telegram_channels tc WHERE tc.id = $1 AND tc.church_id = $2)`;
       params.push(churchId);
     }
-
+    const query = `
+      SELECT * FROM (
+        SELECT
+          (SELECT COUNT(*) FROM telegram_channel_posts WHERE channel_id = $1) as total_posts,
+          (SELECT COUNT(*) FROM telegram_channel_posts WHERE channel_id = $1 AND post_date >= CURRENT_DATE - INTERVAL '30 days') as posts_30_days,
+          (SELECT COUNT(*) FROM telegram_post_views WHERE channel_id = $1) as total_views
+      ) stats
+      WHERE EXISTS (SELECT 1 FROM telegram_channels tc WHERE tc.id = $1)${scope}
+    `;
     const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
   async createChannel(channelData) {
-    const { channelId, channelName, channelUsername, requires2fa, autoSyncToAnnouncements, syncIntervalHours } = channelData;
+    const { channelId, channelName, channelUsername, requires2fa, autoSyncToAnnouncements, syncIntervalHours, churchId } = channelData;
     const query = `
-      INSERT INTO telegram_channels (channel_id, channel_name, channel_username, requires_2fa, auto_sync_to_announcements, sync_interval_hours)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO telegram_channels (channel_id, channel_name, channel_username, requires_2fa, auto_sync_to_announcements, sync_interval_hours, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
     const result = await this.pool.query(query, [
@@ -97,13 +112,20 @@ class TelegramRepository extends BaseRepository {
       channelUsername,
       requires2fa || false,
       autoSyncToAnnouncements || false,
-      syncIntervalHours || 1
+      syncIntervalHours || 1,
+      churchId
     ]);
     return result.rows[0];
   }
 
-  async updateChannel(id, channelData) {
+  async updateChannel(id, channelData, churchId = null) {
     const { channelName, channelUsername, isActive, requires2fa, autoSyncToAnnouncements, syncIntervalHours } = channelData;
+    const params = [channelName, channelUsername, isActive, requires2fa, autoSyncToAnnouncements, syncIntervalHours, id];
+    let where = 'id = $7';
+    if (churchId) {
+      where += ' AND church_id = $8';
+      params.push(churchId);
+    }
     const query = `
       UPDATE telegram_channels
       SET channel_name = COALESCE($1, channel_name),
@@ -113,23 +135,21 @@ class TelegramRepository extends BaseRepository {
           auto_sync_to_announcements = COALESCE($5, auto_sync_to_announcements),
           sync_interval_hours = COALESCE($6, sync_interval_hours),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $7
+      WHERE ${where}
       RETURNING *
     `;
-    const result = await this.pool.query(query, [
-      channelName,
-      channelUsername,
-      isActive,
-      requires2fa,
-      autoSyncToAnnouncements,
-      syncIntervalHours,
-      id
-    ]);
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async deleteChannel(id) {
-    await this.pool.query('DELETE FROM telegram_channels WHERE id = $1', [id]);
+  async deleteChannel(id, churchId = null) {
+    const params = [id];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    await this.pool.query(`DELETE FROM telegram_channels WHERE ${where}`, params);
   }
 
   async createChannelPost(channelId, messageId, messageText) {
@@ -142,22 +162,22 @@ class TelegramRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createPhotoCache(channelId, photoData) {
-    const { fileId, fileUniqueId, photoUrl, thumbUrl, width, height, caption } = photoData;
+  // Real columns on telegram_photos_cache: telegram_file_id,
+  // telegram_file_unique_id, cached_url, photo_id, church_id, expires_at
+  async createPhotoCache(channelId, photoData, churchId = null) {
+    const { fileId, fileUniqueId, photoUrl, photoId, expiresAt } = photoData;
     const query = `
-      INSERT INTO telegram_photos_cache (channel_id, file_id, file_unique_id, photo_url, thumb_url, width, height, caption)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO telegram_photos_cache (telegram_file_id, telegram_file_unique_id, cached_url, photo_id, church_id, expires_at)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
     const result = await this.pool.query(query, [
-      channelId,
       fileId,
       fileUniqueId,
       photoUrl,
-      thumbUrl || null,
-      width || null,
-      height || null,
-      caption || null
+      photoId || null,
+      churchId,
+      expiresAt || null
     ]);
     return result.rows[0];
   }
@@ -248,13 +268,18 @@ class TelegramRepository extends BaseRepository {
     await this.pool.query(query, [channelId]);
   }
 
-  async getChannelMTProtoAuthStatus(channelId) {
-    const query = `
-      SELECT id, channel_name, mtproto_phone, mtproto_auth_status, mtproto_last_auth_attempt
-      FROM telegram_channels
-      WHERE id = $1
-    `;
-    const result = await this.pool.query(query, [channelId]);
+  async getChannelMTProtoAuthStatus(channelId, churchId = null) {
+    const params = [channelId];
+    let where = 'id = $1';
+    if (churchId) {
+      where += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(
+      `SELECT id, channel_name, mtproto_phone, mtproto_auth_status, mtproto_last_auth_attempt
+       FROM telegram_channels WHERE ${where}`,
+      params
+    );
     return result.rows[0];
   }
 }

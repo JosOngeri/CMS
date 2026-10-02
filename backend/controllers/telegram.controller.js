@@ -67,7 +67,8 @@ class TelegramController extends BaseController {
         channelUsername,
         requires2fa,
         autoSyncToAnnouncements,
-        syncIntervalHours
+        syncIntervalHours,
+        churchId: req.user.church_id
       });
 
       this.created(res, { message: 'Channel created successfully', data: channel });
@@ -98,7 +99,7 @@ class TelegramController extends BaseController {
         requires2fa,
         autoSyncToAnnouncements,
         syncIntervalHours
-      });
+      }, req.user.church_id);
 
       if (!channel) {
         return this.notFound(res, 'Channel not found');
@@ -123,7 +124,11 @@ class TelegramController extends BaseController {
     try {
       const { id } = req.params;
 
-      await TelegramRepository.deleteChannel(id);
+      const existing = await TelegramRepository.getChannelById(id, req.user.church_id);
+      if (!existing) {
+        return this.notFound(res, 'Channel not found');
+      }
+      await TelegramRepository.deleteChannel(id, req.user.church_id);
 
       this.success(res, { message: 'Channel deleted successfully' });
     } catch (error) {
@@ -150,7 +155,7 @@ class TelegramController extends BaseController {
       const { text, parseMode, disableNotification } = req.body;
 
       // Get channel details
-      const channel = await TelegramRepository.getChannelById(channelId);
+      const channel = await TelegramRepository.getChannelById(channelId, req.user.church_id);
 
       if (!channel) {
         return this.notFound(res, 'Channel not found');
@@ -216,7 +221,7 @@ class TelegramController extends BaseController {
       const { fileUrl, caption } = req.body;
 
       // Get channel details
-      const channel = await TelegramRepository.getChannelById(channelId);
+      const channel = await TelegramRepository.getChannelById(channelId, req.user.church_id);
 
       if (!channel) {
         return this.notFound(res, 'Channel not found');
@@ -229,16 +234,12 @@ class TelegramController extends BaseController {
         caption
       );
 
-      // Cache photo
+      // Cache photo — table stores telegram_file_id/telegram_file_unique_id/cached_url
       await TelegramRepository.createPhotoCache(channelId, {
         fileId: result.photo[0].file_id,
         fileUniqueId: result.photo[0].file_unique_id,
-        photoUrl: fileUrl,
-        thumbUrl: result.photo[0].thumb_url || null,
-        width: result.photo[0].width || null,
-        height: result.photo[0].height || null,
-        caption: caption || null
-      });
+        photoUrl: fileUrl
+      }, req.user.church_id);
 
       this.success(res, { message: 'Photo uploaded successfully', data: result });
     } catch (error) {
@@ -394,13 +395,13 @@ class TelegramController extends BaseController {
             parse_mode: 'HTML'
           });
 
-          this.logger.info('startAuth', { phoneNumber: phoneNumber || key, verificationCode });
+          this.logger.info('startAuth', { phoneNumber: phoneNumber || key, codeSent: true });
         } catch (telegramError) {
           this.logger.error('startAuth', telegramError);
-          this.logger.info('startAuth', { phoneNumber: phoneNumber || key, verificationCode, fallback: true });
+          this.logger.info('startAuth', { phoneNumber: phoneNumber || key, codeSent: false, fallback: true });
         }
       } else {
-        this.logger.info('startAuth', { phoneNumber: phoneNumber || key, verificationCode, noBotToken: true });
+        this.logger.info('startAuth', { phoneNumber: phoneNumber || key, codeSent: false, noBotToken: true });
       }
 
       this.success(res, {
@@ -452,13 +453,13 @@ class TelegramController extends BaseController {
             parse_mode: 'HTML'
           });
 
-          this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, verificationCode });
+          this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, codeSent: true });
         } catch (telegramError) {
           this.logger.error('startAuthFallback', telegramError);
-          this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, verificationCode, fallback: true });
+          this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, codeSent: false, fallback: true });
         }
       } else {
-        this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, verificationCode, noBotToken: true });
+        this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, codeSent: false, noBotToken: true });
       }
 
       this.success(res, {
@@ -541,7 +542,7 @@ class TelegramController extends BaseController {
       const { channelId } = req.params;
 
       // Get channel details
-      const channel = await TelegramRepository.getChannelById(channelId);
+      const channel = await TelegramRepository.getChannelById(channelId, req.user.church_id);
 
       if (!channel) {
         return this.notFound(res, 'Channel not found');
@@ -798,7 +799,7 @@ class TelegramController extends BaseController {
         return this.badRequest(res, 'Verification code is required');
       }
 
-      const channel = await TelegramRepository.getChannelById(channelId);
+      const channel = await TelegramRepository.getChannelById(channelId, req.user.church_id);
       if (!channel) {
         return this.notFound(res, 'Channel not found');
       }
@@ -825,7 +826,7 @@ class TelegramController extends BaseController {
     try {
       const { channelId } = req.params;
 
-      const channel = await TelegramRepository.getChannelMTProtoAuthStatus(channelId);
+      const channel = await TelegramRepository.getChannelMTProtoAuthStatus(channelId, req.user.church_id);
 
       if (!channel) {
         return this.notFound(res, 'Channel not found');
