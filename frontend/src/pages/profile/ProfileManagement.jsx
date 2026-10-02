@@ -49,7 +49,7 @@ const ProfileManagement = () => {
   const fetchActivityHistory = async () => {
     try {
       const response = await api.get('/user-settings/activity-history')
-      setActivityHistory(response.data.activities || [])
+      setActivityHistory(response.data?.data?.activities || response.data?.activities || [])
     } catch (error) {
       console.error('Error fetching activity history:', error)
       toast.error('Failed to load activity history')
