@@ -27,7 +27,7 @@ Express routers; `index.routes.js` mounts everything under /api.
 | `departments.routes.js` | Get global department overview (admin only) |
 | `documentApproval.routes.js` | All document approval routes require authentication |
 | `documents.routes.js` | All routes require authentication |
-| `events.routes.js` | Configure multer for event poster uploads |
+| `events.routes.js` | array -> always true; ANY authenticated user edits/deletes all events (lines ~212/456/539). |
 | `fieldPermissions.routes.js` | All routes require authentication |
 | `fixedAssets.routes.js` | All routes require authentication |
 | `gallery.routes.js` | Public route - no authentication required (optional auth used to hide pending photos from anonymous viewers) |
@@ -63,7 +63,7 @@ Express routers; `index.routes.js` mounts everything under /api.
 | `telegramAuth.routes.js` | Get all auth methods |
 | `telegramChurch.routes.js` | router |
 | `treasury.routes.js` | All routes require authentication |
-| `treasuryDashboard.routes.js` | All routes require authentication |
+| `treasuryDashboard.routes.js` | endpoint + cross-tenant aggregates; mounts legacy unscoped treasuryController.getFundBalance. |
 | `userSettings.routes.js` | All routes require authentication |
 | `users.routes.js` | Middleware to convert user slug to user ID |
 | `vendors.routes.js` | All routes require authentication |

@@ -7,7 +7,7 @@ Business logic + external integrations (M-Pesa, SMS, Telegram, cache).
 | `ChartOfAccountsService.js` | Chart of Accounts Service |
 | `ChurchService.js` | Church Service |
 | `ContentService.js` | Content Service |
-| `FixedAssetService.js` | Fixed Asset Service |
+| `FixedAssetService.js` | ReferenceError in generateDepreciationSchedule for ALL methods (line 79 is straight-line). |
 | `IdentityService.js` | IdentityService (Phase 5) |
 | `MessagingService.js` | Messaging Service |
 | `MpesaService.js` | MpesaService (Phase 12) |

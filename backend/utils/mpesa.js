@@ -1,3 +1,8 @@
+/**
+ * @audit M-Pesa Daraja helper (legacy path — see services/MpesaService.js).
+ * @known HIGH: getConfig() reads mpesa_* settings with NO church filter and caches once globally —
+ *        all tenants share one church's credentials; callback path differs from MpesaService.
+ */
 const axios = require('axios');
 const crypto = require('crypto');
 const { pool } = require('../config/database');

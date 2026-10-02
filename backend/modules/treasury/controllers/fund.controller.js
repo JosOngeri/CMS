@@ -1,4 +1,9 @@
 /**
+ * @audit Treasury fund controller (modular surface — church-scoped).
+ * @known ISSUE: deleteFund compares fund.current_balance !== 0 — pg returns numerics as strings
+ *        ("0.00" !== 0 is always true) -> funds can never be deleted.
+ */
+/**
  * Fund Controller
  * Handles fund operations
  */

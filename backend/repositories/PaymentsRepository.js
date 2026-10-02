@@ -1,3 +1,9 @@
+/**
+ * @audit Payments repository (plural — standard payments/pledges/refunds).
+ * @known BLOCKER: getRefunds defined TWICE (~lines 74/111 — second wins silently); createPayment
+ *        omits church_id; updatePaymentStatus(id,status,transactionId) — callers pass churchId into
+ *        transactionId slot; update/delete/verify/cancel/getPledgePayments unscoped.
+ */
 const BaseRepository = require('./BaseRepository');
 
 class PaymentsRepository extends BaseRepository {

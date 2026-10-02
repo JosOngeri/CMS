@@ -1,3 +1,10 @@
+/**
+ * @audit Events routes — inline SQL, no repository layer.
+ * @known BLOCKER: can_edit/can_delete/can_manage CASE binds literal 'Super Admin' vs hardcoded
+ *        array -> always true; ANY authenticated user edits/deletes all events (lines ~212/456/539).
+ *        Zero church_id anywhere; event department_id taken from body unchecked.
+ *        See docs/reports/2026-10-02_22-49_line-by-line-ledger.md
+ */
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');

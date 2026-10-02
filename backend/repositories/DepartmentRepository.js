@@ -1,3 +1,8 @@
+/**
+ * @audit Department repository.
+ * @known BLOCKER: getDepartmentMembers/getDepartmentAdmins use SELECT u.* (~lines 77/88) ->
+ *        password_hash/mfa_secret returned to callers; getAvailableDepartments unscoped.
+ */
 const BaseRepository = require('./BaseRepository');
 
 class DepartmentRepository extends BaseRepository {

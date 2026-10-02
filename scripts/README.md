@@ -2,6 +2,7 @@
 ## Files
 | File | Purpose |
 |---|---|
+| `add-audit-headers.js` | Prepends compact audit headers (@known ledger refs) to re-audited files. |
 | `build-release-apk.js` | build-release-apk.js |
 | `generate-folder-readmes.js` | Generates a README.md map in every source folder. |
 | `rebrand-kmaincms.js` | rebrand-kmaincms.js |

@@ -1,3 +1,8 @@
+/**
+ * @audit Fixed-asset depreciation service.
+ * @known ISSUE: bare identifier 'useful_life' at ~lines 23/79/81 (local var is usefulLife) ->
+ *        ReferenceError in generateDepreciationSchedule for ALL methods (line 79 is straight-line).
+ */
 const logger = require('../config/logging');
 
 /**

@@ -1,3 +1,9 @@
+/**
+ * @audit User settings/preferences repository (per-user scope — intentionally not church-scoped).
+ * @known ISSUE: createUserPreferencesWithFields builds the INSERT column list from SET-clause
+ *        strings ("field = $n") AND its placeholders collide with $1=user_id -> always fails;
+ *        changePassword uses bcrypt cost 10 while helpers/security.js uses bcryptjs 12.
+ */
 const BaseRepository = require('./BaseRepository');
 const bcrypt = require('bcryptjs');
 

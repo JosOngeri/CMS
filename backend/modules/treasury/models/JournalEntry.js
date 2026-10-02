@@ -1,4 +1,9 @@
 /**
+ * @audit JournalEntry model (modular treasury).
+ * @known ISSUE: canEdit() returns true for status 'posted' — posted entries can be mutated,
+ *        defeating the reversal workflow (should be draft-only).
+ */
+/**
  * JournalEntry Model
  * Represents a double-entry bookkeeping journal entry
  */

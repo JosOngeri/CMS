@@ -5,7 +5,7 @@ Custom hooks (data fetching, permissions, activity feed, branding).
 |---|---|
 | `useActivityFeed.js` | Custom hook for fetching and managing department activity feed data |
 | `useChurchBranding.js` | Select the church the visitor wants to brand the site by. |
-| `useDataFetch.js` | Custom hook for data fetching with consistent error and empty state handling. |
+| `useDataFetch.js` | main.jsx global interceptors but NOT the CSRF header; two fetch conventions coexist. |
 | `useFeatureFlag.js` | Get user's tab structure preference from localStorage |
 | `usePasswordConfirmation.js` | Reusable hook for password confirmation before sensitive operations |
 | `usePermission.js` | WHAT THIS FILE DOES |

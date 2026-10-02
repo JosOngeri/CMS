@@ -1,3 +1,8 @@
+/**
+ * @audit Approval inbox page.
+ * @known BLOCKER: stub page — all 5 tabs render placeholder paragraphs; handleRejectApproval/
+ *        handleDeleteApproval are defined but never invoked. Route /dashboard/approvals is live.
+ */
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';

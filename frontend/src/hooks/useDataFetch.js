@@ -1,3 +1,8 @@
+/**
+ * @audit Generic GET hook.
+ * @known ISSUE: uses RAW axios (line ~39), not the AuthContext api instance — gets Bearer via
+ *        main.jsx global interceptors but NOT the CSRF header; two fetch conventions coexist.
+ */
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 

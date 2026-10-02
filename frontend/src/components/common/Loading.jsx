@@ -1,3 +1,8 @@
+/**
+ * @audit Loading spinners/skeletons.
+ * @known ISSUE: InlineLoading calls useColorPalette() (~line 24) without importing it ->
+ *        ReferenceError on render; colors is unused — delete the call.
+ */
 import { Loader2 } from 'lucide-react'
 
 /**

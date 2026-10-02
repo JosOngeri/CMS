@@ -5,10 +5,10 @@ Shared primitives: Sidebar, Header, Card, modals, lists.
 |---|---|
 | `Breadcrumb.jsx` | — |
 | `Card.jsx` | WHAT THIS FILE DOES |
-| `EmptyState.jsx` | EmptyState - A reusable empty state component with enhanced features |
+| `EmptyState.jsx` | the passed icon component never renders; action && onAction both required silently. |
 | `GmailMessageList.jsx` | WHAT THIS FILE DOES |
 | `Header.jsx` | — |
-| `Loading.jsx` | FullPageLoading - A full-page loading spinner |
+| `Loading.jsx` | ReferenceError on render; colors is unused — delete the call. |
 | `MobileBottomNav.jsx` | MobileBottomNav — bottom navigation bar mirroring the Flutter app's |
 | `MobileCard.jsx` | MobileCard — Flutter ListTile-style row used to replace data tables on |
 | `PageInfoPanel.jsx` | — |

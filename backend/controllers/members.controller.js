@@ -1,3 +1,9 @@
+/**
+ * @audit Members controller.
+ * @known BLOCKER: createMember inserts without church_id (repo lacks the column); updateMember/
+ *        deleteMember run unconditionally even when the scoped existence read returns null ->
+ *        cross-tenant member PII mutate/delete.
+ */
 const BaseController = require('./BaseController');
 const MembersRepository = require('../repositories/MembersRepository');
 const { createLogger } = require('../helpers/controllerLogger');

@@ -1,3 +1,8 @@
+/**
+ * @audit Activity WebSocket helper (ws).
+ * @known BLOCKER: extractUserId trusts ?userId= with no token verification — unauthenticated
+ *        impersonation + unauthenticated channel subscribe; pairs with server.js double io bind.
+ */
 const WebSocket = require('ws');
 const { pool } = require('../config/database');
 const { createLogger } = require('./controllerLogger');

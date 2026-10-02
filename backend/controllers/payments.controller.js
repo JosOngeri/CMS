@@ -1,3 +1,9 @@
+/**
+ * @audit Payments controller (standard path; M-Pesa flow in payment.controller.js).
+ * @known BLOCKER: calls PaymentsRepository.checkDuplicatePayment — method does not exist -> 500 on
+ *        every non-M-Pesa create; updatePaymentStatus(id,status,churchId) writes church UUID into
+ *        repo's transactionId param; several mutations unscoped.
+ */
 const BaseController = require('./BaseController');
 const PaymentsRepository = require('../repositories/PaymentsRepository');
 const kopokopoService = require('../services/kopokopo');

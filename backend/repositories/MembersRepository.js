@@ -1,3 +1,8 @@
+/**
+ * @audit Members repository.
+ * @known BLOCKER: INSERT INTO members (~line 140) omits church_id — new members are tenantless and
+ *        invisible to the scoped list queries (which DO filter church_id).
+ */
 const BaseRepository = require('./BaseRepository');
 
 class MembersRepository extends BaseRepository {

@@ -1,3 +1,8 @@
+/**
+ * @audit Treasury dashboard routes.
+ * @known BLOCKER: authenticateToken only — no finance role gate; members reach the 'days' SQLi
+ *        endpoint + cross-tenant aggregates; mounts legacy unscoped treasuryController.getFundBalance.
+ */
 const express = require('express');
 const router = express.Router();
 const treasuryDashboardController = require('../controllers/treasuryDashboard.controller');

@@ -1,3 +1,8 @@
+/**
+ * @audit Scheduled report cron runner.
+ * @known BLOCKER: interpolates report.columns/filter.field/filter.operator into SQL (stored SQLi
+ *        executed on cron); no church filter; report.name unsanitized into output filename.
+ */
 const cron = require('node-cron');
 const { pool } = require('../config/database');
 const { jsPDF } = require('jspdf');

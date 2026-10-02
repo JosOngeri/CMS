@@ -1,4 +1,9 @@
 /**
+ * @audit Treasury expense controller (modular surface — church-scoped).
+ * @known ISSUE: approveExpense has no separation-of-duties check (can approve own submission);
+ *        updateExpense spreads raw req.body into Expense -> status/submitted_by injectable via PUT.
+ */
+/**
  * Expense Controller
  * Handles expense operations
  */

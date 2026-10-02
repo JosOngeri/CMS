@@ -1,3 +1,9 @@
+/**
+ * @audit Approval workflow engine.
+ * @known ISSUE: processStep computes approvalCount+1 >= requiredApprovals BEFORE checking the
+ *        assignment UPDATE matched — unassigned approver completes a step with 0 rows updated;
+ *        no church scoping; steps[stepIndex] undefined-step unhandled.
+ */
 const { pool } = require('../config/database');
 const { createLogger } = require('./controllerLogger');
 

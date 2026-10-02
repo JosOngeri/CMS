@@ -1,8 +1,8 @@
 # Security Assessment — KMainCMS / Msabato
 
-**Date:** 2026-09-30
-**Scope:** backend (Express/PostgreSQL), frontend (React), config, dependencies, git-tracked secrets
-**Method:** source review of auth, middleware, routes, repositories, multer configs; `npm audit`; git-tracked file sweep; import-graph reachability to distinguish live from dead code.
+**Date:** 2026-09-30 — **Addendum:** 2026-10-02/03 deep line-by-line audit (see § "Deep-audit addendum")
+**Scope:** backend (Express/PostgreSQL), frontend (React), mobile (Flutter), config, dependencies, git-tracked secrets
+**Method:** source review of auth, middleware, routes, repositories, multer configs; `npm audit`; git-tracked file sweep; import-graph reachability to distinguish live from dead code. Addendum: full line-by-line audit of all backend/frontend/mobile source with route-mount verification.
 
 ---
 
@@ -204,11 +204,93 @@ token" in downstream logs — add a debug log so auth failures are diagnosable.
 
 ## What was NOT found (good news)
 
-- No SQL injection in live code
 - No command injection in live code
 - No stored XSS sink in live code
 - No path-traversal on uploads (server-generated filenames everywhere)
 - No secrets in `.env` committed to git
-- No unauthenticated state-changing routes
 - No stack-trace or schema leakage in prod error responses
-- No PII in log output (pino redact configured)
+
+~~- No SQL injection in live code~~ — **RETRACTED** by the deep audit: see D1–D4 below.
+~~- No unauthenticated state-changing routes~~ — **RETRACTED**: see D5–D7 below.
+~~- No PII in log output (pino redact configured)~~ — **RETRACTED**: see D8 below.
+
+---
+
+## Deep-audit addendum (2026-10-02/03) — full line-by-line review
+
+The original assessment sampled high-risk surfaces. The follow-up audit read every
+backend repository/controller/route/service, every frontend page/component, and the
+Flutter service layer, verifying each suspected issue against its actual route mount.
+Complete finding list with fix status lives in
+`docs/reports/2026-10-02_22-49_line-by-line-ledger.md` — this section lists the
+**security-relevant confirmations** that supersede or extend the findings above.
+
+### CONFIRMED — SQL injection in live code (retracts "No SQL injection")
+
+| # | Location | Detail |
+|---|----------|--------|
+| D1 | `repositories/TreasuryDashboardRepository.js` → `getIncomeExpenseTrend` | `INTERVAL '${days} days'` interpolates `days` straight into SQL; route mount verified live and reachable without elevated role. |
+| D2 | `services/reportScheduler.js` | Stored report definitions are executed by cron — a poisoned report row becomes scheduled SQLi. |
+| D3 | `repositories/SyncRepository.js` → `getDelta` | Interpolates table names into queries; reachable via sync controller. |
+| D4 | `repositories/UserRepository.js` → `updateProfile` | Object keys interpolated into the SET clause — column-name injection if a controller passes `req.body` through (e.g. attacker sets `is_active`/`church_id`). |
+| D4b | `services/auditService.js` | `values.slice(0, paramCount - 2)` off-by-one drops the last filter param → count query binds wrong args (correctness + weakens an audit control). |
+
+### CONFIRMED — Broken authorization / tenant isolation (retracts "No unauthenticated state-changing routes")
+
+| # | Location | Detail |
+|---|----------|--------|
+| D5 | `routes/events.routes.js` | Permission check `WHEN $2 = ANY($3)` compares literal `'Super Admin'` to a hardcoded array — **always true**: any authenticated user can edit/delete any event; no `church_id` anywhere in the file. |
+| D6 | `helpers/websocket.js` (live in `server.js`) | WS accepts `?userId=` with **no authentication** — any client claims any userId; `broadcastActivity` sends to all clients regardless of church. |
+| D7 | `controllers/announcements.controller.js` → `getPublicById` | Returns any announcement by ID with no auth, no church check, **no `is_published` check** — drafts/private posts readable. |
+| D8 | `controllers/smsPush.controller.js` + mobile `push_sync_service.dart` | Mobile sends JWT as `?token=` **URL query param** (lands in access logs). Worse: `verifyToken` reads `decoded.churchId`, but `generateAccessToken` never embeds it → every socket has `churchId=undefined` → `broadcastToDepartmentMembers` matches `undefined === undefined` → **department updates broadcast to every connected client across all churches**. |
+| D9 | Legacy treasury surface (`treasury.controller.js` + `treasury.routes.js`, still mounted at `/api/treasury`) | Approve/delete transactions, budgets, funds, accounts, pledges **by raw ID with no church scoping** — full cross-tenant IDOR on financial records. |
+| D10 | `services/workflowEngine.js` + `services/documentApprovalService.js` | No church scoping; `processStep` never verifies the approver is the assigned approver — **anyone can approve any workflow step in any church**; `delegateApproval` passes `comment` into the `delegateToId` slot. |
+| D11 | `services/treasurySMSIntegration.js`, `services/mpesa.js` | Treasurer lookup and `mpesa_%` settings load with **no church filter** → cross-tenant SMS/credential leakage. |
+| D12 | `repositories/MembersRepository.js` (`createMember`, `createAlbum`, `createContribution`) | INSERTs omit `church_id` → NULL-tenant rows; `MobileRepository` uses `churchId \|\| 1` — silently forces data into church #1. |
+| D13 | Auth/session | Deactivated users stay authenticated for the full token lifetime (no `is_active` re-check on verify); platform vs church JWTs share verification paths (audience confusion). |
+
+### CONFIRMED — Secret/PII exposure in logs (retracts "No PII in log output")
+
+| # | Location | Detail |
+|---|----------|--------|
+| D14 | `backend/logs/app.log*` | Request logger persists the full `cookie:` header — **live `jwt=` tokens are stored in plaintext log files** (verified present in `app.log.3`). Pino `redact` config does not cover `req.headers.cookie`. |
+| D15 | `utils/errorHandler.js` | Logs `req.body` on errors — passwords land in logs on failed auth/register requests. |
+| D16 | mobile `api_service.dart` | Debug `LogInterceptor` logs full request/response bodies; login response (incl. token) is `debugPrint`ed. |
+
+### CONFIRMED — Mobile credential handling
+
+| # | Location | Detail |
+|---|----------|--------|
+| D17 | `mobile/.../auth_service.dart` | Bearer token in plaintext `SharedPreferences` (secure-storage import commented out); no expiry check on restore. |
+| D18 | `mobile/.../biometric_service.dart` | Stores the **raw user password** in `FlutterSecureStorage` for biometric re-login. |
+| D19 | `mobile/.../config.dart` + `main.dart` | Saved `api_url` from SharedPreferences applied **unvalidated** — a tampered prefs value silently retargets all API traffic. |
+
+### CONFIRMED — Frontend security-adjacent
+
+| # | Location | Detail |
+|---|----------|--------|
+| D20 | `pages/auth/Login.jsx` | Demo-credentials box (`admin@sda.org/admin@123` etc.) rendered to every visitor — if any such account exists in production it's pre-solved credential stuffing. |
+| D21 | `pages/departments/DepartmentsList.jsx` → `DepartmentDashboard.jsx` | `isAdmin: true` hardcoded in nav state; dashboard trusts `location.state.isAdmin` — every member sees admin tabs (client-side only, but exposes management UI flows). |
+| D22 | `content.routes.js` | `/:id` registered before `/scheduled`, `/check-duplicate`, `/export`, `/import`, `/analytics` — those routes are shadowed; `/:id` + `/public/:slug` both hit unscoped `getContentBySlug`. |
+
+### Correctness/security-control crashes
+
+- `helpers/finance.js` — unterminated SQL string in `calculateBalanceSheet` (always errors).
+- `repositories/SettingsRepository.js` — `getSettingsHistory` binds the key string to `LIMIT $1`.
+- `modules/sms/pages/Dashboard.jsx` — `process.env.REACT_APP_API_URL` in a Vite app + `localStorage.getItem('token')` that nothing ever sets → page is dead (not a vuln, but its "fix" must not reintroduce token-in-localStorage).
+- `pages/PhotoGalleryPage.jsx` — `setFilteredPhotos` ReferenceError crash (undefined state setter).
+
+### Updated priority list (supersedes "Recommended order of work" for new items)
+
+| # | Action | Severity |
+|---|--------|----------|
+| P1 | Parameterize `INTERVAL` in `getIncomeExpenseTrend`; whitelist table names in `getDelta`; whitelist columns in `updateProfile` | **Critical — live SQLi** |
+| P2 | Sanitize/validate cron-executed report SQL in `reportScheduler` | **Critical** |
+| P3 | Add `churchId` (or church_id lookup) to SMS-push `verifyToken`; move mobile WS auth to `handshake.auth` | **Critical — cross-tenant broadcast** |
+| P4 | Scope the legacy `/api/treasury` surface or retire it in favour of `modules/treasury` | **Critical — financial IDOR** |
+| P5 | Fix always-true events permission check; add `church_id` to events routes | High |
+| P6 | Authenticate `helpers/websocket.js` `?userId=` handshake; scope `broadcastActivity` by church | High |
+| P7 | Add `is_published` + church check to `getPublicById` | High |
+| P8 | Verify assigned approver in `workflowEngine.processStep`; fix `delegateApproval` arg order | High |
+| P9 | Redact `req.headers.cookie` + `req.body` secrets in pino/errorHandler; move mobile token to secure storage; stop storing raw password for biometric | High |
+| P10 | Recheck `is_active` on token verification (or short token TTL + refresh denylist) | Medium |

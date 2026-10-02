@@ -1,3 +1,9 @@
+/**
+ * @audit Telegram controller (legacy surface — channels, auth, sync).
+ * @known BLOCKER: verifyAuth NEVER compares the submitted code — returns success for any code,
+ *        even when none was requested (!storedData -> success). Channel ops unscoped;
+ *        getSettings/updateSettings global; codes logged plaintext; global.verificationCodes map.
+ */
 const TelegramService = require('../services/telegramService');
 const BaseController = require('./BaseController');
 const TelegramRepository = require('../repositories/TelegramRepository');

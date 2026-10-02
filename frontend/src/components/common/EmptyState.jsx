@@ -1,3 +1,8 @@
+/**
+ * @audit Empty-state variants (Members/Events/Gallery/etc).
+ * @known ISSUE: <action>/<secondaryAction> lowercase JSX (~lines 62/73) render literal DOM elements —
+ *        the passed icon component never renders; action && onAction both required silently.
+ */
 import { Users, FileText, Calendar, Building, Search, Plus, AlertCircle, Image as ImageIcon, Info, ArrowRight, BarChart3, Shield } from 'lucide-react'
 
 /**

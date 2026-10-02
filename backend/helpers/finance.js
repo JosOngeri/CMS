@@ -1,4 +1,9 @@
 /**
+ * @audit Finance helpers (trial balance / income statement / balance sheet).
+ * @known BLOCKER: unterminated 'posted literal ~line 212 (balance sheet always throws);
+ *        zero church_id — all reports aggregate across ALL tenants.
+ */
+/**
  * Finance Helper Functions
  * Treasury and finance utility functions
  */
