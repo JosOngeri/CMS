@@ -44,14 +44,14 @@ class ChartOfAccountsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const account = await ChartOfAccountsRepository.getAccountById(id);
+      const account = await ChartOfAccountsRepository.getAccountById(id, req.user.church_id);
 
       if (!account) {
         return this.notFound(res, 'Account not found');
       }
 
       // Get child accounts
-      const children = await ChartOfAccountsRepository.getChildAccounts(id);
+      const children = await ChartOfAccountsRepository.getChildAccounts(id, req.user.church_id);
 
       return this.success(res, {
         ...account,
@@ -75,7 +75,7 @@ class ChartOfAccountsController extends BaseController {
         account_name,
         account_type,
         parent_id
-      });
+      }, req.user.church_id);
 
       return this.success(res, account, 'Account created successfully', 201);
     } catch (error) {
@@ -100,7 +100,7 @@ class ChartOfAccountsController extends BaseController {
         account_type,
         parent_id,
         is_active
-      });
+      }, req.user.church_id);
 
       return this.success(res, account, 'Account updated successfully');
     } catch (error) {
@@ -119,7 +119,7 @@ class ChartOfAccountsController extends BaseController {
     try {
       const { id } = req.params;
 
-      await ChartOfAccountsService.deleteAccount(id);
+      await ChartOfAccountsService.deleteAccount(id, req.user.church_id);
 
       return this.success(res, null, 'Account deleted successfully');
     } catch (error) {
@@ -139,7 +139,7 @@ class ChartOfAccountsController extends BaseController {
       const { id } = req.params;
       const { as_of_date } = req.query;
 
-      const balanceData = await ChartOfAccountsService.getAccountBalance(id, as_of_date);
+      const balanceData = await ChartOfAccountsService.getAccountBalance(id, as_of_date, req.user.church_id);
 
       return this.success(res, balanceData);
     } catch (error) {

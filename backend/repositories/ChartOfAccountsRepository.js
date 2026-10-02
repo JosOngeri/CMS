@@ -139,7 +139,7 @@ class ChartOfAccountsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async update(id, data) {
+  async update(id, data, churchId = null) {
     const {
       account_code, account_name, account_type, category,
       parent_id, is_active, description
@@ -155,19 +155,21 @@ class ChartOfAccountsRepository extends BaseRepository {
           is_active = COALESCE($6, is_active),
           description = COALESCE($7, description),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
+      WHERE id = $8${churchId ? ' AND church_id = $9' : ''}
       RETURNING *
     `;
-    const result = await this.pool.query(query, [
-      account_code, account_name, account_type, category,
-      parent_id, is_active, description, id
-    ]);
+    const params = [account_code, account_name, account_type, category,
+      parent_id, is_active, description, id];
+    if (churchId) params.push(churchId);
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async delete(id) {
-    const query = 'DELETE FROM chart_of_accounts WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, [id]);
+  async delete(id, churchId = null) {
+    const result = await this.pool.query(
+      `DELETE FROM chart_of_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''} RETURNING *`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
@@ -186,34 +188,40 @@ class ChartOfAccountsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getAccountById(id) {
-    const query = `
-      SELECT coa.*,
+  async getAccountById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT coa.*,
              parent.account_name as parent_name,
              parent.account_code as parent_code
       FROM chart_of_accounts coa
       LEFT JOIN chart_of_accounts parent ON coa.parent_id = parent.id
-      WHERE coa.id = $1
-    `;
-    const result = await this.pool.query(query, [id]);
+      WHERE coa.id = $1${churchId ? ' AND coa.church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
-  async findByAccountCode(accountCode) {
-    const query = 'SELECT id FROM chart_of_accounts WHERE account_code = $1';
-    const result = await this.pool.query(query, [accountCode]);
+  async findByAccountCode(accountCode, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT id FROM chart_of_accounts WHERE account_code = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [accountCode, churchId] : [accountCode]
+    );
     return result.rows[0];
   }
 
-  async findById(id) {
-    const query = 'SELECT * FROM chart_of_accounts WHERE id = $1';
-    const result = await this.pool.query(query, [id]);
+  async findById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM chart_of_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
-  async findByIdAndType(id) {
-    const query = 'SELECT id, account_type FROM chart_of_accounts WHERE id = $1';
-    const result = await this.pool.query(query, [id]);
+  async findByIdAndType(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT id, account_type FROM chart_of_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
@@ -229,7 +237,7 @@ class ChartOfAccountsRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getAccountBalance(accountId, asOfDate = null) {
+  async getAccountBalance(accountId, asOfDate = null, churchId = null) {
     let query = `
       SELECT
         COALESCE(SUM(debit_amount), 0) as total_debits,
@@ -242,17 +250,24 @@ class ChartOfAccountsRepository extends BaseRepository {
     const params = [accountId];
 
     if (asOfDate) {
-      query += ` AND je.entry_date <= $2`;
       params.push(asOfDate);
+      query += ` AND je.entry_date <= $${params.length}`;
+    }
+
+    if (churchId) {
+      params.push(churchId);
+      query += ` AND je.church_id = $${params.length}`;
     }
 
     const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async getAccountType(accountId) {
-    const query = 'SELECT account_type FROM chart_of_accounts WHERE id = $1';
-    const result = await this.pool.query(query, [accountId]);
+  async getAccountType(accountId, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT account_type FROM chart_of_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [accountId, churchId] : [accountId]
+    );
     return result.rows[0]?.account_type;
   }
 }

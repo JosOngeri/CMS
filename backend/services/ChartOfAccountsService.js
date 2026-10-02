@@ -69,8 +69,8 @@ class ChartOfAccountsService {
    * @param {string} accountType - Child account type
    * @returns {Promise<Object>} Validation result { valid: boolean, error: string }
    */
-  async validateParentChildRelationship(parentId, accountType) {
-    const parentAccount = await ChartOfAccountsRepository.findByIdAndType(parentId);
+  async validateParentChildRelationship(parentId, accountType, churchId = null) {
+    const parentAccount = await ChartOfAccountsRepository.findByIdAndType(parentId, churchId);
 
     if (!parentAccount) {
       return {
@@ -141,9 +141,9 @@ class ChartOfAccountsService {
    * @param {string} asOfDate - Optional as-of date
    * @returns {Promise<Object>} Balance data with calculated balance
    */
-  async getAccountBalance(accountId, asOfDate) {
-    const balanceData = await ChartOfAccountsRepository.getAccountBalance(accountId, asOfDate);
-    const accountType = await ChartOfAccountsRepository.getAccountType(accountId);
+  async getAccountBalance(accountId, asOfDate, churchId = null) {
+    const balanceData = await ChartOfAccountsRepository.getAccountBalance(accountId, asOfDate, churchId);
+    const accountType = await ChartOfAccountsRepository.getAccountType(accountId, churchId);
 
     if (!accountType) {
       throw new Error('Account not found');
@@ -165,7 +165,7 @@ class ChartOfAccountsService {
    * @param {Object} accountData - Account data
    * @returns {Promise<Object>} Created account
    */
-  async createAccount(accountData) {
+  async createAccount(accountData, churchId = null) {
     const { account_code, account_name, account_type, parent_id } = accountData;
 
     // Validate account code
@@ -180,15 +180,15 @@ class ChartOfAccountsService {
       throw new Error(typeValidation.error);
     }
 
-    // Check if account code already exists
-    const existingAccount = await ChartOfAccountsRepository.findByAccountCode(account_code);
+    // Account codes are unique per church — another church may reuse the code
+    const existingAccount = await ChartOfAccountsRepository.findByAccountCode(account_code, churchId);
     if (existingAccount) {
       throw new Error('Account code already exists');
     }
 
-    // If parent_id is provided, validate it
+    // If parent_id is provided, validate it (within the same church)
     if (parent_id) {
-      const parentValidation = await this.validateParentChildRelationship(parent_id, account_type);
+      const parentValidation = await this.validateParentChildRelationship(parent_id, account_type, churchId);
       if (!parentValidation.valid) {
         throw new Error(parentValidation.error);
       }
@@ -198,7 +198,8 @@ class ChartOfAccountsService {
       account_code,
       account_name,
       account_type,
-      parent_id: parent_id || null
+      parent_id: parent_id || null,
+      church_id: churchId
     });
   }
 
@@ -208,11 +209,11 @@ class ChartOfAccountsService {
    * @param {Object} accountData - Account data to update
    * @returns {Promise<Object>} Updated account
    */
-  async updateAccount(accountId, accountData) {
+  async updateAccount(accountId, accountData, churchId = null) {
     const { account_name, account_type, parent_id, is_active } = accountData;
 
-    // Check if account exists
-    const existingAccount = await ChartOfAccountsRepository.findById(accountId);
+    // Check if account exists (in this church)
+    const existingAccount = await ChartOfAccountsRepository.findById(accountId, churchId);
     if (!existingAccount) {
       throw new Error('Account not found');
     }
@@ -225,10 +226,10 @@ class ChartOfAccountsService {
       }
     }
 
-    // If parent_id is provided, validate it
+    // If parent_id is provided, validate it (within the same church)
     if (parent_id) {
       const finalAccountType = account_type || existingAccount.account_type;
-      const parentValidation = await this.validateParentChildRelationship(parent_id, finalAccountType);
+      const parentValidation = await this.validateParentChildRelationship(parent_id, finalAccountType, churchId);
       if (!parentValidation.valid) {
         throw new Error(parentValidation.error);
       }
@@ -239,7 +240,7 @@ class ChartOfAccountsService {
       account_type,
       parent_id,
       is_active
-    });
+    }, churchId);
   }
 
   /**
@@ -247,13 +248,19 @@ class ChartOfAccountsService {
    * @param {string} accountId - Account ID
    * @returns {Promise<Object>} Deleted account
    */
-  async deleteAccount(accountId) {
+  async deleteAccount(accountId, churchId = null) {
+    // Ownership gate first — foreign-church accounts must not reach validation/delete
+    const existing = await ChartOfAccountsRepository.findById(accountId, churchId);
+    if (!existing) {
+      throw new Error('Account not found');
+    }
+
     const validation = await this.validateAccountDeletion(accountId);
     if (!validation.valid) {
       throw new Error(validation.error);
     }
 
-    const account = await ChartOfAccountsRepository.delete(accountId);
+    const account = await ChartOfAccountsRepository.delete(accountId, churchId);
     if (!account) {
       throw new Error('Account not found');
     }

@@ -25,11 +25,11 @@ router.get('/', authenticateToken, async (req, res) => {
     const query = `
       SELECT d.*
       FROM departments d
-      WHERE d.is_active = true
+      WHERE d.is_active = true AND d.church_id = $1
       ORDER BY d.name ASC
     `;
 
-    const result = await departmentsRepository.query(query);
+    const result = await departmentsRepository.query(query, [req.user.church_id]);
 
     res.json({
       departments: result.rows
@@ -45,15 +45,15 @@ router.get('/:identifier', authenticateToken, async (req, res) => {
   try {
     const { identifier } = req.params;
 
-    // Try to find by slug first, then by ID
+    // Try to find by slug first, then by ID (scoped to the caller's church)
     const query = `
       SELECT d.*, u.first_name as head_first_name, u.last_name as head_last_name
       FROM departments d
       LEFT JOIN users u ON d.head_id = u.id
-      WHERE d.slug = $1 OR d.id::text = $1
+      WHERE (d.slug = $1 OR d.id::text = $1) AND d.church_id = $2
     `;
 
-    const result = await departmentsRepository.query(query, [identifier]);
+    const result = await departmentsRepository.query(query, [identifier, req.user.church_id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -71,9 +71,9 @@ router.get('/:identifier/dashboard', authenticateToken, async (req, res) => {
   try {
     const { identifier } = req.params;
 
-    // Get department basic info by slug or ID
-    const deptQuery = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
+    // Get department basic info by slug or ID (caller church only)
+    const deptQuery = 'SELECT * FROM departments WHERE (slug = $1 OR id::text = $1) AND church_id = $2';
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier, req.user.church_id]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -146,9 +146,10 @@ router.get('/:id/communications', authenticateToken, async (req, res) => {
        FROM department_communications dc
        LEFT JOIN users u ON dc.created_by = u.id
        WHERE dc.department_id = $1
+         AND dc.department_id IN (SELECT id FROM departments WHERE church_id = $3)
        ORDER BY dc.created_at DESC
        LIMIT $2`,
-      [id, limit]
+      [id, limit, req.user.church_id]
     );
 
     res.json({ communications: result.rows });
@@ -168,8 +169,9 @@ router.get('/:id/meetings', authenticateToken, async (req, res) => {
        FROM department_meetings dm
        LEFT JOIN users u ON dm.created_by = u.id
        WHERE dm.department_id = $1
+         AND dm.department_id IN (SELECT id FROM departments WHERE church_id = $2)
        ORDER BY dm.meeting_date ASC`,
-      [id]
+      [id, req.user.church_id]
     );
 
     res.json({ meetings: result.rows });
@@ -191,8 +193,9 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
        LEFT JOIN users u ON dt.assignee_id = u.id
        LEFT JOIN users cb ON dt.created_by = cb.id
        WHERE dt.department_id = $1
+         AND dt.department_id IN (SELECT id FROM departments WHERE church_id = $2)
        ORDER BY dt.due_date ASC`,
-      [id]
+      [id, req.user.church_id]
     );
 
     res.json({ tasks: result.rows });
@@ -212,8 +215,9 @@ router.get('/:id/resources', authenticateToken, async (req, res) => {
        FROM department_resources dr
        LEFT JOIN users u ON dr.uploaded_by = u.id
        WHERE dr.department_id = $1
+         AND dr.department_id IN (SELECT id FROM departments WHERE church_id = $2)
        ORDER BY dr.uploaded_at DESC`,
-      [id]
+      [id, req.user.church_id]
     );
 
     res.json({ resources: result.rows });
@@ -292,9 +296,9 @@ router.put('/:identifier',
       const { identifier } = req.params;
       const { name, description, head_id, category, slug, parent_department_id, is_committee } = req.body;
 
-      // Get department by slug or ID
-      const deptQuery = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
-      const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
+      // Get department by slug or ID (caller church only)
+      const deptQuery = 'SELECT * FROM departments WHERE (slug = $1 OR id::text = $1) AND church_id = $2';
+      const deptResult = await departmentsRepository.query(deptQuery, [identifier, req.user.church_id]);
 
       if (deptResult.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
@@ -357,11 +361,11 @@ router.put('/:identifier',
             parent_department_id = COALESCE($7, parent_department_id),
             is_committee = COALESCE($8, is_committee),
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $6
+        WHERE id = $6 AND church_id = $9
         RETURNING *
       `;
 
-      const result = await departmentsRepository.query(updateQuery, [name, description, headIdForUpdate, category, newSlug, id, parent_department_id ?? null, is_committee ?? null]);
+      const result = await departmentsRepository.query(updateQuery, [name, description, headIdForUpdate, category, newSlug, id, parent_department_id ?? null, is_committee ?? null, req.user.church_id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
@@ -393,30 +397,43 @@ router.post('/:id/members',
       const { id } = req.params;
       const { user_id, role_in_department } = req.body;
 
+      // Verify the department belongs to the caller's church
+      const deptCheck = await departmentsRepository.query(
+        'SELECT head_id FROM departments WHERE id = $1 AND church_id = $2',
+        [id, req.user.church_id]
+      );
+      if (deptCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Department not found' });
+      }
+
       // Check permissions
       const hasAdminRole = req.user.roles.some(role =>
         ['Super Admin', 'Pastor', 'First Elder'].includes(role)
       );
 
-      if (!hasAdminRole) {
-        // Check if user is department head
-        const deptQuery = 'SELECT head_id FROM departments WHERE id = $1';
-        const deptResult = await departmentsRepository.query(deptQuery, [id]);
+      if (!hasAdminRole && deptCheck.rows[0].head_id !== req.user.id) {
+        return res.status(403).json({ error: 'Permission denied' });
+      }
 
-        if (deptResult.rows.length === 0 || deptResult.rows[0].head_id !== req.user.id) {
-          return res.status(403).json({ error: 'Permission denied' });
-        }
+      // The member being added must belong to the same church — otherwise a
+      // foreign-church user's row would surface in this church's member lists.
+      const userCheck = await departmentsRepository.query(
+        'SELECT id FROM users WHERE id = $1 AND church_id = $2',
+        [user_id, req.user.church_id]
+      );
+      if (userCheck.rows.length === 0) {
+        return res.status(400).json({ error: 'User not found in this church' });
       }
 
       const query = `
-        INSERT INTO department_members (user_id, department_id, role_in_department)
-        VALUES ($1, $2, $3)
+        INSERT INTO department_members (user_id, department_id, role_in_department, church_id)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (user_id, department_id) DO UPDATE
         SET role_in_department = EXCLUDED.role_in_department
         RETURNING *
       `;
 
-      const result = await departmentsRepository.query(query, [user_id, id, role_in_department]);
+      const result = await departmentsRepository.query(query, [user_id, id, role_in_department, req.user.church_id]);
 
       // Log the member addition
       await logAction(pool, {
@@ -457,19 +474,22 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
   try {
     const { id, userId } = req.params;
 
+    // Verify the department belongs to the caller's church
+    const deptCheck = await departmentsRepository.query(
+      'SELECT head_id FROM departments WHERE id = $1 AND church_id = $2',
+      [id, req.user.church_id]
+    );
+    if (deptCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Department not found' });
+    }
+
     // Check permissions
     const hasAdminRole = req.user.roles.some(role =>
       ['Super Admin', 'Pastor', 'First Elder'].includes(role)
     );
 
-    if (!hasAdminRole) {
-      // Check if user is department head
-      const deptQuery = 'SELECT head_id FROM departments WHERE id = $1';
-      const deptResult = await departmentsRepository.query(deptQuery, [id]);
-
-      if (deptResult.rows.length === 0 || deptResult.rows[0].head_id !== req.user.id) {
-        return res.status(403).json({ error: 'Permission denied' });
-      }
+    if (!hasAdminRole && deptCheck.rows[0].head_id !== req.user.id) {
+      return res.status(403).json({ error: 'Permission denied' });
     }
 
     // Get current state before deletion
@@ -542,30 +562,31 @@ router.post('/batch',
       let params;
       let message;
 
+      const churchId = req.user.church_id;
       switch (action) {
         case 'activate_all':
-          query = 'UPDATE departments SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE is_active = false RETURNING *';
-          params = [];
+          query = 'UPDATE departments SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE is_active = false AND church_id = $1 RETURNING *';
+          params = [churchId];
           message = 'All departments activated successfully';
           break;
         case 'deactivate_all':
-          query = 'UPDATE departments SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE is_active = true RETURNING *';
-          params = [];
+          query = 'UPDATE departments SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE is_active = true AND church_id = $1 RETURNING *';
+          params = [churchId];
           message = 'All departments deactivated successfully';
           break;
         case 'activate_selected':
-          query = 'UPDATE departments SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1) RETURNING *';
-          params = [department_ids];
+          query = 'UPDATE departments SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1) AND church_id = $2 RETURNING *';
+          params = [department_ids, churchId];
           message = 'Selected departments activated successfully';
           break;
         case 'deactivate_selected':
-          query = 'UPDATE departments SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1) RETURNING *';
-          params = [department_ids];
+          query = 'UPDATE departments SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = ANY($1) AND church_id = $2 RETURNING *';
+          params = [department_ids, churchId];
           message = 'Selected departments deactivated successfully';
           break;
         case 'delete_selected':
-          query = 'DELETE FROM departments WHERE id = ANY($1) RETURNING *';
-          params = [department_ids];
+          query = 'DELETE FROM departments WHERE id = ANY($1) AND church_id = $2 RETURNING *';
+          params = [department_ids, churchId];
           message = 'Selected departments deleted successfully';
           break;
         default:
