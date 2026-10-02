@@ -64,7 +64,7 @@ class AuthRepository extends BaseRepository {
 
   async getPasswordResetToken(token) {
     const result = await this.pool.query(
-      `SELECT * FROM password_reset_tokens WHERE token = $1 AND expires_at > NOW()`,
+      `SELECT * FROM password_reset_tokens WHERE token = $1 AND expires_at > NOW() AND used IS NOT TRUE`,
       [token]
     );
     return result.rows[0];

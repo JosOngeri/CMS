@@ -13,6 +13,22 @@ class DepartmentsController extends BaseController {
   }
 
   /**
+   * Tenant gate — every departmentId-taking handler runs this first so a
+   * foreign-church department id gets a 404 instead of a read/mutation.
+   * Returns true when the request may proceed.
+   */
+  async requireOwnedDepartment(req, res, departmentId) {
+    const owned = await DepartmentsRepository.departmentBelongsToChurch(
+      departmentId, req.user.church_id
+    );
+    if (!owned) {
+      res.status(404).json({ success: false, error: 'Department not found' });
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Get all departments with optional filtering
    * @param {Object} req - Express request object
    * @param {Object} req.query - Query parameters
@@ -51,7 +67,7 @@ class DepartmentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const department = await DepartmentsRepository.getDepartmentById(id);
+      const department = await DepartmentsRepository.getDepartmentById(id, req.user.church_id);
 
       if (!department) {
         return res.status(404).json({ success: false, error: 'Department not found' });
@@ -121,7 +137,7 @@ class DepartmentsController extends BaseController {
       const { id } = req.params;
       const { name, description, category, leaderName, leaderContact, isActive } = req.body;
 
-      const department = await DepartmentsRepository.updateDepartment(id, name, description, category, leaderName, leaderContact, isActive);
+      const department = await DepartmentsRepository.updateDepartment(id, name, description, category, leaderName, leaderContact, isActive, req.user.church_id);
 
       if (!department) {
         return res.status(404).json({ success: false, error: 'Department not found' });
@@ -150,7 +166,10 @@ class DepartmentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      await DepartmentsRepository.deleteDepartment(id);
+      const deleted = await DepartmentsRepository.deleteDepartment(id, req.user.church_id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Department not found' });
+      }
 
       res.json({
         success: true,
@@ -178,7 +197,10 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { userId, role } = req.body;
 
-      const member = await DepartmentsRepository.addMember(userId, departmentId, role);
+      const member = await DepartmentsRepository.addMember(userId, departmentId, role, req.user.church_id);
+      if (!member) {
+        return res.status(404).json({ success: false, error: 'Department or user not found in this church' });
+      }
 
       res.status(201).json({
         success: true,
@@ -203,8 +225,9 @@ class DepartmentsController extends BaseController {
   async removeMember(req, res) {
     try {
       const { departmentId, userId } = req.params;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
-      await DepartmentsRepository.removeMember(departmentId, userId);
+      await DepartmentsRepository.removeMember(departmentId, userId, req.user.church_id);
 
       res.json({
         success: true,
@@ -230,6 +253,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const { status } = req.query;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const meetings = await DepartmentsRepository.getMeetings(departmentId, status);
       res.json({ success: true, data: meetings });
@@ -259,6 +283,7 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { title, description, meetingDate, duration, location } = req.body;
       const userId = req.user.id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const meeting = await DepartmentsRepository.createMeeting(departmentId, title, description, meetingDate, duration, location, userId);
 
@@ -288,6 +313,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const { status, assignedTo } = req.query;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const tasks = await DepartmentsRepository.getTasks(departmentId, status, assignedTo);
       res.json({ success: true, data: tasks });
@@ -317,6 +343,7 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { title, description, assignedTo, dueDate, priority } = req.body;
       const userId = req.user.id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const task = await DepartmentsRepository.createTask(departmentId, title, description, assignedTo, userId, dueDate, priority);
 
@@ -346,7 +373,7 @@ class DepartmentsController extends BaseController {
       const { taskId } = req.params;
       const { status } = req.body;
 
-      const task = await DepartmentsRepository.updateTaskStatus(taskId, status);
+      const task = await DepartmentsRepository.updateTaskStatus(taskId, status, req.user.church_id);
 
       if (!task) {
         return res.status(404).json({ success: false, error: 'Task not found' });
@@ -374,6 +401,7 @@ class DepartmentsController extends BaseController {
   async getResources(req, res) {
     try {
       const { departmentId } = req.params;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const resources = await DepartmentsRepository.getResources(departmentId);
       res.json({ success: true, data: resources });
@@ -404,6 +432,7 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { name, description, type, url, filePath, isPublic } = req.body;
       const userId = req.user.id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const resource = await DepartmentsRepository.createResource(departmentId, name, description, type, url, filePath, userId, isPublic);
 
@@ -430,6 +459,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const churchId = req.user.church_id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const permissions = await DepartmentsRepository.getDepartmentPermissions(departmentId, churchId);
 
@@ -456,7 +486,12 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { userId, permission } = req.body;
 
-      const permissionResult = await DepartmentsRepository.setDepartmentPermission(departmentId, userId, permission);
+      const permissionResult = await DepartmentsRepository.setDepartmentPermission(
+        departmentId, userId, permission, req.user.church_id
+      );
+      if (!permissionResult) {
+        return res.status(404).json({ success: false, error: 'Department not found' });
+      }
 
       res.json({ success: true, data: permissionResult });
     } catch (error) {
@@ -479,6 +514,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const { limit = 50 } = req.query;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const activities = await DepartmentsRepository.getDepartmentActivity(departmentId, limit);
       res.json({ success: true, data: activities });
@@ -505,6 +541,7 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { action, description } = req.body;
       const userId = req.user.id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const activity = await DepartmentsRepository.logDepartmentActivity(departmentId, userId, action, description);
 
@@ -527,17 +564,17 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
 
-      const department = await DepartmentsRepository.getDepartmentById(departmentId);
+      const department = await DepartmentsRepository.getDepartmentById(departmentId, req.user.church_id);
 
       if (!department) {
         return res.status(404).json({ success: false, error: 'Department not found' });
       }
 
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         data: {
-          logo: department.logo,
-          banner: department.banner,
+          logo: department.logo_url,
+          banner: department.banner_url,
           primary_color: department.primary_color,
           secondary_color: department.secondary_color,
           description: department.description
@@ -567,7 +604,9 @@ class DepartmentsController extends BaseController {
       const { departmentId } = req.params;
       const { logo, banner, primaryColor, secondaryColor } = req.body;
 
-      const department = await DepartmentsRepository.updateDepartmentBranding(departmentId, logo, banner, primaryColor, secondaryColor);
+      const department = await DepartmentsRepository.updateDepartmentBranding(
+        departmentId, logo, banner, primaryColor, secondaryColor, req.user.church_id
+      );
 
       if (!department) {
         return res.status(404).json({ success: false, error: 'Department not found' });
@@ -594,6 +633,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const churchId = req.user.church_id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const budget = await DepartmentsRepository.getDepartmentBudget(departmentId, churchId);
 
@@ -616,6 +656,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const churchId = req.user.church_id;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const statistics = await DepartmentsRepository.getDepartmentStatistics(departmentId, churchId);
 
@@ -651,6 +692,7 @@ class DepartmentsController extends BaseController {
   async getDepartmentSettings(req, res) {
     try {
       const { departmentId } = req.params;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       const settings = await DepartmentsRepository.getDepartmentSettings(departmentId);
       res.json({ success: true, data: settings });
@@ -674,6 +716,7 @@ class DepartmentsController extends BaseController {
     try {
       const { departmentId } = req.params;
       const { settings } = req.body;
+      if (!(await this.requireOwnedDepartment(req, res, departmentId))) return;
 
       await DepartmentsRepository.updateDepartmentSettings(departmentId, settings);
 

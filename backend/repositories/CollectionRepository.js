@@ -29,29 +29,29 @@ class CollectionRepository extends BaseRepository {
   }
 
   // Event Collections
-  async getEventById(eventId) {
-    const query = 'SELECT id, has_collection FROM events WHERE id = $1';
-    const result = await this.pool.query(query, [eventId]);
+  async getEventById(eventId, churchId = null) {
+    const query = `SELECT id, has_collection FROM events WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    const result = await this.pool.query(query, churchId ? [eventId, churchId] : [eventId]);
     return result.rows[0];
   }
 
-  async updateEventHasCollection(eventId) {
-    const query = 'UPDATE events SET has_collection = true WHERE id = $1';
-    await this.pool.query(query, [eventId]);
+  async updateEventHasCollection(eventId, churchId = null) {
+    const query = `UPDATE events SET has_collection = true WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    await this.pool.query(query, churchId ? [eventId, churchId] : [eventId]);
   }
 
   async createEventCollection(collectionData) {
-    const { event_id, title, description, target_amount, visibility, created_by } = collectionData;
+    const { event_id, title, description, target_amount, visibility, created_by, church_id } = collectionData;
     const query = `
-      INSERT INTO event_collections (event_id, title, description, target_amount, visibility, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO event_collections (event_id, title, description, target_amount, visibility, created_by, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [event_id, title, description, target_amount, visibility, created_by]);
+    const result = await this.pool.query(query, [event_id, title, description, target_amount, visibility, created_by, church_id]);
     return result.rows[0];
   }
 
-  async getEventCollectionWithDetails(id) {
+  async getEventCollectionWithDetails(id, churchId = null) {
     const query = `
       SELECT ec.*,
              e.title as event_title,
@@ -60,9 +60,9 @@ class CollectionRepository extends BaseRepository {
       FROM event_collections ec
       JOIN events e ON ec.event_id = e.id
       JOIN users u ON ec.created_by = u.id
-      WHERE ec.id = $1
+      WHERE ec.id = $1${churchId ? ' AND ec.church_id = $2' : ''}
     `;
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
     return result.rows[0];
   }
 
@@ -80,8 +80,8 @@ class CollectionRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getEventCollectionWithProgress(id) {
-    const collection = await this.getEventCollectionWithDetails(id);
+  async getEventCollectionWithProgress(id, churchId = null) {
+    const collection = await this.getEventCollectionWithDetails(id, churchId);
     if (!collection) return null;
 
     const contributionCount = await this.countContributions(id);
@@ -102,13 +102,13 @@ class CollectionRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getEventCollectionById(id) {
-    const query = 'SELECT * FROM event_collections WHERE id = $1';
-    const result = await this.pool.query(query, [id]);
+  async getEventCollectionById(id, churchId = null) {
+    const query = `SELECT * FROM event_collections WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
     return result.rows[0];
   }
 
-  async updateEventCollection(id, collectionData) {
+  async updateEventCollection(id, collectionData, churchId = null) {
     const { title, description, target_amount, visibility } = collectionData;
     const query = `
       UPDATE event_collections
@@ -117,21 +117,27 @@ class CollectionRepository extends BaseRepository {
           target_amount = COALESCE($3, target_amount),
           visibility = COALESCE($4, visibility),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
+      WHERE id = $5${churchId ? ' AND church_id = $6' : ''}
       RETURNING *
     `;
-    const result = await this.pool.query(query, [title, description, target_amount, visibility, id]);
+    const params = churchId
+      ? [title, description, target_amount, visibility, id, churchId]
+      : [title, description, target_amount, visibility, id];
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
   async createContribution(contributionData) {
-    const { collection_id, contributor_id, contributor_name, amount, payment_method, notes } = contributionData;
+    // collection_contributions schema: id, collection_id, contributor_id,
+    // amount, church_id, created_at — no contributor_name/payment_method/notes.
+    const { collection_id, contributor_id, amount, church_id } = contributionData;
     const query = `
-      INSERT INTO collection_contributions (collection_id, contributor_id, contributor_name, amount, payment_method, notes)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO collection_contributions (collection_id, contributor_id, amount, church_id)
+      SELECT $1, $2, $3, $4
+      WHERE EXISTS (SELECT 1 FROM event_collections WHERE id = $1 AND church_id = $4)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [collection_id, contributor_id, contributor_name, amount, payment_method, notes]);
+    const result = await this.pool.query(query, [collection_id, contributor_id, amount, church_id]);
     return result.rows[0];
   }
 
@@ -151,9 +157,9 @@ class CollectionRepository extends BaseRepository {
     await this.pool.query(query, [status, collectionId]);
   }
 
-  async updateCollectionStatusWithTimestamp(collectionId, status) {
-    const query = 'UPDATE event_collections SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const result = await this.pool.query(query, [status, collectionId]);
+  async updateCollectionStatusWithTimestamp(collectionId, status, churchId = null) {
+    const query = `UPDATE event_collections SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2${churchId ? ' AND church_id = $3' : ''} RETURNING *`;
+    const result = await this.pool.query(query, churchId ? [status, collectionId, churchId] : [status, collectionId]);
     return result.rows[0];
   }
 
@@ -162,7 +168,7 @@ class CollectionRepository extends BaseRepository {
       SELECT cc.*,
              CASE
                WHEN cc.contributor_id IS NOT NULL THEN CONCAT(u.first_name, ' ', u.last_name)
-               ELSE cc.contributor_name
+               ELSE 'Anonymous'
              END as contributor_name
       FROM collection_contributions cc
       LEFT JOIN users u ON cc.contributor_id = u.id
@@ -180,15 +186,15 @@ class CollectionRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getContributionById(contributionId, collectionId) {
-    const query = 'SELECT * FROM collection_contributions WHERE id = $1 AND collection_id = $2';
-    const result = await this.pool.query(query, [contributionId, collectionId]);
+  async getContributionById(contributionId, collectionId, churchId = null) {
+    const query = `SELECT * FROM collection_contributions WHERE id = $1 AND collection_id = $2${churchId ? ' AND church_id = $3' : ''}`;
+    const result = await this.pool.query(query, churchId ? [contributionId, collectionId, churchId] : [contributionId, collectionId]);
     return result.rows[0];
   }
 
-  async deleteContribution(contributionId) {
-    const query = 'DELETE FROM collection_contributions WHERE id = $1';
-    await this.pool.query(query, [contributionId]);
+  async deleteContribution(contributionId, churchId = null) {
+    const query = `DELETE FROM collection_contributions WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    await this.pool.query(query, churchId ? [contributionId, churchId] : [contributionId]);
   }
 
   async subtractFromCollectionCurrentAmount(collectionId, amount) {
@@ -211,7 +217,7 @@ class CollectionRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getCollectionAnalytics(collectionId) {
+  async getCollectionAnalytics(collectionId, churchId = null) {
     const query = `
       SELECT
         ec.*,
@@ -222,10 +228,10 @@ class CollectionRepository extends BaseRepository {
         MIN(cc.amount) as lowest_contribution
       FROM event_collections ec
       LEFT JOIN collection_contributions cc ON ec.id = cc.collection_id
-      WHERE ec.id = $1
+      WHERE ec.id = $1${churchId ? ' AND ec.church_id = $2' : ''}
       GROUP BY ec.id
     `;
-    const result = await this.pool.query(query, [collectionId]);
+    const result = await this.pool.query(query, churchId ? [collectionId, churchId] : [collectionId]);
     return result.rows[0];
   }
 }

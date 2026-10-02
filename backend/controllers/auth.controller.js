@@ -643,7 +643,7 @@ class AuthController extends BaseController {
       
       // Generate MFA secret
       const secret = generateMFASecret();
-      const qrCode = await generateMFAQRCode(secret, user.email);
+      const qrCode = await generateMFAQRCode(secret, req.user.email);
       
       // Store MFA secret (not yet verified)
       await AuthRepository.storeMFASecret(userId, secret, false);

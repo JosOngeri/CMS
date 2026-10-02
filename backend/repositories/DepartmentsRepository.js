@@ -5,6 +5,18 @@ class DepartmentsRepository extends BaseRepository {
     super('departments');
   }
 
+  /**
+   * Tenant gate for every department-scoped op — controllers call this before
+   * read/mutate so a departmentId from another church gets a 404, not data.
+   */
+  async departmentBelongsToChurch(departmentId, churchId) {
+    const result = await this.pool.query(
+      'SELECT 1 FROM departments WHERE id = $1 AND church_id = $2',
+      [departmentId, churchId]
+    );
+    return result.rowCount > 0;
+  }
+
   async getAllWithStats(churchId = null) {
     let query = `
       SELECT d.*,
@@ -85,8 +97,11 @@ class DepartmentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getDepartmentById(id) {
-    const result = await this.pool.query('SELECT * FROM departments WHERE id = $1', [id]);
+  async getDepartmentById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM departments WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
@@ -141,7 +156,7 @@ class DepartmentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateDepartment(id, name, description, category, leaderName, leaderContact, isActive) {
+  async updateDepartment(id, name, description, category, leaderName, leaderContact, isActive, churchId = null) {
     const result = await this.pool.query(
       `UPDATE departments
        SET name = COALESCE($1, name),
@@ -151,35 +166,44 @@ class DepartmentsRepository extends BaseRepository {
            leader_contact = COALESCE($5, leader_contact),
            is_active = COALESCE($6, is_active),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
+       WHERE id = $7${churchId ? ' AND church_id = $8' : ''}
        RETURNING *`,
-      [name, description, category, leaderName, leaderContact, isActive, id]
+      churchId ? [name, description, category, leaderName, leaderContact, isActive, id, churchId]
+               : [name, description, category, leaderName, leaderContact, isActive, id]
     );
     return result.rows[0];
   }
 
-  async deleteDepartment(id) {
-    await this.pool.query('DELETE FROM departments WHERE id = $1', [id]);
+  async deleteDepartment(id, churchId = null) {
+    const result = await this.pool.query(
+      `DELETE FROM departments WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
+    return result.rowCount;
   }
 
-  async addMember(userId, departmentId, role) {
+  async addMember(userId, departmentId, role, churchId = null) {
+    // Both the target user and the department must belong to the caller's
+    // church — otherwise this is a cross-tenant self-insert.
     const result = await this.pool.query(
-      `INSERT INTO department_members (user_id, department_id, role)
-       VALUES ($1, $2, $3)
+      `INSERT INTO department_members (user_id, department_id, role, church_id)
+       SELECT $1, $2, $3, $4
+       WHERE EXISTS (SELECT 1 FROM users WHERE id = $1 AND church_id = $4)
+         AND EXISTS (SELECT 1 FROM departments WHERE id = $2 AND church_id = $4)
        ON CONFLICT (user_id, department_id) DO UPDATE SET
          role = EXCLUDED.role,
          is_active = true,
          joined_at = CURRENT_TIMESTAMP
        RETURNING *`,
-      [userId, departmentId, role || 'Member']
+      [userId, departmentId, role || 'Member', churchId]
     );
     return result.rows[0];
   }
 
-  async removeMember(departmentId, userId) {
+  async removeMember(departmentId, userId, churchId = null) {
     await this.pool.query(
-      'DELETE FROM department_members WHERE department_id = $1 AND user_id = $2',
-      [departmentId, userId]
+      `DELETE FROM department_members WHERE department_id = $1 AND user_id = $2${churchId ? ' AND church_id = $3' : ''}`,
+      churchId ? [departmentId, userId, churchId] : [departmentId, userId]
     );
   }
 
@@ -253,15 +277,14 @@ class DepartmentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateTaskStatus(taskId, status) {
+  async updateTaskStatus(taskId, status, churchId = null) {
     const result = await this.pool.query(
       `UPDATE department_tasks
        SET status = $1,
-           completed_at = CASE WHEN $1 = 'completed' THEN CURRENT_TIMESTAMP ELSE completed_at END,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2
+       WHERE id = $2${churchId ? ' AND department_id IN (SELECT id FROM departments WHERE church_id = $3)' : ''}
        RETURNING *`,
-      [status, taskId]
+      churchId ? [status, taskId, churchId] : [status, taskId]
     );
     return result.rows[0];
   }
@@ -289,14 +312,17 @@ class DepartmentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async setDepartmentPermission(departmentId, userId, permission) {
+  async setDepartmentPermission(departmentId, userId, permission, churchId = null) {
+    // department_permissions has no church_id column — ownership gate via
+    // EXISTS on the parent department instead of a stored tenant key.
     const result = await this.pool.query(
       `INSERT INTO department_permissions (department_id, user_id, permission)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (department_id, user_id) 
+       SELECT $1, $2, $3
+       WHERE EXISTS (SELECT 1 FROM departments WHERE id = $1 AND church_id = $4)
+       ON CONFLICT (department_id, user_id)
        DO UPDATE SET permission = $3
        RETURNING *`,
-      [departmentId, userId, permission]
+      [departmentId, userId, permission, churchId]
     );
     return result.rows[0];
   }
@@ -324,17 +350,18 @@ class DepartmentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateDepartmentBranding(departmentId, logo, banner, primaryColor, secondaryColor) {
+  async updateDepartmentBranding(departmentId, logo, banner, primaryColor, secondaryColor, churchId = null) {
     const result = await this.pool.query(
-      `UPDATE departments 
-       SET logo = COALESCE($1, logo),
-           banner = COALESCE($2, banner),
+      `UPDATE departments
+       SET logo_url = COALESCE($1, logo_url),
+           banner_url = COALESCE($2, banner_url),
            primary_color = COALESCE($3, primary_color),
            secondary_color = COALESCE($4, secondary_color),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5
+       WHERE id = $5${churchId ? ' AND church_id = $6' : ''}
        RETURNING *`,
-      [logo, banner, primaryColor, secondaryColor, departmentId]
+      churchId ? [logo, banner, primaryColor, secondaryColor, departmentId, churchId]
+               : [logo, banner, primaryColor, secondaryColor, departmentId]
     );
     return result.rows[0];
   }

@@ -156,8 +156,8 @@ class CollectionController extends BaseController {
         }]);
       }
 
-      // Check if event exists
-      const eventCheck = await CollectionRepository.getEventById(event_id);
+      // Check if event exists (church-scoped)
+      const eventCheck = await CollectionRepository.getEventById(event_id, req.user.church_id);
 
       if (!eventCheck) {
         return ResponseHandler.notFound(res, 'Event not found');
@@ -175,11 +175,12 @@ class CollectionController extends BaseController {
         description,
         target_amount,
         visibility: visibility || 'department',
-        created_by: userId
+        created_by: userId,
+        church_id: req.user.church_id
       });
 
       // Update event to mark it as having a collection
-      await CollectionRepository.updateEventHasCollection(event_id);
+      await CollectionRepository.updateEventHasCollection(event_id, req.user.church_id);
 
       return ResponseHandler.success(res, { collection }, 'Collection created successfully', 201);
     } catch (error) {
@@ -201,7 +202,7 @@ class CollectionController extends BaseController {
       const { id } = req.params;
 
       // Use repository method that includes progress calculation
-      const collection = await CollectionRepository.getEventCollectionWithProgress(id);
+      const collection = await CollectionRepository.getEventCollectionWithProgress(id, req.user.church_id);
 
       if (!collection) {
         return ResponseHandler.notFound(res, 'Collection not found');
@@ -230,7 +231,7 @@ class CollectionController extends BaseController {
       const userId = req.user.id;
 
       // Check if collection exists and user has permission
-      const collectionCheck = await CollectionRepository.getEventCollectionById(id);
+      const collectionCheck = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
 
       if (!collectionCheck) {
         return ResponseHandler.notFound(res, 'Collection not found');
@@ -250,7 +251,7 @@ class CollectionController extends BaseController {
         description,
         target_amount,
         visibility
-      });
+      }, req.user.church_id);
 
       return ResponseHandler.success(res, { collection }, 'Collection updated successfully');
     } catch (error) {
@@ -286,7 +287,7 @@ class CollectionController extends BaseController {
       }
 
       // Check if collection exists and is active
-      const collectionCheck = await CollectionRepository.getEventCollectionById(id);
+      const collectionCheck = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
 
       if (!collectionCheck) {
         return ResponseHandler.notFound(res, 'Collection not found');
@@ -296,18 +297,19 @@ class CollectionController extends BaseController {
         return ResponseHandler.error(res, 'Collection is not active', 400);
       }
 
-      // Add contribution
-      const contributorName = is_anonymous ? 'Anonymous' : null;
+      // Add contribution (schema stores only id/collection/contributor/amount/church)
       const contributorId = is_anonymous ? null : userId;
 
       const contribution = await CollectionRepository.createContribution({
         collection_id: id,
         contributor_id: contributorId,
-        contributor_name: contributorName,
         amount,
-        payment_method,
-        notes
+        church_id: req.user.church_id
       });
+
+      if (!contribution) {
+        return ResponseHandler.notFound(res, 'Collection not found');
+      }
 
       // Update collection current amount
       await CollectionRepository.updateCollectionCurrentAmount(id, amount);
@@ -340,7 +342,7 @@ class CollectionController extends BaseController {
       const limit = parseInt(req.query.limit) || 50;
       const offset = parseInt(req.query.offset) || 0;
 
-      const collection = await CollectionRepository.getEventCollectionById(id);
+      const collection = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
 
       if (!collection) {
         return ResponseHandler.notFound(res, 'Collection not found');
@@ -385,7 +387,7 @@ class CollectionController extends BaseController {
         return ResponseHandler.forbidden(res, 'Only admins can delete contributions');
       }
 
-      const contribution = await CollectionRepository.getContributionById(contributionId, id);
+      const contribution = await CollectionRepository.getContributionById(contributionId, id, req.user.church_id);
 
       if (!contribution) {
         return ResponseHandler.notFound(res, 'Contribution not found');
@@ -393,7 +395,7 @@ class CollectionController extends BaseController {
 
       const amount = contribution.amount;
 
-      await CollectionRepository.deleteContribution(contributionId);
+      await CollectionRepository.deleteContribution(contributionId, req.user.church_id);
       await CollectionRepository.subtractFromCollectionCurrentAmount(id, amount);
 
       const collectionStatus = await CollectionRepository.getCollectionStatusAndAmounts(id);
@@ -434,7 +436,7 @@ class CollectionController extends BaseController {
         }]);
       }
 
-      const collection = await CollectionRepository.getEventCollectionById(id);
+      const collection = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
 
       if (!collection) {
         return ResponseHandler.notFound(res, 'Collection not found');
@@ -447,7 +449,7 @@ class CollectionController extends BaseController {
         return ResponseHandler.forbidden(res, 'You do not have permission to update this collection');
       }
 
-      const updated = await CollectionRepository.updateCollectionStatusWithTimestamp(id, status);
+      const updated = await CollectionRepository.updateCollectionStatusWithTimestamp(id, status, req.user.church_id);
 
       return ResponseHandler.success(res, { collection: updated }, 'Collection status updated successfully');
     } catch (error) {
@@ -459,7 +461,10 @@ class CollectionController extends BaseController {
   async getCollectionAnalytics(req, res) {
     try {
       const { id } = req.params;
-      const analytics = await CollectionRepository.getCollectionAnalytics(id);
+      const analytics = await CollectionRepository.getCollectionAnalytics(id, req.user.church_id);
+      if (!analytics) {
+        return ResponseHandler.notFound(res, 'Collection not found');
+      }
       return ResponseHandler.success(res, { analytics });
     } catch (error) {
       this.logger.error('getCollectionAnalytics', error);
@@ -470,7 +475,18 @@ class CollectionController extends BaseController {
   async closeCollection(req, res) {
     try {
       const { id } = req.params;
-      const collection = await CollectionRepository.updateCollectionStatusWithTimestamp(id, 'closed');
+      // close/reopen are state transitions on real money — admin + creator only,
+      // church-scoped like updateCollectionStatus.
+      const existing = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
+      if (!existing) {
+        return ResponseHandler.notFound(res, 'Collection not found');
+      }
+      const userRoles = req.user.roles || [];
+      const isAdmin = ['Super Admin', 'Pastor', 'First Elder'].some(role => userRoles.includes(role));
+      if (existing.created_by !== req.user.id && !isAdmin) {
+        return ResponseHandler.forbidden(res, 'You do not have permission to close this collection');
+      }
+      const collection = await CollectionRepository.updateCollectionStatusWithTimestamp(id, 'closed', req.user.church_id);
       return ResponseHandler.success(res, { collection }, 'Collection closed successfully');
     } catch (error) {
       this.logger.error('closeCollection', error);
@@ -481,7 +497,16 @@ class CollectionController extends BaseController {
   async reopenCollection(req, res) {
     try {
       const { id } = req.params;
-      const collection = await CollectionRepository.updateCollectionStatusWithTimestamp(id, 'active');
+      const existing = await CollectionRepository.getEventCollectionById(id, req.user.church_id);
+      if (!existing) {
+        return ResponseHandler.notFound(res, 'Collection not found');
+      }
+      const userRoles = req.user.roles || [];
+      const isAdmin = ['Super Admin', 'Pastor', 'First Elder'].some(role => userRoles.includes(role));
+      if (existing.created_by !== req.user.id && !isAdmin) {
+        return ResponseHandler.forbidden(res, 'You do not have permission to reopen this collection');
+      }
+      const collection = await CollectionRepository.updateCollectionStatusWithTimestamp(id, 'active', req.user.church_id);
       return ResponseHandler.success(res, { collection }, 'Collection reopened successfully');
     } catch (error) {
       this.logger.error('reopenCollection', error);

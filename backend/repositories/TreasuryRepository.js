@@ -178,48 +178,26 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findAccountById(id) {
-    const result = await this.pool.query('SELECT * FROM church_accounts WHERE id = $1', [id]);
-    return result.rows[0];
-  }
-
-  async updateAccount(id, data) {
+  async findAccountById(id, churchId = null) {
     const result = await this.pool.query(
-      `UPDATE church_accounts
-       SET account_name = COALESCE($1, account_name),
-           account_number = COALESCE($2, account_number),
-           bank_name = COALESCE($3, bank_name),
-           account_type = COALESCE($4, account_type),
-           balance = COALESCE($5, balance),
-           currency = COALESCE($6, currency),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
-       RETURNING *`,
-      [
-        data.accountName,
-        data.accountNumber,
-        data.bankName,
-        data.accountType,
-        data.balance,
-        data.currency,
-        id
-      ]
+      `SELECT * FROM church_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
     );
     return result.rows[0];
   }
 
-  async deleteAccount(id) {
-    await this.pool.query('DELETE FROM church_accounts WHERE id = $1', [id]);
-  }
+  // NOTE: updateAccount/deleteAccount were defined twice in this class — the
+  // later (CRUD-section) definitions won silently. The dead duplicates were
+  // removed; the live scoped versions live near the bottom of the file.
 
   // ---------------------------------------------------------------------------
   // Transaction management
   // ---------------------------------------------------------------------------
 
-  async createTransaction(data) {
+  async createTransaction(data, churchId = null) {
     const result = await this.pool.query(
-      `INSERT INTO transactions (transaction_type, category_id, account_id, amount, description, reference_number, transaction_date, recorded_by, payment_method)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO transactions (transaction_type, category_id, account_id, amount, description, reference_number, transaction_date, recorded_by, payment_method, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         data.transactionType,
@@ -230,40 +208,44 @@ class TreasuryRepository extends BaseRepository {
         data.referenceNumber,
         data.transactionDate,
         data.recordedBy,
-        data.paymentMethod
+        data.paymentMethod,
+        churchId
       ]
     );
     return result.rows[0];
   }
 
-  async findTransactionById(id) {
-    const result = await this.pool.query('SELECT * FROM transactions WHERE id = $1', [id]);
+  async findTransactionById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM transactions WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
-  async approveTransaction(id, userId) {
+  async approveTransaction(id, userId, churchId = null) {
     const result = await this.pool.query(
       `UPDATE transactions
        SET status = 'approved',
            approved_by = $1,
            approved_at = CURRENT_TIMESTAMP
-       WHERE id = $2
+       WHERE id = $2${churchId ? ' AND church_id = $3' : ''}
        RETURNING *`,
-      [userId, id]
+      churchId ? [userId, id, churchId] : [userId, id]
     );
     return result.rows[0];
   }
 
-  async rejectTransaction(id, userId, reason) {
+  async rejectTransaction(id, userId, reason, churchId = null) {
     const result = await this.pool.query(
       `UPDATE transactions
        SET status = 'rejected',
            rejected_by = $1,
            rejected_at = CURRENT_TIMESTAMP,
            rejection_reason = $2
-       WHERE id = $3
+       WHERE id = $3${churchId ? ' AND church_id = $4' : ''}
        RETURNING *`,
-      [userId, reason, id]
+      churchId ? [userId, reason, id, churchId] : [userId, reason, id]
     );
     return result.rows[0];
   }
@@ -272,10 +254,16 @@ class TreasuryRepository extends BaseRepository {
   // Budget management
   // ---------------------------------------------------------------------------
 
-  async getBudgets(fiscalYear = null, status = null) {
+  async getBudgets(fiscalYear = null, status = null, churchId = null) {
     let query = 'SELECT * FROM budgets WHERE 1=1';
     const params = [];
     let paramCount = 0;
+
+    if (churchId) {
+      paramCount++;
+      query += ` AND church_id = $${paramCount}`;
+      params.push(churchId);
+    }
 
     if (fiscalYear) {
       paramCount++;
@@ -295,10 +283,10 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createBudget(data) {
+  async createBudget(data, churchId = null) {
     const result = await this.pool.query(
-      `INSERT INTO budgets (name, fiscal_year, start_date, end_date, total_income_budget, total_expense_budget, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO budgets (name, fiscal_year, start_date, end_date, total_income_budget, total_expense_budget, created_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
       [
         data.name,
@@ -307,64 +295,50 @@ class TreasuryRepository extends BaseRepository {
         data.endDate,
         data.totalIncomeBudget || 0,
         data.totalExpenseBudget || 0,
-        data.createdBy
+        data.createdBy,
+        churchId
       ]
     );
     return result.rows[0];
   }
 
-  async findBudgetById(id) {
-    const result = await this.pool.query('SELECT * FROM budgets WHERE id = $1', [id]);
+  async findBudgetById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM budgets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
-  async getBudgetItems(budgetId) {
+  async getBudgetItems(budgetId, churchId = null) {
     const result = await this.pool.query(
-      `SELECT bi.*, 
+      `SELECT bi.*,
          COALESCE(ic.name, ec.name) as category_name
        FROM budget_items bi
        LEFT JOIN income_categories ic ON bi.category_id = ic.id AND bi.category_type = 'income'
        LEFT JOIN expense_categories ec ON bi.category_id = ec.id AND bi.category_type = 'expense'
-       WHERE bi.budget_id = $1
+       WHERE bi.budget_id = $1${churchId ? ' AND bi.church_id = $2' : ''}
        ORDER BY bi.category_type, bi.amount DESC`,
-      [budgetId]
+      churchId ? [budgetId, churchId] : [budgetId]
     );
     return result.rows;
   }
 
-  async createBudgetItem(data) {
+  async createBudgetItem(data, churchId = null) {
     const result = await this.pool.query(
-      `INSERT INTO budget_items (budget_id, category_id, category_type, amount, notes)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO budget_items (budget_id, category_id, category_type, amount, notes, church_id)
+       SELECT $1, $2, $3, $4, $5, $6
+       WHERE $6::uuid IS NULL OR EXISTS (SELECT 1 FROM budgets WHERE id = $1 AND church_id = $6)
        RETURNING *`,
-      [data.budgetId, data.categoryId, data.categoryType, data.amount, data.notes]
+      [data.budgetId, data.categoryId, data.categoryType, data.amount, data.notes, churchId]
     );
     return result.rows[0];
   }
 
-  async updateBudgetItem(id, data) {
-    const result = await this.pool.query(
-      `UPDATE budget_items
-       SET category_id = COALESCE($1, category_id),
-           category_type = COALESCE($2, category_type),
-           amount = COALESCE($3, amount),
-           notes = COALESCE($4, notes)
-       WHERE id = $5
-       RETURNING *`,
-      [data.categoryId, data.categoryType, data.amount, data.notes, id]
-    );
-    return result.rows[0];
-  }
+  // NOTE: updateBudgetItem/deleteBudgetItem were duplicated — the CRUD-section
+  // definitions (below) are the live ones and are church-scoped there.
 
-  async deleteBudgetItem(id) {
-    await this.pool.query('DELETE FROM budget_items WHERE id = $1', [id]);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Budget alerts
-  // ---------------------------------------------------------------------------
-
-  async getBudgetAlerts() {
+  async getBudgetAlerts(churchId = null) {
     const result = await this.pool.query(
       `SELECT b.*,
               (SELECT SUM(amount) FROM budget_items WHERE budget_id = b.id AND category_type = 'expense') as total_expense,
@@ -372,7 +346,9 @@ class TreasuryRepository extends BaseRepository {
        FROM budgets b
        WHERE b.status = 'active'
        AND b.end_date >= CURRENT_DATE
-       ORDER BY b.end_date ASC`
+       ${churchId ? 'AND b.church_id = $1' : ''}
+       ORDER BY b.end_date ASC`,
+      churchId ? [churchId] : []
     );
     return result.rows;
   }
@@ -381,31 +357,36 @@ class TreasuryRepository extends BaseRepository {
   // Vendors
   // ---------------------------------------------------------------------------
 
-  async updateVendor(id, data) {
+  async updateVendor(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE vendors SET name = $1, contact_person = $2, email = $3, phone = $4, address = $5 WHERE id = $6 RETURNING *',
-      [data.name, data.contactPerson, data.email, data.phone, data.address, id]
+      `UPDATE vendors SET name = $1, contact_person = $2, email = $3, phone = $4, address = $5 WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
+      churchId ? [data.name, data.contactPerson, data.email, data.phone, data.address, id, churchId]
+               : [data.name, data.contactPerson, data.email, data.phone, data.address, id]
     );
     return result.rows[0];
   }
 
-  async deleteVendor(id) {
-    await this.pool.query('DELETE FROM vendors WHERE id = $1', [id]);
+  async deleteVendor(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM vendors WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Analytics
   // ---------------------------------------------------------------------------
 
-  async getAnalytics(dateFrom = null, dateTo = null) {
+  async getAnalytics(dateFrom = null, dateTo = null, churchId = null) {
     const result = await this.pool.query(
       `SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
        FROM transactions
        WHERE status = 'approved'
        AND ($1::date IS NULL OR transaction_date >= $1)
        AND ($2::date IS NULL OR transaction_date <= $2)
+       ${churchId ? 'AND church_id = $3' : ''}
        GROUP BY transaction_type`,
-      [dateFrom, dateTo]
+      churchId ? [dateFrom, dateTo, churchId] : [dateFrom, dateTo]
     );
     return result.rows;
   }
@@ -414,16 +395,20 @@ class TreasuryRepository extends BaseRepository {
   // Recurring payments
   // ---------------------------------------------------------------------------
 
-  async updateRecurringPayment(id, data) {
+  async updateRecurringPayment(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE recurring_payments SET name = $1, amount = $2, frequency = $3, start_date = $4, description = $5, status = $6 WHERE id = $7 RETURNING *',
-      [data.name, data.amount, data.frequency, data.startDate, data.description, data.status, id]
+      `UPDATE recurring_payments SET name = $1, amount = $2, frequency = $3, start_date = $4, description = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.name, data.amount, data.frequency, data.startDate, data.description, data.status, id, churchId]
+               : [data.name, data.amount, data.frequency, data.startDate, data.description, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteRecurringPayment(id) {
-    await this.pool.query('DELETE FROM recurring_payments WHERE id = $1', [id]);
+  async deleteRecurringPayment(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM recurring_payments WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -500,73 +485,90 @@ class TreasuryRepository extends BaseRepository {
   // Projects
   // ---------------------------------------------------------------------------
 
-  async getProjects() {
-    const result = await this.pool.query('SELECT * FROM projects ORDER BY created_at DESC');
+  async getProjects(churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM projects${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
+      churchId ? [churchId] : []
+    );
     return result.rows;
   }
 
-  async createProject(data) {
+  async createProject(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO projects (name, description, budget, start_date, end_date, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [data.name, data.description, data.budget, data.startDate, data.endDate, data.status || 'active']
+      'INSERT INTO projects (name, description, budget, start_date, end_date, status, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [data.name, data.description, data.budget, data.startDate, data.endDate, data.status || 'active', churchId]
     );
     return result.rows[0];
   }
 
-  async updateProject(id, data) {
+  async updateProject(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE projects SET name = $1, description = $2, budget = $3, start_date = $4, end_date = $5, status = $6 WHERE id = $7 RETURNING *',
-      [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id]
+      `UPDATE projects SET name = $1, description = $2, budget = $3, start_date = $4, end_date = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id, churchId]
+               : [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteProject(id) {
-    await this.pool.query('DELETE FROM projects WHERE id = $1', [id]);
+  async deleteProject(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM projects WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Pledges
   // ---------------------------------------------------------------------------
 
-  async getPledges() {
-    const result = await this.pool.query('SELECT * FROM pledges ORDER BY created_at DESC');
+  async getPledges(churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM pledges${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
+      churchId ? [churchId] : []
+    );
     return result.rows;
   }
 
-  async createPledge(data) {
+  async createPledge(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO pledges (member_id, amount, pledge_type, start_date, end_date, frequency) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [data.memberId, data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency]
+      'INSERT INTO pledges (member_id, amount, pledge_type, start_date, end_date, frequency, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [data.memberId, data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, churchId]
     );
     return result.rows[0];
   }
 
-  async updatePledge(id, data) {
+  async updatePledge(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE pledges SET amount = $1, pledge_type = $2, start_date = $3, end_date = $4, frequency = $5, status = $6 WHERE id = $7 RETURNING *',
-      [data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, data.status, id]
+      `UPDATE pledges SET amount = $1, pledge_type = $2, start_date = $3, end_date = $4, frequency = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, data.status, id, churchId]
+               : [data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deletePledge(id) {
-    await this.pool.query('DELETE FROM pledges WHERE id = $1', [id]);
+  async deletePledge(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM pledges WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Pledge campaigns
   // ---------------------------------------------------------------------------
 
-  async getCampaigns() {
-    const result = await this.pool.query('SELECT * FROM pledge_campaigns ORDER BY created_at DESC');
+  async getCampaigns(churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM pledge_campaigns${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
+      churchId ? [churchId] : []
+    );
     return result.rows;
   }
 
-  async createCampaign(data) {
+  async createCampaign(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO pledge_campaigns (name, description, target_amount, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [data.name, data.description, data.targetAmount, data.startDate, data.endDate]
+      'INSERT INTO pledge_campaigns (name, description, target_amount, start_date, end_date, church_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [data.name, data.description, data.targetAmount, data.startDate, data.endDate, churchId]
     );
     return result.rows[0];
   }
@@ -575,7 +577,7 @@ class TreasuryRepository extends BaseRepository {
   // Budget alerts
   // ---------------------------------------------------------------------------
 
-  async getBudgetAlertsDetailed() {
+  async getBudgetAlertsDetailed(churchId = null) {
     const result = await this.pool.query(
       `SELECT b.name as budget_name, bi.category_name, bi.amount as budgeted,
        COALESCE(SUM(t.amount), 0) as spent,
@@ -588,9 +590,11 @@ class TreasuryRepository extends BaseRepository {
          AND t.transaction_date >= b.start_date
          AND t.transaction_date <= b.end_date
        WHERE b.status = 'active'
+       ${churchId ? 'AND b.church_id = $1' : ''}
        GROUP BY b.id, b.name, bi.id, bi.category_name, bi.amount
        HAVING (bi.amount - COALESCE(SUM(t.amount), 0)) < (bi.amount * 0.2)
-       ORDER BY remaining ASC`
+       ORDER BY remaining ASC`,
+      churchId ? [churchId] : []
     );
     return result.rows;
   }
@@ -714,60 +718,76 @@ class TreasuryRepository extends BaseRepository {
   // Account CRUD
   // ---------------------------------------------------------------------------
 
-  async updateAccount(id, data) {
+  async updateAccount(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE church_accounts SET account_name = COALESCE($1, account_name), account_number = COALESCE($2, account_number), bank_name = COALESCE($3, bank_name), account_type = COALESCE($4, account_type), balance = COALESCE($5, balance), currency = COALESCE($6, currency) WHERE id = $7 RETURNING *',
-      [data.accountName, data.accountNumber, data.bankName, data.accountType, data.balance, data.currency, id]
+      `UPDATE church_accounts SET account_name = COALESCE($1, account_name), account_number = COALESCE($2, account_number), bank_name = COALESCE($3, bank_name), account_type = COALESCE($4, account_type), balance = COALESCE($5, balance), currency = COALESCE($6, currency) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.accountName, data.accountNumber, data.bankName, data.accountType, data.balance, data.currency, id, churchId]
+               : [data.accountName, data.accountNumber, data.bankName, data.accountType, data.balance, data.currency, id]
     );
     return result.rows[0];
   }
 
-  async deleteAccount(id) {
-    await this.pool.query('DELETE FROM church_accounts WHERE id = $1', [id]);
+  async deleteAccount(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM church_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Transaction CRUD
   // ---------------------------------------------------------------------------
 
-  async updateTransaction(id, data) {
+  async updateTransaction(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE transactions SET amount = COALESCE($1, amount), description = COALESCE($2, description), category_id = COALESCE($3, category_id), account_id = COALESCE($4, account_id), status = COALESCE($5, status), transaction_date = COALESCE($6, transaction_date) WHERE id = $7 RETURNING *',
-      [data.amount, data.description, data.categoryId, data.accountId, data.status, data.transactionDate, id]
+      `UPDATE transactions SET amount = COALESCE($1, amount), description = COALESCE($2, description), category_id = COALESCE($3, category_id), account_id = COALESCE($4, account_id), status = COALESCE($5, status), transaction_date = COALESCE($6, transaction_date) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.amount, data.description, data.categoryId, data.accountId, data.status, data.transactionDate, id, churchId]
+               : [data.amount, data.description, data.categoryId, data.accountId, data.status, data.transactionDate, id]
     );
     return result.rows[0];
   }
 
-  async deleteTransaction(id) {
-    await this.pool.query('DELETE FROM transactions WHERE id = $1', [id]);
+  async deleteTransaction(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM transactions WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Budget CRUD
   // ---------------------------------------------------------------------------
 
-  async updateBudget(id, data) {
+  async updateBudget(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE budgets SET budget_name = COALESCE($1, budget_name), fiscal_year = COALESCE($2, fiscal_year), fund_id = COALESCE($3, fund_id), account_id = COALESCE($4, account_id), budgeted_amount = COALESCE($5, budgeted_amount), actual_amount = COALESCE($6, actual_amount), status = COALESCE($7, status) WHERE id = $8 RETURNING *',
-      [data.budgetName, data.fiscalYear, data.fundId, data.accountId, data.budgetedAmount, data.actualAmount, data.status, id]
+      `UPDATE budgets SET budget_name = COALESCE($1, budget_name), fiscal_year = COALESCE($2, fiscal_year), fund_id = COALESCE($3, fund_id), account_id = COALESCE($4, account_id), budgeted_amount = COALESCE($5, budgeted_amount), actual_amount = COALESCE($6, actual_amount), status = COALESCE($7, status) WHERE id = $8${churchId ? ' AND church_id = $9' : ''} RETURNING *`,
+      churchId ? [data.budgetName, data.fiscalYear, data.fundId, data.accountId, data.budgetedAmount, data.actualAmount, data.status, id, churchId]
+               : [data.budgetName, data.fiscalYear, data.fundId, data.accountId, data.budgetedAmount, data.actualAmount, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteBudget(id) {
-    await this.pool.query('DELETE FROM budgets WHERE id = $1', [id]);
+  async deleteBudget(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM budgets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
-  async updateBudgetItem(id, data) {
+  async updateBudgetItem(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE budget_items SET item_name = COALESCE($1, item_name), budgeted_amount = COALESCE($2, budgeted_amount), actual_amount = COALESCE($3, actual_amount), description = COALESCE($4, description) WHERE id = $5 RETURNING *',
-      [data.itemName, data.budgetedAmount, data.actualAmount, data.description, id]
+      `UPDATE budget_items SET item_name = COALESCE($1, item_name), budgeted_amount = COALESCE($2, budgeted_amount), actual_amount = COALESCE($3, actual_amount), description = COALESCE($4, description) WHERE id = $5${churchId ? ' AND church_id = $6' : ''} RETURNING *`,
+      churchId ? [data.itemName, data.budgetedAmount, data.actualAmount, data.description, id, churchId]
+               : [data.itemName, data.budgetedAmount, data.actualAmount, data.description, id]
     );
     return result.rows[0];
   }
 
-  async deleteBudgetItem(id) {
-    await this.pool.query('DELETE FROM budget_items WHERE id = $1', [id]);
+  async deleteBudgetItem(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM budget_items WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -785,24 +805,28 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createFund(data) {
+  async createFund(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO funds (fund_name, fund_code, description, fund_type) VALUES ($1, $2, $3, $4) RETURNING *',
-      [data.fundName, data.fundCode, data.description, data.fundType]
+      'INSERT INTO funds (fund_name, fund_code, description, fund_type, church_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [data.fundName, data.fundCode, data.description, data.fundType, churchId]
     );
     return result.rows[0];
   }
 
-  async updateFund(id, data) {
+  async updateFund(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE funds SET fund_name = COALESCE($1, fund_name), fund_code = COALESCE($2, fund_code), description = COALESCE($3, description), fund_type = COALESCE($4, fund_type), is_active = COALESCE($5, is_active) WHERE id = $6 RETURNING *',
-      [data.fundName, data.fundCode, data.description, data.fundType, data.isActive, id]
+      `UPDATE funds SET fund_name = COALESCE($1, fund_name), fund_code = COALESCE($2, fund_code), description = COALESCE($3, description), fund_type = COALESCE($4, fund_type), is_active = COALESCE($5, is_active) WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
+      churchId ? [data.fundName, data.fundCode, data.description, data.fundType, data.isActive, id, churchId]
+               : [data.fundName, data.fundCode, data.description, data.fundType, data.isActive, id]
     );
     return result.rows[0];
   }
 
-  async deleteFund(id) {
-    await this.pool.query('DELETE FROM funds WHERE id = $1', [id]);
+  async deleteFund(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM funds WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -906,16 +930,20 @@ class TreasuryRepository extends BaseRepository {
   // Campaign CRUD
   // ---------------------------------------------------------------------------
 
-  async updateCampaign(id, data) {
+  async updateCampaign(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE pledge_campaigns SET name = COALESCE($1, name), description = COALESCE($2, description), target_amount = COALESCE($3, target_amount), start_date = COALESCE($4, start_date), end_date = COALESCE($5, end_date), status = COALESCE($6, status) WHERE id = $7 RETURNING *',
-      [data.campaignName, data.description, data.goalAmount, data.startDate, data.endDate, data.status, id]
+      `UPDATE pledge_campaigns SET name = COALESCE($1, name), description = COALESCE($2, description), target_amount = COALESCE($3, target_amount), start_date = COALESCE($4, start_date), end_date = COALESCE($5, end_date), status = COALESCE($6, status) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
+      churchId ? [data.campaignName, data.description, data.goalAmount, data.startDate, data.endDate, data.status, id, churchId]
+               : [data.campaignName, data.description, data.goalAmount, data.startDate, data.endDate, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteCampaign(id) {
-    await this.pool.query('DELETE FROM pledge_campaigns WHERE id = $1', [id]);
+  async deleteCampaign(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM pledge_campaigns WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -933,24 +961,28 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createFixedAsset(data) {
+  async createFixedAsset(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO fixed_assets (asset_name, asset_code, purchase_price, purchase_date, depreciation_rate, location) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location]
+      'INSERT INTO fixed_assets (asset_name, asset_code, purchase_price, purchase_date, depreciation_rate, location, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, churchId]
     );
     return result.rows[0];
   }
 
-  async updateFixedAsset(id, data) {
+  async updateFixedAsset(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), depreciation_rate = COALESCE($5, depreciation_rate), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9 RETURNING *',
-      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id]
+      `UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), depreciation_rate = COALESCE($5, depreciation_rate), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9${churchId ? ' AND church_id = $10' : ''} RETURNING *`,
+      churchId ? [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id, churchId]
+               : [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteFixedAsset(id) {
-    await this.pool.query('DELETE FROM fixed_assets WHERE id = $1', [id]);
+  async deleteFixedAsset(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM fixed_assets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -974,24 +1006,31 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createReconciliation(data) {
+  async createReconciliation(data, churchId = null) {
     const result = await this.pool.query(
-      'INSERT INTO bank_reconciliations (account_id, statement_date, statement_balance, book_balance, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [data.accountId, data.statementDate, data.statementBalance, data.bookBalance, data.notes]
+      `INSERT INTO bank_reconciliations (account_id, statement_date, statement_balance, book_balance, notes, church_id)
+       SELECT $1, $2, $3, $4, $5, $6
+       WHERE $6::uuid IS NULL OR EXISTS (SELECT 1 FROM church_accounts WHERE id = $1 AND church_id = $6)
+       RETURNING *`,
+      [data.accountId, data.statementDate, data.statementBalance, data.bookBalance, data.notes, churchId]
     );
     return result.rows[0];
   }
 
-  async updateReconciliation(id, data) {
+  async updateReconciliation(id, data, churchId = null) {
     const result = await this.pool.query(
-      'UPDATE bank_reconciliations SET statement_date = COALESCE($1, statement_date), statement_balance = COALESCE($2, statement_balance), book_balance = COALESCE($3, book_balance), notes = COALESCE($4, notes), status = COALESCE($5, status) WHERE id = $6 RETURNING *',
-      [data.statementDate, data.statementBalance, data.bookBalance, data.notes, data.status, id]
+      `UPDATE bank_reconciliations SET statement_date = COALESCE($1, statement_date), statement_balance = COALESCE($2, statement_balance), book_balance = COALESCE($3, book_balance), notes = COALESCE($4, notes), status = COALESCE($5, status) WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
+      churchId ? [data.statementDate, data.statementBalance, data.bookBalance, data.notes, data.status, id, churchId]
+               : [data.statementDate, data.statementBalance, data.bookBalance, data.notes, data.status, id]
     );
     return result.rows[0];
   }
 
-  async deleteReconciliation(id) {
-    await this.pool.query('DELETE FROM bank_reconciliations WHERE id = $1', [id]);
+  async deleteReconciliation(id, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM bank_reconciliations WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
   }
 }
 

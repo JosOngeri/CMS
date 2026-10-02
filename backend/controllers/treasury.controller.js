@@ -72,7 +72,7 @@ class TreasuryController extends BaseController {
         accountType,
         balance,
         currency
-      });
+      }, req.user.church_id);
 
       res.status(201).json({
         success: true,
@@ -151,7 +151,7 @@ class TreasuryController extends BaseController {
         transactionDate,
         recordedBy: userId,
         paymentMethod
-      });
+      }, churchId);
 
       // Log audit event
       await auditService.log(
@@ -192,7 +192,7 @@ class TreasuryController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
-      const approved = await TreasuryRepository.approveTransaction(id, userId);
+      const approved = await TreasuryRepository.approveTransaction(id, userId, churchId);
 
       if (!approved) {
         return res.status(404).json({ success: false, error: 'Transaction not found' });
@@ -271,7 +271,8 @@ class TreasuryController extends BaseController {
    */
   async getBudgets(req, res) {
     try {
-      const budgets = await TreasuryRepository.getBudgets(fiscalYear, status);
+      const { fiscalYear, status } = req.query;
+      const budgets = await TreasuryRepository.getBudgets(fiscalYear, status, req.user.church_id);
 
       res.json({ success: true, budgets });
     } catch (error) {
@@ -307,7 +308,7 @@ class TreasuryController extends BaseController {
         totalIncomeBudget,
         totalExpenseBudget,
         createdBy: userId
-      });
+      }, req.user.church_id);
 
       res.status(201).json({
         success: true,
@@ -332,7 +333,7 @@ class TreasuryController extends BaseController {
     try {
       const { budgetId } = req.params;
 
-      const budgetItems = await TreasuryRepository.getBudgetItems(budgetId);
+      const budgetItems = await TreasuryRepository.getBudgetItems(budgetId, req.user.church_id);
 
       res.json({ success: true, budgetItems });
     } catch (error) {
@@ -365,7 +366,11 @@ class TreasuryController extends BaseController {
         categoryType,
         amount,
         notes
-      });
+      }, req.user.church_id);
+
+      if (!budgetItem) {
+        return res.status(404).json({ success: false, error: 'Budget not found' });
+      }
 
       res.status(201).json({
         success: true,
@@ -421,7 +426,7 @@ class TreasuryController extends BaseController {
    */
   async getBudgetAlerts(req, res) {
     try {
-      const alerts = await TreasuryRepository.getBudgetAlertsDetailed();
+      const alerts = await TreasuryRepository.getBudgetAlertsDetailed(req.user.church_id);
       res.json({ success: true, alerts });
     } catch (error) {
       this.logger.error('getBudgetAlerts', error);
@@ -443,7 +448,7 @@ class TreasuryController extends BaseController {
     try {
       const { id } = req.params;
       const { name, contactPerson, email, phone, address } = req.body;
-      const vendor = await TreasuryRepository.updateVendor(id, { name, contactPerson, email, phone, address });
+      const vendor = await TreasuryRepository.updateVendor(id, { name, contactPerson, email, phone, address }, req.user.church_id);
       res.json({ success: true, vendor });
     } catch (error) {
       this.logger.error('updateVendor', error);
@@ -462,7 +467,7 @@ class TreasuryController extends BaseController {
   async deleteVendor(req, res) {
     this.logger.warn('deleteVendor is deprecated. Use /api/treasury/module/vendors instead');
     try {
-      await TreasuryRepository.deleteVendor(req.params.id);
+      await TreasuryRepository.deleteVendor(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Vendor deleted' });
     } catch (error) {
       this.logger.error('deleteVendor', error);
@@ -482,7 +487,7 @@ class TreasuryController extends BaseController {
   async getAnalytics(req, res) {
     try {
       const { date_from, date_to } = req.query;
-      const analytics = await TreasuryRepository.getAnalytics(date_from, date_to);
+      const analytics = await TreasuryRepository.getAnalytics(date_from, date_to, req.user.church_id);
       res.json({ success: true, analytics });
     } catch (error) {
       this.logger.error('getAnalytics', error);
@@ -503,7 +508,7 @@ class TreasuryController extends BaseController {
     try {
       const { id } = req.params;
       const { name, amount, frequency, startDate, description, status } = req.body;
-      const payment = await TreasuryRepository.updateRecurringPayment(id, { name, amount, frequency, startDate, description, status });
+      const payment = await TreasuryRepository.updateRecurringPayment(id, { name, amount, frequency, startDate, description, status }, req.user.church_id);
       res.json({ success: true, payment });
     } catch (error) {
       this.logger.error('updateRecurringPayment', error);
@@ -521,7 +526,7 @@ class TreasuryController extends BaseController {
    */
   async deleteRecurringPayment(req, res) {
     try {
-      await TreasuryRepository.deleteRecurringPayment(req.params.id);
+      await TreasuryRepository.deleteRecurringPayment(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Recurring payment deleted' });
     } catch (error) {
       this.logger.error('deleteRecurringPayment', error);
@@ -715,7 +720,7 @@ class TreasuryController extends BaseController {
    */
   async getProjects(req, res) {
     try {
-      const projects = await TreasuryRepository.getProjects();
+      const projects = await TreasuryRepository.getProjects(req.user.church_id);
       res.json({ success: true, projects });
     } catch (error) {
       this.logger.error('getProjects', error);
@@ -739,7 +744,7 @@ class TreasuryController extends BaseController {
   async createProject(req, res) {
     try {
       const { name, description, budget, startDate, endDate, status } = req.body;
-      const project = await TreasuryRepository.createProject({ name, description, budget, startDate, endDate, status });
+      const project = await TreasuryRepository.createProject({ name, description, budget, startDate, endDate, status }, req.user.church_id);
       res.status(201).json({ success: true, project });
     } catch (error) {
       this.logger.error('createProject', error);
@@ -760,7 +765,7 @@ class TreasuryController extends BaseController {
     try {
       const { id } = req.params;
       const { name, description, budget, startDate, endDate, status } = req.body;
-      const project = await TreasuryRepository.updateProject(id, { name, description, budget, startDate, endDate, status });
+      const project = await TreasuryRepository.updateProject(id, { name, description, budget, startDate, endDate, status }, req.user.church_id);
       res.json({ success: true, project });
     } catch (error) {
       this.logger.error('updateProject', error);
@@ -778,7 +783,7 @@ class TreasuryController extends BaseController {
    */
   async deleteProject(req, res) {
     try {
-      await TreasuryRepository.deleteProject(req.params.id);
+      await TreasuryRepository.deleteProject(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Project deleted' });
     } catch (error) {
       this.logger.error('deleteProject', error);
@@ -794,7 +799,7 @@ class TreasuryController extends BaseController {
    */
   async getPledges(req, res) {
     try {
-      const pledges = await TreasuryRepository.getPledges();
+      const pledges = await TreasuryRepository.getPledges(req.user.church_id);
       res.json({ success: true, pledges });
     } catch (error) {
       this.logger.error('getPledges', error);
@@ -818,7 +823,7 @@ class TreasuryController extends BaseController {
   async createPledge(req, res) {
     try {
       const { memberId, amount, pledgeType, startDate, endDate, frequency } = req.body;
-      const pledge = await TreasuryRepository.createPledge({ memberId, amount, pledgeType, startDate, endDate, frequency });
+      const pledge = await TreasuryRepository.createPledge({ memberId, amount, pledgeType, startDate, endDate, frequency }, req.user.church_id);
       res.status(201).json({ success: true, pledge });
     } catch (error) {
       this.logger.error('createPledge', error);
@@ -839,7 +844,7 @@ class TreasuryController extends BaseController {
     try {
       const { id } = req.params;
       const { amount, pledgeType, startDate, endDate, frequency, status } = req.body;
-      const pledge = await TreasuryRepository.updatePledge(id, { amount, pledgeType, startDate, endDate, frequency, status });
+      const pledge = await TreasuryRepository.updatePledge(id, { amount, pledgeType, startDate, endDate, frequency, status }, req.user.church_id);
       res.json({ success: true, pledge });
     } catch (error) {
       this.logger.error('updatePledge', error);
@@ -857,7 +862,7 @@ class TreasuryController extends BaseController {
    */
   async deletePledge(req, res) {
     try {
-      await TreasuryRepository.deletePledge(req.params.id);
+      await TreasuryRepository.deletePledge(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Pledge deleted' });
     } catch (error) {
       this.logger.error('deletePledge', error);
@@ -873,7 +878,7 @@ class TreasuryController extends BaseController {
    */
   async getCampaigns(req, res) {
     try {
-      const campaigns = await TreasuryRepository.getCampaigns();
+      const campaigns = await TreasuryRepository.getCampaigns(req.user.church_id);
       res.json({ success: true, campaigns });
     } catch (error) {
       this.logger.error('getCampaigns', error);
@@ -896,7 +901,7 @@ class TreasuryController extends BaseController {
   async createCampaign(req, res) {
     try {
       const { name, description, targetAmount, startDate, endDate } = req.body;
-      const campaign = await TreasuryRepository.createCampaign({ name, description, targetAmount, startDate, endDate });
+      const campaign = await TreasuryRepository.createCampaign({ name, description, targetAmount, startDate, endDate }, req.user.church_id);
       res.status(201).json({ success: true, campaign });
     } catch (error) {
       this.logger.error('createCampaign', error);
@@ -916,7 +921,7 @@ class TreasuryController extends BaseController {
     try {
       const { as_of_date } = req.query;
 
-      const accounts = await TreasuryRepository.getTrialBalance(as_of_date);
+      const accounts = await TreasuryRepository.getTrialBalance(as_of_date, req.user.church_id);
 
       let totalDebits = 0;
       let totalCredits = 0;
@@ -974,8 +979,8 @@ class TreasuryController extends BaseController {
         return res.status(400).json({ success: false, error: 'Start date and end date are required' });
       }
 
-      const incomeAccounts = await TreasuryRepository.getIncomeStatementAccounts('income', start_date, end_date);
-      const expenseAccounts = await TreasuryRepository.getIncomeStatementAccounts('expense', start_date, end_date);
+      const incomeAccounts = await TreasuryRepository.getIncomeStatementAccounts('income', start_date, end_date, req.user.church_id);
+      const expenseAccounts = await TreasuryRepository.getIncomeStatementAccounts('expense', start_date, end_date, req.user.church_id);
 
       // Calculate totals
       const totalIncome = incomeAccounts.reduce((sum, acc) => sum + (acc.total_credits - acc.total_debits), 0);
@@ -1017,9 +1022,9 @@ class TreasuryController extends BaseController {
     try {
       const { as_of_date } = req.query;
 
-      const assets = await TreasuryRepository.getBalanceSheetAccounts('asset', as_of_date);
-      const liabilities = await TreasuryRepository.getBalanceSheetAccounts('liability', as_of_date);
-      const equity = await TreasuryRepository.getBalanceSheetAccounts('equity', as_of_date);
+      const assets = await TreasuryRepository.getBalanceSheetAccounts('asset', as_of_date, req.user.church_id);
+      const liabilities = await TreasuryRepository.getBalanceSheetAccounts('liability', as_of_date, req.user.church_id);
+      const equity = await TreasuryRepository.getBalanceSheetAccounts('equity', as_of_date, req.user.church_id);
 
       // Calculate totals
       const totalAssets = assets.reduce((sum, acc) => sum + (acc.total_debits - acc.total_credits), 0);
@@ -1077,7 +1082,7 @@ class TreasuryController extends BaseController {
         accountType,
         balance,
         currency
-      });
+      }, req.user.church_id);
       res.json({ success: true, account });
     } catch (error) {
       this.logger.error('updateAccount', error);
@@ -1095,7 +1100,7 @@ class TreasuryController extends BaseController {
    */
   async deleteAccount(req, res) {
     try {
-      await TreasuryRepository.deleteAccount(req.params.id);
+      await TreasuryRepository.deleteAccount(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Account deleted' });
     } catch (error) {
       this.logger.error('deleteAccount', error);
@@ -1123,7 +1128,7 @@ class TreasuryController extends BaseController {
         accountId,
         status,
         transactionDate
-      });
+      }, req.user.church_id);
       res.json({ success: true, transaction });
     } catch (error) {
       this.logger.error('updateTransaction', error);
@@ -1141,7 +1146,7 @@ class TreasuryController extends BaseController {
    */
   async deleteTransaction(req, res) {
     try {
-      await TreasuryRepository.deleteTransaction(req.params.id);
+      await TreasuryRepository.deleteTransaction(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Transaction deleted' });
     } catch (error) {
       this.logger.error('deleteTransaction', error);
@@ -1170,7 +1175,7 @@ class TreasuryController extends BaseController {
         budgetedAmount,
         actualAmount,
         status
-      });
+      }, req.user.church_id);
       res.json({ success: true, budget });
     } catch (error) {
       this.logger.error('updateBudget', error);
@@ -1188,7 +1193,7 @@ class TreasuryController extends BaseController {
    */
   async deleteBudget(req, res) {
     try {
-      await TreasuryRepository.deleteBudget(req.params.id);
+      await TreasuryRepository.deleteBudget(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Budget deleted' });
     } catch (error) {
       this.logger.error('deleteBudget', error);
@@ -1215,7 +1220,7 @@ class TreasuryController extends BaseController {
         budgetedAmount,
         actualAmount,
         description
-      });
+      }, req.user.church_id);
       res.json({ success: true, item });
     } catch (error) {
       this.logger.error('updateBudgetItem', error);
@@ -1234,7 +1239,7 @@ class TreasuryController extends BaseController {
    */
   async deleteBudgetItem(req, res) {
     try {
-      await TreasuryRepository.deleteBudgetItem(req.params.itemId);
+      await TreasuryRepository.deleteBudgetItem(req.params.itemId, req.user.church_id);
       res.json({ success: true, message: 'Budget item deleted' });
     } catch (error) {
       this.logger.error('deleteBudgetItem', error);
@@ -1278,7 +1283,7 @@ class TreasuryController extends BaseController {
         fundCode,
         description,
         fundType
-      });
+      }, req.user.church_id);
       res.status(201).json({
         success: true,
         message: 'Fund created successfully',
@@ -1309,7 +1314,7 @@ class TreasuryController extends BaseController {
         description,
         fundType,
         isActive
-      });
+      }, req.user.church_id);
       res.json({ success: true, fund });
     } catch (error) {
       this.logger.error('updateFund', error);
@@ -1327,7 +1332,7 @@ class TreasuryController extends BaseController {
    */
   async deleteFund(req, res) {
     try {
-      await TreasuryRepository.deleteFund(req.params.id);
+      await TreasuryRepository.deleteFund(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Fund deleted' });
     } catch (error) {
       this.logger.error('deleteFund', error);
@@ -1397,7 +1402,7 @@ class TreasuryController extends BaseController {
         startDate,
         endDate,
         status
-      });
+      }, req.user.church_id);
       res.json({ success: true, campaign });
     } catch (error) {
       this.logger.error('updateCampaign', error);
@@ -1415,7 +1420,7 @@ class TreasuryController extends BaseController {
    */
   async deleteCampaign(req, res) {
     try {
-      await TreasuryRepository.deleteCampaign(req.params.id);
+      await TreasuryRepository.deleteCampaign(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Campaign deleted' });
     } catch (error) {
       this.logger.error('deleteCampaign', error);
@@ -1463,7 +1468,7 @@ class TreasuryController extends BaseController {
         purchaseDate,
         depreciationRate,
         location
-      });
+      }, req.user.church_id);
       res.status(201).json({
         success: true,
         message: 'Fixed asset created successfully',
@@ -1497,7 +1502,7 @@ class TreasuryController extends BaseController {
         location,
         currentValue,
         status
-      });
+      }, req.user.church_id);
       res.json({ success: true, asset });
     } catch (error) {
       this.logger.error('updateFixedAsset', error);
@@ -1515,7 +1520,7 @@ class TreasuryController extends BaseController {
    */
   async deleteFixedAsset(req, res) {
     try {
-      await TreasuryRepository.deleteFixedAsset(req.params.id);
+      await TreasuryRepository.deleteFixedAsset(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Fixed asset deleted' });
     } catch (error) {
       this.logger.error('deleteFixedAsset', error);
@@ -1563,7 +1568,11 @@ class TreasuryController extends BaseController {
         statementBalance,
         bookBalance,
         notes
-      });
+      }, req.user.church_id);
+
+      if (!reconciliation) {
+        return res.status(404).json({ success: false, error: 'Account not found in this church' });
+      }
       res.status(201).json({
         success: true,
         message: 'Reconciliation created successfully',
@@ -1594,7 +1603,7 @@ class TreasuryController extends BaseController {
         bookBalance,
         notes,
         status
-      });
+      }, req.user.church_id);
       res.json({ success: true, reconciliation });
     } catch (error) {
       this.logger.error('updateReconciliation', error);
@@ -1612,7 +1621,7 @@ class TreasuryController extends BaseController {
    */
   async deleteReconciliation(req, res) {
     try {
-      await TreasuryRepository.deleteReconciliation(req.params.id);
+      await TreasuryRepository.deleteReconciliation(req.params.id, req.user.church_id);
       res.json({ success: true, message: 'Reconciliation deleted' });
     } catch (error) {
       this.logger.error('deleteReconciliation', error);
