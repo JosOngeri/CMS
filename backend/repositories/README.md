@@ -13,7 +13,7 @@ Data access — the only layer that should touch SQL.
 | `AuthRepository.js` | AuthRepository |
 | `BaseRepository.js` | Base Repository for standardized data access |
 | `ChartOfAccountsRepository.js` | ChartOfAccountsRepository |
-| `ChatRepository.js` | ChatRepository |
+| `ChatRepository.js` | church_id before reading messages or writing to a room. |
 | `ChurchRepository.js` | ChurchRepository |
 | `CollectionRepository.js` | CollectionRepository |
 | `CommentsRepository.js` | CommentsRepository |
@@ -21,10 +21,10 @@ Data access — the only layer that should touch SQL.
 | `DashboardRepository.js` | DashboardRepository |
 | `DepartmentCategoriesRepository.js` | DepartmentCategoriesRepository |
 | `DepartmentCommunityRepository.js` | DepartmentCommunityRepository |
-| `DepartmentFeaturesRepository.js` | DepartmentFeaturesRepository |
+| `DepartmentFeaturesRepository.js` | via departments JOIN (covers legacy NULL-church settings rows). |
 | `DepartmentFinanceRepository.js` | DepartmentFinanceRepository |
 | `DepartmentLeadershipRepository.js` | DepartmentLeadershipRepository |
-| `DepartmentRepository.js` | password_hash/mfa_secret returned to callers; getAvailableDepartments unscoped. |
+| `DepartmentRepository.js` | + optional churchId scoping; getAvailableDepartments church-scoped; |
 | `DepartmentsRepository.js` | DepartmentsRepository |
 | `DocumentsRepository.js` | DocumentsRepository |
 | `EventsRepository.js` | EventsRepository |

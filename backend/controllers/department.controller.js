@@ -1,3 +1,10 @@
+/**
+ * @audit Department controller — components, permissions, activity, budget.
+ * @known Component endpoints read dept id from req.params.id (routes are
+ *        /:id/components — was req.params.departmentId, always undefined) and
+ *        verify departmentBelongsToChurch before any read/mutation.
+ * @deps  migrations/055_department_components.sql
+ */
 const DepartmentRepository = require('../repositories/DepartmentRepository');
 const BaseController = require('./BaseController');
 const NotificationService = require('../services/notificationService');
@@ -19,7 +26,7 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'dept-' + req.params.departmentId + '-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, 'dept-' + (req.params.id || req.params.departmentId || 'unknown') + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
@@ -348,7 +355,12 @@ class DepartmentController extends BaseController {
   // Get components allocated to a department
   async getDepartmentComponents(req, res) {
     try {
-      const { departmentId } = req.params;
+      // Route param is :id (department id)
+      const departmentId = req.params.id;
+      const ownsDept = await DepartmentRepository.departmentBelongsToChurch(departmentId, req.user.church_id);
+      if (!ownsDept) {
+        return res.status(404).json({ success: false, error: 'Department not found' });
+      }
 
       const components = await DepartmentRepository.getDepartmentComponents(departmentId);
 
@@ -370,10 +382,16 @@ class DepartmentController extends BaseController {
   // Allocate component to department
   async allocateComponent(req, res) {
     try {
-      const { departmentId } = req.params;
+      // Route param is :id (department id) — was read as departmentId (undefined)
+      const departmentId = req.params.id;
       const { componentId } = req.body;
       const grantedBy = req.user.id;
-      
+
+      const ownsDept = await DepartmentRepository.departmentBelongsToChurch(departmentId, req.user.church_id);
+      if (!ownsDept) {
+        return res.status(404).json({ success: false, error: 'Department not found' });
+      }
+
       // Check if user has permission (admin or department head)
       const hasAdminRole = (req.user.roles || []).some(role =>
         ['Super Admin', 'Pastor', 'First Elder'].includes(role)
@@ -411,8 +429,15 @@ class DepartmentController extends BaseController {
   // Remove component allocation from department
   async removeComponentAllocation(req, res) {
     try {
-      const { departmentId, componentId } = req.params;
-      
+      // Route params are :id (department id) + :componentId
+      const departmentId = req.params.id;
+      const { componentId } = req.params;
+
+      const ownsDept = await DepartmentRepository.departmentBelongsToChurch(departmentId, req.user.church_id);
+      if (!ownsDept) {
+        return res.status(404).json({ success: false, error: 'Department not found' });
+      }
+
       // Check if user has permission (admin or department head)
       const hasAdminRole = (req.user.roles || []).some(role =>
         ['Super Admin', 'Pastor', 'First Elder'].includes(role)

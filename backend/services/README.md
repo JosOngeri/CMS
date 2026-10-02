@@ -26,7 +26,7 @@ Business logic + external integrations (M-Pesa, SMS, Telegram, cache).
 | `apiHub.js` | API Hub Service (Phase 9) |
 | `auditService.js` | Audit Service |
 | `churchPlatformGateway.service.js` | — |
-| `documentApprovalService.js` | Document Approval Service (Phase 14) |
+| `documentApprovalService.js` | Approver eligibility: caller must be an active approved member of the |
 | `hybridSMS.js` | Hybrid SMS Service (Phase 9) |
 | `kopokopo.js` | KopoKopoService |
 | `nameMatcher.js` | Name Matcher Service (Phase 12) |

@@ -123,10 +123,11 @@ router.get('/:id/members', authenticateToken, async (req, res) => {
       FROM users u
       INNER JOIN department_members dm ON u.id = dm.user_id
       WHERE dm.department_id = $1 AND u.is_active = true
+        AND dm.department_id IN (SELECT id FROM departments WHERE church_id = $2)
       ORDER BY dm.joined_at ASC
     `;
 
-    const result = await departmentsRepository.query(query, [id]);
+    const result = await departmentsRepository.query(query, [id, req.user.church_id]);
     res.json({ members: result.rows });
   } catch (error) {
     logger.error('getDepartmentMembers', error);

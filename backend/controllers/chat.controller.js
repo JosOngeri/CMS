@@ -1,3 +1,10 @@
+/**
+ * @audit Chat controller — in-app messaging and room management.
+ * @known getMessages/sendMessage verify the room belongs to the caller's church
+ *        via ChatRepository.getRoomById before any read/write (404 otherwise).
+ * @deps   ChatRepository, MessagingService (church-namespaced WS broadcast),
+ *         migrations/053_chat_tables.sql
+ */
 const BaseController = require('./BaseController');
 const ChatRepository = require('../repositories/ChatRepository');
 const ResponseHandler = require('../utils/ResponseHandler');
@@ -19,10 +26,33 @@ class ChatController extends BaseController {
     }
   }
 
+  async createRoom(req, res) {
+    const churchId = req.user.church_id;
+    const { name, description, room_type } = req.body;
+    if (!name || !name.trim()) {
+      return ResponseHandler.error(res, 'Room name is required', 400);
+    }
+    try {
+      const room = await ChatRepository.createRoom(
+        { name: name.trim(), description, room_type, created_by: req.user.id },
+        churchId
+      );
+      return ResponseHandler.success(res, { room }, 'Room created', 201);
+    } catch (error) {
+      return ResponseHandler.error(res, 'Failed to create room');
+    }
+  }
+
   async getMessages(req, res) {
     const { roomId } = req.params;
     const { limit = 50, offset = 0 } = req.query;
+    const churchId = req.user.church_id;
     try {
+      // Room must belong to the caller's church — bare roomId was cross-tenant
+      const room = await ChatRepository.getRoomById(roomId, churchId);
+      if (!room) {
+        return ResponseHandler.notFound(res, 'Room not found');
+      }
       const messages = await ChatRepository.getMessagesByRoomId(roomId, limit, offset);
       return ResponseHandler.success(res, { messages: messages.reverse() });
     } catch (error) {
@@ -33,8 +63,13 @@ class ChatController extends BaseController {
   async sendMessage(req, res) {
     const { roomId, content, type = 'text', metadata = {} } = req.body;
     const senderId = req.user.id;
+    const churchId = req.user.church_id;
 
     try {
+      const room = await ChatRepository.getRoomById(roomId, churchId);
+      if (!room) {
+        return ResponseHandler.notFound(res, 'Room not found');
+      }
       const message = await ChatRepository.createMessage({
         room_id: roomId,
         sender_id: senderId,

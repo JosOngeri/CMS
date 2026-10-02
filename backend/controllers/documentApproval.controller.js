@@ -1,3 +1,8 @@
+/**
+ * @audit Document approval controller — thin wrapper over documentApprovalService.
+ * @known Passes req.user.church_id into every service call; eligibility,
+ *        self-approval, and duplicate-vote rules live in the service.
+ */
 const BaseController = require('./BaseController');
 const DocumentApprovalService = require('../services/documentApprovalService');
 const { createLogger } = require('../helpers/controllerLogger');
@@ -25,7 +30,8 @@ class DocumentApprovalController extends BaseController {
         requesterId,
         departmentId,
         approvalLevel,
-        metadata: { ...metadata, requesterName: req.user.name }
+        churchId: req.user.church_id,
+        metadata: { ...metadata, requesterName: `${req.user.first_name || ''} ${req.user.last_name || ''}`.trim() || 'A user' }
       });
 
       this.created(res, approvalRequest);
@@ -44,7 +50,7 @@ class DocumentApprovalController extends BaseController {
     const approverId = req.user.id;
 
     try {
-      const result = await DocumentApprovalService.approveDocument(approvalRequestId, approverId, comments);
+      const result = await DocumentApprovalService.approveDocument(approvalRequestId, approverId, comments, req.user.church_id);
       this.success(res, { message: 'Document approved successfully' });
     } catch (error) {
       this.logger.error('approveDocument', error);
@@ -61,7 +67,7 @@ class DocumentApprovalController extends BaseController {
     const approverId = req.user.id;
 
     try {
-      const result = await DocumentApprovalService.rejectDocument(approvalRequestId, approverId, comments);
+      const result = await DocumentApprovalService.rejectDocument(approvalRequestId, approverId, comments, req.user.church_id);
       this.success(res, { message: 'Document rejected successfully' });
     } catch (error) {
       this.logger.error('rejectDocument', error);
@@ -76,7 +82,7 @@ class DocumentApprovalController extends BaseController {
     const { approvalRequestId } = req.params;
 
     try {
-      const request = await DocumentApprovalService.getApprovalRequest(approvalRequestId);
+      const request = await DocumentApprovalService.getApprovalRequest(approvalRequestId, req.user.church_id);
 
       if (!request) {
         return this.notFound(res, 'Approval request not found');
@@ -96,7 +102,7 @@ class DocumentApprovalController extends BaseController {
     const userId = req.user.id;
 
     try {
-      const approvals = await DocumentApprovalService.getPendingApprovals(userId);
+      const approvals = await DocumentApprovalService.getPendingApprovals(userId, req.user.church_id);
       this.success(res, approvals);
     } catch (error) {
       this.logger.error('getPendingApprovals', error);
@@ -111,7 +117,7 @@ class DocumentApprovalController extends BaseController {
     const { documentId } = req.params;
 
     try {
-      const history = await DocumentApprovalService.getDocumentApprovalHistory(documentId);
+      const history = await DocumentApprovalService.getDocumentApprovalHistory(documentId, req.user.church_id);
       this.success(res, history);
     } catch (error) {
       this.logger.error('getDocumentApprovalHistory', error);

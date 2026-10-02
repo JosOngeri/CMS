@@ -62,7 +62,7 @@ router.get('/available', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const availableDepartments = await departmentRepository.getAvailableDepartments(userId);
+    const availableDepartments = await departmentRepository.getAvailableDepartments(userId, req.user.church_id);
 
     res.json({
       success: true,

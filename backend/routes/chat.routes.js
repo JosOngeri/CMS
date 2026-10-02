@@ -6,6 +6,7 @@ const { authenticateToken } = require('../middleware/auth');
 router.use(authenticateToken);
 
 router.get('/rooms', chatController.getRooms);
+router.post('/rooms', chatController.createRoom);
 router.get('/rooms/:roomId/messages', chatController.getMessages);
 router.post('/messages', chatController.sendMessage);
 

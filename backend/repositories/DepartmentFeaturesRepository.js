@@ -1,3 +1,8 @@
+/**
+ * @audit Repository over department_features + department_feature_settings.
+ * @known departmentBelongsToChurch is the tenant gate for mutations; reads scope
+ *        via departments JOIN (covers legacy NULL-church settings rows).
+ */
 const BaseRepository = require('./BaseRepository');
 
 class DepartmentFeaturesRepository extends BaseRepository {
@@ -31,14 +36,24 @@ class DepartmentFeaturesRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getDepartmentFeatures(departmentId) {
+  // Tenant gate: true when the department belongs to the church
+  async departmentBelongsToChurch(departmentId, churchId) {
+    const result = await this.pool.query(
+      'SELECT 1 FROM departments WHERE id = $1 AND church_id = $2',
+      [departmentId, churchId]
+    );
+    return result.rowCount > 0;
+  }
+
+  async getDepartmentFeatures(departmentId, churchId) {
     const result = await this.pool.query(
       `SELECT df.*, dfs.is_enabled, dfs.config
        FROM department_features df
        JOIN department_feature_settings dfs ON df.id = dfs.feature_id
+       JOIN departments d ON dfs.department_id = d.id AND d.church_id = $2
        WHERE dfs.department_id = $1 AND dfs.is_enabled = true
        ORDER BY df.category, df.name`,
-      [departmentId]
+      [departmentId, churchId]
     );
     return result.rows;
   }
@@ -55,23 +70,25 @@ class DepartmentFeaturesRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async removeFeatureFromDepartment(departmentId, featureId) {
+  async removeFeatureFromDepartment(departmentId, featureId, churchId) {
     const result = await this.pool.query(
-      `DELETE FROM department_feature_settings 
+      `DELETE FROM department_feature_settings
        WHERE department_id = $1 AND feature_id = $2
+         AND department_id IN (SELECT id FROM departments WHERE church_id = $3)
        RETURNING *`,
-      [departmentId, featureId]
+      [departmentId, featureId, churchId]
     );
     return result.rows[0];
   }
 
-  async updateFeatureConfig(departmentId, featureId, config) {
+  async updateFeatureConfig(departmentId, featureId, config, churchId) {
     const result = await this.pool.query(
-      `UPDATE department_feature_settings 
+      `UPDATE department_feature_settings
        SET config = $1, updated_at = CURRENT_TIMESTAMP
        WHERE department_id = $2 AND feature_id = $3
+         AND department_id IN (SELECT id FROM departments WHERE church_id = $4)
        RETURNING *`,
-      [JSON.stringify(config), departmentId, featureId]
+      [JSON.stringify(config), departmentId, featureId, churchId]
     );
     return result.rows[0];
   }

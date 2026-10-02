@@ -12,16 +12,16 @@ Request handlers — thin layer over repositories; one file per domain.
 | `approvals.controller.js` | Workflow exec/step/status delegate to helpers/workflowEngine (churchId |
 | `auth.controller.js` | AuthController |
 | `chartOfAccounts.controller.js` | Chart of Accounts Controller |
-| `chat.controller.js` | Chat Controller (Phase 10) |
+| `chat.controller.js` | via ChatRepository.getRoomById before any read/write (404 otherwise). |
 | `church.controller.js` | Church Controller (Phase 6) |
 | `collection.controller.js` | Collection Controller |
 | `comments.controller.js` | Comments Controller |
 | `content.controller.js` | Content Controller |
 | `dashboard.controller.js` | Dashboard Controller |
-| `department.controller.js` | Department Controller |
-| `departmentFeatures.controller.js` | Department Features Controller (Phase 8) |
+| `department.controller.js` | /:id/components — was req.params.departmentId, always undefined) and |
+| `departmentFeatures.controller.js` | (header-trusted). Dept mutations verify departmentBelongsToChurch first. |
 | `departments.controller.js` | Departments Controller |
-| `documentApproval.controller.js` | Document Approval Controller (Phase 14) |
+| `documentApproval.controller.js` | self-approval, and duplicate-vote rules live in the service. |
 | `documents.controller.js` | Documents Controller |
 | `fieldPermissions.controller.js` | Field Permissions Controller |
 | `fixedAssets.controller.js` | Fixed Assets Controller |

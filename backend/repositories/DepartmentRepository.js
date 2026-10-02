@@ -1,7 +1,9 @@
 /**
  * @audit Department repository.
- * @known BLOCKER: getDepartmentMembers/getDepartmentAdmins use SELECT u.* (~lines 77/88) ->
- *        password_hash/mfa_secret returned to callers; getAvailableDepartments unscoped.
+ * @fixed getMembers uses explicit safe columns (u.* leaked password_hash/mfa_secret)
+ *        + optional churchId scoping; getAvailableDepartments church-scoped;
+ *        departmentBelongsToChurch is the tenant gate for dept mutations.
+ * @deps  department_components/allocations via migrations/055
  */
 const BaseRepository = require('./BaseRepository');
 
@@ -26,7 +28,7 @@ class DepartmentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getAvailableDepartments(userId) {
+  async getAvailableDepartments(userId, churchId) {
     const result = await this.pool.query(`
       SELECT
         d.id,
@@ -36,6 +38,7 @@ class DepartmentRepository extends BaseRepository {
         d.is_active
       FROM departments d
       WHERE d.is_active = true
+      AND d.church_id = $2
       AND d.id NOT IN (
         SELECT dm.department_id
         FROM department_members dm
@@ -43,7 +46,7 @@ class DepartmentRepository extends BaseRepository {
         AND dm.status IN ('approved', 'pending')
       )
       ORDER BY d.category, d.name
-    `, [userId]);
+    `, [userId, churchId]);
     return result.rows;
   }
 
@@ -77,24 +80,25 @@ class DepartmentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getDepartmentMembers(departmentId) {
-    const result = await this.pool.query(
-      `SELECT u.*, dm.role
-       FROM users u
-       JOIN department_members dm ON u.id = dm.user_id
-       WHERE dm.department_id = $1`,
-      [departmentId]
-    );
-    return result.rows;
+  async getDepartmentMembers(departmentId, churchId = null) {
+    return this.getMembers(departmentId, churchId);
   }
 
-  async getMembers(departmentId) {
+  // Never SELECT u.* — explicit columns keep password_hash/mfa_secret out of results
+  async getMembers(departmentId, churchId = null) {
+    const params = [departmentId];
+    let where = 'dm.department_id = $1';
+    if (churchId) {
+      where += ' AND dm.department_id IN (SELECT id FROM departments WHERE church_id = $2)';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
-      `SELECT u.*, dm.role
+      `SELECT u.id, u.username, u.email, u.first_name, u.last_name, u.phone_number,
+              u.is_active, dm.role, dm.joined_at
        FROM users u
        JOIN department_members dm ON u.id = dm.user_id
-       WHERE dm.department_id = $1`,
-      [departmentId]
+       WHERE ${where}`,
+      params
     );
     return result.rows;
   }
@@ -415,6 +419,15 @@ class DepartmentRepository extends BaseRepository {
       [departmentId]
     );
     return result.rows[0]?.head_id;
+  }
+
+  // Tenant gate: true when the department belongs to the church
+  async departmentBelongsToChurch(departmentId, churchId) {
+    const result = await this.pool.query(
+      'SELECT 1 FROM departments WHERE id = $1 AND church_id = $2',
+      [departmentId, churchId]
+    );
+    return result.rowCount > 0;
   }
 
   async allocateComponent(componentId, departmentId, grantedBy) {

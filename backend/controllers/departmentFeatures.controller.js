@@ -1,3 +1,10 @@
+/**
+ * @audit Department-features controller (featureSlug catalog, /department-features).
+ * @known All church context comes from req.user.church_id — never req.church_id
+ *        (header-trusted). Dept mutations verify departmentBelongsToChurch first.
+ *        NOTE: frontend uses the separate /departments/:id/components system —
+ *        this catalog is currently unseeded (0 rows).
+ */
 const BaseController = require('./BaseController');
 const DepartmentFeaturesRepository = require('../repositories/DepartmentFeaturesRepository');
 const { createLogger } = require('../helpers/controllerLogger');
@@ -17,7 +24,7 @@ class DepartmentFeaturesController extends BaseController {
    */
   async getAllFeatures(req, res) {
     try {
-      const churchId = req.church_id || req.user?.church_id;
+      const churchId = req.user.church_id;
       const features = await DepartmentFeaturesRepository.getAllFeatures(churchId);
 
       this.success(res, features);
@@ -34,7 +41,7 @@ class DepartmentFeaturesController extends BaseController {
     const { category } = req.params;
 
     try {
-      const churchId = req.church_id || req.user?.church_id;
+      const churchId = req.user.church_id;
       const features = await DepartmentFeaturesRepository.getFeaturesByCategory(category, churchId);
 
       this.success(res, features);
@@ -51,7 +58,7 @@ class DepartmentFeaturesController extends BaseController {
     const { departmentId } = req.params;
 
     try {
-      const features = await DepartmentFeaturesRepository.getDepartmentFeatures(departmentId);
+      const features = await DepartmentFeaturesRepository.getDepartmentFeatures(departmentId, req.user.church_id);
 
       this.success(res, features);
     } catch (error) {
@@ -68,11 +75,18 @@ class DepartmentFeaturesController extends BaseController {
     const { featureSlug, config = {} } = req.body;
 
     try {
-      const churchId = req.church_id || req.user?.church_id;
+      const churchId = req.user.church_id;
 
       const feature = await DepartmentFeaturesRepository.getFeatureBySlug(featureSlug, churchId);
       if (!feature) {
         return this.notFound(res, 'Feature not found');
+      }
+
+      // Department must belong to the caller's church — param dept ids
+      // were previously trusted (cross-tenant feature allocation)
+      const ownsDept = await DepartmentFeaturesRepository.departmentBelongsToChurch(departmentId, churchId);
+      if (!ownsDept) {
+        return this.notFound(res, 'Department not found');
       }
 
       const allocation = await DepartmentFeaturesRepository.allocateFeatureToDepartment(
@@ -97,12 +111,16 @@ class DepartmentFeaturesController extends BaseController {
     const { departmentId, featureSlug } = req.params;
 
     try {
-      const feature = await DepartmentFeaturesRepository.getFeatureBySlug(featureSlug);
+      const churchId = req.user.church_id;
+      const feature = await DepartmentFeaturesRepository.getFeatureBySlug(featureSlug, churchId);
       if (!feature) {
         return this.notFound(res, 'Feature not found');
       }
 
-      const result = await DepartmentFeaturesRepository.removeFeatureFromDepartment(departmentId, feature.id);
+      const result = await DepartmentFeaturesRepository.removeFeatureFromDepartment(departmentId, feature.id, churchId);
+      if (!result) {
+        return this.notFound(res, 'Feature allocation not found');
+      }
 
       this.logger.info(`Feature ${featureSlug} removed from department ${departmentId}`);
       this.success(res, { message: 'Feature removed successfully' });
@@ -120,12 +138,16 @@ class DepartmentFeaturesController extends BaseController {
     const { config } = req.body;
 
     try {
-      const feature = await DepartmentFeaturesRepository.getFeatureBySlug(featureSlug);
+      const churchId = req.user.church_id;
+      const feature = await DepartmentFeaturesRepository.getFeatureBySlug(featureSlug, churchId);
       if (!feature) {
         return this.notFound(res, 'Feature not found');
       }
 
-      const result = await DepartmentFeaturesRepository.updateFeatureConfig(departmentId, feature.id, config);
+      const result = await DepartmentFeaturesRepository.updateFeatureConfig(departmentId, feature.id, config, churchId);
+      if (!result) {
+        return this.notFound(res, 'Feature allocation not found');
+      }
 
       this.logger.info(`Feature ${featureSlug} config updated for department ${departmentId}`);
       this.success(res, { message: 'Feature configuration updated successfully' });
@@ -140,7 +162,7 @@ class DepartmentFeaturesController extends BaseController {
    */
   async getFeatureCategories(req, res) {
     try {
-      const churchId = req.church_id || req.user?.church_id;
+      const churchId = req.user.church_id;
       const features = await DepartmentFeaturesRepository.getAllFeatures(churchId);
 
       const categories = [...new Set(features.map(f => f.category))].map(category => ({
