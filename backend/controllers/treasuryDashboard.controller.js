@@ -95,8 +95,9 @@ class TreasuryDashboardController extends BaseController {
     try {
       const { year } = req.query;
       const targetYear = year || new Date().getFullYear();
+      const churchId = req.user.church_id;
 
-      const budgets = await TreasuryDashboardRepository.getBudgetStatus(targetYear);
+      const budgets = await TreasuryDashboardRepository.getBudgetStatus(targetYear, churchId);
 
       return ResponseHandler.success(res, {
         year: targetYear,
@@ -110,7 +111,7 @@ class TreasuryDashboardController extends BaseController {
 
   async getAlertSummary(req, res) {
     try {
-      const alerts = await TreasuryDashboardRepository.getAlertSummary();
+      const alerts = await TreasuryDashboardRepository.getAlertSummary(req.user.church_id);
 
       return ResponseHandler.success(res, { alerts });
     } catch (error) {
@@ -124,7 +125,7 @@ class TreasuryDashboardController extends BaseController {
       const { year, limit = 5 } = req.query;
       const targetYear = year || new Date().getFullYear();
 
-      const topExpenses = await TreasuryDashboardRepository.getTopExpenses(targetYear, limit);
+      const topExpenses = await TreasuryDashboardRepository.getTopExpenses(targetYear, limit, req.user.church_id);
 
       return ResponseHandler.success(res, {
         year: targetYear,
@@ -139,18 +140,19 @@ class TreasuryDashboardController extends BaseController {
   async getFinancialReports(req, res) {
     try {
       const { report_type, start_date, end_date } = req.query;
+      const churchId = req.user.church_id;
 
       let data;
 
       switch (report_type) {
         case 'trial_balance':
-          data = await calculateTrialBalance(end_date);
+          data = await calculateTrialBalance(end_date, churchId);
           break;
         case 'income_statement':
-          data = await calculateIncomeStatement(start_date, end_date);
+          data = await calculateIncomeStatement(start_date, end_date, churchId);
           break;
         case 'balance_sheet':
-          data = await calculateBalanceSheet(end_date);
+          data = await calculateBalanceSheet(end_date, churchId);
           break;
         default:
           return ResponseHandler.validationError(res, [{

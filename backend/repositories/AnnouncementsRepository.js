@@ -130,29 +130,40 @@ class AnnouncementsRepository extends BaseRepository {
     return false;
   }
 
-  async updateAnnouncement(id, data) {
+  async updateAnnouncement(id, data, churchId = null) {
     const { title, content, announcement_type, department_id, priority, expires_at, is_public } = data;
-
-    const query = `
-      UPDATE announcements
-      SET title = $1, content = $2, announcement_type = $3, department_id = $4,
-          priority = $5, expires_at = $6, is_public = $7, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
-      RETURNING *
-    `;
     const params = [title, content, announcement_type, department_id, priority, expires_at, is_public, id];
 
-    const result = await this.pool.query(query, params);
+    let whereClause = 'id = $8';
+    if (churchId) {
+      whereClause += ' AND church_id = $9';
+      params.push(churchId);
+    }
+
+    const result = await this.pool.query(
+      `UPDATE announcements
+      SET title = $1, content = $2, announcement_type = $3, department_id = $4,
+          priority = $5, expires_at = $6, is_public = $7, updated_at = CURRENT_TIMESTAMP
+      WHERE ${whereClause}
+      RETURNING *`,
+      params
+    );
     return result.rows[0];
   }
 
-  async deleteAnnouncement(id) {
-    const result = await this.pool.query('DELETE FROM announcements WHERE id = $1', [id]);
+  async deleteAnnouncement(id, churchId = null) {
+    const params = [id];
+    let query = 'DELETE FROM announcements WHERE id = $1';
+    if (churchId) {
+      query += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rowCount > 0;
   }
 
   async getPaginatedAnnouncements(filters = {}) {
-    const { limit = 20, offset = 0, search, department_id, is_public, is_published } = filters;
+    const { limit = 20, offset = 0, search, department_id, is_public, is_published, church_id } = filters;
 
     let query = `
       SELECT a.*, u.first_name || ' ' || u.last_name as author_name
@@ -162,6 +173,11 @@ class AnnouncementsRepository extends BaseRepository {
     `;
     const params = [];
     let paramCount = 1;
+
+    if (church_id) {
+      query += ` AND a.church_id = $${paramCount++}`;
+      params.push(church_id);
+    }
 
     if (search) {
       query += ` AND (a.title ILIKE $${paramCount++} OR a.content ILIKE $${paramCount++})`;
@@ -191,11 +207,16 @@ class AnnouncementsRepository extends BaseRepository {
   }
 
   async getAnnouncementCount(filters = {}) {
-    const { search, department_id, is_public, is_published } = filters;
+    const { search, department_id, is_public, is_published, church_id } = filters;
 
     let query = `SELECT COUNT(*) as count FROM announcements WHERE 1=1`;
     const params = [];
     let paramCount = 1;
+
+    if (church_id) {
+      query += ` AND church_id = $${paramCount++}`;
+      params.push(church_id);
+    }
 
     if (search) {
       query += ` AND (title ILIKE $${paramCount++} OR content ILIKE $${paramCount++})`;
@@ -230,6 +251,27 @@ class AnnouncementsRepository extends BaseRepository {
       AND (a.expires_at IS NULL OR a.expires_at > CURRENT_TIMESTAMP)
     `;
     const result = await this.pool.query(query, [id]);
+    return result.rows[0];
+  }
+
+  // Public endpoint read — published + public only, church-scoped when tenant resolved.
+  // No expires_at filter: the public list doesn't apply it either, and all existing rows
+  // carry past expiry — filtering here would 404 every public detail link.
+  async getPublicAnnouncementById(id, churchId = null) {
+    let query = `
+      SELECT a.*, u.first_name || ' ' || u.last_name as author_name
+      FROM announcements a
+      LEFT JOIN users u ON a.author_id = u.id
+      WHERE a.id = $1
+      AND a.is_published = true
+      AND a.is_public = true
+    `;
+    const params = [id];
+    if (churchId) {
+      query += ` AND a.church_id = $2`;
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 }

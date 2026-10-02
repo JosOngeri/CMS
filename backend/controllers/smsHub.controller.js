@@ -18,7 +18,7 @@ class SmsHubController extends BaseController {
    * Send SMS with automatic provider selection
    */
   async sendSMS(req, res) {
-    const { recipients, message, churchId, provider } = req.body;
+    const { recipients, message, provider } = req.body;
 
     try {
       if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
@@ -29,10 +29,12 @@ class SmsHubController extends BaseController {
         return ResponseHandler.error(res, 'Message is required');
       }
 
+      // Church always comes from the authenticated identity — never req.body
+      // (was: caller could bill/log SMS to another church's tenant)
       const result = await hybridSMS.sendSMS({
         recipients,
         message,
-        churchId: churchId || req.user?.church_id,
+        churchId: req.user?.church_id,
         batchId: req.body.batchId,
         provider
       });

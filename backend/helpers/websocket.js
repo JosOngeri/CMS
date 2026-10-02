@@ -1,10 +1,13 @@
 /**
  * @audit Activity WebSocket helper (ws).
- * @known BLOCKER: extractUserId trusts ?userId= with no token verification — unauthenticated
- *        impersonation + unauthenticated channel subscribe; pairs with server.js double io bind.
+ * @known FIXED: handshake now verifies ?token=<JWT> via verifyAccessToken (was raw
+ *        ?userId= — unauthenticated impersonation). Church resolved from users table at
+ *        connect; broadcastActivity only delivers to matching church when the activity
+ *        carries church_id. server.js still runs a second io bind — see ledger Batch-1.
  */
 const WebSocket = require('ws');
 const { pool } = require('../config/database');
+const { verifyAccessToken } = require('./security');
 const { createLogger } = require('./controllerLogger');
 
 const logger = createLogger('websocket');
@@ -17,13 +20,16 @@ class ActivityWebSocket {
   }
 
   setupWebSocket() {
-    this.wss.on('connection', (ws, req) => {
-      const userId = this.extractUserId(req);
-      
-      if (!userId) {
+    this.wss.on('connection', async (ws, req) => {
+      const identity = await this.authenticate(req);
+
+      if (!identity) {
         ws.close(1008, 'Unauthorized');
         return;
       }
+
+      const { userId, churchId } = identity;
+      ws.churchId = churchId;
 
       logger.info('setupWebSocket', `WebSocket client connected: ${userId}`);
       this.clients.set(userId, ws);
@@ -60,10 +66,30 @@ class ActivityWebSocket {
     logger.info('setupWebSocket', 'WebSocket server initialized');
   }
 
-  extractUserId(req) {
-    // Extract user ID from query parameters or headers
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    return url.searchParams.get('userId');
+  /**
+   * Authenticate the WS handshake via ?token=<JWT>.
+   * Returns { userId, churchId } or null — the connection is rejected on any failure.
+   */
+  async authenticate(req) {
+    try {
+      const url = new URL(req.url, `http://${req.headers.host}`);
+      const token = url.searchParams.get('token');
+      if (!token) return null;
+
+      const decoded = verifyAccessToken(token);
+      if (!decoded?.userId) return null;
+
+      // Token carries no church claim — resolve tenant + active status from DB
+      const result = await pool.query(
+        'SELECT church_id FROM users WHERE id = $1 AND is_active = true AND deleted_at IS NULL',
+        [decoded.userId]
+      );
+      if (result.rows.length === 0) return null;
+
+      return { userId: decoded.userId, churchId: result.rows[0].church_id };
+    } catch (error) {
+      return null;
+    }
   }
 
   handleMessage(userId, data) {
@@ -120,11 +146,14 @@ class ActivityWebSocket {
       data: activity
     });
 
-    this.clients.forEach((client, userId) => {
-      if (client.readyState === WebSocket.OPEN) {
-        if (!client.channels || client.channels.includes('activity')) {
-          client.send(message);
-        }
+    // Tenant scoping: activities carrying church_id only reach that church's clients
+    const churchId = activity?.church_id || activity?.data?.church_id || null;
+
+    this.clients.forEach((client) => {
+      if (client.readyState !== WebSocket.OPEN) return;
+      if (churchId && client.churchId !== churchId) return;
+      if (!client.channels || client.channels.includes('activity')) {
+        client.send(message);
       }
     });
   }

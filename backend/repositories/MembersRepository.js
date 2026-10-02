@@ -1,7 +1,7 @@
 /**
  * @audit Members repository.
- * @known BLOCKER: INSERT INTO members (~line 140) omits church_id — new members are tenantless and
- *        invisible to the scoped list queries (which DO filter church_id).
+ * @known FIXED: createMember/updateMember/deleteMember accept optional churchId —
+ *        INSERT sets church_id, UPDATE/DELETE scope WHERE by it when provided.
  */
 const BaseRepository = require('./BaseRepository');
 
@@ -138,15 +138,19 @@ class MembersRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createMember(data) {
+  async createMember(data, churchId = null) {
     const { first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes } = data;
+    const params = [first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes];
 
-    const result = await this.pool.query(
-      `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-       RETURNING *`,
-      [first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes]
-    );
+    let query = `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
+    if (churchId) {
+      query = `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
+      params.push(churchId);
+    }
+
+    const result = await this.pool.query(`${query} RETURNING *`, params);
     return result.rows[0];
   }
 
@@ -162,8 +166,15 @@ class MembersRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateMember(id, data) {
+  async updateMember(id, data, churchId = null) {
     const { first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes } = data;
+    const params = [first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes, id];
+
+    let whereClause = 'id = $15';
+    if (churchId) {
+      whereClause += ' AND church_id = $16';
+      params.push(churchId);
+    }
 
     const result = await this.pool.query(
       `UPDATE members
@@ -182,15 +193,21 @@ class MembersRepository extends BaseRepository {
            joined_date = COALESCE($13, joined_date),
            notes = COALESCE($14, notes),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $15
+       WHERE ${whereClause}
        RETURNING *`,
-      [first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes, id]
+      params
     );
     return result.rows[0];
   }
 
-  async deleteMember(id) {
-    const result = await this.pool.query('DELETE FROM members WHERE id = $1', [id]);
+  async deleteMember(id, churchId = null) {
+    const params = [id];
+    let query = 'DELETE FROM members WHERE id = $1';
+    if (churchId) {
+      query += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rowCount > 0;
   }
 }

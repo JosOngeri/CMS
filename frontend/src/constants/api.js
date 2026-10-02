@@ -264,6 +264,12 @@ export const API_ENDPOINTS = {
   },
 };
 
+// Back-compat aliases: some call sites use DEPARTMENTS.DEPARTMENT.* (nested)
+// and DEPARTMENTS.USER_DEPARTMENTS — keep them working by pointing at the
+// canonical DEPARTMENTS map instead of duplicating endpoint strings.
+API_ENDPOINTS.DEPARTMENTS.DEPARTMENT = API_ENDPOINTS.DEPARTMENTS;
+API_ENDPOINTS.DEPARTMENTS.USER_DEPARTMENTS = API_ENDPOINTS.DEPARTMENTS.MY_DEPARTMENTS;
+
 export const HTTP_METHODS = {
   GET: 'GET',
   POST: 'POST',

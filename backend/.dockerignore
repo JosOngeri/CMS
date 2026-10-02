@@ -18,6 +18,12 @@ coverage
 logs
 *.log
 
+# Live credentials/session material — never bake into images
+sessions
+sessions/
+cookies.txt
+login-body*.json
+
 # Runtime data
 pids
 *.pid

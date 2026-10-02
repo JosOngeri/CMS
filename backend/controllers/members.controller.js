@@ -1,7 +1,8 @@
 /**
  * @audit Members controller.
- * @known BLOCKER: createMember inserts without church_id (repo lacks the column); updateMember/
- *        deleteMember run unconditionally even when the scoped existence read returns null ->
+ * @known FIXED: createMember now passes req.user.church_id to the repo INSERT;
+ *        updateMember/deleteMember abort 404 when the scoped read returns null and the
+ *        repo mutation is also church-scoped — cross-tenant member PII mutation closed.
  *        cross-tenant member PII mutate/delete.
  */
 const BaseController = require('./BaseController');
@@ -125,7 +126,7 @@ class MembersController extends BaseController {
         membership_status: membership_status || 'active',
         joined_date,
         notes
-      });
+      }, req.user.church_id);
 
       // Add contacts if provided
       if (contacts && contacts.length > 0) {
@@ -187,8 +188,11 @@ class MembersController extends BaseController {
         notes,
       } = req.body;
 
-      // Get old member for audit log
+      // Scoped existence check — aborts cross-tenant mutation (was: mutated anyway)
       const oldMember = await MembersRepository.getWithContactsAndGroups(id, req.user.church_id);
+      if (!oldMember) {
+        return this.notFound(res, 'Member not found');
+      }
 
       const member = await MembersRepository.updateMember(id, {
         first_name,
@@ -205,7 +209,7 @@ class MembersController extends BaseController {
         membership_status,
         joined_date,
         notes
-      });
+      }, req.user.church_id);
 
       if (!member) {
         return this.notFound(res, 'Member not found');
@@ -243,10 +247,16 @@ class MembersController extends BaseController {
     try {
       const { id } = req.params;
 
-      // Get old member for audit log
+      // Scoped existence check — aborts cross-tenant delete (was: deleted anyway)
       const oldMember = await MembersRepository.getWithContactsAndGroups(id, req.user.church_id);
+      if (!oldMember) {
+        return this.notFound(res, 'Member not found');
+      }
 
-      await MembersRepository.deleteMember(id);
+      const deleted = await MembersRepository.deleteMember(id, req.user.church_id);
+      if (!deleted) {
+        return this.notFound(res, 'Member not found');
+      }
 
       // Log audit event
       await auditService.log(

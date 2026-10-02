@@ -1,6 +1,7 @@
 const { authenticateToken } = require('../middleware/auth');
 const SnapshotService = require('../services/SnapshotService');
 const RollingUpdateService = require('../services/RollingUpdateService');
+const { pool } = require('../config/database');
 const { createLogger } = require('../helpers/controllerLogger');
 
 const logger = createLogger('SmsPushController');
@@ -28,8 +29,12 @@ class SmsPushController {
 
     smsNamespace.use(async (socket, next) => {
       try {
-        // Extract token from query parameters
-        const token = socket.handshake.auth.token || socket.handshake.query.token;
+        // Token sources: socket.io auth payload, Authorization header (raw-WS clients
+        // like the Flutter web_socket_channel can't send auth payloads), then query
+        // param kept for backward compat with older mobile builds.
+        const authHeader = socket.handshake.headers?.authorization;
+        const token = socket.handshake.auth?.token || socket.handshake.query?.token
+          || (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
         
         if (!token) {
           return next(new Error('Authentication token required'));
@@ -110,15 +115,22 @@ class SmsPushController {
       const { JWT_SECRET } = process.env;
       
       const decoded = jwt.verify(token, JWT_SECRET);
-      
+
       // Check if token has SMS scope
       if (!decoded.scope || !decoded.scope.includes('sms')) {
         return null;
       }
 
+      // Tokens carry no church claim — resolve tenant + active status from DB
+      const result = await pool.query(
+        'SELECT church_id FROM users WHERE id = $1 AND is_active = true AND deleted_at IS NULL',
+        [decoded.userId]
+      );
+      if (result.rows.length === 0) return null;
+
       return {
         id: decoded.userId,
-        churchId: decoded.churchId,
+        churchId: result.rows[0].church_id,
         roles: decoded.roles,
         scope: decoded.scope
       };
@@ -153,13 +165,10 @@ class SmsPushController {
 
   async broadcastToDepartmentMembers(churchId, department, message) {
     try {
-      // In a real implementation, you would query the database to find all users
-      // who are members of this department and broadcast to them
-      // For now, this is a placeholder
-      
+      // Church-scoped broadcast: only sockets whose churchId (resolved from DB at
+      // handshake) matches the target church receive the update.
       logger.info(`Broadcasting to department members: churchId=${churchId}, department=${department}`);
-      
-      // Placeholder: broadcast to all connected clients for this church
+
       for (const [userId, sockets] of this.clients.entries()) {
         for (const socket of sockets) {
           if (socket.churchId === churchId) {

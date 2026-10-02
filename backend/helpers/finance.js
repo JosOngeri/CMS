@@ -1,7 +1,7 @@
 /**
  * @audit Finance helpers (trial balance / income statement / balance sheet).
- * @known BLOCKER: unterminated 'posted literal ~line 212 (balance sheet always throws);
- *        zero church_id — all reports aggregate across ALL tenants.
+ * @known FIXED: unterminated 'posted literal and missing church scoping — all calculate* helpers
+ *        now accept an optional churchId param; callers must pass req.user.church_id.
  */
 /**
  * Finance Helper Functions
@@ -14,9 +14,10 @@ const { pool } = require('../config/database');
  * Calculate account balance for a specific account
  * @param {string} accountId - Account ID
  * @param {Date} [asOfDate] - Optional date to calculate balance as of
+ * @param {string} [churchId] - Tenant scope; when omitted the query is global (platform callers only)
  * @returns {Promise<Object>} Balance information
  */
-async function calculateAccountBalance(accountId, asOfDate = null) {
+async function calculateAccountBalance(accountId, asOfDate = null, churchId = null) {
   let query = `
     SELECT 
       COALESCE(SUM(CASE WHEN jel.debit_amount > 0 THEN jel.debit_amount ELSE 0 END), 0) as total_debits,
@@ -29,18 +30,24 @@ async function calculateAccountBalance(accountId, asOfDate = null) {
   const params = [accountId];
 
   if (asOfDate) {
-    query += ` AND je.entry_date <= $2`;
+    query += ` AND je.entry_date <= $${params.length + 1}`;
     params.push(asOfDate);
+  }
+
+  if (churchId) {
+    query += ` AND je.church_id = $${params.length + 1}`;
+    params.push(churchId);
   }
 
   const result = await pool.query(query, params);
   const { total_debits, total_credits } = result.rows[0];
 
   // Get account type to determine balance calculation
-  const accountResult = await pool.query(
-    'SELECT account_type FROM chart_of_accounts WHERE id = $1',
-    [accountId]
-  );
+  const accountQuery = churchId
+    ? 'SELECT account_type FROM chart_of_accounts WHERE id = $1 AND church_id = $2'
+    : 'SELECT account_type FROM chart_of_accounts WHERE id = $1';
+  const accountParams = churchId ? [accountId, churchId] : [accountId];
+  const accountResult = await pool.query(accountQuery, accountParams);
 
   if (accountResult.rows.length === 0) {
     return { balance: 0, total_debits, total_credits };
@@ -70,7 +77,7 @@ async function calculateAccountBalance(accountId, asOfDate = null) {
  * @param {Date} [asOfDate] - Optional date to calculate trial balance as of
  * @returns {Promise<Array>} Trial balance data
  */
-async function calculateTrialBalance(asOfDate = null) {
+async function calculateTrialBalance(asOfDate = null, churchId = null) {
   let query = `
     SELECT 
       coa.id,
@@ -87,12 +94,23 @@ async function calculateTrialBalance(asOfDate = null) {
   const params = [];
 
   if (asOfDate) {
-    query += ` AND je.entry_date <= $1`;
+    query += ` AND je.entry_date <= $${params.length + 1}`;
     params.push(asOfDate);
+  }
+
+  if (churchId) {
+    // JOIN condition keeps accounts with no matching entries; WHERE filters the account set.
+    query += ` AND je.church_id = $${params.length + 1}`;
+    params.push(churchId);
   }
 
   query += `
     WHERE coa.is_active = true
+  `;
+  if (churchId) {
+    query += ` AND coa.church_id = $${params.length}`;
+  }
+  query += `
     GROUP BY coa.id, coa.account_code, coa.account_name, coa.account_type
     ORDER BY coa.account_code
   `;
@@ -139,8 +157,9 @@ async function calculateTrialBalance(asOfDate = null) {
  * @param {Date} endDate - End date
  * @returns {Promise<Object>} Income statement data
  */
-async function calculateIncomeStatement(startDate, endDate) {
-  const query = `
+async function calculateIncomeStatement(startDate, endDate, churchId = null) {
+  const params = [startDate, endDate];
+  let query = `
     SELECT 
       coa.account_code,
       coa.account_name,
@@ -154,11 +173,19 @@ async function calculateIncomeStatement(startDate, endDate) {
     AND je.status = 'posted'
     AND je.entry_date >= $1
     AND je.entry_date <= $2
+  `;
+
+  if (churchId) {
+    query += ` AND coa.church_id = $3 AND je.church_id = $3`;
+    params.push(churchId);
+  }
+
+  query += `
     GROUP BY coa.id, coa.account_code, coa.account_name, coa.account_type
     ORDER BY coa.account_code
   `;
 
-  const result = await pool.query(query, [startDate, endDate]);
+  const result = await pool.query(query, params);
 
   let totalIncome = 0;
   let totalExpenses = 0;
@@ -202,8 +229,8 @@ async function calculateIncomeStatement(startDate, endDate) {
  * @param {Date} [asOfDate] - Optional date to calculate balance sheet as of
  * @returns {Promise<Object>} Balance sheet data
  */
-async function calculateBalanceSheet(asOfDate = null) {
-  const query = `
+async function calculateBalanceSheet(asOfDate = null, churchId = null) {
+  let query = `
     SELECT 
       coa.account_code,
       coa.account_name,
@@ -214,18 +241,28 @@ async function calculateBalanceSheet(asOfDate = null) {
     FROM chart_of_accounts coa
     LEFT JOIN journal_entry_lines jel ON coa.id = jel.account_id
     LEFT JOIN journal_entries je ON jel.journal_entry_id = je.id
-      AND je.status = 'posted
+      AND je.status = 'posted'
   `;
   const params = [];
 
   if (asOfDate) {
-    query += ` AND je.entry_date <= $1`;
+    query += ` AND je.entry_date <= $${params.length + 1}`;
     params.push(asOfDate);
+  }
+
+  if (churchId) {
+    query += ` AND je.church_id = $${params.length + 1}`;
+    params.push(churchId);
   }
 
   query += `
     WHERE coa.account_type IN ('asset', 'liability', 'equity')
     AND coa.is_active = true
+  `;
+  if (churchId) {
+    query += ` AND coa.church_id = $${params.length}`;
+  }
+  query += `
     GROUP BY coa.id, coa.account_code, coa.account_name, coa.account_type, coa.parent_id
     ORDER BY coa.account_code
   `;

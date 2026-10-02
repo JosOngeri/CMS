@@ -68,6 +68,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+backend/logs/
+
+# Live credential/session material (telegram sessions, SMS cookies)
+backend/sessions/
 
 # Testing
 coverage/

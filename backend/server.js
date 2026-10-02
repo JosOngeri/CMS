@@ -2,7 +2,11 @@
  * Process entry point — validates env, builds the HTTP server, attaches Socket.io, wires services, graceful shutdown.
  * @exports {app, server, io}
  * @deps app.js, config/env-validation, helpers/websocket, services/{MessagingService,SmsHub,notificationService,hybridSMS}
- * @known TWO Socket.io servers bind one HTTP server (initActivityWebSocket is the second); socket rooms unauthenticated — ledger Batch-1 re-audit.
+ * @known FIXED: default-namespace sockets now require JWT (socket.user set at handshake);
+ *        relay/room joins are church-namespaced, never client-supplied; auto-joins
+ *        user:{id}/church:{id} so MessagingService.sendNotification/sendActivityUpdate deliver.
+ *        The separate ws server on /ws (helpers/websocket.js) is path-scoped — no upgrade
+ *        conflict with socket.io's /socket.io/ path; it is JWT-authenticated too.
  */
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
@@ -18,10 +22,10 @@ const logger = require('./config/logging');
 const reportScheduler = require('./helpers/reportScheduler');
 const { initActivityWebSocket } = require('./helpers/websocket');
 const MessagingService = require('./services/MessagingService');
+const { verifyAccessToken } = require('./helpers/security');
+const { pool } = require('./config/database');
 // Redis cache disabled - using in-memory fallback
 // const redisCache = require('./services/redisCache');
-const path = require('path');
-const express = require('express');
 
 const PORT = process.env.PORT || 5005;
 
@@ -82,18 +86,55 @@ try {
 
 
 
-io.on('connection', (socket) => {
-  logger.info(`Socket connected: ${socket.id}`);
+// Authenticate every socket on the default namespace — verifies JWT from
+// handshake.auth.token, resolves church + active status from DB.
+// io.use applies to '/' only; namespaced endpoints (e.g. /api/sms/sync/push)
+// run their own auth middleware and are unaffected.
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    if (!token) return next(new Error('Authentication token required'));
 
-  socket.on('register_relay', (data) => {
-    const { churchId } = data;
+    const decoded = verifyAccessToken(token);
+    if (!decoded?.userId) return next(new Error('Invalid token'));
+
+    const result = await pool.query(
+      'SELECT church_id FROM users WHERE id = $1 AND is_active = true AND deleted_at IS NULL',
+      [decoded.userId]
+    );
+    if (result.rows.length === 0) return next(new Error('User not found'));
+
+    socket.user = {
+      userId: decoded.userId,
+      churchId: result.rows[0].church_id,
+      roles: decoded.roles || []
+    };
+    next();
+  } catch (error) {
+    next(new Error('Authentication failed'));
+  }
+});
+
+io.on('connection', (socket) => {
+  const { userId, churchId } = socket.user;
+  logger.info(`Socket connected: ${socket.id} user=${userId} church=${churchId}`);
+
+  // Personal + church rooms — activates MessagingService.sendNotification/sendActivityUpdate
+  socket.join(`user:${userId}`);
+  if (churchId) socket.join(`church:${churchId}`);
+
+  socket.on('register_relay', () => {
+    // Relay room is always the authenticated user's own church — never client-supplied
+    if (!churchId) return;
     socket.join(`relay:${churchId}`);
     logger.info(`Relay registered for church: ${churchId}`);
   });
 
   socket.on('join_room', (data) => {
-    const { roomId } = data;
-    socket.join(`room:${roomId}`);
+    const { roomId } = data || {};
+    if (!roomId || !churchId) return;
+    // Church-namespaced — prevents cross-tenant room snooping on guessable ids
+    socket.join(`room:${churchId}:${roomId}`);
     logger.info(`User joined chat room: ${roomId}`);
   });
 
@@ -136,8 +177,6 @@ if (process.env.NODE_ENV !== 'test') {
     }
   });
 }
-
-const { pool } = require('./config/database');
 
 // Graceful Shutdown (Phase 7 - Enhanced)
 const shutdown = async (signal) => {

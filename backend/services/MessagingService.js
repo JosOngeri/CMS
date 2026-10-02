@@ -99,9 +99,12 @@ class MessagingService {
    * @param {string} roomId - Room ID
    * @param {Object} message - Message object
    * @param {Object} sender - Sender information
+   * @param {string|null} churchId - Tenant scope; must match the church-namespace
+   *        used by join_room (server.js). Without it the room is unscoped.
    */
-  sendChatMessage(roomId, message, sender = {}) {
-    this.broadcastToRoom(`room:${roomId}`, 'new_message', {
+  sendChatMessage(roomId, message, sender = {}, churchId = null) {
+    const room = churchId ? `room:${churchId}:${roomId}` : `room:${roomId}`;
+    this.broadcastToRoom(room, 'new_message', {
       ...message,
       first_name: sender.first_name,
       last_name: sender.last_name

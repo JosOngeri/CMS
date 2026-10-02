@@ -3,6 +3,20 @@
  * Provides consistent logging across all controllers
  */
 
+// Keys whose values must never reach logs — applied to the data payload of every level
+const SENSITIVE_KEY = /pass(word)?|token|secret|otp|code|pin|jwt|auth|cookie|mpesa|session/i;
+
+const sanitize = (value, depth = 0) => {
+  if (value === null || typeof value !== 'object' || depth > 3) return value;
+  if (Array.isArray(value)) return value.map((v) => sanitize(v, depth + 1));
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [
+      k,
+      SENSITIVE_KEY.test(k) ? '[REDACTED]' : sanitize(v, depth + 1)
+    ])
+  );
+};
+
 const logger = {
   /**
    * Log info message
@@ -11,7 +25,7 @@ const logger = {
    * @param {Object} data - Additional data to log
    */
   info(controller, action, data = {}) {
-    console.log(`[${controller}] ${action}`, data);
+    console.log(`[${controller}] ${action}`, sanitize(data));
   },
 
   /**
@@ -25,7 +39,7 @@ const logger = {
     console.error(`[${controller}] ERROR in ${action}:`, {
       message: error.message,
       stack: error.stack,
-      ...data
+      ...sanitize(data)
     });
   },
 
@@ -37,7 +51,7 @@ const logger = {
    * @param {Object} data - Additional data to log
    */
   warn(controller, action, message, data = {}) {
-    console.warn(`[${controller}] WARNING in ${action}:`, message, data);
+    console.warn(`[${controller}] WARNING in ${action}:`, message, sanitize(data));
   },
 
   /**
@@ -48,7 +62,7 @@ const logger = {
    */
   debug(controller, action, data = {}) {
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[${controller}] DEBUG ${action}:`, data);
+      console.log(`[${controller}] DEBUG ${action}:`, sanitize(data));
     }
   },
 
@@ -58,12 +72,10 @@ const logger = {
    * @param {string} query - SQL query
    * @param {Array} params - Query parameters
    */
-  query(controller, query, params = []) {
+  query(controller, query) {
+    // Params intentionally NOT logged — they carry PII/credentials (phones, emails, tokens)
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[${controller}] QUERY:`, {
-        query: query.substring(0, 200) + (query.length > 200 ? '...' : ''),
-        params
-      });
+      console.log(`[${controller}] QUERY:`, query.substring(0, 200) + (query.length > 200 ? '...' : ''));
     }
   },
 

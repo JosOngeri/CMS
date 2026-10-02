@@ -3,6 +3,20 @@ const { createLogger } = require('../helpers/controllerLogger');
 
 const logger = createLogger('errorHandler');
 
+// Keys whose values must never reach logs (passwords, tokens, OTPs, PII-adjacent)
+const SENSITIVE_KEY = /pass(word)?|token|secret|otp|code|pin|jwt|auth|cookie|mpesa|session/i;
+
+const sanitizeForLog = (value, depth = 0) => {
+  if (value === null || typeof value !== 'object' || depth > 3) return value;
+  if (Array.isArray(value)) return value.map((v) => sanitizeForLog(v, depth + 1));
+  return Object.fromEntries(
+    Object.entries(value).map(([k, v]) => [
+      k,
+      SENSITIVE_KEY.test(k) ? '[REDACTED]' : sanitizeForLog(v, depth + 1)
+    ])
+  );
+};
+
 class AppError extends Error {
   constructor(message, statusCode, details = null) {
     super(message);
@@ -21,7 +35,7 @@ class ErrorHandler {
       stack: error.stack,
       url: req.url,
       method: req.method,
-      body: req.body,
+      body: sanitizeForLog(req.body),
       user: req.user?.id
     });
 

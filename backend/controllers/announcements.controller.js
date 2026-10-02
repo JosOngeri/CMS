@@ -141,14 +141,24 @@ class AnnouncementController extends BaseController {
       const { id } = req.params;
       const { title, content, announcement_type, department_id, priority, expires_at, is_public } = req.body;
 
-      // Check if user has admin permission using BaseController helper
-      if (!this.isAdmin(req.user) && !this.isOwner(req.user.id, id)) {
+      // Church-scoped existence read — aborts cross-tenant mutation
+      const existing = await AnnouncementsRepository.getWithAuthorDetails(id, req.user.church_id);
+      if (!existing) {
+        return this.notFound(res, 'Announcement not found');
+      }
+
+      // Admin or the actual author (was: isOwner(userId, announcementId) — never true)
+      if (!this.isAdmin(req.user) && existing.author_id !== req.user.id) {
         return this.forbidden(res, 'Permission denied');
       }
 
       const announcement = await AnnouncementsRepository.updateAnnouncement(id, {
         title, content, announcement_type, department_id, priority, expires_at, is_public
-      });
+      }, req.user.church_id);
+
+      if (!announcement) {
+        return this.notFound(res, 'Announcement not found');
+      }
 
       return this.success(res, { announcement }, 'Announcement updated successfully');
     } catch (error) {
@@ -175,7 +185,10 @@ class AnnouncementController extends BaseController {
         return this.forbidden(res, 'Permission denied');
       }
 
-      await AnnouncementsRepository.deleteAnnouncement(id);
+      const deleted = await AnnouncementsRepository.deleteAnnouncement(id, req.user.church_id);
+      if (!deleted) {
+        return this.notFound(res, 'Announcement not found');
+      }
 
       return this.success(res, null, 'Announcement deleted successfully');
     } catch (error) {
@@ -199,8 +212,8 @@ class AnnouncementController extends BaseController {
       const offset = (page - 1) * limit;
 
       const [result, total] = await Promise.all([
-        AnnouncementsRepository.getPaginatedAnnouncements({ limit, offset, search, department_id, is_published: true }),
-        AnnouncementsRepository.getAnnouncementCount({ search, department_id, is_published: true })
+        AnnouncementsRepository.getPaginatedAnnouncements({ limit, offset, search, department_id, is_published: true, is_public: true, church_id: req.church_id }),
+        AnnouncementsRepository.getAnnouncementCount({ search, department_id, is_published: true, is_public: true, church_id: req.church_id })
       ]);
 
       const pagination = this.buildPaginationMeta(total, page, limit);
@@ -226,7 +239,8 @@ class AnnouncementController extends BaseController {
   async getPublicById(req, res) {
     try {
       const { id } = req.params;
-      const announcement = await AnnouncementsRepository.getAnnouncementById(id);
+      // Public read — published+public only, church-scoped when tenantResolver resolved a slug
+      const announcement = await AnnouncementsRepository.getPublicAnnouncementById(id, req.church_id);
       if (!announcement) {
         return this.notFound(res, 'Announcement not found');
       }

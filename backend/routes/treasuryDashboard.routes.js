@@ -1,7 +1,8 @@
 /**
  * @audit Treasury dashboard routes.
- * @known BLOCKER: authenticateToken only — no finance role gate; members reach the 'days' SQLi
- *        endpoint + cross-tenant aggregates; mounts legacy unscoped treasuryController.getFundBalance.
+ * @known FIXED: finance-role gate added; 'days' SQLi parameterized at the repo; churchId now
+ *        threaded into every controller->repo call. Still mounts legacy treasuryController.
+ *        getFundBalance (scoped via controller when it accepts church_id — verify).
  */
 const express = require('express');
 const router = express.Router();
@@ -9,8 +10,9 @@ const treasuryDashboardController = require('../controllers/treasuryDashboard.co
 const treasuryController = require('../controllers/treasury.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// All routes require authentication
-router.use(authenticateToken);
+// Financial aggregates are leadership-only — same role set as modules/treasury.
+const FINANCE_ROLES = ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'];
+router.use(authenticateToken, requireRole(FINANCE_ROLES));
 
 // Get dashboard summary
 router.get('/summary', treasuryDashboardController.getDashboardSummary);

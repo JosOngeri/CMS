@@ -193,7 +193,6 @@ const PhotoGalleryPage = () => {
     setCurrentView(view)
     setPage(1)
     setPhotos([])
-    setFilteredPhotos([])
   }
 
   // Debounce typing so the API is hit ~300ms after the user stops typing.

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 import 'api_service.dart';
 import 'sync_storage_service.dart';
 import '../models/sync_models.dart';
@@ -72,14 +73,21 @@ class PushSyncService {
       }
 
       final apiService = await ApiService.getInstance();
-      final wsUrl = apiService.dio.options.baseUrl
-          .replaceFirst('http', 'ws')
-          .replaceFirst('https', 'wss');
-      
-      final fullWsUrl = '$wsUrl/api/sms/sync/push?token=$token&user_id=$userId';
-      
+      // Uri API for scheme conversion (string replace is fragile on ports/paths).
+      // Token goes in the Authorization header — never in the URL, which would
+      // land in server/proxy access logs.
+      final base = Uri.parse(apiService.dio.options.baseUrl);
+      final wsUri = base.replace(
+        scheme: base.scheme == 'https' ? 'wss' : 'ws',
+        path: '/api/sms/sync/push',
+        query: '',
+      );
+
       debugPrint('=== PushSync: Connecting to WebSocket ===');
-      _channel = WebSocketChannel.connect(Uri.parse(fullWsUrl));
+      _channel = IOWebSocketChannel.connect(
+        wsUri,
+        headers: {'Authorization': 'Bearer $token'},
+      );
 
       _webSocketSubscription = _channel!.stream.listen(
         _handleWebSocketMessage,
@@ -150,7 +158,6 @@ class PushSyncService {
       final userId = await _getCurrentUserId();
       if (userId != null) {
         // Apply department-specific updates to user data
-        final syncStorage = SyncStorageService();
         // Implementation depends on specific department update structure
         debugPrint('=== PushSync: Department update processed for user $userId ===');
       }

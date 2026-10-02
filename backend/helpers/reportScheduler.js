@@ -1,7 +1,8 @@
 /**
  * @audit Scheduled report cron runner.
- * @known BLOCKER: interpolates report.columns/filter.field/filter.operator into SQL (stored SQLi
- *        executed on cron); no church filter; report.name unsanitized into output filename.
+ * @known FIXED: columns/fields/operators now validated (identifier regex + sensitive-column
+ *        blocklist + operator allowlist) — stored-SQLi closed; church filter applied when
+ *        scheduled_reports.church_id present; report.name sanitized in filename.
  */
 const cron = require('node-cron');
 const { pool } = require('../config/database');
@@ -94,11 +95,12 @@ class ReportScheduler {
     try {
       logger.info('executeScheduledReport', `Executing scheduled report: ${report.name}`);
       
-      const data = await this.generateReportData(report.report_config);
+      const data = await this.generateReportData(report.report_config, report.church_id);
       const pdf = this.generatePDF(data, report.name);
-      
-      // Save PDF to disk
-      const filename = `${report.name}_${Date.now()}.pdf`;
+
+      // Save PDF to disk — report.name is DB data, sanitize before it hits the filesystem
+      const safeName = String(report.name || 'report').replace(/[^a-z0-9_\- ]/gi, '_').slice(0, 80);
+      const filename = `${safeName}_${Date.now()}.pdf`;
       const filepath = path.join(__dirname, '../uploads/reports', filename);
       
       if (!fs.existsSync(path.dirname(filepath))) {
@@ -130,35 +132,63 @@ class ReportScheduler {
     }
   }
 
-  async generateReportData(reportConfig) {
+  // reportConfig comes from the scheduled_reports TABLE — every identifier it supplies
+  // is attacker-controlled if a report row is ever writable by non-admins. Validate hard.
+  static SAFE_IDENTIFIER = /^[a-z_][a-z0-9_]*$/i;
+  static SENSITIVE_COLUMN = /password|hash|secret|token|salt|pin|otp|reset|credential/i;
+  static ALLOWED_OPERATORS = new Set(['=', '!=', '<>', '>', '<', '>=', '<=', 'LIKE', 'ILIKE']);
+
+  validateColumnList(columns) {
+    if (!Array.isArray(columns) || columns.length === 0 || columns.length > 50) {
+      throw new Error('Invalid report columns');
+    }
+    return columns.map((col) => {
+      if (typeof col !== 'string' || !ReportScheduler.SAFE_IDENTIFIER.test(col)) {
+        throw new Error(`Invalid report column: ${col}`);
+      }
+      if (ReportScheduler.SENSITIVE_COLUMN.test(col)) {
+        throw new Error(`Sensitive column not allowed in reports: ${col}`);
+      }
+      return col;
+    });
+  }
+
+  async generateReportData(reportConfig, churchId = null) {
     const { dataSource, filters, columns } = reportConfig;
+    const safeColumns = this.validateColumnList(columns).join(', ');
     let query = '';
     let params = [];
     let paramIndex = 1;
 
     switch (dataSource) {
       case 'members':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM users WHERE is_active = true';
+        query = `SELECT ${safeColumns} FROM users WHERE is_active = true AND deleted_at IS NULL`;
         break;
       case 'payments':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM payments WHERE 1=1';
+        query = `SELECT ${safeColumns} FROM payments WHERE 1=1`;
         break;
       case 'approvals':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM approval_requests WHERE 1=1';
+        query = `SELECT ${safeColumns} FROM approval_requests WHERE 1=1`;
         break;
       default:
         throw new Error(`Invalid data source: ${dataSource}`);
     }
 
+    if (churchId) {
+      query += ` AND church_id = $${paramIndex++}`;
+      params.push(churchId);
+    }
+
     if (filters && filters.length > 0) {
       filters.forEach(filter => {
-        query += ` AND ${filter.field} ${filter.operator} $${paramIndex++}`;
+        if (typeof filter.field !== 'string' || !ReportScheduler.SAFE_IDENTIFIER.test(filter.field)) {
+          throw new Error(`Invalid filter field: ${filter.field}`);
+        }
+        const operator = String(filter.operator || '').toUpperCase();
+        if (!ReportScheduler.ALLOWED_OPERATORS.has(operator)) {
+          throw new Error(`Invalid filter operator: ${filter.operator}`);
+        }
+        query += ` AND ${filter.field} ${operator} $${paramIndex++}`;
         params.push(filter.value);
       });
     }

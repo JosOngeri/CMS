@@ -43,11 +43,11 @@ class ChatController extends BaseController {
         metadata: metadata
       });
 
-      // Broadcast via MessagingService
+      // Broadcast via MessagingService (church-namespaced to match join_room)
       MessagingService.sendChatMessage(roomId, message, {
         first_name: req.user.first_name,
         last_name: req.user.last_name
-      });
+      }, req.user.church_id);
 
       return ResponseHandler.success(res, { message }, 'Message sent successfully');
     } catch (error) {

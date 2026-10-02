@@ -1,8 +1,9 @@
 /**
  * @audit Events routes — inline SQL, no repository layer.
- * @known BLOCKER: can_edit/can_delete/can_manage CASE binds literal 'Super Admin' vs hardcoded
- *        array -> always true; ANY authenticated user edits/deletes all events (lines ~212/456/539).
- *        Zero church_id anywhere; event department_id taken from body unchecked.
+ * @known FIXED: permission CASE now tests req.user.roles overlap vs EVENT_ADMIN_ROLES
+ *        (was literal 'Super Admin' = ANY([...]) — always true). church_id scoping added
+ *        on all event reads/writes; NULL church_id = legacy shared rows, visible to all
+ *        tenants until backfilled. department_id validated against caller's church.
  *        See docs/reports/2026-10-02_22-49_line-by-line-ledger.md
  */
 const express = require('express');
@@ -18,6 +19,9 @@ const fs = require('fs');
 const { createLogger } = require('../helpers/controllerLogger');
 
 const logger = createLogger('events.routes');
+
+// Roles allowed to manage any event in their church (organizers manage their own).
+const EVENT_ADMIN_ROLES = ['Super Admin', 'Pastor', 'First Elder'];
 
 // Configure multer for event poster uploads
 const storage = multer.diskStorage({
@@ -60,7 +64,8 @@ router.get('/', authenticateToken, async (req, res) => {
     const result = await eventsRepository.getAllEvents({
       page, limit, department_id, is_public,
       userId: req.user.id,
-      userRoles: req.user.roles
+      userRoles: req.user.roles,
+      churchId: req.user.church_id
     });
 
     res.json(result);
@@ -86,10 +91,10 @@ router.get('/:id', authenticateToken, async (req, res) => {
       FROM events e
       LEFT JOIN users u ON e.organizer_id = u.id
       LEFT JOIN departments d ON e.department_id = d.id
-      WHERE e.id = $1
+      WHERE e.id = $1 AND (e.church_id = $2 OR e.church_id IS NULL)
     `;
 
-    const result = await eventsRepository.query(query, [id]);
+    const result = await eventsRepository.query(query, [id, req.user.church_id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
@@ -98,10 +103,8 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const event = result.rows[0];
 
     // Check access permissions
-    if (!event.is_public && 
-        !req.user.roles.includes('Super Admin') && 
-        !req.user.roles.includes('Pastor') && 
-        !req.user.roles.includes('First Elder')) {
+    if (!event.is_public &&
+        !(req.user.roles || []).some((role) => EVENT_ADMIN_ROLES.includes(role))) {
       
       // Check if user is member of the department
       const deptMemberQuery = `
@@ -164,14 +167,24 @@ router.post('/',
       const { title, description, event_date, location, department_id, max_attendees, is_public = true } = req.body;
       const posterUrl = req.file ? `/uploads/events/${req.file.filename}` : null;
 
+      if (department_id) {
+        const deptCheck = await eventsRepository.query(
+          'SELECT 1 FROM departments WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)',
+          [department_id, req.user.church_id]
+        );
+        if (deptCheck.rows.length === 0) {
+          return res.status(400).json({ error: 'Invalid department' });
+        }
+      }
+
       const query = `
-        INSERT INTO events (title, description, event_date, location, department_id, organizer_id, max_attendees, is_public, poster_url)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO events (title, description, event_date, location, department_id, organizer_id, max_attendees, is_public, poster_url, church_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *
       `;
 
       const result = await eventsRepository.query(query, [
-        title, description, event_date, location, department_id, req.user.id, max_attendees, is_public, posterUrl
+        title, description, event_date, location, department_id, req.user.id, max_attendees, is_public, posterUrl, req.user.church_id
       ]);
 
       res.status(201).json({
@@ -216,18 +229,19 @@ router.put('/:id',
         SELECT e.*,
                CASE
                  WHEN e.organizer_id = $1 THEN true
-                 WHEN $2 = ANY($3) THEN true
+                 WHEN $2::text[] && $3::text[] THEN true
                  ELSE false
                END as can_edit
         FROM events e
-        WHERE e.id = $4
+        WHERE e.id = $4 AND (e.church_id = $5 OR e.church_id IS NULL)
       `;
 
       const checkResult = await eventsRepository.query(checkQuery, [
         req.user.id,
-        'Super Admin',
-        ['Super Admin', 'Pastor', 'First Elder'],
-        id
+        req.user.roles || [],
+        EVENT_ADMIN_ROLES,
+        id,
+        req.user.church_id
       ]);
 
       if (checkResult.rows.length === 0) {
@@ -236,6 +250,16 @@ router.put('/:id',
 
       if (!checkResult.rows[0].can_edit) {
         return res.status(403).json({ error: 'Permission denied' });
+      }
+
+      if (department_id) {
+        const deptCheck = await eventsRepository.query(
+          'SELECT 1 FROM departments WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)',
+          [department_id, req.user.church_id]
+        );
+        if (deptCheck.rows.length === 0) {
+          return res.status(400).json({ error: 'Invalid department' });
+        }
       }
 
       // Handle poster upload
@@ -262,12 +286,12 @@ router.put('/:id',
             is_public = COALESCE($7, is_public),
             poster_url = COALESCE($8, poster_url),
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $9
+        WHERE id = $9 AND (church_id = $10 OR church_id IS NULL)
         RETURNING *
       `;
 
       const result = await eventsRepository.query(updateQuery, [
-        title, description, event_date, location, department_id, max_attendees, is_public, posterUrl, id
+        title, description, event_date, location, department_id, max_attendees, is_public, posterUrl, id, req.user.church_id
       ]);
 
       res.json({
@@ -290,6 +314,14 @@ router.post('/:id/rsvp', authenticateToken, async (req, res) => {
     const validStatuses = ['attending', 'maybe', 'not_attending', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ error: 'Invalid RSVP status' });
+    }
+
+    const eventCheck = await eventsRepository.query(
+      'SELECT 1 FROM events WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)',
+      [id, req.user.church_id]
+    );
+    if (eventCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Event not found' });
     }
 
     const rsvp = await MobileRepository.rsvpEvent(id, req.user.id, status);
@@ -326,10 +358,10 @@ router.post('/:id/register', authenticateToken, async (req, res) => {
                ELSE false
              END as can_access
       FROM events e
-      WHERE e.id = $2
+      WHERE e.id = $2 AND (e.church_id = $3 OR e.church_id IS NULL)
     `;
 
-    const eventResult = await eventsRepository.query(eventQuery, [req.user.id, id]);
+    const eventResult = await eventsRepository.query(eventQuery, [req.user.id, id, req.user.church_id]);
 
     if (eventResult.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
@@ -416,15 +448,15 @@ router.patch('/:id/attendance/:userId',
       const { attended } = req.body;
 
       // Check if user has permission to mark attendance
-      const eventQuery = 'SELECT organizer_id FROM events WHERE id = $1';
-      const eventResult = await eventsRepository.query(eventQuery, [id]);
+      const eventQuery = 'SELECT organizer_id FROM events WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)';
+      const eventResult = await eventsRepository.query(eventQuery, [id, req.user.church_id]);
 
       if (eventResult.rows.length === 0) {
         return res.status(404).json({ error: 'Event not found' });
       }
 
       const hasPermission = req.user.id === eventResult.rows[0].organizer_id ||
-        req.user.roles.some(role => ['Super Admin', 'Pastor', 'First Elder'].includes(role));
+        (req.user.roles || []).some(role => EVENT_ADMIN_ROLES.includes(role));
 
       if (!hasPermission) {
         return res.status(403).json({ error: 'Permission denied' });
@@ -457,21 +489,22 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 
     // Check if event exists and user has permission
     const checkQuery = `
-      SELECT e.*, 
-             CASE 
+      SELECT e.*,
+             CASE
                WHEN e.organizer_id = $1 THEN true
-               WHEN $2 = ANY($3) THEN true
+               WHEN $2::text[] && $3::text[] THEN true
                ELSE false
                END as can_delete
       FROM events e
-      WHERE e.id = $4
+      WHERE e.id = $4 AND (e.church_id = $5 OR e.church_id IS NULL)
     `;
 
     const checkResult = await eventsRepository.query(checkQuery, [
-      req.user.id, 
-      'Super Admin', 
-      ['Super Admin', 'Pastor', 'First Elder'], 
-      id
+      req.user.id,
+      req.user.roles || [],
+      EVENT_ADMIN_ROLES,
+      id,
+      req.user.church_id
     ]);
 
     if (checkResult.rows.length === 0) {
@@ -482,7 +515,10 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Permission denied' });
     }
 
-    await eventsRepository.query('DELETE FROM events WHERE id = $1', [id]);
+    await eventsRepository.query(
+      'DELETE FROM events WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)',
+      [id, req.user.church_id]
+    );
 
     res.json({ message: 'Event deleted successfully' });
   } catch (error) {
@@ -505,10 +541,14 @@ router.get('/:id/ticket-types', authenticateToken, async (req, res) => {
              (SELECT COUNT(*) FROM event_registrations er WHERE er.ticket_type_id = tt.id) as registrations_count
       FROM ticket_types tt
       WHERE tt.event_id = $1 AND tt.is_active = true
+        AND EXISTS (
+          SELECT 1 FROM events e
+          WHERE e.id = tt.event_id AND (e.church_id = $2 OR e.church_id IS NULL)
+        )
       ORDER BY tt.price ASC
     `;
 
-    const result = await eventsRepository.query(query, [id]);
+    const result = await eventsRepository.query(query, [id, req.user.church_id]);
     res.json({ ticket_types: result.rows });
   } catch (error) {
     logger.error('getTicketTypes', error);
@@ -540,21 +580,22 @@ router.post('/:id/ticket-types',
 
       // Check if user has permission to manage this event
       const checkQuery = `
-        SELECT e.*, 
-               CASE 
+        SELECT e.*,
+               CASE
                  WHEN e.organizer_id = $1 THEN true
-                 WHEN $2 = ANY($3) THEN true
+                 WHEN $2::text[] && $3::text[] THEN true
                  ELSE false
                END as can_manage
         FROM events e
-        WHERE e.id = $4
+        WHERE e.id = $4 AND (e.church_id = $5 OR e.church_id IS NULL)
       `;
 
       const checkResult = await eventsRepository.query(checkQuery, [
-        req.user.id, 
-        'Super Admin', 
-        ['Super Admin', 'Pastor', 'First Elder'], 
-        id
+        req.user.id,
+        req.user.roles || [],
+        EVENT_ADMIN_ROLES,
+        id,
+        req.user.church_id
       ]);
 
       if (checkResult.rows.length === 0) {
@@ -617,10 +658,10 @@ router.post('/:id/register-with-payment',
                  ELSE false
                END as can_access
         FROM events e
-        WHERE e.id = $2
+        WHERE e.id = $2 AND (e.church_id = $3 OR e.church_id IS NULL)
       `;
 
-      const eventResult = await client.query(eventQuery, [req.user.id, id]);
+      const eventResult = await client.query(eventQuery, [req.user.id, id, req.user.church_id]);
 
       if (eventResult.rows.length === 0) {
         await client.query('ROLLBACK');
@@ -676,13 +717,13 @@ router.post('/:id/register-with-payment',
 
       // Create payment record
       const paymentQuery = `
-        INSERT INTO payments (member_id, phone_number, amount, notes, status, payment_method)
-        VALUES ($1, $2, $3, $4, 'pending', 'mpesa')
+        INSERT INTO payments (member_id, phone_number, amount, notes, status, payment_method, church_id)
+        VALUES ($1, $2, $3, $4, 'pending', 'mpesa', $5)
         RETURNING *
       `;
 
       const paymentResult = await client.query(paymentQuery, [
-        req.user.id, phone_number, registrationFee, notes || ` - Event: ${event.title}`
+        req.user.id, phone_number, registrationFee, notes || ` - Event: ${event.title}`, req.user.church_id
       ]);
 
       const payment = paymentResult.rows[0];
@@ -774,10 +815,11 @@ router.get('/:id/registrations', authenticateToken, requireRole(['Super Admin', 
       LEFT JOIN ticket_types tt ON er.ticket_type_id = tt.id
       LEFT JOIN events e ON er.event_id = e.id
       WHERE er.event_id = $1
+        AND (e.church_id = $2 OR e.church_id IS NULL)
       ORDER BY er.registration_date DESC
     `;
 
-    const result = await eventsRepository.query(query, [id]);
+    const result = await eventsRepository.query(query, [id, req.user.church_id]);
     res.json({ registrations: result.rows });
   } catch (error) {
     logger.error('getEventRegistrations', error);

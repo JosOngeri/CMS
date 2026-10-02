@@ -140,12 +140,18 @@ class EventsRepository extends BaseRepository {
   }
 
   async getAllEvents(filters = {}) {
-    const { page = 1, limit = 20, department_id, is_public, userId, userRoles } = filters;
+    const { page = 1, limit = 20, department_id, is_public, userId, userRoles, churchId } = filters;
     const offset = (page - 1) * limit;
 
     let whereClause = 'WHERE 1=1';
     const params = [];
     let paramIndex = 1;
+
+    // Tenant scope — NULL church_id = legacy/shared rows visible to all tenants
+    if (churchId) {
+      whereClause += ` AND (e.church_id = $${paramIndex++} OR e.church_id IS NULL)`;
+      params.push(churchId);
+    }
 
     // Add filters
     if (department_id) {
@@ -201,8 +207,8 @@ class EventsRepository extends BaseRepository {
     };
   }
 
-  async getEventById(eventId) {
-    const query = `
+  async getEventById(eventId, churchId = null) {
+    let query = `
       SELECT e.*, u.first_name as organizer_first_name, u.last_name as organizer_last_name,
              d.name as department_name
       FROM events e
@@ -210,16 +216,27 @@ class EventsRepository extends BaseRepository {
       LEFT JOIN departments d ON e.department_id = d.id
       WHERE e.id = $1
     `;
+    const params = [eventId];
 
-    const result = await this.pool.query(query, [eventId]);
+    if (churchId) {
+      query += ` AND (e.church_id = $2 OR e.church_id IS NULL)`;
+      params.push(churchId);
+    }
+
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async deleteEvent(eventId) {
-    const result = await this.pool.query(
-      'DELETE FROM events WHERE id = $1 RETURNING *',
-      [eventId]
-    );
+  async deleteEvent(eventId, churchId = null) {
+    let query = 'DELETE FROM events WHERE id = $1';
+    const params = [eventId];
+
+    if (churchId) {
+      query += ` AND (church_id = $2 OR church_id IS NULL)`;
+      params.push(churchId);
+    }
+
+    const result = await this.pool.query(`${query} RETURNING *`, params);
     return result.rows[0];
   }
 

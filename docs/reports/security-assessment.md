@@ -280,6 +280,16 @@ Complete finding list with fix status lives in
 - `modules/sms/pages/Dashboard.jsx` — `process.env.REACT_APP_API_URL` in a Vite app + `localStorage.getItem('token')` that nothing ever sets → page is dead (not a vuln, but its "fix" must not reintroduce token-in-localStorage).
 - `pages/PhotoGalleryPage.jsx` — `setFilteredPhotos` ReferenceError crash (undefined state setter).
 
+### CONFIRMED — Re-audit addendum (committed artifacts & packaging)
+
+| # | Location | Detail |
+|---|----------|--------|
+| D23 | `backend/sessions/*` | **Live Telegram session files** (`telegram*.session` ×3), `phone_code_hash.json`, `auth_status_*.json` are **git-tracked** — confirmed via `git ls-files`. `sessions/` is in neither `.gitignore` nor `.dockerignore`, so `Dockerfile`'s `COPY . .` also bakes live sessions into every image. Revoke sessions → `git rm --cached` → add `sessions/` to both ignore files → consider history scrub if sessions remain valid. |
+| D24 | `backend/logs/app.log.1-3` | Rotated logs containing full `jwt=` cookies (D14) are **git-tracked** — tokens persist in history even after redaction is fixed. `git rm --cached` needed. |
+| D25 | `backend/cookies.txt`, `backend/login-body.json` | On disk (untracked — gitignore covers them) but **not excluded by `.dockerignore`** → baked into Docker images. `login-body.json` contains plaintext admin credentials. |
+| D26 | `backend/migrate.js` | `DROP DATABASE IF EXISTS` runs unconditionally before re-creating — one-command total data loss; also produces a schema missing 49 of 50 migrations. Delete or gate behind explicit `--destroy` flag. |
+| D27 | `backend/create-admin.js` / `create-department-users.js` | Hardcoded `Admin123` and predictable `${firstName}@123` passwords printed to console — dangerous if run against production DB. |
+
 ### Updated priority list (supersedes "Recommended order of work" for new items)
 
 | # | Action | Severity |
@@ -294,3 +304,17 @@ Complete finding list with fix status lives in
 | P8 | Verify assigned approver in `workflowEngine.processStep`; fix `delegateApproval` arg order | High |
 | P9 | Redact `req.headers.cookie` + `req.body` secrets in pino/errorHandler; move mobile token to secure storage; stop storing raw password for biometric | High |
 | P10 | Recheck `is_active` on token verification (or short token TTL + refresh denylist) | Medium |
+
+### Deep-audit addendum 2 — secrets & deploy surface (2026-10-04)
+
+| # | Finding | Evidence | Severity |
+|---|---------|----------|----------|
+| D23 | **Live M-Pesa Daraja credentials committed to git** | `database/add_mpesa_settings.sql` lines 11–19, 53–57: sandbox consumer key + consumer secret + passkey, plus a B2C consumer key/secret pair — five secrets in plaintext SQL. Same pair also in `backend/test-mpesa.js`. **Rotate all of them** — deletion alone is insufficient once pushed. | **Critical** |
+| D24 | Telegram OTP + session material logged/persisted | `backend/scripts/auth-wrapper.js` writes `sessions/*.session` and logs OTP codes plaintext; `backend/sessions/` is git-tracked and ships in Docker images (B17). | **Critical** |
+| D25 | Mass weak-credential tooling | `backend/scripts/reset-nonmember-passwords.js` sets every non-member account to shared `right123`; `generate-login-doc.js` writes `USER_LOGINS.md` documenting `right123` for all accounts; `create-admin.js` prints `Admin123`. | High |
+| D26 | `docker-compose.microservices.yml` ships a literal `JWT_SECRET=your-secret-key-change-in-production` and `postgres`/`postgres` DB creds | Anyone deploying from this file gets forgeable tokens + known DB creds. | High |
+| D27 | SMS provider `api_key` stored plaintext | `database/migrations/add_sms_providers.sql` — `api_key TEXT` column, no encryption. | Medium |
+| D28 | iOS `Info.plist` missing all `UsageDescription` keys | Camera/biometric/photo-library calls crash on iOS; also an App Store rejection. Not exploitable but a shipped-device correctness hole. | Medium |
+| D29 | Frontend Docker image never builds | `vite.config.js` outputs `dist-new/`; `frontend/Dockerfile` copies `/app/dist` — deploy pipeline broken (B21). | High (availability) |
+
+**Revised top priorities**: rotate Daraja + Telegram session material (D23/D24) sits at the top of the queue alongside P1–P4 — committed live credentials outrank code bugs.
