@@ -1,8 +1,8 @@
 /**
  * @audit Telegram controller (legacy surface — channels, auth, sync).
- * @known BLOCKER: verifyAuth NEVER compares the submitted code — returns success for any code,
- *        even when none was requested (!storedData -> success). Channel ops unscoped;
- *        getSettings/updateSettings global; codes logged plaintext; global.verificationCodes map.
+ * @fixed verifyAuth now requires a pending code, compares it, caps attempts at 5.
+ * @known remaining: channel ops unscoped; getSettings/updateSettings global;
+ *        codes logged plaintext; global.verificationCodes map (lost on restart).
  */
 const TelegramService = require('../services/telegramService');
 const BaseController = require('./BaseController');
@@ -494,14 +494,9 @@ class TelegramController extends BaseController {
       // Get stored verification code
       const storedData = global.verificationCodes?.get(key);
 
-      // Demo mode: if no real Telegram integration, accept the code
+      // No pending verification for this key → reject (was: auto-success = auth bypass)
       if (!storedData) {
-        this.success(res, {
-          success: true,
-          message: 'Authentication successful',
-          authenticated: true
-        });
-        return;
+        return this.badRequest(res, 'No verification pending. Please request a code first.');
       }
 
       // Check if code has expired
@@ -510,7 +505,16 @@ class TelegramController extends BaseController {
         return this.badRequest(res, 'Verification code has expired. Please request a new code.');
       }
 
-      // Verify the code (accept any 6-digit code in demo/development mode)
+      // Compare the submitted code — bounded attempts inside the 5-minute window
+      if (String(code).trim() !== storedData.code) {
+        storedData.attempts = (storedData.attempts || 0) + 1;
+        if (storedData.attempts >= 5) {
+          global.verificationCodes.delete(key);
+          return this.badRequest(res, 'Too many incorrect attempts. Please request a new code.');
+        }
+        return this.badRequest(res, 'Incorrect verification code');
+      }
+
       global.verificationCodes.delete(key);
 
       this.success(res, {

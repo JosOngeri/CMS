@@ -1,7 +1,8 @@
 /**
  * @audit Payments repository (plural — standard payments/pledges/refunds).
- * @known BLOCKER: getRefunds defined TWICE (~lines 74/111 — second wins silently); createPayment
- *        omits church_id; updatePaymentStatus(id,status,transactionId) — callers pass churchId into
+ * @fixed duplicate getRefunds removed (kept refunds-table JOIN version); createPayment
+ *        inserts church_id/payment_date; updatePaymentStatus takes optional churchId
+ *        WHERE param. @known remaining: updatePayment/deletePayment/pledge mutations unscoped.
  *        transactionId slot; update/delete/verify/cancel/getPledgePayments unscoped.
  */
 const BaseRepository = require('./BaseRepository');
@@ -68,21 +69,6 @@ class PaymentsRepository extends BaseRepository {
 
     if (churchId) {
       query += ` AND church_id = $2`;
-      params.push(churchId);
-    }
-
-    query += ` ORDER BY created_at DESC`;
-
-    const result = await this.pool.query(query, params);
-    return result.rows;
-  }
-
-  async getRefunds(churchId = null) {
-    let query = `SELECT * FROM ${this.tableName} WHERE status = 'refunded'`;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
       params.push(churchId);
     }
 
@@ -201,12 +187,47 @@ class PaymentsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createPayment(paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes) {
+  // Duplicate guard used by payments.controller before insert — same member + amount
+  // + payment date created within the last 5 minutes.
+  async checkDuplicatePayment(memberId, amount, paymentDate, churchId = null) {
+    let query = `
+      SELECT id FROM payments
+      WHERE member_id = $1 AND amount = $2
+        AND payment_date::date = $3::date
+        AND created_at >= NOW() - INTERVAL '5 minutes'
+    `;
+    const params = [memberId, amount, paymentDate];
+    if (churchId) {
+      query += ` AND church_id = $4`;
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
+    return result.rows[0];
+  }
+
+  async createPayment(paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes, churchId = null, paymentDate = null) {
+    const columns = 'payment_method_id, member_id, amount, payment_type, reference_number, transaction_id, processed_by, notes';
+    const values = '$1, $2, $3, $4, $5, $6, $7, $8';
+    const params = [paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes];
+
+    let extraCols = '';
+    let extraVals = '';
+    if (churchId) {
+      extraCols += ', church_id';
+      extraVals += `, $${params.length + 1}`;
+      params.push(churchId);
+    }
+    if (paymentDate) {
+      extraCols += ', payment_date';
+      extraVals += `, $${params.length + 1}`;
+      params.push(paymentDate);
+    }
+
     const result = await this.pool.query(
-      `INSERT INTO payments (payment_method_id, member_id, amount, payment_type, reference_number, transaction_id, processed_by, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO payments (${columns}${extraCols})
+       VALUES (${values}${extraVals})
        RETURNING *`,
-      [paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes]
+      params
     );
     return result.rows[0];
   }
@@ -223,13 +244,20 @@ class PaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updatePaymentStatus(id, status, transactionId = null) {
+  async updatePaymentStatus(id, status, transactionId = null, churchId = null) {
+    const params = [status, id, transactionId];
+    let whereClause = 'id = $2';
+    if (churchId) {
+      whereClause += ' AND church_id = $4';
+      params.push(churchId);
+    }
+
     const result = await this.pool.query(
       `UPDATE payments
        SET status = $1, transaction_id = COALESCE($3, transaction_id)
-       WHERE id = $2
+       WHERE ${whereClause}
        RETURNING *`,
-      [status, id, transactionId]
+      params
     );
     return result.rows[0];
   }

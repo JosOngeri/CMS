@@ -33,7 +33,7 @@ router.get('/export', requireRole(['Super Admin', 'Pastor']), reportsController.
 // Custom report builder
 router.post('/save', reportsController.saveReport);
 router.get('/saved', reportsController.getSavedReports);
-router.post('/generate', reportsController.generateCustomReport);
+router.post('/generate', requireRole(['Super Admin', 'Pastor', 'Treasurer']), reportsController.generateCustomReport);
 
 // Report scheduling
 router.post('/schedule', reportsController.scheduleReport);

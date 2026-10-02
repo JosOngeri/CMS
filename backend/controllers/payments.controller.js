@@ -1,8 +1,9 @@
 /**
  * @audit Payments controller (standard path; M-Pesa flow in payment.controller.js).
- * @known BLOCKER: calls PaymentsRepository.checkDuplicatePayment — method does not exist -> 500 on
- *        every non-M-Pesa create; updatePaymentStatus(id,status,churchId) writes church UUID into
- *        repo's transactionId param; several mutations unscoped.
+ * @fixed checkDuplicatePayment implemented on repo; updatePaymentStatus passes
+ *        (id,status,null,churchId) with 404-before-mutate; createPayment inserts
+ *        church_id+payment_date. @known remaining: updatePayment/deletePayment/
+ *        verifyPayment/cancelPayment/pledge mutations + getPaymentSummary unscoped.
  */
 const BaseController = require('./BaseController');
 const PaymentsRepository = require('../repositories/PaymentsRepository');
@@ -150,15 +151,15 @@ class PaymentsController extends BaseController {
           });
 
           if (!stkResult.success) {
-            await PaymentsRepository.updatePaymentStatus(payment.id, 'failed');
+            await PaymentsRepository.updatePaymentStatus(payment.id, 'failed', null, churchId);
             return res.status(400).json({ success: false, error: stkResult.error || 'M-Pesa prompt failed to send' });
           }
 
-          await PaymentsRepository.updatePaymentStatus(payment.id, 'pending', stkResult.transactionId || null);
+          await PaymentsRepository.updatePaymentStatus(payment.id, 'pending', stkResult.transactionId || null, churchId);
           payment.transaction_id = stkResult.transactionId || null;
         } catch (stkError) {
           this.logger.error('createPayment.stk', stkError);
-          await PaymentsRepository.updatePaymentStatus(payment.id, 'failed').catch(() => {});
+          await PaymentsRepository.updatePaymentStatus(payment.id, 'failed', null, churchId).catch(() => {});
           return res.status(502).json({ success: false, error: 'Could not reach M-Pesa. Please try again.' });
         }
       } else {
@@ -198,7 +199,9 @@ class PaymentsController extends BaseController {
           referenceNumber,
           transactionId,
           userId,
-          notes
+          notes,
+          churchId,
+          req.body.payment_date || null
         );
       }
 
@@ -252,14 +255,16 @@ class PaymentsController extends BaseController {
         });
       }
 
-      // Get old payment for audit log
+      // Get old payment for audit log — scoped read also gates the mutation
       const oldPayment = await PaymentsRepository.getPaymentById(id, churchId);
 
-      const payment = await PaymentsRepository.updatePaymentStatus(id, status, churchId);
-
-      if (!payment) {
+      if (!oldPayment) {
         return res.status(404).json({ success: false, error: 'Payment not found' });
       }
+
+      // churchId goes in the repo's churchId param (was passed as transactionId,
+      // writing the church UUID into payments.transaction_id + no tenant scope)
+      const payment = await PaymentsRepository.updatePaymentStatus(id, status, null, churchId);
 
       // Log audit event
       await auditService.log(

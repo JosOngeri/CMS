@@ -359,7 +359,9 @@ class ReportsController extends BaseController {
     try {
       const { dataSource, filters, columns, groupBy, sortBy, format } = req.body;
 
-      const result = await ReportsRepository.generateCustomReport(dataSource, filters, columns, groupBy, sortBy);
+      const result = await ReportsRepository.generateCustomReport(
+        dataSource, filters, columns, groupBy, sortBy, req.user.church_id
+      );
 
       // Format output based on requested format
       if (format === 'csv') {

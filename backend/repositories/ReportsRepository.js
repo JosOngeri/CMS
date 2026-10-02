@@ -369,48 +369,119 @@ class ReportsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async generateCustomReport(dataSource, filters, columns, groupBy, sortBy) {
-    let query = '';
-    let params = [];
-    let paramIndex = 1;
+  // Allowlists mirror helpers/reportScheduler.js — same request-driven SQLi vector.
+  // Every identifier (column, filter field, group/sort) must match the source's
+  // column set; values stay parameterized. Never interpolate raw client strings.
+  static REPORT_SOURCES = {
+    members: {
+      from: 'users WHERE is_active = true',
+      scopeColumn: 'church_id',
+      columns: new Set([
+        'id', 'username', 'email', 'first_name', 'last_name', 'phone', 'phone_number',
+        'is_active', 'created_at', 'updated_at', 'church_id', 'mfa_enabled',
+        'email_verified', 'slug', 'role', 'last_login', 'church_slug', 'avatar_url',
+        'deleted_at'
+      ])
+    },
+    payments: {
+      from: 'payments WHERE 1=1',
+      scopeColumn: 'church_id',
+      columns: new Set([
+        'id', 'member_id', 'transaction_id', 'mpesa_receipt_number', 'phone_number',
+        'amount', 'payment_date', 'status', 'payment_method', 'notes', 'created_at',
+        'church_id', 'category', 'payment_type', 'church_slug', 'currency',
+        'initiated_by', 'reference_number', 'payment_method_id', 'processed_by',
+        'user_id', 'obligation_id', 'budget_id', 'failure_reason', 'completed_at',
+        'updated_at'
+      ])
+    },
+    approvals: {
+      from: 'approval_requests WHERE 1=1',
+      scopeColumn: 'church_id',
+      columns: new Set([
+        'id', 'entity_type', 'entity_id', 'requested_by', 'status', 'church_id',
+        'created_at', 'updated_at', 'requester_id', 'title', 'description',
+        'priority', 'approver_id', 'module', 'amount', 'requested_at',
+        'approved_at', 'rejected_at', 'request_type', 'department_id'
+      ])
+    }
+  };
 
-    // Build query based on data source
-    switch (dataSource) {
-      case 'members':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM users WHERE is_active = true';
-        break;
-      case 'payments':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM payments WHERE 1=1';
-        break;
-      case 'approvals':
-        query = 'SELECT ';
-        query += columns.map(col => `${col}`).join(', ');
-        query += ' FROM approval_requests WHERE 1=1';
-        break;
-      default:
-        throw new Error('Invalid data source');
+  static BLOCKED_REPORT_COLUMNS = new Set([
+    'password_hash', 'mfa_secret', 'reset_token', 'reset_token_expiry',
+    'failed_login_attempts', 'locked_until', 'request_data', 'metadata', 'comments'
+  ]);
+
+  static ALLOWED_FILTER_OPERATORS = new Set([
+    '=', '!=', '<>', '>', '<', '>=', '<=',
+    'LIKE', 'ILIKE', 'NOT LIKE', 'NOT ILIKE', 'IS NULL', 'IS NOT NULL'
+  ]);
+
+  static IDENTIFIER_RE = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+  static validateReportColumn(source, column) {
+    const name = String(column);
+    if (!ReportsRepository.IDENTIFIER_RE.test(name)) {
+      throw new Error(`Invalid report column: ${name}`);
+    }
+    if (ReportsRepository.BLOCKED_REPORT_COLUMNS.has(name)) {
+      throw new Error(`Sensitive column not allowed in reports: ${name}`);
+    }
+    if (!source.columns.has(name)) {
+      throw new Error(`Column not available for this report: ${name}`);
+    }
+    return name;
+  }
+
+  async generateCustomReport(dataSource, filters, columns, groupBy, sortBy, churchId = null) {
+    const source = ReportsRepository.REPORT_SOURCES[dataSource];
+    if (!source) {
+      throw new Error('Invalid data source');
     }
 
-    // Apply filters
+    const selected = (Array.isArray(columns) && columns.length > 0 ? columns : ['id'])
+      .map(col => ReportsRepository.validateReportColumn(source, col));
+
+    let query = `SELECT ${selected.join(', ')} FROM ${source.from}`;
+    const params = [];
+    let paramIndex = 1;
+
+    // Tenant scope — reports must never cross church boundaries
+    if (churchId) {
+      query += ` AND ${source.scopeColumn} = $${paramIndex++}`;
+      params.push(churchId);
+    }
+
+    // Apply filters — field + operator validated, value parameterized
     if (filters && filters.length > 0) {
       filters.forEach(filter => {
-        query += ` AND ${filter.field} ${filter.operator} $${paramIndex++}`;
-        params.push(filter.value);
+        const field = ReportsRepository.validateReportColumn(source, filter.field);
+        const operator = String(filter.operator || '=').trim().toUpperCase();
+        if (!ReportsRepository.ALLOWED_FILTER_OPERATORS.has(operator)) {
+          throw new Error(`Invalid filter operator: ${filter.operator}`);
+        }
+        if (operator === 'IS NULL' || operator === 'IS NOT NULL') {
+          query += ` AND ${field} ${operator}`;
+        } else {
+          query += ` AND ${field} ${operator} $${paramIndex++}`;
+          params.push(filter.value);
+        }
       });
     }
 
     // Apply grouping
     if (groupBy) {
-      query += ` GROUP BY ${groupBy}`;
+      query += ` GROUP BY ${ReportsRepository.validateReportColumn(source, groupBy)}`;
     }
 
-    // Apply sorting
+    // Apply sorting — "col" or "col ASC|DESC"
     if (sortBy) {
-      query += ` ORDER BY ${sortBy}`;
+      const [sortCol, sortDirRaw] = String(sortBy).trim().split(/\s+/);
+      const dir = (sortDirRaw || 'ASC').toUpperCase();
+      if (dir !== 'ASC' && dir !== 'DESC') {
+        throw new Error(`Invalid sort direction: ${sortDirRaw}`);
+      }
+      query += ` ORDER BY ${ReportsRepository.validateReportColumn(source, sortCol)} ${dir}`;
     }
 
     const result = await this.pool.query(query, params);

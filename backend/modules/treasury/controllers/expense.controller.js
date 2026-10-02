@@ -1,7 +1,8 @@
 /**
  * @audit Treasury expense controller (modular surface — church-scoped).
- * @known ISSUE: approveExpense has no separation-of-duties check (can approve own submission);
- *        updateExpense spreads raw req.body into Expense -> status/submitted_by injectable via PUT.
+ * @fixed updateExpense/createExpense whitelist editable fields via pickEditableFields;
+ *        status/submitted_by/church_id are server-set only. approveExpense enforces
+ *        separation of duties (submitter cannot approve own expense).
  */
 /**
  * Expense Controller
@@ -14,6 +15,23 @@ const Expense = require('../models/Expense');
 const logger = require('../../../config/logging');
 
 class ExpenseController {
+  // Only these client fields may reach the Expense model — workflow fields
+  // (status, submitted_by, approved_*, church_id) are always server-set.
+  static EDITABLE_FIELDS = [
+    'expense_date', 'description', 'amount', 'account_id', 'account_name',
+    'fund_id', 'fund_name', 'vendor_id', 'vendor_name', 'department_id',
+    'department_name', 'project_id', 'project_name', 'receipt_url',
+    'payment_method', 'notes'
+  ];
+
+  static pickEditableFields(body) {
+    const picked = {};
+    for (const field of ExpenseController.EDITABLE_FIELDS) {
+      if (body[field] !== undefined) picked[field] = body[field];
+    }
+    return picked;
+  }
+
   constructor(pool) {
     this.expenseRepo = new ExpenseRepository(pool);
   }
@@ -80,8 +98,10 @@ class ExpenseController {
         return res.status(400).json({ error: 'Validation failed', details: errors.array() });
       }
 
+      // Whitelist editable fields — never spread raw req.body (injects
+      // status/approved_by/church_id into the model's named fields)
       const expense = new Expense({
-        ...req.body,
+        ...ExpenseController.pickEditableFields(req.body),
         submitted_by: req.user.id,
         status: 'pending'
       });
@@ -122,7 +142,17 @@ class ExpenseController {
         });
       }
 
-      const expense = new Expense({ ...req.body, id });
+      // Merge current row + whitelisted edits (repo UPDATE writes every column —
+      // absent fields would otherwise reset to model defaults). Status is
+      // server-controlled: editing resubmits as pending (blocks PUT self-approval)
+      const expense = new Expense({
+        ...existing,
+        ...ExpenseController.pickEditableFields(req.body),
+        id,
+        status: 'pending',
+        submitted_by: existing.submitted_by,
+        church_id: existing.church_id
+      });
       
       const updated = await this.expenseRepo.update(id, expense, req.user.church_id);
       
@@ -147,11 +177,16 @@ class ExpenseController {
       }
       
       if (!existing.canApprove()) {
-        return res.status(400).json({ 
-          error: `Cannot approve expense with status: ${existing.status}` 
+        return res.status(400).json({
+          error: `Cannot approve expense with status: ${existing.status}`
         });
       }
-      
+
+      // Separation of duties — the submitter cannot approve their own expense
+      if (existing.submitted_by === req.user.id) {
+        return res.status(403).json({ error: 'You cannot approve an expense you submitted' });
+      }
+
       const approved = await this.expenseRepo.approve(id, req.user.id, req.user.church_id);
       
       logger.info(`Expense approved: ${id} by ${req.user.email}`);
