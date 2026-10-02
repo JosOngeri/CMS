@@ -158,6 +158,70 @@ async function staticChecks() {
 
   const ann = read('controllers/announcements.controller.js');
   ok('announcements public scoped', /is_public|published/i.test(ann) && ann.includes('church'));
+  ok('members update/delete 404 on scoped-miss',
+    /getWithContactsAndGroups[\s\S]{0,400}404|!oldMember|!existing/i.test(mem));
+
+  // ---- Rows the first harness version didn't cover ----
+
+  // index.routes: canonical mounts + legacy 308 redirects (rows 29/73/205)
+  const idx = read('routes/index.routes.js');
+  ok('index.routes /departments canonical mount', /['"]\/departments['"]/.test(idx));
+  ok('index.routes /payments canonical mount', /['"]\/payments['"]/.test(idx));
+  ok('index.routes legacy 308 redirects', idx.includes('308') || idx.includes('redirect(308'));
+  ok('pagination clampQueryPagination wired', idx.includes('clampQueryPagination'));
+
+  // standardResponse middleware mounted (rows 43/72)
+  ok('standardResponse mounted in app.js', app.includes('standardResponse') || app.includes('ResponseHandler'));
+
+  // smsHub: no body-trusted churchId (row 176)
+  const hub = code('controllers/smsHub.controller.js');
+  ok('smsHub churchId from req.user not body', !hub.includes('req.body.churchId'));
+
+  // smsPush: church resolved from DB not token claims (row 177/645/676)
+  const push = code('controllers/smsPush.controller.js');
+  ok('smsPush church resolved from users table', /SELECT[\s\S]{0,200}church_id[\s\S]{0,200}FROM users/i.test(push));
+  ok('smsPush accepts Authorization/handshake.auth', /handshake\.auth|authorization/i.test(push));
+
+  // telegram channel ops scoped (row 179)
+  const telCode = code('controllers/telegram.controller.js');
+  ok('telegram getChannelById carries churchId', /getChannelById\([^)]*church/i.test(telCode));
+  ok('telegram code not logged plaintext', !/logger\.(info|debug)[^;]*verificationCode|console\.log[^;]*code\b/i.test(telCode));
+
+  // route role gates (rows 207/210)
+  const tdRoutes = read('routes/treasuryDashboard.routes.js');
+  ok('treasuryDashboard routes role-gated', /requireRole|hasRole|FINANCE_ROLES/.test(tdRoutes));
+  const repRoutes = read('routes/reports.routes.js');
+  ok('reports custom route role-gated', /requireRole|hasRole/.test(repRoutes));
+
+  // finance.js: unterminated literal + churchId (row 290)
+  const fin = code('helpers/finance.js');
+  ok('finance posted literal terminated', !/'posted\s*$/m.test(fin) && !/status = 'posted[^']/g.test(fin.replace(/'posted'/g, '')));
+  ok('finance calculate* fns take churchId', (fin.match(/churchId/g) || []).length >= 4);
+
+  // utils/errorHandler sanitizeForLog (row 305)
+  try {
+    const ueh = code('utils/errorHandler.js');
+    ok('utils/errorHandler sanitizeForLog', /sanitize|redact|REDACTED/i.test(ueh));
+  } catch { ok('utils/errorHandler exists', false, 'file missing'); }
+
+  // controllerLogger no params logging (row 309)
+  const cl = code('helpers/controllerLogger.js');
+  ok('controllerLogger params not logged', !/params\s*[,)]|JSON\.stringify\(params\)/.test(cl) || /sanitize|REDACTED/i.test(cl));
+
+  // events dept_id church validation (row 587)
+  ok('events dept_id church-validated', /departments WHERE id = \$[0-9]+ AND \(church_id|church_id = \$[0-9]+ OR church_id IS NULL/.test(ev));
+
+  // Frontend rows 616/629
+  const gallery = (() => { try { return fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'src', 'pages', 'PhotoGalleryPage.jsx'), 'utf8'); } catch { return ''; } })();
+  ok('PhotoGalleryPage no undeclared setFilteredPhotos', !gallery.includes('setFilteredPhotos'));
+
+  const smsDash = (() => { try { return fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'src', 'modules', 'sms', 'pages', 'Dashboard.jsx'), 'utf8'); } catch { return ''; } })();
+  ok('sms Dashboard uses useAuth().api not REACT_APP', smsDash.includes('useAuth') && !smsDash.includes('REACT_APP'));
+
+  // Mobile row 645/676: push_sync_service.dart Authorization header, no token in URL
+  const dart = (() => { try { return fs.readFileSync(path.join(__dirname, '..', '..', 'mobile', 'flutter', 'flutter-mobile', 'lib', 'services', 'push_sync_service.dart'), 'utf8'); } catch { return ''; } })();
+  ok('push_sync_service sends Authorization header', dart.includes('Authorization') || dart.includes('authorization'));
+  ok('push_sync_service no token in URL query', !dart.includes('?token=') && !dart.includes('&token='));
 }
 
 async function schemaChecks() {
