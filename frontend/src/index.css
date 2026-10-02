@@ -26,6 +26,34 @@
   --color-border:         #E8E4E0;   /* Soft warm gray - gentle separation */
   --color-divider:        #DAD6D2;   /* Divider with warmth */
   --color-overlay:        rgba(0,0,0,0.5);
+  --color-overlay-10:     rgba(0,0,0,0.1);
+  --color-overlay-20:     rgba(0,0,0,0.2);
+  --color-overlay-30:     rgba(0,0,0,0.3);
+  --color-overlay-40:     rgba(0,0,0,0.4);
+  --color-overlay-50:     rgba(0,0,0,0.5);
+  --color-overlay-60:     rgba(0,0,0,0.6);
+  --color-overlay-70:     rgba(0,0,0,0.7);
+  --color-overlay-75:     rgba(0,0,0,0.75);
+  --color-overlay-80:     rgba(0,0,0,0.8);
+  --color-overlay-90:     rgba(0,0,0,0.9);
+  --color-media:          #000000;
+  --color-on-solid:       #FFFFFF;
+  --color-on-solid-90:    color-mix(in srgb, var(--color-on-solid) 90%, transparent);
+  --color-on-solid-80:    color-mix(in srgb, var(--color-on-solid) 80%, transparent);
+  --color-on-solid-70:    color-mix(in srgb, var(--color-on-solid) 70%, transparent);
+  --color-on-solid-60:    color-mix(in srgb, var(--color-on-solid) 60%, transparent);
+  --color-on-solid-50:    color-mix(in srgb, var(--color-on-solid) 50%, transparent);
+  --color-on-solid-40:    color-mix(in srgb, var(--color-on-solid) 40%, transparent);
+  --color-on-solid-30:    color-mix(in srgb, var(--color-on-solid) 30%, transparent);
+  --color-on-solid-20:    color-mix(in srgb, var(--color-on-solid) 20%, transparent);
+  --color-on-solid-10:    color-mix(in srgb, var(--color-on-solid) 10%, transparent);
+  --color-shadow:         color-mix(in srgb, var(--color-text) 10%, transparent);
+  --color-shadow-soft:    color-mix(in srgb, var(--color-text) 6%, transparent);
+  --color-primary-shadow: color-mix(in srgb, var(--color-primary) 40%, transparent);
+  --color-primary-shadow-soft: color-mix(in srgb, var(--color-primary) 30%, transparent);
+  --color-glass:          var(--color-on-solid-10);
+  --color-glass-border:   var(--color-on-solid-20);
+  --color-surfaceHover:   color-mix(in srgb, var(--color-primary) 8%, var(--color-surface));
   /* Light tints (replaces invalid -50/-100/-200 shade suffixes) */
   --color-primary-light:   #E7EDF5;
   --color-secondary-light: #EDF3E0;
@@ -316,7 +344,7 @@ input:-webkit-autofill:active {
 
 /* ── Utilities ────────────────────────────────────────────────────────────── */
 .church-gradient {
-  background: linear-gradient(135deg, var(--color-primary-strong) 0%, #2563EB 100%);
+  background: linear-gradient(135deg, var(--color-primary-strong) 0%, var(--color-primary) 100%);
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -362,7 +390,7 @@ input:-webkit-autofill:active {
   }
 
   .btn-primary {
-    @apply btn text-white shadow-md hover:shadow-lg;
+    @apply btn text-[var(--color-on-solid)] shadow-md hover:shadow-lg;
     background-color: var(--color-primary-strong) !important;
     --tw-ring-color: var(--color-primary);
   }
@@ -375,17 +403,17 @@ input:-webkit-autofill:active {
   }
 
   .btn-success {
-    @apply btn text-white shadow-sm;
+    @apply btn text-[var(--color-on-solid)] shadow-sm;
     background-color: var(--color-success) !important;
   }
 
   .btn-danger {
-    @apply btn text-white shadow-sm;
+    @apply btn text-[var(--color-on-solid)] shadow-sm;
     background-color: var(--color-error) !important;
   }
 
   .btn-warning {
-    @apply btn text-white shadow-sm;
+    @apply btn text-[var(--color-on-solid)] shadow-sm;
     background-color: var(--color-warning) !important;
   }
 
@@ -560,7 +588,7 @@ input:-webkit-autofill:active {
   background: var(--color-surface);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px var(--color-shadow);
   margin: 8px;
   display: flex;
   flex-direction: column;
@@ -595,7 +623,7 @@ input:-webkit-autofill:active {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 4px var(--color-shadow-soft);
 }
 
 .mobile-activity-item .icon {
@@ -640,7 +668,7 @@ input:-webkit-autofill:active {
   padding: 8px 0;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 1000;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -2px 8px var(--color-shadow);
 }
 
 .mobile-bottom-nav-item {
@@ -676,11 +704,11 @@ input:-webkit-autofill:active {
   height: 56px;
   border-radius: 16px;
   background: var(--color-primary);
-  color: white;
+  color: var(--color-on-solid);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 12px var(--color-primary-shadow);
   z-index: 999;
   border: none;
   cursor: pointer;
@@ -689,7 +717,7 @@ input:-webkit-autofill:active {
 
 .mobile-fab:active {
   transform: scale(0.95);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px var(--color-primary-shadow-soft);
 }
 
 .mobile-refresh-indicator {

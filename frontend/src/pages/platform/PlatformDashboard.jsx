@@ -6,7 +6,6 @@ import {
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import Card from '../../components/common/Card'
 import StatsCard from '../../components/common/StatsCard'
 import { FullPageLoading } from '../../components/common/Loading'
@@ -15,7 +14,6 @@ import { EmptyState } from '../../components/common/EmptyState'
 const PlatformDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
   const [stats, setStats] = useState({
     totalChurches: 0,
     activeChurches: 0,
@@ -95,12 +93,12 @@ const PlatformDashboard = () => {
           alert: AlertCircle,
           user: Users
         }
-        const colorMap = {
-          church: colors.primary,
-          payment: colors.success,
-          system: colors.textSecondary,
-          alert: colors.error,
-          user: colors.warning
+        const colorClassMap = {
+          church: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+          payment: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+          system: 'bg-[var(--color-surfaceHover)] text-[var(--color-textSecondary)]',
+          alert: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
+          user: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'
         }
 
         const formattedActivities = (activityResponse.data.data || []).map((activity, index) => ({
@@ -110,7 +108,7 @@ const PlatformDashboard = () => {
           description: activity.description,
           time: activity.time,
           icon: iconMap[activity.type] || Activity,
-          color: colorMap[activity.type] || colors.textSecondary
+          colorClass: colorClassMap[activity.type] || 'bg-[var(--color-surfaceHover)] text-[var(--color-textSecondary)]'
         }))
 
         setRecentActivities(formattedActivities)
@@ -270,7 +268,7 @@ const PlatformDashboard = () => {
                 <div className={`inline-flex p-3 rounded-lg ${action.color} mb-4`}>
                   <Icon className="h-6 w-6" />
                 </div>
-                <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600">
+                <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600 group-focus-within:text-primary-600">
                   {action.title}
                 </h3>
                 <p className="text-sm text-[var(--color-textSecondary)]">
@@ -291,7 +289,7 @@ const PlatformDashboard = () => {
               const Icon = activity.icon
               return (
                 <div key={activity.id} className="flex items-start space-x-4">
-                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${activity.color}20`, color: activity.color }}>
+                  <div className={`p-2 rounded-lg ${activity.colorClass}`}>
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">

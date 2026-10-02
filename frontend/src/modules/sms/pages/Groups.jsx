@@ -120,7 +120,7 @@ const Groups = () => {
         <h1 className="text-2xl font-bold">Contact Groups</h1>
         <button
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary)]"
+          className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded hover:bg-[var(--color-primary)]"
         >
           Add Group
         </button>
@@ -212,7 +212,7 @@ const Groups = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary)]"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded hover:bg-[var(--color-primary)]"
                 >
                   {editingGroup ? 'Update' : 'Create'}
                 </button>

@@ -6,6 +6,7 @@ import {
   RefreshCw, BarChart3, TrendingUp, Wallet, PieChart
 } from 'lucide-react'
 import Card from '../../components/common/Card'
+import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
 
@@ -99,42 +100,74 @@ const FinancialReports = () => {
     if (!reportData.accounts) return null
     
     return (
-      <div className="space-y-4 overflow-x-auto">
-        <table className="w-full min-w-[560px]">
-          <thead>
-            <tr className="border-b border-[var(--color-border)]">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Account</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Debit</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Credit</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reportData.accounts.map((account, index) => (
-              <tr key={index} className="border-b border-[var(--color-border)]">
-                <td className="py-3 px-4 text-sm text-[var(--color-text)]">
-                  {account.account_number} - {account.account_name}
+      <div className="space-y-4">
+        {/* Desktop table */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full min-w-[560px]">
+            <thead>
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Account</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Debit</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.accounts.map((account, index) => (
+                <tr key={index} className="border-b border-[var(--color-border)]">
+                  <td className="py-3 px-4 text-sm text-[var(--color-text)]">
+                    {account.account_number} - {account.account_name}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
+                    {account.debit ? `KES ${parseFloat(account?.debit ?? 0).toLocaleString()}` : '-'}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
+                    {account.credit ? `KES ${parseFloat(account?.credit ?? 0).toLocaleString()}` : '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-[var(--color-background)]">
+                <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Total</td>
+                <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
+                  KES {parseFloat(reportData?.total_debit ?? 0).toLocaleString()}
                 </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
-                  {account.debit ? `KES ${parseFloat(account?.debit ?? 0).toLocaleString()}` : '-'}
-                </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)]">
-                  {account.credit ? `KES ${parseFloat(account?.credit ?? 0).toLocaleString()}` : '-'}
+                <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
+                  KES {parseFloat(reportData?.total_credit ?? 0).toLocaleString()}
                 </td>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-[var(--color-background)]">
-              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Total</td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
-                KES {parseFloat(reportData?.total_debit ?? 0).toLocaleString()}
-              </td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
-                KES {parseFloat(reportData?.total_credit ?? 0).toLocaleString()}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+            </tfoot>
+          </table>
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden space-y-3">
+          {reportData.accounts.map((account, index) => (
+            <MobileCard
+              key={index}
+              title={`${account.account_number} - ${account.account_name}`}
+            >
+              <CardField
+                label="Debit"
+                value={account.debit ? `KES ${parseFloat(account.debit).toLocaleString()}` : '—'}
+              />
+              <CardField
+                label="Credit"
+                value={account.credit ? `KES ${parseFloat(account.credit).toLocaleString()}` : '—'}
+              />
+            </MobileCard>
+          ))}
+          <MobileCard title="Total">
+            <CardField
+              label="Total Debit"
+              value={`KES ${parseFloat(reportData?.total_debit ?? 0).toLocaleString()}`}
+            />
+            <CardField
+              label="Total Credit"
+              value={`KES ${parseFloat(reportData?.total_credit ?? 0).toLocaleString()}`}
+            />
+          </MobileCard>
+        </div>
       </div>
     )
   }
@@ -184,7 +217,7 @@ const FinancialReports = () => {
           </div>
         </div>
         
-        <div className="flex justify-between py-4 px-4 bg-[var(--color-primary-light)]/30 rounded-lg">
+        <div className="flex justify-between py-4 px-4 bg-[color-mix(in_srgb,var(--color-primary-light)_30%,transparent)] rounded-lg">
           <span className="text-lg font-bold text-[var(--color-text)]">Net Income</span>
           <span className={`text-lg font-bold ${reportData.net_income >= 0 ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
             KES {parseFloat(reportData?.net_income ?? 0).toLocaleString()}
@@ -204,14 +237,14 @@ const FinancialReports = () => {
           {reportData.line_items
             .filter(item => item.type === 'asset')
             .map((item, index) => (
-              <div key={index} className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)]/20 rounded">
+              <div key={index} className="flex justify-between py-2 px-4 bg-[color-mix(in_srgb,var(--color-primary-light)_20%,transparent)] rounded">
                 <span className="text-sm text-[var(--color-text)]">{item.name}</span>
                 <span className="text-sm font-semibold text-[var(--color-text)]">
                   KES {parseFloat(item?.amount ?? 0).toLocaleString()}
                 </span>
               </div>
             ))}
-          <div className="flex justify-between py-2 px-4 bg-[var(--color-primary-light)]/30 rounded font-semibold">
+          <div className="flex justify-between py-2 px-4 bg-[color-mix(in_srgb,var(--color-primary-light)_30%,transparent)] rounded font-semibold">
             <span className="text-[var(--color-text)]">Total Assets</span>
             <span className="text-[var(--color-text)]">
               KES {parseFloat(reportData?.total_assets ?? 0).toLocaleString()}
@@ -266,39 +299,64 @@ const FinancialReports = () => {
     if (!reportData.funds) return null
     
     return (
-      <div className="space-y-4 overflow-x-auto">
-        <table className="w-full min-w-[560px]">
-          <thead>
-            <tr className="border-b border-[var(--color-border)]">
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Fund</th>
-              <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Type</th>
-              <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reportData.funds.map((fund, index) => (
-              <tr key={index} className="border-b border-[var(--color-border)]">
-                <td className="py-3 px-4 text-sm text-[var(--color-text)]">
-                  {fund.fund_name}
-                </td>
-                <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
-                  {fund.fund_type}
-                </td>
-                <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] font-semibold">
-                  KES {parseFloat(fund?.balance ?? 0).toLocaleString()}
+      <div className="space-y-4">
+        {/* Desktop table */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full min-w-[560px]">
+            <thead>
+              <tr className="border-b border-[var(--color-border)]">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Fund</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Type</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-[var(--color-text)]">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.funds.map((fund, index) => (
+                <tr key={index} className="border-b border-[var(--color-border)]">
+                  <td className="py-3 px-4 text-sm text-[var(--color-text)]">
+                    {fund.fund_name}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-[var(--color-textSecondary)]">
+                    {fund.fund_type}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-right text-[var(--color-text)] font-semibold">
+                    KES {parseFloat(fund?.balance ?? 0).toLocaleString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-[var(--color-background)]">
+                <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]" colSpan="2">Total</td>
+                <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
+                  KES {parseFloat(reportData?.total_balance ?? 0).toLocaleString()}
                 </td>
               </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr className="bg-[var(--color-background)]">
-              <td className="py-3 px-4 text-sm font-semibold text-[var(--color-text)]" colSpan="2">Total</td>
-              <td className="py-3 px-4 text-sm text-right font-semibold text-[var(--color-text)]">
-                KES {parseFloat(reportData?.total_balance ?? 0).toLocaleString()}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+            </tfoot>
+          </table>
+        </div>
+
+        {/* Mobile card list */}
+        <div className="md:hidden space-y-3">
+          {reportData.funds.map((fund, index) => (
+            <MobileCard
+              key={index}
+              title={fund.fund_name}
+              subtitle={fund.fund_type}
+            >
+              <CardField
+                label="Balance"
+                value={`KES ${parseFloat(fund?.balance ?? 0).toLocaleString()}`}
+              />
+            </MobileCard>
+          ))}
+          <MobileCard title="Total">
+            <CardField
+              label="Total Balance"
+              value={`KES ${parseFloat(reportData?.total_balance ?? 0).toLocaleString()}`}
+            />
+          </MobileCard>
+        </div>
       </div>
     )
   }
@@ -315,7 +373,7 @@ const FinancialReports = () => {
         </div>
         <button
           onClick={handleDownload}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Download className="h-4 w-4" />
           <span>Download PDF</span>
@@ -332,7 +390,7 @@ const FinancialReports = () => {
               onClick={() => setSelectedReport(report.value)}
               className={`p-4 rounded-lg border-2 transition-colors ${
                 selectedReport === report.value
-                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[var(--color-primary)]/20'
+                  ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] bg-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]'
                   : 'border-[var(--color-border)] hover:border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
             >

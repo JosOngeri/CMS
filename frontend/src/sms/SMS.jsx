@@ -171,13 +171,13 @@ const SMS = () => {
         setMessage('')
         setRecipients('all')
 
-        alert(`SMS sent successfully! ${response.data.data.sentCount} messages delivered.`)
+        toast.success(`SMS sent successfully! ${response.data.data.sentCount} messages delivered.`)
       } else {
-        alert(`Failed to send SMS: ${response.data.message}`)
+        toast.error(`Failed to send SMS: ${response.data.message}`)
       }
     } catch (error) {
       console.error('Failed to send SMS:', error)
-      alert('Failed to send SMS. Please try again.')
+      toast.error('Failed to send SMS. Please try again.')
     } finally {
       setSending(false)
     }
@@ -334,7 +334,7 @@ const SMS = () => {
                   />
                   <label
                     htmlFor="csv-upload"
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] cursor-pointer transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] cursor-pointer transition-colors"
                   >
                     <Upload size={16} />
                     Choose CSV File
@@ -390,7 +390,7 @@ const SMS = () => {
           <button
             type="submit"
             disabled={sending || !message.trim()}
-            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
             {sending ? 'Sending...' : 'Send SMS'}

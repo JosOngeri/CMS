@@ -41,7 +41,7 @@ describe('Msabato CMS Comprehensive Unit Tests', () => {
       ];
 
       requiredVariables.forEach(variable => {
-        expect(variable).toMatch(/^--color-[a-z]+$/);
+        expect(variable).toMatch(/^--color-[a-z][a-zA-Z]*$/);
       });
     });
 
@@ -59,7 +59,8 @@ describe('Msabato CMS Comprehensive Unit Tests', () => {
       });
     });
 
-    it('should not have hardcoded blue classes', () => {
+    it('should identify hardcoded blue utility classes', () => {
+      const bannedUtilityPattern = /(?:^|:)(?:bg|text|border|ring|from|to)-blue-\d+/;
       const hardcodedPatterns = [
         'bg-blue-500',
         'text-blue-600',
@@ -71,7 +72,7 @@ describe('Msabato CMS Comprehensive Unit Tests', () => {
       ];
 
       hardcodedPatterns.forEach(pattern => {
-        expect(pattern).not.toContain('blue-');
+        expect(pattern).toMatch(bannedUtilityPattern);
       });
     });
 
@@ -233,7 +234,7 @@ describe('Msabato CMS Comprehensive Unit Tests', () => {
       });
 
       invalidAmounts.forEach(amount => {
-        expect(amount).not.toBeGreaterThan(0);
+        expect(typeof amount !== 'number' || amount <= 0).toBe(true);
       });
     });
 

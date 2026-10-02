@@ -1,3 +1,9 @@
+/**
+ * Platform-admin authentication (separate platform_users table) + role/permission guards for /api/platform/*.
+ * @exports {authenticatePlatformUser, requirePlatformRole, requirePlatformPermission, normalizePermissions}
+ * @deps config/platformJwt, config/database
+ * @known jwt.verify checks signature only — no type/iss/aud claim enforcement (shared JWT_SECRET with church tokens); console.error instead of logger — ledger.
+ */
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const { getPlatformJwtSecret } = require('../config/platformJwt');

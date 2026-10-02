@@ -127,7 +127,7 @@ const MyDepartments = () => {
         </div>
         <button
           onClick={handleOpenJoinModal}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="w-4 h-4" />
           Join Departments
@@ -295,7 +295,7 @@ const MyDepartments = () => {
                 <button
                   onClick={handleJoinDepartments}
                   disabled={selectedDepartments.length === 0 || joinLoading}
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:cursor-not-allowed transition-colors"
                 >
                   {joinLoading ? 'Joining...' : 'Join Selected'}
                 </button>

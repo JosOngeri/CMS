@@ -12,47 +12,47 @@ const PublicLayout = () => {
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
       {/* Header */}
-      <header className="church-gradient text-white shadow-lg sticky top-0 z-50">
+      <header className="church-gradient text-[var(--color-on-solid)] shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-12 h-12 bg-[var(--color-surface)] rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+              <div className="w-12 h-12 bg-[var(--color-surface)] rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-focus-within:shadow-xl transition-shadow">
                 <img src="/logo.png" alt="SDA Church Logo" className="w-8 h-8 object-contain" loading="lazy" />
               </div>
               <div className="hidden sm:block">
                 <span className="font-bold text-xl">{churchName}</span>
-                <p className="text-xs text-white/80">Seventh-day Adventist Church</p>
+                <p className="text-xs text-[var(--color-on-solid-80)]">Seventh-day Adventist Church</p>
               </div>
             </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
-              <Link to="/" className="text-white/90 hover:text-white font-medium transition-colors relative group">
+              <Link to="/" className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors relative group">
                 Home
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full group-focus-within:w-full transition-all duration-300"></span>
               </Link>
-              <Link to="/announcements" className="text-white/90 hover:text-white font-medium transition-colors relative group">
+              <Link to="/announcements" className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors relative group">
                 Announcements
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full group-focus-within:w-full transition-all duration-300"></span>
               </Link>
-              <Link to="/gallery" className="text-white/90 hover:text-white font-medium transition-colors relative group">
+              <Link to="/gallery" className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors relative group">
                 Gallery
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full group-focus-within:w-full transition-all duration-300"></span>
               </Link>
-              <Link to="/downloads" className="text-white/90 hover:text-white font-medium transition-colors relative group">
+              <Link to="/downloads" className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors relative group">
                 <span className="inline-flex items-center gap-1">
                   <Download className="w-4 h-4" />
                   Download App
                 </span>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[var(--color-surface)] group-hover:w-full group-focus-within:w-full transition-all duration-300"></span>
               </Link>
-              <Link to="/auth/login" className="bg-[var(--color-surface)]/10 hover:bg-[var(--color-surface)]/20 px-4 py-2 rounded-lg font-medium transition-colors">
+              <Link to="/auth/login" className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] px-4 py-2 rounded-lg font-medium transition-colors">
                 Member Login
               </Link>
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg hover:bg-[var(--color-surface)]/10 transition-colors"
+                className="p-2 rounded-lg hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] transition-colors"
                 aria-label="Toggle dark mode"
               >
                 {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
@@ -62,7 +62,7 @@ const PublicLayout = () => {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-[var(--color-surface)]/10 transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] transition-colors"
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -71,32 +71,32 @@ const PublicLayout = () => {
 
           {/* Mobile Navigation */}
           {isMenuOpen && (
-            <div className="lg:hidden py-4 border-t border-white/20 animate-fade-in">
+            <div className="lg:hidden py-4 border-t border-[var(--color-on-solid-20)] animate-fade-in">
               <nav className="flex flex-col space-y-4">
                 <Link 
                   to="/" 
-                  className="text-white/90 hover:text-white font-medium transition-colors py-2"
+                  className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </Link>
                 <Link 
                   to="/announcements" 
-                  className="text-white/90 hover:text-white font-medium transition-colors py-2"
+                  className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Announcements
                 </Link>
                 <Link 
                   to="/gallery" 
-                  className="text-white/90 hover:text-white font-medium transition-colors py-2"
+                  className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Gallery
                 </Link>
                 <Link 
                   to="/downloads" 
-                  className="text-white/90 hover:text-white font-medium transition-colors py-2 inline-flex items-center gap-2"
+                  className="text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] font-medium transition-colors py-2 inline-flex items-center gap-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Download className="w-4 h-4" />
@@ -104,7 +104,7 @@ const PublicLayout = () => {
                 </Link>
                 <Link 
                   to="/auth/login" 
-                  className="bg-[var(--color-surface)]/10 hover:bg-[var(--color-surface)]/20 px-4 py-2 rounded-lg font-medium transition-colors text-center"
+                  className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] px-4 py-2 rounded-lg font-medium transition-colors text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Member Login
@@ -114,7 +114,7 @@ const PublicLayout = () => {
                     toggleDarkMode()
                     setIsMenuOpen(false)
                   }}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[var(--color-surface)]/10 transition-colors w-fit"
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] transition-colors w-fit"
                 >
                   {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                   <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
@@ -131,7 +131,7 @@ const PublicLayout = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[var(--color-primary-strong)] text-white">
+      <footer className="bg-[var(--color-primary-strong)] text-[var(--color-on-solid)]">
         <div className="container mx-auto px-4 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Church Info */}
@@ -149,13 +149,13 @@ const PublicLayout = () => {
                 Serving our community with love, faith, and fellowship. A place where everyone is welcome.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)]/10 hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Facebook">
+                <a href="#" className="w-10 h-10 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Facebook">
                   <Share2 className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)]/10 hover:bg-[var(--color-accent)] rounded-lg flex items-center justify-center transition-colors" title="Instagram">
+                <a href="#" className="w-10 h-10 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] hover:bg-[var(--color-accent)] rounded-lg flex items-center justify-center transition-colors" title="Instagram">
                   <AtSign className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-[var(--color-surface)]/10 hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
+                <a href="#" className="w-10 h-10 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] hover:bg-[var(--color-primary)] rounded-lg flex items-center justify-center transition-colors" title="Twitter / X">
                   <Globe className="h-5 w-5" />
                 </a>
               </div>
@@ -168,21 +168,21 @@ const PublicLayout = () => {
                 <div className="flex items-start gap-3">
                   <Phone className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
-                    <p className="text-white font-medium">Phone</p>
+                    <p className="text-[var(--color-on-solid)] font-medium">Phone</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">+254 700 000 000</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
-                    <p className="text-white font-medium">Email</p>
+                    <p className="text-[var(--color-on-solid)] font-medium">Email</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">info@sda-kiserian.org</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-[var(--color-primary)] mt-0.5" />
                   <div>
-                    <p className="text-white font-medium">Location</p>
+                    <p className="text-[var(--color-on-solid)] font-medium">Location</p>
                     <p className="text-[var(--color-textSecondary)] text-sm">Kiserian, Kenya</p>
                   </div>
                 </div>
@@ -193,22 +193,22 @@ const PublicLayout = () => {
             <div>
               <h3 className="font-bold text-lg mb-6">Quick Links</h3>
               <div className="space-y-3">
-                <Link to="/announcements" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/announcements" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Announcements
                 </Link>
-                <Link to="/gallery" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/gallery" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Photo Gallery
                 </Link>
-                <Link to="/auth/login" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/auth/login" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Member Portal
                 </Link>
-                <Link to="/#live-stream" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/#live-stream" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Live Stream
                 </Link>
-                <Link to="/terms" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/terms" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Terms of Use
                 </Link>
-                <Link to="/privacy" className="block text-[var(--color-textSecondary)] hover:text-white transition-colors">
+                <Link to="/privacy" className="block text-[var(--color-textSecondary)] hover:text-[var(--color-on-solid)] transition-colors">
                   Privacy Policy
                 </Link>
               </div>
@@ -218,16 +218,16 @@ const PublicLayout = () => {
             <div>
               <h3 className="font-bold text-lg mb-6">Service Times</h3>
               <div className="space-y-3">
-                <div className="bg-[var(--color-surface)]/10 rounded-lg p-4">
-                  <p className="text-white font-medium">Sabbath School</p>
+                <div className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-lg p-4">
+                  <p className="text-[var(--color-on-solid)] font-medium">Sabbath School</p>
                   <p className="text-[var(--color-textSecondary)] text-sm">9:00 AM - 10:00 AM</p>
                 </div>
-                <div className="bg-[var(--color-surface)]/10 rounded-lg p-4">
-                  <p className="text-white font-medium">Main Service</p>
+                <div className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-lg p-4">
+                  <p className="text-[var(--color-on-solid)] font-medium">Main Service</p>
                   <p className="text-[var(--color-textSecondary)] text-sm">10:30 AM - 12:30 PM</p>
                 </div>
-                <div className="bg-[var(--color-surface)]/10 rounded-lg p-4">
-                  <p className="text-white font-medium">Prayer Meeting</p>
+                <div className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-lg p-4">
+                  <p className="text-[var(--color-on-solid)] font-medium">Prayer Meeting</p>
                   <p className="text-[var(--color-textSecondary)] text-sm">Wednesday 6:00 PM</p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ const PublicLayout = () => {
           </div>
 
           {/* Bottom Bar */}
-          <div className="border-t border-white/10 mt-12 pt-8">
+          <div className="border-t border-[var(--color-on-solid-20)] mt-12 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-[var(--color-textSecondary)] text-sm">
                 © {new Date().getFullYear()} {churchName}. All rights reserved.

@@ -6,12 +6,10 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 
 const MobileDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
   const navigate = useNavigate()
   
   const [stats, setStats] = useState({
@@ -73,29 +71,25 @@ const MobileDashboard = () => {
       title: 'Total Members',
       value: stats.totalMembers,
       icon: Users,
-      color: '#3B82F6',
-      bgColor: 'rgba(59, 130, 246, 0.1)'
+      iconClass: 'text-[var(--color-primary)]'
     },
     {
       title: 'Total Payments',
       value: `KES ${stats.totalPayments}`,
       icon: DollarSign,
-      color: '#22C55E',
-      bgColor: 'rgba(34, 197, 94, 0.1)'
+      iconClass: 'text-[var(--color-success)]'
     },
     {
       title: 'Upcoming Events',
       value: stats.upcomingEvents,
       icon: Calendar,
-      color: '#A855F7',
-      bgColor: 'rgba(168, 85, 247, 0.1)'
+      iconClass: 'text-[var(--color-accent)]'
     },
     {
       title: 'Announcements',
       value: stats.recentAnnouncements,
       icon: Megaphone,
-      color: '#F59E0B',
-      bgColor: 'rgba(245, 158, 11, 0.1)'
+      iconClass: 'text-[var(--color-warning)]'
     }
   ]
 
@@ -107,12 +101,12 @@ const MobileDashboard = () => {
     system: Activity
   }
 
-  const activityColors = {
-    payment: '#22C55E',
-    announcement: '#3B82F6',
-    event: '#A855F7',
-    member: '#F59E0B',
-    system: '#6B7280'
+  const activityIconClasses = {
+    payment: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+    announcement: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+    event: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
+    member: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
+    system: 'bg-[var(--color-surfaceHover)] text-[var(--color-textSecondary)]'
   }
 
   if (loading) {
@@ -154,10 +148,7 @@ const MobileDashboard = () => {
             const Icon = stat.icon
             return (
               <div key={index} className="mobile-stat-card">
-                <div 
-                  className="icon"
-                  style={{ color: stat.color }}
-                >
+                <div className={`icon ${stat.iconClass}`}>
                   <Icon size={32} />
                 </div>
                 <div className="value">{stat.value}</div>
@@ -177,13 +168,10 @@ const MobileDashboard = () => {
           <div className="space-y-2">
             {activities.map((activity, index) => {
               const Icon = activityIcons[activity.type] || Activity
-              const color = activityColors[activity.type] || '#6B7280'
+              const iconClass = activityIconClasses[activity.type] || activityIconClasses.system
               return (
                 <div key={index} className="mobile-activity-item">
-                  <div 
-                    className="icon"
-                    style={{ backgroundColor: `${color}20`, color }}
-                  >
+                  <div className={`icon ${iconClass}`}>
                     <Icon size={20} />
                   </div>
                   <div className="content">

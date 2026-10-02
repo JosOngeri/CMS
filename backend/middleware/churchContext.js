@@ -1,3 +1,8 @@
+/**
+ * (DORMANT — commented out in app.js) Sets Postgres session vars for row-level security per request.
+ * @exports {churchContext, strictChurchContext}
+ * @known set_config runs on a random pooled connection (RLS var won't apply to later queries); runs before auth so req.user context is never set; strictChurchContext unused — ledger.
+ */
 const { pool } = require('../config/database');
 
 /**

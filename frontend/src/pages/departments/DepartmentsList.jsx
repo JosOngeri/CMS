@@ -95,7 +95,7 @@ const DepartmentsList = () => {
 
   const fetchUserDepartments = useCallback(async () => {
     try {
-      const response = await api.get('/department/my-departments');
+      const response = await api.get('/departments/my-departments');
       setUserDepartments(response.data.departments || []);
       setUserRoles(response.data.roles || {});
     } catch (error) {
@@ -296,7 +296,7 @@ const DepartmentsList = () => {
               </button>
               <button
                 onClick={() => { setEditingDepartment(null); setFormData({ name: '', description: '', head_id: '', category: '', parent_department_id: '', is_committee: false, is_active: true }); setShowCreateForm(true); }}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">New Department</span>
@@ -330,14 +330,14 @@ const DepartmentsList = () => {
 
           {/* Selection Bar */}
           {selectedDepartments.length > 0 && (
-            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center justify-between">
+            <div className="bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] border border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)] rounded-lg p-3 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <button onClick={handleSelectAll} className="flex items-center gap-2 text-primary hover:opacity-80">
                   {selectAll ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                   <span className="text-sm font-medium">{selectAll ? 'Deselect All' : 'Select All'}</span>
                 </button>
                 {canManageDepartments && (
-                  <div className="flex items-center gap-2 border-l border-primary/30 pl-4 ml-2">
+                  <div className="flex items-center gap-2 border-l border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] pl-4 ml-2">
                     <button onClick={() => handleBatchOperation('activate_selected')} className="btn btn-sm btn-success">Activate</button>
                     <button onClick={() => handleBatchOperation('deactivate_selected')} className="btn btn-sm btn-warning">Deactivate</button>
                     <button onClick={() => handleBatchOperation('delete_selected')} className="btn btn-sm btn-danger">Delete</button>

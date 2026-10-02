@@ -1,3 +1,10 @@
+/**
+ * Tenant resolver — maps request → church via Host subdomain, x-tenant-slug header, ?tenant query, or DEFAULT_CHURCH_SLUG; 10-min cache.
+ * @exports tenantResolver middleware
+ * @deps config/database
+ * @tenant sets req.church_id + req.church_slug (snake_case — identityGuard reads churchId and misses it)
+ * @known Host and x-tenant-slug are client-controlled (spoofable cross-tenant); req.params.tenant_slug fallback is dead; suspended churches stay cached ≤10min; misses cost 2 uncached DB queries — ledger.
+ */
 const { pool } = require('../config/database');
 
 /**

@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form'
 import { Eye, EyeOff, Church, Loader2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import { useChurchBranding } from '../../hooks/useChurchBranding'
 
 const Login = () => {
@@ -14,7 +13,6 @@ const Login = () => {
   const { login } = useAuth()
   const toast = useToast()
   const navigate = useNavigate()
-  const { colors } = useColorPalette()
 
   const {
     register,
@@ -37,29 +35,29 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: colors.background }}>
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[var(--color-background)]">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="flex justify-center mb-6">
-            <div className="p-3 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
-              <Church className="h-8 w-8" style={{ color: colors.primary }} aria-hidden="true" />
+            <div className="p-3 rounded-full bg-[var(--color-primary-light)]">
+              <Church className="h-8 w-8 text-[var(--color-primary)]" aria-hidden="true" />
             </div>
           </div>
-          <h2 className="text-3xl font-bold" style={{ color: colors.text }}>
+          <h2 className="text-3xl font-bold text-[var(--color-text)]">
             Welcome Back
           </h2>
-          <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+          <p className="mt-2 text-sm text-[var(--color-textSecondary)]">
             Sign in to your {churchName} account
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="py-8 px-6 shadow-lg rounded-lg" style={{ backgroundColor: colors.surface }}>
+        <div className="py-8 px-6 shadow-lg rounded-lg bg-[var(--color-surface)]">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {/* Email, Username, or Phone */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+              <label htmlFor="email" className="block text-sm font-medium mb-2 text-[var(--color-text)]">
                 Email, Username, or Phone
               </label>
               <input
@@ -68,28 +66,21 @@ const Login = () => {
                 })}
                 id="email"
                 type="text"
-                className="input w-full px-4 py-2 rounded-lg"
+                className="input w-full px-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]"
                 aria-label="Email, username, or phone"
                 aria-invalid={errors.email ? 'true' : 'false'}
                 aria-describedby={errors.email ? 'email-error' : undefined}
-                style={{
-                  backgroundColor: colors.background,
-                  borderColor: colors.border,
-                  color: colors.text,
-                  borderWidth: '1px',
-                  borderStyle: 'solid'
-                }}
                 placeholder="Enter your email, username, or phone"
                 autoComplete="username"
               />
               {errors.email && (
-                <p id="email-error" className="mt-1 text-sm" style={{ color: colors.error }} role="alert">{errors.email.message}</p>
+                <p id="email-error" className="mt-1 text-sm text-[var(--color-error)]" role="alert">{errors.email.message}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-2" style={{ color: colors.text }}>
+              <label htmlFor="password" className="block text-sm font-medium mb-2 text-[var(--color-text)]">
                 Password
               </label>
               <div className="relative">
@@ -99,17 +90,10 @@ const Login = () => {
                   })}
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  className="input w-full pr-10 px-4 py-2 rounded-lg"
+                  className="input w-full pr-10 px-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]"
                   aria-label="Password"
                   aria-invalid={errors.password ? 'true' : 'false'}
                   aria-describedby={errors.password ? 'password-error' : undefined}
-                  style={{
-                    backgroundColor: colors.background,
-                    borderColor: colors.border,
-                    color: colors.text,
-                    borderWidth: '1px',
-                    borderStyle: 'solid'
-                  }}
                   placeholder="Enter your password"
                   autoComplete="current-password"
                 />
@@ -120,9 +104,9 @@ const Login = () => {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" style={{ color: colors.textSecondary }} aria-hidden="true" />
+                    <EyeOff className="h-4 w-4 text-[var(--color-textSecondary)]" aria-hidden="true" />
                   ) : (
-                    <Eye className="h-4 w-4" style={{ color: colors.textSecondary }} aria-hidden="true" />
+                    <Eye className="h-4 w-4 text-[var(--color-textSecondary)]" aria-hidden="true" />
                   )}
                 </button>
               </div>

@@ -241,7 +241,7 @@ const NotificationSettings = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+          className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] text-[var(--color-on-solid)] px-6 py-2.5 rounded-lg font-medium transition-colors"
         >
           {saving ? (
             <>

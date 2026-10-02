@@ -1,3 +1,9 @@
+/**
+ * CSRF middleware — SECURITY THEATER: any 64-char string passes; tokens are never bound to a session.
+ * Real protection currently comes from SameSite cookies + the Bearer-header exemption.
+ * @exports {csrfTokenMiddleware, getCsrfToken}
+ * @known Replace with a session-bound double-submit token or remove — ledger Batch-1 re-audit.
+ */
 const crypto = require('crypto');
 
 // Generate CSRF token

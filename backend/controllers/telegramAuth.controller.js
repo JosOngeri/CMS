@@ -20,7 +20,7 @@ class TelegramAuthController extends BaseController {
    */
   async getAuthMethods(req, res) {
     try {
-      const methods = await TelegramAuthRepository.getAllAuthMethods();
+      const methods = await TelegramAuthRepository.getAllAuthMethods(req.user.church_id);
 
       const sanitizedMethods = methods.map(method => ({
         ...method,
@@ -56,7 +56,7 @@ class TelegramAuthController extends BaseController {
       const { type, name, config, isActive, isDefault } = req.body;
 
       if (isDefault) {
-        await TelegramAuthRepository.unsetAllDefaults();
+        await TelegramAuthRepository.unsetAllDefaults(req.user.church_id);
       }
 
       const method = await TelegramAuthRepository.createAuthMethod({
@@ -64,7 +64,8 @@ class TelegramAuthController extends BaseController {
         name,
         config,
         is_active: isActive || false,
-        is_default: isDefault || false
+        is_default: isDefault || false,
+        church_id: req.user.church_id
       });
 
       this.success(res, {
@@ -92,7 +93,7 @@ class TelegramAuthController extends BaseController {
       const { type, name, config, isActive, isDefault } = req.body;
 
       if (isDefault) {
-        await TelegramAuthRepository.unsetAllDefaults();
+        await TelegramAuthRepository.unsetAllDefaults(req.user.church_id);
       }
 
       const method = await TelegramAuthRepository.updateAuthMethod(id, {
@@ -101,7 +102,7 @@ class TelegramAuthController extends BaseController {
         config,
         is_active: isActive,
         is_default: isDefault
-      });
+      }, req.user.church_id);
 
       if (!method) {
         return this.notFound(res, 'Authentication method not found');
@@ -129,7 +130,7 @@ class TelegramAuthController extends BaseController {
     try {
       const { id } = req.params;
 
-      await TelegramAuthRepository.deleteAuthMethod(id);
+      await TelegramAuthRepository.deleteAuthMethod(id, req.user.church_id);
 
       this.success(res, {
         success: true,
@@ -153,8 +154,8 @@ class TelegramAuthController extends BaseController {
     try {
       const { id } = req.params;
 
-      await TelegramAuthRepository.unsetAllDefaults();
-      await TelegramAuthRepository.setDefault(id);
+      await TelegramAuthRepository.unsetAllDefaults(req.user.church_id);
+      await TelegramAuthRepository.setDefault(id, req.user.church_id);
 
       this.success(res, {
         success: true,
@@ -178,7 +179,7 @@ class TelegramAuthController extends BaseController {
     try {
       const { id } = req.params;
 
-      const method = await TelegramAuthRepository.findAuthMethodById(id);
+      const method = await TelegramAuthRepository.findAuthMethodById(id, req.user.church_id, true);
 
       if (!method) {
         return this.notFound(res, 'Authentication method not found');
@@ -255,10 +256,10 @@ class TelegramAuthController extends BaseController {
       let method;
       
       if (methodId) {
-        method = await TelegramAuthRepository.findAuthMethodById(methodId);
+        method = await TelegramAuthRepository.findAuthMethodById(methodId, req.user.church_id, true);
       } else {
         // Try to find default MTProto method
-        const defaultMethod = await TelegramAuthRepository.findDefaultMethod();
+        const defaultMethod = await TelegramAuthRepository.findDefaultMethod(req.user.church_id);
         if (defaultMethod && defaultMethod.type === 'mtproto') {
           method = defaultMethod;
         } else {
@@ -273,7 +274,8 @@ class TelegramAuthController extends BaseController {
               sessionString: process.env.TELEGRAM_SESSION_STRING
             },
             is_active: true,
-            is_default: true
+            is_default: true,
+            church_id: req.user.church_id
           });
         }
       }
@@ -340,7 +342,28 @@ class TelegramAuthController extends BaseController {
       }
 
       const actualMethodId = methodId || storedData.methodId;
-      await TelegramAuthRepository.updateConfigPhoneNumber(phoneNumber, actualMethodId);
+      const method = await TelegramAuthRepository.findAuthMethodById(
+        actualMethodId,
+        req.user.church_id,
+        true
+      );
+
+      if (!method) {
+        return this.badRequest(res, 'Authentication method not found');
+      }
+
+      if (method.church_id === req.user.church_id) {
+        await TelegramAuthRepository.updateConfigPhoneNumber(phoneNumber, actualMethodId, req.user.church_id);
+      } else {
+        await TelegramAuthRepository.createAuthMethod({
+          type: method.type,
+          name: `${method.name} (${req.user.church_slug || 'Church'})`,
+          config: { ...method.config, phoneNumber },
+          is_active: true,
+          is_default: true,
+          church_id: req.user.church_id
+        });
+      }
 
       global.verificationCodes.delete(phoneNumber);
 

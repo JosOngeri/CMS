@@ -242,7 +242,7 @@ const TreasuryAnalytics = () => {
           {analytics?.monthly_trends && analytics.monthly_trends.length > 0 ? (
             <div className="space-y-3">
               {analytics.monthly_trends.map((trend, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)]/50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)] rounded-lg">
                   <span className="text-sm text-[var(--color-text)]">{trend.month}</span>
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
@@ -282,7 +282,7 @@ const TreasuryAnalytics = () => {
           {analytics?.expense_categories && analytics.expense_categories.length > 0 ? (
             <div className="space-y-3">
               {analytics.expense_categories.map((category, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-[var(--color-background)]/50 rounded-lg">
+                <div key={index} className="flex items-center justify-between p-3 bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)] rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-[var(--color-warning-light)] rounded-lg">
                       <DollarSign className="h-4 w-4 text-[var(--color-warning)]" />

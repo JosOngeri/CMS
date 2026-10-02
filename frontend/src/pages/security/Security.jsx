@@ -88,14 +88,14 @@ const Security = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('logs')}
-            className={`px-4 py-2 rounded-lg ${activeTab === 'logs' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] '}`}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'logs' ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)] '}`}
           >
             <Activity className="w-4 h-4 inline mr-2" />
             Activity Logs
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`px-4 py-2 rounded-lg ${activeTab === 'settings' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] '}`}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'settings' ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)] '}`}
           >
             <Settings className="w-4 h-4 inline mr-2" />
             Settings
@@ -205,6 +205,7 @@ const Security = () => {
                 <label className="block text-sm font-medium mb-1">Password Expiry (days)</label>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={securitySettings.passwordExpiry}
                   onChange={(e) => setSecuritySettings({ ...securitySettings, passwordExpiry: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border rounded-lg"
@@ -214,6 +215,7 @@ const Security = () => {
                 <label className="block text-sm font-medium mb-1">Session Timeout (minutes)</label>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={securitySettings.sessionTimeout}
                   onChange={(e) => setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border rounded-lg"
@@ -232,6 +234,7 @@ const Security = () => {
                 <label className="block text-sm font-medium mb-1">Max Login Attempts</label>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={securitySettings.maxLoginAttempts}
                   onChange={(e) => setSecuritySettings({ ...securitySettings, maxLoginAttempts: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border rounded-lg"
@@ -241,6 +244,7 @@ const Security = () => {
                 <label className="block text-sm font-medium mb-1">Lockout Duration (minutes)</label>
                 <input
                   type="number"
+                  inputMode="numeric"
                   value={securitySettings.lockoutDuration}
                   onChange={(e) => setSecuritySettings({ ...securitySettings, lockoutDuration: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border rounded-lg"
@@ -284,7 +288,7 @@ const Security = () => {
           <div className="flex justify-end">
             <button
               onClick={saveSettings}
-              className="px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+              className="px-6 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
             >
               Save Settings
             </button>

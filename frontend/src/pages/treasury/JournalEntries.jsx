@@ -213,7 +213,7 @@ const JournalEntries = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>New Entry</span>
@@ -232,7 +232,7 @@ const JournalEntries = () => {
                   placeholder="Search entries..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full pl-10 pr-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                 />
               </div>
             </div>
@@ -262,7 +262,7 @@ const JournalEntries = () => {
                 <select
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -279,7 +279,7 @@ const JournalEntries = () => {
                   type="date"
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                 />
               </div>
               <div>
@@ -290,7 +290,7 @@ const JournalEntries = () => {
                   type="date"
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
-                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                  className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                 />
               </div>
             </div>
@@ -305,11 +305,11 @@ const JournalEntries = () => {
             {filteredEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="p-4 hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)]/50 transition-colors"
+                className="p-4 hover:bg-[var(--color-background)] hover:bg-[color-mix(in_srgb,var(--color-surface)_50%,transparent)] transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-[var(--color-primary-light)]/20 rounded-lg">
+                    <div className="p-2 bg-[color-mix(in_srgb,var(--color-primary-light)_20%,transparent)] rounded-lg">
                       <FileText className="h-5 w-5 text-[var(--color-primary)]" />
                     </div>
                     <div>
@@ -401,7 +401,7 @@ const JournalEntries = () => {
                       required
                       value={formData.entry_number}
                       onChange={(e) => setFormData({ ...formData, entry_number: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                     />
                   </div>
                   <div>
@@ -413,7 +413,7 @@ const JournalEntries = () => {
                       required
                       value={formData.entry_date}
                       onChange={(e) => setFormData({ ...formData, entry_date: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                     />
                   </div>
                 </div>
@@ -426,7 +426,7 @@ const JournalEntries = () => {
                     required
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -438,7 +438,7 @@ const JournalEntries = () => {
                       type="text"
                       value={formData.reference_type}
                       onChange={(e) => setFormData({ ...formData, reference_type: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                     />
                   </div>
                   <div>
@@ -449,7 +449,7 @@ const JournalEntries = () => {
                       type="text"
                       value={formData.reference_id}
                       onChange={(e) => setFormData({ ...formData, reference_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)]"
                     />
                   </div>
                 </div>
@@ -471,13 +471,13 @@ const JournalEntries = () => {
                   </div>
                   <div className="space-y-2">
                     {formData.lines.map((line, index) => (
-                      <div key={index} className="flex items-center space-x-2 p-3 bg-[var(--color-background)]/50 rounded-lg">
+                      <div key={index} className="flex items-center space-x-2 p-3 bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)] rounded-lg">
                         <div className="flex-1">
                           <select
                             required
                             value={line.account_id}
                             onChange={(e) => updateLine(index, 'account_id', e.target.value)}
-                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white text-sm"
+                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] text-sm"
                           >
                             <option value="">Select Account</option>
                             {accounts.map(account => (
@@ -490,21 +490,23 @@ const JournalEntries = () => {
                         <div className="w-32">
                           <input
                             type="number"
+                            inputMode="decimal"
                             step="0.01"
                             placeholder="Debit"
                             value={line.debit_amount}
                             onChange={(e) => updateLine(index, 'debit_amount', e.target.value)}
-                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white text-sm"
+                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] text-sm"
                           />
                         </div>
                         <div className="w-32">
                           <input
                             type="number"
+                            inputMode="decimal"
                             step="0.01"
                             placeholder="Credit"
                             value={line.credit_amount}
                             onChange={(e) => updateLine(index, 'credit_amount', e.target.value)}
-                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white text-sm"
+                            className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] text-sm"
                           />
                         </div>
                         {formData.lines.length > 2 && (
@@ -535,7 +537,7 @@ const JournalEntries = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingEntry ? 'Update' : 'Create'}
                   </button>

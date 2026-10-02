@@ -77,7 +77,7 @@ export const ToastProvider = ({ children }) => {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className={`px-5 py-3 mb-2.5 rounded-lg text-white shadow-md transition-all duration-300 ease-in-out ${typeClasses[toast.type]}`}
+            className={`px-5 py-3 mb-2.5 rounded-lg text-[var(--color-on-solid)] shadow-md transition-all duration-300 ease-in-out ${typeClasses[toast.type]}`}
             role={toast.type === 'error' ? 'alert' : 'status'}
             aria-label={toast.type === 'error' ? 'Error' : toast.type === 'success' ? 'Success' : 'Information'}
           >

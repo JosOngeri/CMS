@@ -44,7 +44,7 @@ class ActivityFeedController extends BaseController {
 
       // If not admin, verify user has access to this department
       if (!isAdmin) {
-        const hasAccess = await activityFeedRepository.checkDepartmentAccess(departmentId, userId);
+        const hasAccess = await activityFeedRepository.checkDepartmentAccess(departmentId, userId, req.user.church_id);
         if (!hasAccess) {
           return this.forbidden(res, 'Access denied to this department');
         }
@@ -54,7 +54,7 @@ class ActivityFeedController extends BaseController {
       const offsetNum = parseInt(offset);
 
       // Get activities from repository
-      const activities = await activityFeedRepository.getActivityFeed(departmentId, limitNum, offsetNum);
+      const activities = await activityFeedRepository.getActivityFeed(departmentId, req.user.church_id, limitNum, offsetNum);
 
       // Filter by activity type if specified
       const filteredActivities = await activityFeedRepository.getActivitiesByType(activities, type);
@@ -63,7 +63,7 @@ class ActivityFeedController extends BaseController {
       await ActivityFeedService.broadcastActivities(filteredActivities);
 
       // Get total count for pagination
-      const totalCount = await activityFeedRepository.getActivityCount(departmentId);
+      const totalCount = await activityFeedRepository.getActivityCount(departmentId, req.user.church_id);
 
       this.success(res, {
         data: filteredActivities,
@@ -101,14 +101,14 @@ class ActivityFeedController extends BaseController {
 
       // If not admin, verify user has access
       if (!isAdmin) {
-        const hasAccess = await activityFeedRepository.checkDepartmentAccess(departmentId, userId);
+        const hasAccess = await activityFeedRepository.checkDepartmentAccess(departmentId, userId, req.user.church_id);
         if (!hasAccess) {
           return this.forbidden(res, 'Access denied to this department');
         }
       }
 
       // Get activity counts by type
-      const summary = await activityFeedRepository.getActivitySummary(departmentId);
+      const summary = await activityFeedRepository.getActivitySummary(departmentId, req.user.church_id);
 
       this.success(res, summary, 'Activity summary retrieved successfully');
     } catch (error) {

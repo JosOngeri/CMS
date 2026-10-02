@@ -136,14 +136,14 @@ function Sidebar({ isOpen, setIsOpen }) {
           <div className="p-6 church-gradient">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 rounded-lg bg-[var(--color-surface)]/20 flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">{churchName?.charAt(0) || 'M'}</span>
+                <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] flex items-center justify-center">
+                  <span className="text-[var(--color-on-solid)] font-bold text-lg">{churchName?.charAt(0) || 'M'}</span>
                 </div>
-                <h1 className="text-lg font-bold text-white truncate">{churchName}</h1>
+                <h1 className="text-lg font-bold text-[var(--color-on-solid)] truncate">{churchName}</h1>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="lg:hidden text-white/80 hover:text-white"
+                className="lg:hidden text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)]"
                 aria-label="Close sidebar"
               >
                 <X className="h-6 w-6" />
@@ -170,13 +170,13 @@ function Sidebar({ isOpen, setIsOpen }) {
                           to={item.path}
                           className={`flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ${
                             isActive
-                              ? 'church-gradient text-white shadow-md'
-                              : 'text-[var(--color-text)] hover:bg-[var(--color-primary)]/10'
+                              ? 'church-gradient text-[var(--color-on-solid)] shadow-md'
+                              : 'text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
                           }`}
                           onClick={() => setIsOpen(false)}
                           aria-current={isActive ? 'page' : undefined}
                         >
-                          <div className={`p-1.5 rounded-lg mr-3 ${isActive ? 'bg-[var(--color-surface)]/20' : 'bg-[var(--color-background)]'}`}>
+                          <div className={`p-1.5 rounded-lg mr-3 ${isActive ? 'bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)]' : 'bg-[var(--color-background)]'}`}>
                             <Icon className="h-4 w-4" />
                           </div>
                           {item.label}
@@ -190,7 +190,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           </nav>
 
           {/* User summary & logout */}
-          <div className="p-4 border-t border-[var(--color-border)] bg-[var(--color-background)]/50">
+          <div className="p-4 border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)]">
             <div className="flex items-center space-x-3 mb-4 px-2">
               <div className="w-10 h-10 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center text-[var(--color-primary)] font-bold">
                 {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}

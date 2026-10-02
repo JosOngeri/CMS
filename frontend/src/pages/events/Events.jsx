@@ -24,6 +24,7 @@ import { EventsEmptyState } from '../../components/common/EmptyState'
 import PermissionButton from '../../components/common/PermissionButton'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
 import { groupEventsByDate } from '../../utils/dateGrouping'
+import { fmtDate } from '../../utils/format'
 import { PERMISSIONS } from '../../constants/permissions'
 
 const Events = () => {
@@ -216,15 +217,6 @@ const Events = () => {
     }))
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   const isUpcoming = (dateString) => {
     return new Date(dateString) > new Date()
   }
@@ -261,7 +253,7 @@ const Events = () => {
           permission={PERMISSIONS.EVENTS_CREATE}
           buttonProps={{
             onClick: () => setShowForm(true),
-            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors",
+            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors",
           }}
         >
           <Plus size={16} />
@@ -403,7 +395,7 @@ const Events = () => {
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {editingEvent ? 'Update' : 'Create'} Event
               </button>
@@ -472,7 +464,7 @@ const Events = () => {
                       <div className="space-y-2 text-sm text-[var(--color-textSecondary)] ">
                         <div className="flex items-center gap-2">
                           <Calendar size={16} />
-                          <span>{formatDate(event.date)}</span>
+                          <span>{fmtDate(event.date, { weekday: 'long', month: 'long' })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Clock size={16} />
@@ -501,7 +493,7 @@ const Events = () => {
                             {getRsvpStatus(event.id) === 'attending' ? (
                               <button
                                 onClick={() => handleRsvp(event.id, 'declined')}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors text-sm"
                               >
                                 <XCircle size={14} />
                                 Decline
@@ -509,7 +501,7 @@ const Events = () => {
                             ) : getRsvpStatus(event.id) === 'declined' ? (
                               <button
                                 onClick={() => handleRsvp(event.id, 'attending')}
-                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
+                                className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors text-sm"
                               >
                                 <CheckCircle size={14} />
                                 Accept
@@ -518,14 +510,14 @@ const Events = () => {
                               <>
                                 <button
                                   onClick={() => handleRsvp(event.id, 'attending')}
-                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors text-sm"
                                 >
                                   <CheckCircle size={14} />
                                   Accept
                                 </button>
                                 <button
                                   onClick={() => handleRsvp(event.id, 'declined')}
-                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm"
+                                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors text-sm"
                                 >
                                   <XCircle size={14} />
                                   Decline
@@ -538,7 +530,7 @@ const Events = () => {
                           permission={PERMISSIONS.EVENTS_EDIT}
                           buttonProps={{
                             onClick: () => handleEdit(event),
-                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm",
+                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm",
                           }}
                         >
                           <Edit size={14} />
@@ -548,7 +540,7 @@ const Events = () => {
                           permission={PERMISSIONS.EVENTS_DELETE}
                           buttonProps={{
                             onClick: () => handleDelete(event.id),
-                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-white rounded-lg hover:opacity-90 transition-colors text-sm",
+                            className: "flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-[var(--color-error)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors text-sm",
                           }}
                         >
                           <Trash2 size={14} />

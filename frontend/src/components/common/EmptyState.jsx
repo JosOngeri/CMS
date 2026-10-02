@@ -1,5 +1,4 @@
-import { Users, FileText, Calendar, Building, Search, Plus, AlertCircle, Image as ImageIcon, Info, ArrowRight, ExternalLink } from 'lucide-react'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
+import { Users, FileText, Calendar, Building, Search, Plus, AlertCircle, Image as ImageIcon, Info, ArrowRight, BarChart3, Shield } from 'lucide-react'
 
 /**
  * EmptyState - A reusable empty state component with enhanced features
@@ -17,8 +16,6 @@ export const EmptyState = ({
   illustration = null,
   size = 'default' // 'small', 'default', 'large'
 }) => {
-  const { colors } = useColorPalette()
-
   const sizeClasses = {
     small: 'py-8',
     default: 'py-12',
@@ -39,18 +36,18 @@ export const EmptyState = ({
           {illustration}
         </div>
       ) : (
-        <div className="p-4 rounded-full mb-4" style={{ backgroundColor: colors.background }}>
-          <Icon className={iconSizes[size]} style={{ color: colors.textSecondary }} />
+        <div className="p-4 rounded-full mb-4 bg-[var(--color-background)]">
+          <Icon className={`${iconSizes[size]} text-[var(--color-textSecondary)]`} />
         </div>
       )}
 
       {/* Title */}
-      <h3 className="text-lg font-medium mb-2 text-center" style={{ color: colors.text }}>
+      <h3 className="text-lg font-medium mb-2 text-center text-[var(--color-text)]">
         {title}
       </h3>
 
       {/* Description */}
-      <p className="text-center max-w-md mb-6" style={{ color: colors.textSecondary }}>
+      <p className="text-center max-w-md mb-6 text-[var(--color-textSecondary)]">
         {description}
       </p>
 
@@ -59,10 +56,7 @@ export const EmptyState = ({
         {action && onAction && (
           <button
             onClick={onAction}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
-            style={{ backgroundColor: colors.primary, color: 'white' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
             aria-label={actionLabel}
           >
             {typeof action === 'function' ? <action className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -73,19 +67,7 @@ export const EmptyState = ({
         {secondaryAction && onSecondaryAction && (
           <button
             onClick={onSecondaryAction}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors"
-            style={{ 
-              borderColor: colors.textSecondary + '40',
-              color: colors.textSecondary 
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.textSecondary + '10'
-              e.currentTarget.style.borderColor = colors.textSecondary
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.borderColor = colors.textSecondary + '40'
-            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-textSecondary)] transition-colors hover:bg-[var(--color-surfaceHover)] hover:border-[var(--color-textSecondary)]"
             aria-label={secondaryActionLabel}
           >
             {typeof secondaryAction === 'function' ? <secondaryAction className="w-4 h-4" /> : <Info className="w-4 h-4" />}
@@ -239,26 +221,21 @@ export const GalleryEmptyState = ({ onUploadPhoto, onLearnMore }) => {
  * ErrorEmptyState - Empty state for error states
  */
 export const ErrorEmptyState = ({ message = 'Something went wrong', onRetry }) => {
-  const { colors } = useColorPalette()
-
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4">
-      <div className="p-4 rounded-full mb-4" style={{ backgroundColor: colors.error + '20' }}>
-        <AlertCircle className="w-12 h-12" style={{ color: colors.error }} />
+      <div className="p-4 rounded-full mb-4 bg-[var(--color-error-light)]">
+        <AlertCircle className="w-12 h-12 text-[var(--color-error)]" />
       </div>
-      <h3 className="text-lg font-medium mb-2" style={{ color: colors.text }}>
+      <h3 className="text-lg font-medium mb-2 text-[var(--color-text)]">
         Error
       </h3>
-      <p className="text-center max-w-md mb-4" style={{ color: colors.textSecondary }}>
+      <p className="text-center max-w-md mb-4 text-[var(--color-textSecondary)]">
         {message}
       </p>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="px-4 py-2 rounded-lg transition-colors"
-          style={{ backgroundColor: colors.primary, color: 'white' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+          className="px-4 py-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
           aria-label="Retry operation"
         >
           Try Again

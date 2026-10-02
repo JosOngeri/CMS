@@ -15,6 +15,7 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Users, Calendar, Download } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { fmtDate, fmtKES } from '../../utils/format';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -27,9 +28,7 @@ const TABS = [
   { id: 'sms', label: 'SMS' },
 ];
 
-const fmtMoney = (n) => `KES ${Number(n || 0).toLocaleString()}`;
 const fmtPct = (n) => `${Number(n || 0).toFixed(1)}%`;
-const fmtDate = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 
 const StatCard = ({ label, value, sub }) => (
   <div className="bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-4">
@@ -297,8 +296,8 @@ const Analytics = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <StatCard label="Total Members" value={dashboardStats?.members?.total ?? '—'} sub={`${dashboardStats?.members?.active ?? 0} active`} />
       <StatCard label="Departments" value={dashboardStats?.departments?.total ?? '—'} />
-      <StatCard label="Monthly Income" value={fmtMoney(dashboardStats?.finance?.monthly_income)} />
-      <StatCard label="Monthly Expenses" value={fmtMoney(dashboardStats?.finance?.monthly_expense)} />
+      <StatCard label="Monthly Income" value={fmtKES(dashboardStats?.finance?.monthly_income)} />
+      <StatCard label="Monthly Expenses" value={fmtKES(dashboardStats?.finance?.monthly_expense)} />
       <StatCard label="Pending Approvals" value={dashboardStats?.approvals?.pending ?? '—'} />
       <StatCard label="Unread Notifications" value={dashboardStats?.notifications?.unread ?? '—'} />
     </div>
@@ -335,19 +334,19 @@ const Analytics = () => {
     <>
       {financialSummary && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Income" value={fmtMoney(financialSummary.total_income)} />
-          <StatCard label="Total Expenses" value={fmtMoney(financialSummary.total_expense)} />
-          <StatCard label="Last 30 Days Income" value={fmtMoney(financialSummary.monthly_income)} sub={`${financialSummary.income_transactions ?? 0} transactions`} />
-          <StatCard label="Last 30 Days Expenses" value={fmtMoney(financialSummary.monthly_expense)} sub={`${financialSummary.expense_transactions ?? 0} transactions`} />
+          <StatCard label="Total Income" value={fmtKES(financialSummary.total_income)} />
+          <StatCard label="Total Expenses" value={fmtKES(financialSummary.total_expense)} />
+          <StatCard label="Last 30 Days Income" value={fmtKES(financialSummary.monthly_income)} sub={`${financialSummary.income_transactions ?? 0} transactions`} />
+          <StatCard label="Last 30 Days Expenses" value={fmtKES(financialSummary.monthly_expense)} sub={`${financialSummary.expense_transactions ?? 0} transactions`} />
         </div>
       )}
       <Section title="Contribution trends">
         <DataTable
           columns={[
             { key: 'month', label: 'Month', render: (r) => fmtDate(r.month) },
-            { key: 'total_contributions', label: 'Total', render: (r) => fmtMoney(r.total_contributions) },
+            { key: 'total_contributions', label: 'Total', render: (r) => fmtKES(r.total_contributions) },
             { key: 'contribution_count', label: 'Count' },
-            { key: 'average_contribution', label: 'Average', render: (r) => fmtMoney(r.average_contribution) },
+            { key: 'average_contribution', label: 'Average', render: (r) => fmtKES(r.average_contribution) },
           ]}
           rows={contributionTrends}
         />
@@ -392,7 +391,7 @@ const Analytics = () => {
             { key: 'completion_percentage', label: 'Progress', render: (r) => fmtPct(r.completion_percentage) },
             { key: 'unique_contributors', label: 'Contributors' },
             { key: 'total_contributions', label: 'Contributions' },
-            { key: 'average_contribution', label: 'Avg', render: (r) => fmtMoney(r.average_contribution) },
+            { key: 'average_contribution', label: 'Avg', render: (r) => fmtKES(r.average_contribution) },
           ]}
           rows={collectionPerformance}
         />
@@ -402,8 +401,8 @@ const Analytics = () => {
           columns={[
             { key: 'month', label: 'Month', render: (r) => fmtDate(r.month) },
             { key: 'collections_created', label: 'Created' },
-            { key: 'total_target_amount', label: 'Target', render: (r) => fmtMoney(r.total_target_amount) },
-            { key: 'total_collected_amount', label: 'Collected', render: (r) => fmtMoney(r.total_collected_amount) },
+            { key: 'total_target_amount', label: 'Target', render: (r) => fmtKES(r.total_target_amount) },
+            { key: 'total_collected_amount', label: 'Collected', render: (r) => fmtKES(r.total_collected_amount) },
           ]}
           rows={collectionTrends}
         />
@@ -446,7 +445,7 @@ const Analytics = () => {
           <StatCard label="Failed" value={smsPerformance.failed_count} />
           <StatCard label="Pending" value={smsPerformance.pending_count} />
           <StatCard label="Delivery Rate" value={fmtPct(smsPerformance.delivery_rate)} />
-          <StatCard label="Total Cost" value={fmtMoney(smsPerformance.total_cost)} />
+          <StatCard label="Total Cost" value={fmtKES(smsPerformance.total_cost)} />
         </div>
       )}
       <Section title="Daily delivery">
@@ -503,7 +502,7 @@ const Analytics = () => {
           </button>
           <button
             onClick={() => handleExport('json')}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
           >
             <Download className="w-4 h-4" />
             JSON
@@ -519,7 +518,7 @@ const Analytics = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? 'bg-[var(--color-primary)] text-white'
+                ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]'
                 : 'text-[var(--color-textSecondary)] hover:bg-[var(--color-background)]'
             }`}
           >

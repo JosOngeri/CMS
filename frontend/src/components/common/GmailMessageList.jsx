@@ -15,7 +15,7 @@
  */
 import React, { useState } from 'react';
 import { Trash2, RefreshCw, X, Filter } from 'lucide-react';
-import { useColorPalette } from '../../contexts/ColorPaletteContext';
+import { fmtRelative } from '../../utils/format';
 
 const GmailMessageList = ({
   items,
@@ -33,33 +33,15 @@ const GmailMessageList = ({
   emptyMessage = 'No messages found',
   loading = false
 }) => {
-  const { colors } = useColorPalette()
   const [hoveredRow, setHoveredRow] = useState(null);
 
-  const getPriorityColor = (priority) => {
+  const getPriorityClass = (priority) => {
     switch (priority) {
-      case 'urgent': return { color: colors.error, bg: colors.error + '20' };
-      case 'high': return { color: colors.warning, bg: colors.warning + '20' };
-      case 'medium': return { color: colors.primary, bg: colors.primary + '20' };
-      case 'low': return { color: colors.textSecondary, bg: colors.background };
-      default: return { color: colors.textSecondary, bg: colors.background };
-    }
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString([], { weekday: 'short' });
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      case 'urgent': return 'bg-[var(--color-error-light)] text-[var(--color-error)]';
+      case 'high': return 'bg-[var(--color-warning-light)] text-[var(--color-warning)]';
+      case 'medium': return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]';
+      case 'low':
+      default: return 'bg-[var(--color-background)] text-[var(--color-textSecondary)]';
     }
   };
 
@@ -73,9 +55,9 @@ const GmailMessageList = ({
   const someSelected = selectedItems.size > 0 && selectedItems.size < items.length;
 
   return (
-    <div className="rounded-lg shadow-sm" style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: '1px', borderStyle: 'solid' }}>
+    <div className="rounded-lg shadow-sm bg-[var(--color-surface)] border border-[var(--color-border)]">
       {/* Category Tabs */}
-      <div className="flex items-center overflow-x-auto" style={{ borderBottom: `1px solid ${colors.border}` }} role="tablist" aria-label="Message categories">
+      <div className="flex items-center overflow-x-auto border-b border-[var(--color-border)]" role="tablist" aria-label="Message categories">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -83,21 +65,11 @@ const GmailMessageList = ({
             role="tab"
             aria-selected={activeTab === tab.id}
             aria-controls={`${tab.id}-panel`}
-            className="px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
-            style={{
-              borderColor: activeTab === tab.id ? colors.primary : 'transparent',
-              color: activeTab === tab.id ? colors.primary : colors.textSecondary
-            }}
-            onMouseEnter={(e) => {
-              if (activeTab !== tab.id) {
-                e.currentTarget.style.color = colors.text
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (activeTab !== tab.id) {
-                e.currentTarget.style.color = colors.textSecondary
-              }
-            }}
+            className={`px-6 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
+                : 'border-transparent text-[var(--color-textSecondary)] hover:text-[var(--color-text)]'
+            }`}
           >
             {tab.label}
           </button>
@@ -105,7 +77,7 @@ const GmailMessageList = ({
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: `1px solid ${colors.border}`, backgroundColor: colors.background }}>
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--color-border)] bg-[var(--color-background)]">
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -114,24 +86,20 @@ const GmailMessageList = ({
               if (el) el.indeterminate = someSelected;
             }}
             onChange={onToggleSelectAll}
-            className="w-4 h-4 rounded"
+            className="w-4 h-4 rounded accent-[var(--color-primary)]"
             aria-label="Select all messages"
-            style={{ accentColor: colors.primary }}
           />
           {selectedItems.size > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-sm" style={{ color: colors.textSecondary }}>
+              <span className="text-sm text-[var(--color-textSecondary)]">
                 {selectedItems.size} selected
               </span>
               <button
                 onClick={() => onBulkAction('delete')}
-                className="p-1.5 rounded"
+                className="p-1.5 rounded transition-colors hover:bg-[var(--color-surfaceHover)]"
                 aria-label="Delete selected"
-                style={{ transition: 'background-color 0.2s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <Trash2 className="w-4 h-4" style={{ color: colors.textSecondary }} />
+                <Trash2 className="w-4 h-4 text-[var(--color-textSecondary)]" />
               </button>
             </div>
           )}
@@ -139,15 +107,12 @@ const GmailMessageList = ({
         <div className="flex items-center gap-2">
           <button
             onClick={onRefresh}
-            className="p-1.5 rounded"
+            className="p-1.5 rounded transition-colors hover:bg-[var(--color-surfaceHover)]"
             aria-label="Refresh messages"
-            style={{ transition: 'background-color 0.2s' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <RefreshCw className="w-4 h-4" style={{ color: colors.textSecondary }} />
+            <RefreshCw className="w-4 h-4 text-[var(--color-textSecondary)]" />
           </button>
-          <span className="text-sm" style={{ color: colors.textSecondary }}>
+          <span className="text-sm text-[var(--color-textSecondary)]">
             {items.length} {items.length === 1 ? 'item' : 'items'}
           </span>
         </div>
@@ -230,11 +195,7 @@ const GmailMessageList = ({
                       {item.title || item.subject || '(No subject)'}
                     </span>
                     <span
-                      className="px-2 py-0.5 text-xs font-medium rounded-full capitalize"
-                      style={{
-                        color: getPriorityColor(item.priority || 'normal').color,
-                        backgroundColor: getPriorityColor(item.priority || 'normal').bg
-                      }}
+                      className={`px-2 py-0.5 text-xs font-medium rounded-full capitalize ${getPriorityClass(item.priority || 'normal')}`}
                     >
                       {item.priority || 'normal'}
                     </span>
@@ -261,7 +222,7 @@ const GmailMessageList = ({
                     </div>
                   ) : (
                     <span className="text-sm text-[var(--color-textSecondary)] whitespace-nowrap">
-                      {formatDate(item.created_at || item.sent_at || item.date)}
+                      {fmtRelative(item.created_at || item.sent_at || item.date)}
                     </span>
                   )}
                 </div>
@@ -275,7 +236,7 @@ const GmailMessageList = ({
       {onCompose && (
         <button
           onClick={onCompose}
-          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-full shadow-lg hover:opacity-90 transition-opacity z-10"
+          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full shadow-lg hover:opacity-90 transition-opacity z-10"
           aria-label="Compose new message"
         >
           <span className="font-medium">Compose</span>

@@ -102,7 +102,7 @@ const MyCollections = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
           >
             <Plus className="w-4 h-4 inline mr-2" />
             Record a Gift
@@ -205,6 +205,7 @@ const MyCollections = () => {
                 <label className="block text-sm font-medium mb-1 text-[var(--color-text)]">Amount (KES)</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   min="1"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
@@ -259,7 +260,7 @@ const MyCollections = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
                 >
                   Save
                 </button>

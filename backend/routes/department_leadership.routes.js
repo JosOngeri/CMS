@@ -19,6 +19,7 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 const { logAction } = require('../helpers/auditLog');
 const { sendNotification } = require('../helpers/notify');
 const { createLogger } = require('../helpers/controllerLogger');
+const departmentLeadershipRepository = require('../repositories/DepartmentLeadershipRepository');
 const {
   MANAGER_ROLES, POSITIONS, hasManagerRole, getDepartmentForUser, logDeptActivity,
   grantLeadership, revokeLeadership, headsElsewhere, revokeRole,
@@ -35,7 +36,7 @@ const DEFAULT_CHECKLIST = {
 };
 
 async function createHandover({ dept, outgoingUserId, incomingUserId, position, initiatedBy, subcommitteeId, notes, req }) {
-  const r = await pool.query(
+  const r = await departmentLeadershipRepository.query(
     `INSERT INTO department_handovers
        (department_id, church_id, outgoing_user_id, incoming_user_id, position,
         status, checklist, notes, initiated_by, subcommittee_id)
@@ -73,7 +74,7 @@ async function createHandover({ dept, outgoingUserId, incomingUserId, position, 
 
 /** Load a handover scoped to the caller's church. */
 async function loadHandover(hid, user) {
-  const r = await pool.query('SELECT * FROM department_handovers WHERE id = $1', [hid]);
+  const r = await departmentLeadershipRepository.query('SELECT * FROM department_handovers WHERE id = $1', [hid]);
   const h = r.rows[0];
   const isSuperAdmin = (user.roles || []).includes('Super Admin');
   if (!h || (!isSuperAdmin && h.church_id !== user.church_id)) {
@@ -91,7 +92,7 @@ router.get('/leadership/expiring',
   async (req, res) => {
     try {
       const days = parseInt(req.query.days, 10) || 30;
-      const r = await pool.query(
+      const r = await departmentLeadershipRepository.query(
         `SELECT dl.*, d.name AS department_name,
                 u.first_name || ' ' || u.last_name AS user_name, u.email AS user_email
          FROM department_leadership dl
@@ -116,7 +117,7 @@ router.get('/leadership/expiring',
 // ---------------------------------------------------------------------------
 router.get('/handovers/mine', authenticateToken, async (req, res) => {
   try {
-    const r = await pool.query(
+    const r = await departmentLeadershipRepository.query(
       `SELECT h.*, d.name AS department_name,
               ou.first_name || ' ' || ou.last_name AS outgoing_name,
               iu.first_name || ' ' || iu.last_name AS incoming_name,
@@ -145,7 +146,7 @@ router.get('/:id/leadership', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentLeadershipRepository.query(
       `SELECT dl.*, u.first_name || ' ' || u.last_name AS user_name, u.email AS user_email,
               a.first_name || ' ' || a.last_name AS appointed_by_name,
               s.name AS subcommittee_name
@@ -186,7 +187,7 @@ router.post('/:id/leadership',
       // Occupied head-type seat -> create a pending handover instead.
       // The seat is "occupied" by an active leadership row OR a legacy
       // departments.head_id pointing at someone else.
-      const existing = await pool.query(
+      const existing = await departmentLeadershipRepository.query(
         `SELECT dl.* FROM department_leadership dl
          WHERE dl.department_id = $1 AND dl.position = $2 AND dl.is_active = true
            AND dl.user_id <> $3
@@ -214,11 +215,11 @@ router.post('/:id/leadership',
       });
 
       if ((position === 'head' || position === 'acting_head') && !subcommittee_id) {
-        await pool.query('UPDATE departments SET head_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+        await departmentLeadershipRepository.query('UPDATE departments SET head_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
           [user_id, dept.id]);
       }
       if (position === 'subcommittee_head' && subcommittee_id) {
-        await pool.query('UPDATE department_subcommittees SET lead_user_id = $1, updated_at = NOW() WHERE id = $2',
+        await departmentLeadershipRepository.query('UPDATE department_subcommittees SET lead_user_id = $1, updated_at = NOW() WHERE id = $2',
           [user_id, subcommittee_id]);
       }
 
@@ -254,7 +255,7 @@ router.delete('/:id/leadership/:lid',
   requireRole(MANAGER_ROLES),
   async (req, res) => {
     try {
-      const r = await pool.query(
+      const r = await departmentLeadershipRepository.query(
         `SELECT * FROM department_leadership WHERE id = $1 AND department_id = $2 AND is_active = true`,
         [req.params.lid, req.params.id]
       );
@@ -262,14 +263,14 @@ router.delete('/:id/leadership/:lid',
       const row = r.rows[0];
       await revokeLeadership(row);
       if ((row.position === 'head' || row.position === 'acting_head') && !row.subcommittee_id) {
-        await pool.query(
+        await departmentLeadershipRepository.query(
           `UPDATE departments SET head_id = NULL, updated_at = CURRENT_TIMESTAMP
            WHERE id = $1 AND head_id = $2`,
           [row.department_id, row.user_id]
         );
       }
       if (row.position === 'subcommittee_head' && row.subcommittee_id) {
-        await pool.query(
+        await departmentLeadershipRepository.query(
           'UPDATE department_subcommittees SET lead_user_id = NULL WHERE id = $1 AND lead_user_id = $2',
           [row.subcommittee_id, row.user_id]
         );
@@ -291,7 +292,7 @@ router.get('/:id/handovers', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentLeadershipRepository.query(
       `SELECT h.*, ou.first_name || ' ' || ou.last_name AS outgoing_name,
               iu.first_name || ' ' || iu.last_name AS incoming_name,
               s.name AS subcommittee_name
@@ -321,7 +322,7 @@ router.post('/:id/handovers',
       if (!incoming_user_id) {
         return res.status(400).json({ success: false, error: 'incoming_user_id is required' });
       }
-      const current = await pool.query(
+      const current = await departmentLeadershipRepository.query(
         `SELECT user_id FROM department_leadership
          WHERE department_id = $1 AND position = $2 AND is_active = true
            AND subcommittee_id IS NOT DISTINCT FROM $3 LIMIT 1`,
@@ -357,7 +358,7 @@ router.put('/handovers/:hid/accept', authenticateToken, async (req, res) => {
       allocationType: 'permanent', appointedBy: h.initiated_by,
       handoverId: h.id, subcommitteeId: h.subcommittee_id,
     });
-    await pool.query(
+    await departmentLeadershipRepository.query(
       `UPDATE department_handovers SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [h.id]
     );
@@ -393,11 +394,11 @@ router.put('/handovers/:hid/decline', authenticateToken, async (req, res) => {
     }
     // Roll back any grants made on accept
     if (h.status === 'accepted') {
-      const lr = await pool.query(
+      const lr = await departmentLeadershipRepository.query(
         `SELECT * FROM department_leadership WHERE handover_id = $1 AND is_active = true`, [h.id]);
       for (const row of lr.rows) await revokeLeadership(row);
     }
-    await pool.query(
+    await departmentLeadershipRepository.query(
       `UPDATE department_handovers SET status = 'declined', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [h.id]
     );
@@ -421,11 +422,11 @@ router.put('/handovers/:hid/cancel', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, error: `Handover is ${h.status}` });
     }
     if (h.status === 'accepted') {
-      const lr = await pool.query(
+      const lr = await departmentLeadershipRepository.query(
         `SELECT * FROM department_leadership WHERE handover_id = $1 AND is_active = true`, [h.id]);
       for (const row of lr.rows) await revokeLeadership(row);
     }
-    await pool.query(
+    await departmentLeadershipRepository.query(
       `UPDATE department_handovers SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [h.id]
     );
@@ -460,7 +461,7 @@ router.put('/handovers/:hid/complete', authenticateToken, async (req, res) => {
 
     // Remove the outgoing holder's leadership + permissions
     if (h.outgoing_user_id) {
-      const lr = await pool.query(
+      const lr = await departmentLeadershipRepository.query(
         `SELECT * FROM department_leadership
          WHERE department_id = $1 AND user_id = $2 AND position = $3 AND is_active = true
            AND subcommittee_id IS NOT DISTINCT FROM $4`,
@@ -471,7 +472,7 @@ router.put('/handovers/:hid/complete', authenticateToken, async (req, res) => {
       // Legacy head with no leadership row: drop dept permissions and the
       // global role unless they still head another department.
       if (lr.rows.length === 0 && (h.position === 'head' || h.position === 'acting_head')) {
-        await pool.query(
+        await departmentLeadershipRepository.query(
           'DELETE FROM department_permissions WHERE department_id = $1 AND user_id = $2',
           [h.department_id, h.outgoing_user_id]
         );
@@ -483,19 +484,19 @@ router.put('/handovers/:hid/complete', authenticateToken, async (req, res) => {
 
     // Point head/lead columns at the incoming user
     if (!h.subcommittee_id && (h.position === 'head' || h.position === 'acting_head')) {
-      await pool.query(
+      await departmentLeadershipRepository.query(
         'UPDATE departments SET head_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
         [h.incoming_user_id, h.department_id]
       );
     }
     if (h.subcommittee_id && h.position === 'subcommittee_head') {
-      await pool.query(
+      await departmentLeadershipRepository.query(
         'UPDATE department_subcommittees SET lead_user_id = $1, updated_at = NOW() WHERE id = $2',
         [h.incoming_user_id, h.subcommittee_id]
       );
     }
 
-    await pool.query(
+    await departmentLeadershipRepository.query(
       `UPDATE department_handovers
        SET status = 'completed', checklist = $2, handover_date = CURRENT_TIMESTAMP,
            completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP

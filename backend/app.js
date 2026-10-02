@@ -1,3 +1,9 @@
+/**
+ * Express app assembly — security headers, tenant-aware CORS, tenant resolution, CSRF, /api router, SPA static serve.
+ * @exports express app
+ * @deps routes/index.routes.js, middleware/{tenantResolver,csrf,standardResponse,errorHandler}
+ * @known CSP frameSrc malformed; no global rate limiter is mounted; /uploads misses fall through to index.html; churchContext imported but disabled — ledger Batch-1 re-audit.
+ */
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -23,6 +29,7 @@ const {
   strictLimiter
 } = require('./middleware/rateLimiter');
 const { csrfTokenMiddleware, getCsrfToken } = require('./middleware/csrf');
+const standardResponse = require('./middleware/standardResponse');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -203,6 +210,10 @@ app.use(tenantResolver);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
   maxAge: '1d'
 }));
+
+// Normalize every JSON API response through ResponseHandler while preserving
+// legacy named top-level fields during the route-response migration.
+app.use('/api', standardResponse);
 
 // Health check endpoint (no auth/CSRF needed)
 app.use('/api/health', require('./routes/health'));

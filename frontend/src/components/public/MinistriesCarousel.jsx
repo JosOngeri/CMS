@@ -164,7 +164,6 @@ const MinistriesCarousel = () => {
           <button
             onClick={() => scrollCarousel('left')}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-[var(--color-surface)] shadow-lg p-3 rounded-full hover:bg-[var(--color-background)] transition-colors border border-[var(--color-border)]"
-            style={{ transform: 'translateY(-50%)' }}
             aria-label="Scroll ministries left"
           >
             <ChevronLeft className="h-6 w-6 text-[var(--color-text)]" aria-hidden="true" />
@@ -184,15 +183,15 @@ const MinistriesCarousel = () => {
                   className="flex-shrink-0 w-72 bg-gradient-to-br from-[var(--color-background)] to-[var(--color-surface)] rounded-2xl p-6 border border-[var(--color-border)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 snap-start group block"
                 >
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4`}>
-                    <Icon className="h-7 w-7 text-white" />
+                    <Icon className="h-7 w-7 text-[var(--color-on-solid)]" />
                   </div>
-                  <h3 className="font-bold text-lg text-[var(--color-text)] mb-2 group-hover:text-[var(--color-primary)] transition-colors">{ministry.name}</h3>
+                  <h3 className="font-bold text-lg text-[var(--color-text)] mb-2 group-hover:text-[var(--color-primary)] group-focus-within:text-[var(--color-primary)] transition-colors">{ministry.name}</h3>
                   <p className="text-[var(--color-textSecondary)] text-sm leading-relaxed">{ministry.description}</p>
                   <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex items-center justify-between">
                     <span className="text-xs font-medium text-[var(--color-textSecondary)] uppercase tracking-wider">
                       {ministry.category}
                     </span>
-                    <ArrowRight className="h-4 w-4 text-[var(--color-primary)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="h-4 w-4 text-[var(--color-primary)] opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100 transition-opacity" />
                   </div>
                 </Link>
               );
@@ -202,7 +201,6 @@ const MinistriesCarousel = () => {
           <button
             onClick={() => scrollCarousel('right')}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-[var(--color-surface)] shadow-lg p-3 rounded-full hover:bg-[var(--color-background)] transition-colors border border-[var(--color-border)]"
-            style={{ transform: 'translateY(-50%)' }}
             aria-label="Scroll ministries right"
           >
             <ChevronRight className="h-6 w-6 text-[var(--color-text)]" aria-hidden="true" />
@@ -217,7 +215,7 @@ const MinistriesCarousel = () => {
             aria-label="View all departments"
           >
             <span>View All Departments</span>
-            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 group-focus-within:translate-x-1 transition-transform" aria-hidden="true" />
           </Link>
         </div>
       </div>

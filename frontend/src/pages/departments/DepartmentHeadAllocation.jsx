@@ -154,6 +154,7 @@ const DepartmentHeadAllocation = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-textSecondary)]" />
             <input
               type="text"
+              aria-label="Search users by name or username"
               placeholder="Search users by name or username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -221,6 +222,7 @@ const DepartmentHeadAllocation = () => {
                     {/* Appointment row */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 pt-1">
                       <select
+                        aria-label={`Leadership position for ${department.name}`}
                         value={draft.position}
                         onChange={(e) => setDraft(department.id, { position: e.target.value })}
                         className="px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm"
@@ -231,6 +233,7 @@ const DepartmentHeadAllocation = () => {
                         <option value="secretary">Secretary</option>
                       </select>
                       <select
+                        aria-label={`Person to appoint in ${department.name}`}
                         value={draft.user_id}
                         onChange={(e) => setDraft(department.id, { user_id: e.target.value })}
                         className="px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm sm:col-span-2"
@@ -243,6 +246,7 @@ const DepartmentHeadAllocation = () => {
                         ))}
                       </select>
                       <select
+                        aria-label={`Allocation type for ${department.name}`}
                         value={draft.allocation_type}
                         onChange={(e) => setDraft(department.id, { allocation_type: e.target.value })}
                         className="px-3 py-2 border border-[var(--color-border)] rounded-lg text-sm"
@@ -254,6 +258,7 @@ const DepartmentHeadAllocation = () => {
                         {draft.allocation_type === 'temporary' && (
                           <input
                             type="date"
+                            aria-label={`Temporary assignment end date for ${department.name}`}
                             value={draft.end_date}
                             onChange={(e) => setDraft(department.id, { end_date: e.target.value })}
                             className="px-2 py-2 border border-[var(--color-border)] rounded-lg text-sm flex-1"
@@ -261,7 +266,7 @@ const DepartmentHeadAllocation = () => {
                         )}
                         <button
                           onClick={() => handleAppoint(department.id)}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-[var(--color-success)] text-white rounded-lg hover:opacity-90"
+                          className="flex items-center gap-1 px-3 py-2 text-sm bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90"
                         >
                           <UserPlus className="w-4 h-4" />
                           Appoint

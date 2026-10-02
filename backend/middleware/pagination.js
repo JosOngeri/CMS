@@ -1,6 +1,7 @@
 /**
- * Pagination Middleware
- * Provides consistent pagination handling across all controllers
+ * Pagination middleware + helpers — clamps page/limit/offset into req.query and req.pagination.
+ * @exports {paginate, clampQueryPagination, buildPaginationResponse}
+ * @known Non-numeric ?limit=abc clamps to 1 row (quirk, harmless).
  */
 
 const paginate = (defaultLimit = 20, maxLimit = 100) => {

@@ -5,7 +5,7 @@ class ActivityFeedRepository extends BaseRepository {
     super('activity_feed');
   }
 
-  async getActivityFeed(departmentId, limit = 20, offset = 0) {
+  async getActivityFeed(departmentId, churchId, limit = 20, offset = 0) {
     let activityQuery = `
       SELECT 
         'announcement' as activity_type,
@@ -19,7 +19,7 @@ class ActivityFeedRepository extends BaseRepository {
         'announcement' as sub_type
       FROM announcements a
       JOIN users u ON a.author_id = u.id
-      WHERE a.department_id = $1
+      WHERE a.department_id = $1 AND a.church_id = $2
       UNION ALL
       SELECT 
         'event_created' as activity_type,
@@ -33,7 +33,7 @@ class ActivityFeedRepository extends BaseRepository {
         'event' as sub_type
       FROM events e
       JOIN users u ON e.organizer_id = u.id
-      WHERE e.department_id = $1
+      WHERE e.department_id = $1 AND e.church_id = $2
       UNION ALL
       SELECT 
         'member_joined' as activity_type,
@@ -47,7 +47,7 @@ class ActivityFeedRepository extends BaseRepository {
         'member' as sub_type
       FROM department_members dm
       JOIN users u ON dm.user_id = u.id
-      WHERE dm.department_id = $1 AND dm.is_active = true
+      WHERE dm.department_id = $1 AND dm.church_id = $2 AND dm.is_active = true
       UNION ALL
       SELECT 
         'approval_requested' as activity_type,
@@ -61,39 +61,39 @@ class ActivityFeedRepository extends BaseRepository {
         'approval' as sub_type
       FROM approval_requests ar
       JOIN users u ON ar.requester_id = u.id
-      WHERE ar.department_id = $1
-      ORDER BY created_at DESC LIMIT $2 OFFSET $3
+      WHERE ar.department_id = $1 AND ar.church_id = $2
+      ORDER BY created_at DESC LIMIT $3 OFFSET $4
     `;
 
-    const result = await this.pool.query(activityQuery, [departmentId, limit, offset]);
+    const result = await this.pool.query(activityQuery, [departmentId, churchId, limit, offset]);
     return result.rows;
   }
 
-  async getActivityCount(departmentId) {
+  async getActivityCount(departmentId, churchId) {
     let countQuery = `
       SELECT COUNT(*) as total
       FROM (
-        SELECT id FROM announcements WHERE department_id = $1
+        SELECT id FROM announcements WHERE department_id = $1 AND church_id = $2
         UNION ALL
-        SELECT id FROM events WHERE department_id = $1
+        SELECT id FROM events WHERE department_id = $1 AND church_id = $2
         UNION ALL
-        SELECT user_id FROM department_members WHERE department_id = $1 AND is_active = true
+        SELECT user_id FROM department_members WHERE department_id = $1 AND church_id = $2 AND is_active = true
         UNION ALL
-        SELECT id FROM approval_requests WHERE department_id = $1
+        SELECT id FROM approval_requests WHERE department_id = $1 AND church_id = $2
       ) as all_activities
     `;
 
-    const result = await this.pool.query(countQuery, [departmentId]);
+    const result = await this.pool.query(countQuery, [departmentId, churchId]);
     return parseInt(result.rows[0].total);
   }
 
-  async getActivitySummary(departmentId) {
+  async getActivitySummary(departmentId, churchId) {
     const summary = await this.pool.query(`
       SELECT 
         'announcements' as type,
         COUNT(*) as count
       FROM announcements
-      WHERE department_id = $1
+      WHERE department_id = $1 AND church_id = $2
       GROUP BY 'announcements'
       
       UNION ALL
@@ -102,7 +102,7 @@ class ActivityFeedRepository extends BaseRepository {
         'events' as type,
         COUNT(*) as count
       FROM events
-      WHERE department_id = $1
+      WHERE department_id = $1 AND church_id = $2
       GROUP BY 'events'
       
       UNION ALL
@@ -111,7 +111,7 @@ class ActivityFeedRepository extends BaseRepository {
         'members' as type,
         COUNT(*) as count
       FROM department_members
-      WHERE department_id = $1 AND is_active = true
+      WHERE department_id = $1 AND church_id = $2 AND is_active = true
       GROUP BY 'members'
       
       UNION ALL
@@ -120,7 +120,8 @@ class ActivityFeedRepository extends BaseRepository {
         'audit_logs' as type,
         COUNT(*) as count
       FROM audit_log
-      WHERE new_values->>'department_id' = $1 OR old_values->>'department_id' = $1
+      WHERE church_id = $2
+        AND (new_values->>'department_id' = $1 OR old_values->>'department_id' = $1)
       
       UNION ALL
       
@@ -128,18 +129,18 @@ class ActivityFeedRepository extends BaseRepository {
         'approvals' as type,
         COUNT(*) as count
       FROM approval_requests
-      WHERE department_id = $1
+      WHERE department_id = $1 AND church_id = $2
       GROUP BY 'approvals'
-    `, [departmentId]);
+    `, [departmentId, churchId]);
 
     return summary.rows;
   }
 
-  async checkDepartmentAccess(departmentId, userId) {
+  async checkDepartmentAccess(departmentId, userId, churchId) {
     const result = await this.pool.query(`
-      SELECT role FROM department_members 
-      WHERE department_id = $1 AND user_id = $2 AND is_active = true
-    `, [departmentId, userId]);
+      SELECT role FROM department_members
+      WHERE department_id = $1 AND user_id = $2 AND church_id = $3 AND is_active = true
+    `, [departmentId, userId, churchId]);
 
     return result.rows.length > 0;
   }

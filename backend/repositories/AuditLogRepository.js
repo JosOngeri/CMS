@@ -14,7 +14,8 @@ class AuditLogRepository extends BaseRepository {
       tableName,
       departmentId,
       startDate,
-      endDate
+      endDate,
+      churchId
     } = filters;
 
     let query = `
@@ -37,6 +38,12 @@ class AuditLogRepository extends BaseRepository {
     `;
     const params = [];
     let paramIndex = 1;
+
+    if (churchId) {
+      query += ` AND al.church_id = $${paramIndex}`;
+      params.push(churchId);
+      paramIndex++;
+    }
 
     if (userId) {
       query += ` AND al.user_id = $${paramIndex}`;
@@ -84,7 +91,7 @@ class AuditLogRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getAuditLogById(id) {
+  async getAuditLogById(id, churchId) {
     const query = `
       SELECT
         al.*,
@@ -93,14 +100,14 @@ class AuditLogRepository extends BaseRepository {
         u.email
       FROM ${this.tableName} al
       LEFT JOIN users u ON al.user_id = u.id
-      WHERE al.id = $1
+      WHERE al.id = $1 AND al.church_id = $2
     `;
 
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 
-  async getDepartmentAuditLogs(departmentId, limit = 100, offset = 0) {
+  async getDepartmentAuditLogs(departmentId, churchId, limit = 100, offset = 0) {
     const query = `
       SELECT
         al.id,
@@ -117,28 +124,29 @@ class AuditLogRepository extends BaseRepository {
         u.email
       FROM ${this.tableName} al
       LEFT JOIN users u ON al.user_id = u.id
-      WHERE al.new_values ? 'department_id'
+      WHERE al.church_id = $2
+      AND al.new_values ? 'department_id'
       AND al.new_values->>'department_id' = $1
       ORDER BY al.created_at DESC
-      LIMIT $2 OFFSET $3
+      LIMIT $3 OFFSET $4
     `;
 
-    const result = await this.pool.query(query, [departmentId, limit, offset]);
+    const result = await this.pool.query(query, [departmentId, churchId, limit, offset]);
     return result.rows;
   }
 
-  async checkDepartmentHead(departmentId, userId) {
+  async checkDepartmentHead(departmentId, userId, churchId) {
     const result = await this.pool.query(
-      'SELECT id FROM departments WHERE id = $1 AND head_id = $2',
-      [departmentId, userId]
+      'SELECT id FROM departments WHERE id = $1 AND head_id = $2 AND church_id = $3',
+      [departmentId, userId, churchId]
     );
     return result.rows[0];
   }
 
-  async checkDepartmentAdmin(departmentId, userId) {
+  async checkDepartmentAdmin(departmentId, userId, churchId) {
     const result = await this.pool.query(
-      'SELECT id FROM department_members WHERE department_id = $1 AND user_id = $2 AND role = $3 AND is_active = true',
-      [departmentId, userId, 'Admin']
+      'SELECT user_id FROM department_members WHERE department_id = $1 AND user_id = $2 AND role = $3 AND church_id = $4 AND is_active = true',
+      [departmentId, userId, 'Admin', churchId]
     );
     return result.rows[0];
   }

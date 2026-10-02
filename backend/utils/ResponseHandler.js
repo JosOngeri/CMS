@@ -42,6 +42,53 @@ class ResponseHandler {
   static successWithPII(res, data = {}, message = 'Success', code = 200) {
     return this.success(res, data, message, code, true);
   }
+
+  /**
+   * Normalize a legacy response payload into the standard API envelope.
+   *
+   * Non-envelope keys are copied back to the top level so older clients that
+   * still read `response.data.departments` keep working while the canonical
+   * `response.data.data.departments` contract is rolled out.
+   */
+  static normalize(body = {}, statusCode = 200) {
+    const reservedKeys = new Set(['success', 'message', 'data', 'error', 'timestamp']);
+    const payload = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+    const isError = statusCode >= 400 || body?.success === false || Boolean(body?.error);
+    const timestamp = new Date().toISOString();
+
+    if (isError) {
+      const message = payload.message || payload.error || 'Request failed';
+      const response = {
+        success: false,
+        message,
+        data: Object.prototype.hasOwnProperty.call(payload, 'data') ? payload.data : null,
+        error: payload.error || message,
+        timestamp,
+        ...Object.fromEntries(Object.entries(payload).filter(([key]) => !reservedKeys.has(key)))
+      };
+      return { statusCode, body: response };
+    }
+
+    let data;
+    if (Object.prototype.hasOwnProperty.call(payload, 'data')) {
+      data = payload.data;
+    } else if (body && typeof body === 'object' && !Array.isArray(body)) {
+      data = Object.fromEntries(Object.entries(payload).filter(([key]) => !reservedKeys.has(key)));
+    } else {
+      data = body;
+    }
+
+    const response = {
+      success: true,
+      message: payload.message || 'Success',
+      data,
+      error: null,
+      timestamp,
+      ...Object.fromEntries(Object.entries(payload).filter(([key]) => !reservedKeys.has(key)))
+    };
+
+    return { statusCode, body: response };
+  }
 }
 
 module.exports = ResponseHandler;

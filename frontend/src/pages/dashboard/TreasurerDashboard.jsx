@@ -22,19 +22,16 @@ import {
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import Card from '../../components/common/Card'
 import ChurchStatsCard from '../../components/dashboard/ChurchStatsCard'
 import ChurchQuickActions from '../../components/dashboard/ChurchQuickActions'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
-
-const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
+import { fmtKES } from '../../utils/format'
 
 const TreasurerDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
 
   const [stats, setStats] = useState({
     totalBalance: 0,
@@ -84,11 +81,11 @@ const TreasurerDashboard = () => {
         payment: CreditCard,
         refund: Wallet,
       }
-      const colorMap = {
-        income: colors.success,
-        expense: colors.error,
-        payment: colors.primary,
-        refund: colors.warning,
+      const colorClassMap = {
+        income: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+        expense: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
+        payment: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
+        refund: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
       }
 
       setTransactions(
@@ -100,7 +97,7 @@ const TreasurerDashboard = () => {
           amount: t.amount,
           time: t.time,
           icon: iconMap[t.type] || DollarSign,
-          color: colorMap[t.type] || colors.textSecondary,
+          colorClass: colorClassMap[t.type] || 'bg-[var(--color-surfaceHover)] text-[var(--color-textSecondary)]',
         }))
       )
     } catch (error) {
@@ -200,7 +197,7 @@ const TreasurerDashboard = () => {
               const Icon = t.icon
               return (
                 <div key={t.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
-                  <div className="p-2 rounded-lg" style={{ color: t.color, backgroundColor: `${t.color}1A` }}>
+                  <div className={`p-2 rounded-lg ${t.colorClass}`}>
                     <Icon className="h-4 w-4" aria-hidden="true" />
                   </div>
                   <div className="flex-1 min-w-0">

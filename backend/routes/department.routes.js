@@ -199,12 +199,12 @@ router.delete('/leave/:departmentId', authenticateToken, convertSlugToId, async 
     const userId = req.user.id;
 
     // Get current state before update
-    const beforeState = await pool.query(
+    const beforeState = await departmentRepository.query(
       'SELECT * FROM department_members WHERE user_id = $1 AND department_id = $2',
       [userId, departmentId]
     );
 
-    await pool.query(`
+    await departmentRepository.query(`
       UPDATE department_members
       SET is_active = false, status = 'rejected'
       WHERE user_id = $1 AND department_id = $2
@@ -244,7 +244,7 @@ router.get('/:departmentId/pending-requests', authenticateToken, convertSlugToId
     const userId = req.user.id;
 
     // Verify user is the department head or an admin
-    const departmentCheck = await pool.query(`
+    const departmentCheck = await departmentRepository.query(`
       SELECT d.head_id, d.name as department_name
       FROM departments d
       WHERE d.id = $1
@@ -268,7 +268,7 @@ router.get('/:departmentId/pending-requests', authenticateToken, convertSlugToId
     }
 
     // Get pending membership requests
-    const pendingRequests = await pool.query(`
+    const pendingRequests = await departmentRepository.query(`
       SELECT
         dm.user_id,
         dm.department_id,
@@ -306,7 +306,7 @@ router.post('/:departmentId/approve/:userId', authenticateToken, convertSlugToId
     const approverId = req.user.id;
 
     // Verify user is the department head or an admin
-    const departmentCheck = await pool.query(`
+    const departmentCheck = await departmentRepository.query(`
       SELECT d.head_id
       FROM departments d
       WHERE d.id = $1
@@ -330,7 +330,7 @@ router.post('/:departmentId/approve/:userId', authenticateToken, convertSlugToId
     }
 
     // Approve the membership request
-    const result = await pool.query(`
+    const result = await departmentRepository.query(`
       UPDATE department_members
       SET is_active = true, status = 'approved', approved_at = CURRENT_TIMESTAMP, approved_by = $1
       WHERE user_id = $2 AND department_id = $3 AND status = 'pending'
@@ -391,7 +391,7 @@ router.post('/:departmentId/reject/:userId', authenticateToken, convertSlugToId,
     const approverId = req.user.id;
 
     // Verify user is the department head or an admin
-    const departmentCheck = await pool.query(`
+    const departmentCheck = await departmentRepository.query(`
       SELECT d.head_id
       FROM departments d
       WHERE d.id = $1
@@ -415,7 +415,7 @@ router.post('/:departmentId/reject/:userId', authenticateToken, convertSlugToId,
     }
 
     // Reject the membership request
-    const result = await pool.query(`
+    const result = await departmentRepository.query(`
       UPDATE department_members
       SET is_active = false, status = 'rejected'
       WHERE user_id = $2 AND department_id = $3 AND status = 'pending'
@@ -484,7 +484,7 @@ router.get('/:departmentId/communications', authenticateToken, convertSlugToId, 
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -497,7 +497,7 @@ router.get('/:departmentId/communications', authenticateToken, convertSlugToId, 
       }
     }
 
-    const communications = await pool.query(`
+    const communications = await departmentRepository.query(`
       SELECT 
         dc.id,
         dc.title,
@@ -540,7 +540,7 @@ router.get('/:departmentId/members', authenticateToken, convertSlugToId, async (
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -553,7 +553,7 @@ router.get('/:departmentId/members', authenticateToken, convertSlugToId, async (
       }
     }
 
-    const members = await pool.query(`
+    const members = await departmentRepository.query(`
       SELECT 
         u.id,
         u.username,
@@ -595,7 +595,7 @@ router.get('/:departmentId/meetings', authenticateToken, convertSlugToId, async 
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -608,7 +608,7 @@ router.get('/:departmentId/meetings', authenticateToken, convertSlugToId, async 
       }
     }
 
-    const meetings = await pool.query(`
+    const meetings = await departmentRepository.query(`
       SELECT 
         id,
         title,
@@ -649,7 +649,7 @@ router.get('/:departmentId/tasks', authenticateToken, convertSlugToId, async (re
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -662,7 +662,7 @@ router.get('/:departmentId/tasks', authenticateToken, convertSlugToId, async (re
       }
     }
 
-    const tasks = await pool.query(`
+    const tasks = await departmentRepository.query(`
       SELECT 
         id,
         title,
@@ -705,7 +705,7 @@ router.post('/:departmentId/tasks', authenticateToken, convertSlugToId, async (r
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -720,7 +720,7 @@ router.post('/:departmentId/tasks', authenticateToken, convertSlugToId, async (r
 
     // Verify assignee is a member of the department
     if (assignedTo) {
-      const memberCheck = await pool.query(`
+      const memberCheck = await departmentRepository.query(`
         SELECT 1 FROM department_members
         WHERE department_id = $1 AND user_id = $2 AND is_active = true
       `, [departmentId, assignedTo]);
@@ -733,7 +733,7 @@ router.post('/:departmentId/tasks', authenticateToken, convertSlugToId, async (r
       }
     }
 
-    const result = await pool.query(`
+    const result = await departmentRepository.query(`
       INSERT INTO department_tasks (title, description, due_date, priority, assigned_to, assigned_by, department_id, status)
       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
       RETURNING *
@@ -767,7 +767,7 @@ router.put('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId, a
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -781,7 +781,7 @@ router.put('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId, a
     }
 
     // Verify task belongs to this department
-    const taskCheck = await pool.query(`
+    const taskCheck = await departmentRepository.query(`
       SELECT id FROM department_tasks
       WHERE id = $1 AND department_id = $2
     `, [taskId, departmentId]);
@@ -793,7 +793,7 @@ router.put('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId, a
       });
     }
 
-    const result = await pool.query(`
+    const result = await departmentRepository.query(`
       UPDATE department_tasks
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
@@ -827,7 +827,7 @@ router.delete('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -841,7 +841,7 @@ router.delete('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId
     }
 
     // Verify task belongs to this department
-    const taskCheck = await pool.query(`
+    const taskCheck = await departmentRepository.query(`
       SELECT id FROM department_tasks
       WHERE id = $1 AND department_id = $2
     `, [taskId, departmentId]);
@@ -853,7 +853,7 @@ router.delete('/:departmentId/tasks/:taskId', authenticateToken, convertSlugToId
       });
     }
 
-    await pool.query(`
+    await departmentRepository.query(`
       DELETE FROM department_tasks
       WHERE id = $1
     `, [taskId]);
@@ -884,7 +884,7 @@ router.get('/:departmentId/resources', authenticateToken, convertSlugToId, async
 
     // If not admin, verify user has access to this department
     if (!isAdmin) {
-      const accessCheck = await pool.query(`
+      const accessCheck = await departmentRepository.query(`
         SELECT dm.role FROM department_members dm
         WHERE dm.department_id = $1 AND dm.user_id = $2 AND dm.is_active = true
       `, [departmentId, userId]);
@@ -897,7 +897,7 @@ router.get('/:departmentId/resources', authenticateToken, convertSlugToId, async
       }
     }
 
-    const resources = await pool.query(`
+    const resources = await departmentRepository.query(`
       SELECT 
         id,
         title,

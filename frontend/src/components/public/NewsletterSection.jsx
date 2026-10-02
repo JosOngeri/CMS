@@ -75,15 +75,15 @@ const NewsletterSection = () => {
               </div>
 
               {/* Right Side - Form */}
-              <div className="bg-gradient-to-br from-[#2A4F7F] to-[#1B3252] p-8 md:p-12 flex flex-col justify-center">
-                <h3 className="text-2xl font-bold text-white mb-2">Subscribe Now</h3>
-                <p className="text-white/80 mb-6">Join our community of believers</p>
+              <div className="bg-gradient-to-br from-[var(--color-primary-strong)] to-[var(--color-primary-900)] p-8 md:p-12 flex flex-col justify-center">
+                <h3 className="text-2xl font-bold text-[var(--color-on-solid)] mb-2">Subscribe Now</h3>
+                <p className="text-[var(--color-on-solid-80)] mb-6">Join our community of believers</p>
 
                 {isSuccess ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-16 w-16 text-[var(--color-success)] mx-auto mb-4" aria-hidden="true" />
-                    <p className="text-white text-lg font-medium">Successfully subscribed!</p>
-                    <p className="text-white/70 text-sm mt-2">Check your email for confirmation.</p>
+                    <p className="text-[var(--color-on-solid)] text-lg font-medium">Successfully subscribed!</p>
+                    <p className="text-[var(--color-on-solid-80)] text-sm mt-2">Check your email for confirmation.</p>
                   </div>
                 ) : (
                   <form
@@ -93,10 +93,12 @@ const NewsletterSection = () => {
                     <div>
                       <input
                         type="email"
+                        inputMode="email"
+                        autoComplete="email"
                         placeholder="Enter your email address"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-white text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-all"
+                        className="w-full px-4 py-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-on-solid)] text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent transition-all"
                         aria-label="Email address for newsletter"
                         required
                         disabled={isSubmitting}
@@ -106,7 +108,7 @@ const NewsletterSection = () => {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn bg-[var(--color-surface)] text-[#1B3252] font-semibold hover:bg-[var(--color-background)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full btn bg-[var(--color-surface)] text-[var(--color-primary-strong)] font-semibold hover:bg-[var(--color-background)] shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Subscribe to newsletter"
                     >
                       {isSubmitting ? (
@@ -124,7 +126,7 @@ const NewsletterSection = () => {
                   </form>
                 )}
 
-                <p className="text-white/60 text-sm mt-4 text-center">
+                <p className="text-[var(--color-on-solid-80)] text-sm mt-4 text-center">
                   We respect your privacy. Unsubscribe anytime.
                 </p>
               </div>

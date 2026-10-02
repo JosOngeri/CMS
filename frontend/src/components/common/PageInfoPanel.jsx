@@ -4,31 +4,31 @@ import { ChevronDown, ChevronUp, BookOpen, AlertTriangle, HelpCircle, XCircle, C
 const LEVEL_CONFIG = {
   error: {
     icon: XCircle,
-    bg: 'bg-[var(--color-error-light)]0/10',
-    border: 'border-[var(--color-error)]/20',
+    bg: 'bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]',
+    border: 'border-[color-mix(in_srgb,var(--color-error)_20%,transparent)]',
     text: 'text-[var(--color-error)]',
-    badge: 'bg-[var(--color-error-light)]0 text-white',
+    badge: 'bg-[var(--color-error)] text-[var(--color-on-solid)]',
   },
   warn: {
     icon: AlertTriangle,
-    bg: 'bg-[var(--color-warning-light)]0/10',
-    border: 'border-[var(--color-warning)]/20',
+    bg: 'bg-[color-mix(in_srgb,var(--color-warning)_10%,transparent)]',
+    border: 'border-[color-mix(in_srgb,var(--color-warning)_20%,transparent)]',
     text: 'text-[var(--color-warning)]',
-    badge: 'bg-[var(--color-warning-light)]0 text-white',
+    badge: 'bg-[var(--color-warning)] text-[var(--color-on-solid)]',
   },
   info: {
     icon: Info,
-    bg: 'bg-primary/10',
-    border: 'border-primary/20',
+    bg: 'bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]',
+    border: 'border-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]',
     text: 'text-primary',
-    badge: 'bg-primary text-white',
+    badge: 'bg-primary text-[var(--color-on-solid)]',
   },
   success: {
     icon: CheckCircle,
-    bg: 'bg-[var(--color-success)]/10',
-    border: 'border-[var(--color-success)]/20',
+    bg: 'bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)]',
+    border: 'border-[color-mix(in_srgb,var(--color-success)_20%,transparent)]',
     text: 'text-[var(--color-success)]',
-    badge: 'bg-[var(--color-success)] text-white',
+    badge: 'bg-[var(--color-success)] text-[var(--color-on-solid)]',
   },
 }
 
@@ -171,7 +171,7 @@ const PageInfoPanel = ({
                 {hasBadge && statusLoaded && (
                   <span
                     className={`ml-1 text-xs font-bold rounded-full px-1.5 py-0.5 ${
-                      errorCount > 0 ? 'bg-[var(--color-error-light)]0 text-white' : 'bg-[var(--color-warning-light)]0 text-white'
+                      errorCount > 0 ? 'bg-[var(--color-error)] text-[var(--color-on-solid)]' : 'bg-[var(--color-warning)] text-[var(--color-on-solid)]'
                     }`}
                   >
                     {errorCount + warnCount}
@@ -194,7 +194,7 @@ const PageInfoPanel = ({
                     <ol className="space-y-2">
                       {steps.map((step, i) => (
                         <li key={i} className="flex items-start gap-3">
-                          <span className="shrink-0 w-6 h-6 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-xs font-bold flex items-center justify-center mt-0.5">
+                          <span className="shrink-0 w-6 h-6 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)] text-xs font-bold flex items-center justify-center mt-0.5">
                             {i + 1}
                           </span>
                           <span className="text-sm text-[var(--color-textSecondary)]">{step}</span>

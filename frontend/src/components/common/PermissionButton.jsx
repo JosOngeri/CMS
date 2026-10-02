@@ -50,7 +50,7 @@ const PermissionButton = ({
   }
 
   // Render disabled button if unauthorized
-  const buttonClassName = buttonProps.className || 'px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors';
+  const buttonClassName = buttonProps.className || 'px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors';
   const disabledClassName = `${buttonClassName} opacity-50 cursor-not-allowed`;
 
   return (

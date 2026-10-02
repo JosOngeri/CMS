@@ -1,10 +1,23 @@
 const express = require('express');
 const router = express.Router();
 const paymentsController = require('../controllers/payments.controller');
+const paymentController = require('../controllers/payment.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// All routes require authentication
+// Public gateway webhooks (canonical plural mount)
+router.post('/kopokopo/webhook', paymentController.processWebhook);
+
+// All routes below require authentication
 router.use(authenticateToken);
+
+// KopoKopo payment initiation aliases (previously mounted at /api/payment)
+router.post('/initiate', paymentController.initiatePayment);
+router.post('/payment-link', paymentController.generatePaymentLink);
+router.post('/qr-code', paymentController.generateQRCode);
+router.get('/status/:paymentId', paymentController.checkPaymentStatus);
+router.get('/history/:memberId', paymentController.getPaymentHistory);
+router.get('/all', paymentController.getAllPayments);
+router.post('/refund/:paymentId', paymentController.refundPayment);
 
 // Payment Methods
 router.get('/methods', paymentsController.getPaymentMethods);

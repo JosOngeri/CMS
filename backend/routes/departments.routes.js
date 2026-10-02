@@ -4,6 +4,7 @@ const { pool } = require('../config/database');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { validate, validationRules } = require('../middleware/validation');
 const departmentsController = require('../controllers/departments.controller');
+const departmentsRepository = require('../repositories/DepartmentsRepository');
 const departmentController = require('../controllers/department.controller');
 const { logAction } = require('../helpers/auditLog');
 const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify');
@@ -28,7 +29,7 @@ router.get('/', authenticateToken, async (req, res) => {
       ORDER BY d.name ASC
     `;
 
-    const result = await pool.query(query);
+    const result = await departmentsRepository.query(query);
 
     res.json({
       departments: result.rows
@@ -52,7 +53,7 @@ router.get('/:identifier', authenticateToken, async (req, res) => {
       WHERE d.slug = $1 OR d.id::text = $1
     `;
 
-    const result = await pool.query(query, [identifier]);
+    const result = await departmentsRepository.query(query, [identifier]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -72,7 +73,7 @@ router.get('/:identifier/dashboard', authenticateToken, async (req, res) => {
 
     // Get department basic info by slug or ID
     const deptQuery = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await pool.query(deptQuery, [identifier]);
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -88,7 +89,7 @@ router.get('/:identifier/dashboard', authenticateToken, async (req, res) => {
         FROM department_members
         WHERE department_id = $1
       `;
-      const memberResult = await pool.query(memberQuery, [department.id]);
+      const memberResult = await departmentsRepository.query(memberQuery, [department.id]);
       memberCount = parseInt(memberResult.rows[0].count);
     } catch (err) {
       // department_members table doesn't exist, use default
@@ -125,7 +126,7 @@ router.get('/:id/members', authenticateToken, async (req, res) => {
       ORDER BY dm.joined_at ASC
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await departmentsRepository.query(query, [id]);
     res.json({ members: result.rows });
   } catch (error) {
     logger.error('getDepartmentMembers', error);
@@ -139,7 +140,7 @@ router.get('/:id/communications', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { limit = 50 } = req.query;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `SELECT dc.*, u.first_name || ' ' || u.last_name as created_by_name
        FROM department_communications dc
        LEFT JOIN users u ON dc.created_by = u.id
@@ -161,7 +162,7 @@ router.get('/:id/meetings', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `SELECT dm.*, u.first_name || ' ' || u.last_name as created_by_name
        FROM department_meetings dm
        LEFT JOIN users u ON dm.created_by = u.id
@@ -182,7 +183,7 @@ router.get('/:id/tasks', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `SELECT dt.*, u.first_name || ' ' || u.last_name as assignee_name,
               cb.first_name || ' ' || cb.last_name as created_by_name
        FROM department_tasks dt
@@ -205,7 +206,7 @@ router.get('/:id/resources', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `SELECT dr.*, u.first_name || ' ' || u.last_name as uploaded_by_name
        FROM department_resources dr
        LEFT JOIN users u ON dr.uploaded_by = u.id
@@ -245,7 +246,7 @@ router.post('/',
         RETURNING *
       `;
 
-      const result = await pool.query(query, [name, description, head_id || null, category || null, leader_name || null, leader_contact || null, churchId, churchSlug, slug, parent_department_id || null, is_committee || false]);
+      const result = await departmentsRepository.query(query, [name, description, head_id || null, category || null, leader_name || null, leader_contact || null, churchId, churchSlug, slug, parent_department_id || null, is_committee || false]);
 
       // Log the department creation
       await logAction(pool, {
@@ -292,7 +293,7 @@ router.put('/:identifier',
 
       // Get department by slug or ID
       const deptQuery = 'SELECT * FROM departments WHERE slug = $1 OR id::text = $1';
-      const deptResult = await pool.query(deptQuery, [identifier]);
+      const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
 
       if (deptResult.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
@@ -314,7 +315,7 @@ router.put('/:identifier',
       }
 
       // Get current state before update
-      const beforeState = await pool.query('SELECT * FROM departments WHERE id = $1', [id]);
+      const beforeState = await departmentsRepository.query('SELECT * FROM departments WHERE id = $1', [id]);
 
       // Generate new slug if name changed and slug not provided
       let newSlug = slug;
@@ -359,7 +360,7 @@ router.put('/:identifier',
         RETURNING *
       `;
 
-      const result = await pool.query(updateQuery, [name, description, headIdForUpdate, category, newSlug, id, parent_department_id ?? null, is_committee ?? null]);
+      const result = await departmentsRepository.query(updateQuery, [name, description, headIdForUpdate, category, newSlug, id, parent_department_id ?? null, is_committee ?? null]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
@@ -399,7 +400,7 @@ router.post('/:id/members',
       if (!hasAdminRole) {
         // Check if user is department head
         const deptQuery = 'SELECT head_id FROM departments WHERE id = $1';
-        const deptResult = await pool.query(deptQuery, [id]);
+        const deptResult = await departmentsRepository.query(deptQuery, [id]);
 
         if (deptResult.rows.length === 0 || deptResult.rows[0].head_id !== req.user.id) {
           return res.status(403).json({ error: 'Permission denied' });
@@ -414,7 +415,7 @@ router.post('/:id/members',
         RETURNING *
       `;
 
-      const result = await pool.query(query, [user_id, id, role_in_department]);
+      const result = await departmentsRepository.query(query, [user_id, id, role_in_department]);
 
       // Log the member addition
       await logAction(pool, {
@@ -463,7 +464,7 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
     if (!hasAdminRole) {
       // Check if user is department head
       const deptQuery = 'SELECT head_id FROM departments WHERE id = $1';
-      const deptResult = await pool.query(deptQuery, [id]);
+      const deptResult = await departmentsRepository.query(deptQuery, [id]);
 
       if (deptResult.rows.length === 0 || deptResult.rows[0].head_id !== req.user.id) {
         return res.status(403).json({ error: 'Permission denied' });
@@ -471,12 +472,12 @@ router.delete('/:id/members/:userId', authenticateToken, async (req, res) => {
     }
 
     // Get current state before deletion
-    const beforeState = await pool.query(
+    const beforeState = await departmentsRepository.query(
       'SELECT * FROM department_members WHERE department_id = $1 AND user_id = $2',
       [id, userId]
     );
 
-    await pool.query('DELETE FROM department_members WHERE department_id = $1 AND user_id = $2', [id, userId]);
+    await departmentsRepository.query('DELETE FROM department_members WHERE department_id = $1 AND user_id = $2', [id, userId]);
 
     // Log the member removal
     await logAction(pool, {
@@ -570,7 +571,7 @@ router.post('/batch',
           return res.status(400).json({ error: 'Invalid action' });
       }
 
-      const result = await pool.query(query, params);
+      const result = await departmentsRepository.query(query, params);
 
       res.json({
         message,
@@ -604,7 +605,7 @@ router.delete('/:id',
     try {
       const { id } = req.params;
 
-      const result = await pool.query('DELETE FROM departments WHERE id = $1 RETURNING *', [id]);
+      const result = await departmentsRepository.query('DELETE FROM departments WHERE id = $1 RETURNING *', [id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });
@@ -678,7 +679,7 @@ router.get('/:identifier/pending-requests', authenticateToken, async (req, res) 
 
     // Get department ID from slug or ID
     const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await pool.query(deptQuery, [identifier]);
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -686,7 +687,7 @@ router.get('/:identifier/pending-requests', authenticateToken, async (req, res) 
 
     const departmentId = deptResult.rows[0].id;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `SELECT dm.*, u.first_name, u.last_name, u.email, u.phone_number
        FROM department_members dm
        INNER JOIN users u ON dm.user_id = u.id
@@ -709,7 +710,7 @@ router.post('/:identifier/approve/:userId', authenticateToken, async (req, res) 
 
     // Get department ID from slug or ID
     const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await pool.query(deptQuery, [identifier]);
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -717,7 +718,7 @@ router.post('/:identifier/approve/:userId', authenticateToken, async (req, res) 
 
     const departmentId = deptResult.rows[0].id;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `UPDATE department_members 
        SET status = 'approved', 
            approved_by = $1, 
@@ -749,7 +750,7 @@ router.post('/:identifier/reject/:userId', authenticateToken, async (req, res) =
 
     // Get department ID from slug or ID
     const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await pool.query(deptQuery, [identifier]);
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -757,7 +758,7 @@ router.post('/:identifier/reject/:userId', authenticateToken, async (req, res) =
 
     const departmentId = deptResult.rows[0].id;
 
-    const result = await pool.query(
+    const result = await departmentsRepository.query(
       `DELETE FROM department_members 
        WHERE department_id = $1 AND user_id = $2 AND status = 'pending'
        RETURNING *`,

@@ -1,3 +1,9 @@
+/**
+ * Process entry point — validates env, builds the HTTP server, attaches Socket.io, wires services, graceful shutdown.
+ * @exports {app, server, io}
+ * @deps app.js, config/env-validation, helpers/websocket, services/{MessagingService,SmsHub,notificationService,hybridSMS}
+ * @known TWO Socket.io servers bind one HTTP server (initActivityWebSocket is the second); socket rooms unauthenticated — ledger Batch-1 re-audit.
+ */
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const { validateEnv } = require('./config/env-validation');

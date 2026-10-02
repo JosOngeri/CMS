@@ -1,3 +1,9 @@
+/**
+ * Alternative auth middleware adding is_active + MFA checks — mounted only by routes/departmentFeatures.routes.js.
+ * @exports identityGuard middleware
+ * @deps helpers/security, services/IdentityService, middleware/auth (shared helpers)
+ * @known Tenant check reads req.churchId which is never set (resolver writes req.church_id → dead check); IdentityService mfaVerified is hardcoded false → MFA-enabled admins get locked out — ledger.
+ */
 const { verifyAccessToken } = require('../helpers/security');
 const IdentityService = require('../services/IdentityService');
 const ResponseHandler = require('../utils/ResponseHandler');

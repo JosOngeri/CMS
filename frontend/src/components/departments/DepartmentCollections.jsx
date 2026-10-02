@@ -213,7 +213,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <Sparkles className="w-4 h-4" /> Parser Setup
             </button>
             <button onClick={() => setShowPropose(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm">
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm">
               <Plus className="w-4 h-4" /> Propose Budget
             </button>
           </div>
@@ -291,7 +291,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                       className="px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
                   </div>
                   <button onClick={() => allocate(b.id)} disabled={busy}
-                    className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                    className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                     {busy ? 'Allocating…' : 'Allocate & Notify Members'}
                   </button>
                 </div>
@@ -377,7 +377,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
             <p className="text-xs font-semibold text-[var(--color-warning)] flex items-center gap-1 mb-2">
               <Inbox className="w-3.5 h-3.5" /> {unassigned.length} unassigned — pick which obligation each pays
             </p>
-            <div className="divide-y divide-[var(--color-warning)]/30">
+            <div className="divide-y divide-[color-mix(in_srgb,var(--color-warning)_30%,transparent)]">
               {unassigned.map((r) => (
                 <div key={r.id} className="py-2 flex items-center justify-between gap-2 text-sm">
                   <div className="min-w-0">
@@ -390,7 +390,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                     <p className="font-medium text-[var(--color-text)]">KES {Number(r.amount).toLocaleString()}</p>
                     {canManage && (
                       <button onClick={() => { setAssigning(r); setAssignTarget(''); }}
-                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-primary)] text-white">
+                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)]">
                         Assign
                       </button>
                     )}
@@ -443,7 +443,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                 </div>
                 <button
                   onClick={() => { setRemitSel(new Set(pendingFunds.map((x) => x.id))); setShowRemit(true); }}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-white flex-shrink-0">
+                  className="text-xs px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] flex-shrink-0">
                   Hand over
                 </button>
               </div>
@@ -467,7 +467,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
                   {r.status === 'pending' && canManage ? (
                     <>
                       <button onClick={() => confirmRemittance(r.id)} disabled={busy}
-                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-success)] text-white flex items-center gap-1">
+                        className="text-xs px-2.5 py-1 rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> Confirm
                       </button>
                       <button onClick={() => { setDisputing(r); setDisputeReason(''); }} disabled={busy}
@@ -513,22 +513,23 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               Total: KES {pendingFunds.filter((x) => remitSel.has(x.id)).reduce((s, x) => s + Number(x.amount), 0).toLocaleString()}
             </p>
             <select value={remitForm.method} onChange={(e) => setRemitForm({ ...remitForm, method: e.target.value })}
+              aria-label="Remittance method"
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]">
               <option value="cash">Cash</option>
               <option value="bank">Bank deposit</option>
               <option value="mpesa">M-Pesa</option>
             </select>
-            <input value={remitForm.reference} onChange={(e) => setRemitForm({ ...remitForm, reference: e.target.value })}
-              placeholder="Reference (slip no. / tx code)"
+            <input type="text" aria-label="Remittance reference" placeholder="Reference (slip no. / tx code)" value={remitForm.reference}
+              onChange={(e) => setRemitForm({ ...remitForm, reference: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
-            <input value={remitForm.notes} onChange={(e) => setRemitForm({ ...remitForm, notes: e.target.value })}
+            <input type="text" aria-label="Remittance notes" value={remitForm.notes} onChange={(e) => setRemitForm({ ...remitForm, notes: e.target.value })}
               placeholder="Notes (optional)"
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] text-sm text-[var(--color-text)]" />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowRemit(false)}
                 className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)]">Cancel</button>
               <button onClick={submitRemittance} disabled={busy || remitSel.size === 0}
-                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {busy ? 'Submitting…' : 'Submit handover'}
               </button>
             </div>
@@ -548,7 +549,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <button onClick={() => setDisputing(null)}
                 className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)]">Cancel</button>
               <button onClick={submitDispute} disabled={busy || !disputeReason.trim()}
-                className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {busy ? 'Submitting…' : 'Flag as disputed'}
               </button>
             </div>
@@ -583,7 +584,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
             <div className="flex gap-2 justify-end">
               <button onClick={() => setAssigning(null)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
               <button onClick={assignRecon} disabled={busy || !assignTarget}
-                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {busy ? 'Assigning…' : 'Assign'}
               </button>
             </div>
@@ -599,22 +600,22 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
             <p className="text-sm text-[var(--color-textSecondary)]">
               Manually log a bank deposit or M-Pesa payment. The transaction code must be unique — it prevents double-counting.
             </p>
-            <input placeholder="Transaction code (e.g. QGH7X2K4LM)" value={txForm.tx_code}
+            <input type="text" aria-label="Transaction code" placeholder="Transaction code (e.g. QGH7X2K4LM)" value={txForm.tx_code}
               onChange={(e) => setTxForm({ ...txForm, tx_code: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] font-mono" />
-            <input placeholder="Amount (KES)" type="number" value={txForm.amount}
+            <input type="number" inputMode="decimal" min="0" step="0.01" aria-label="Transaction amount in KES" placeholder="Amount (KES)" value={txForm.amount}
               onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
-            <input placeholder="Payer name (optional)" value={txForm.payer_name}
+            <input type="text" aria-label="Payer name" placeholder="Payer name (optional)" value={txForm.payer_name}
               onChange={(e) => setTxForm({ ...txForm, payer_name: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
-            <input placeholder="Payer phone (optional)" value={txForm.payer_phone}
+            <input type="tel" inputMode="tel" autoComplete="tel" aria-label="Payer phone" placeholder="Payer phone (optional)" value={txForm.payer_phone}
               onChange={(e) => setTxForm({ ...txForm, payer_phone: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowAddTx(false)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
               <button onClick={addTransaction} disabled={busy || !txForm.tx_code || !txForm.amount}
-                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {busy ? 'Recording…' : 'Record'}
               </button>
             </div>
@@ -627,13 +628,13 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
         <div className="fixed inset-0 bg-[var(--color-overlay)] z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowPropose(false)}>
           <div className="bg-[var(--color-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-semibold text-[var(--color-text)]">Propose Department Budget</h3>
-            <input placeholder="Purpose (e.g. Camp meeting funds)" value={form.purpose}
+            <input type="text" aria-label="Budget purpose" placeholder="Purpose (e.g. Camp meeting funds)" value={form.purpose}
               onChange={(e) => setForm({ ...form, purpose: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
-            <input placeholder="Target amount (KES)" type="number" value={form.target_amount}
+            <input type="number" inputMode="decimal" min="0" step="0.01" aria-label="Target amount in KES" placeholder="Target amount (KES)" value={form.target_amount}
               onChange={(e) => setForm({ ...form, target_amount: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
-            <input type="date" value={form.collection_deadline}
+            <input type="date" aria-label="Collection deadline" value={form.collection_deadline}
               onChange={(e) => setForm({ ...form, collection_deadline: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
             <select value={form.obligation_type} onChange={(e) => setForm({ ...form, obligation_type: e.target.value })}
@@ -645,7 +646,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowPropose(false)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
               <button onClick={proposeBudget} disabled={busy || !form.target_amount}
-                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {busy ? 'Submitting…' : 'Submit for Approval'}
               </button>
             </div>
@@ -669,17 +670,17 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               placeholder="e.g. QGH7X2K4LM Confirmed. You have received Ksh500.00 from …"
               className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] font-mono text-xs" />
             <button onClick={calibrate} disabled={busy || sampleSms.length < 20}
-              className="w-full px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+              className="w-full px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
               {busy ? 'Calibrating…' : 'Calibrate with AI'}
             </button>
             {parserResult && (
-              <div className="border border-[var(--color-success)] bg-[var(--color-success-light)]/50 rounded-lg p-4 space-y-2">
+              <div className="border border-[var(--color-success)] bg-[color-mix(in_srgb,var(--color-success-light)_50%,transparent)] rounded-lg p-4 space-y-2">
                 <p className="text-sm font-medium text-[var(--color-success)] flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" /> Extraction verified against your sample
                 </p>
                 <pre className="text-xs text-[var(--color-textSecondary)] overflow-x-auto">{JSON.stringify(parserResult.test_extraction, null, 2)}</pre>
                 <button onClick={() => activateProfile(parserResult.profile.id)}
-                  className="px-4 py-2 rounded-lg bg-[var(--color-success)] text-white text-sm">
+                  className="px-4 py-2 rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] text-sm">
                   Activate this parser
                 </button>
               </div>

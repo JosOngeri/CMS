@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { Calendar, ChevronRight, Clock, Heart, LayoutGrid } from 'lucide-react'
 import { groupPhotosByDate, formatDateHeader, DATE_GROUPS } from '../../utils/dateGrouping'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 
 const ApplePhotoGrid = ({
   photos = [],
@@ -17,7 +16,6 @@ const ApplePhotoGrid = ({
   gap = 4,
   loading = false
 }) => {
-  const { colors } = useColorPalette()
   const [hoveredPhoto, setHoveredPhoto] = useState(null)
   const [failedImages, setFailedImages] = useState(new Set())
   const [scrolledGroups, setScrolledGroups] = useState(new Set())
@@ -81,25 +79,21 @@ const ApplePhotoGrid = ({
     return (
       <div
         key={`header-${index}`}
-        className={`col-span-full py-3 px-2 flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm transition-all ${
+        className={`col-span-full py-3 px-2 flex items-center justify-between sticky top-0 z-10 bg-[var(--color-surface)] backdrop-blur-sm transition-all ${
           isSticky ? 'shadow-sm' : ''
         }`}
-        style={{ backgroundColor: colors.surface + 'F2' }}
         data-group={item.title}
       >
         <div className="flex items-center space-x-3">
-          <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">
             {item.title}
           </h3>
-          <span className="text-sm" style={{ color: colors.textSecondary }}>
+          <span className="text-sm text-[var(--color-textSecondary)]">
             {item.count} {item.count === 1 ? 'photo' : 'photos'}
           </span>
         </div>
         <button
-          className="text-sm flex items-center space-x-1 transition-colors"
-          style={{ color: colors.primary }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8' }
-          onMouseLeave={(e) => e.currentTarget.style.opacity = '1' }
+          className="text-sm flex items-center space-x-1 transition-opacity text-[var(--color-primary)] hover:opacity-80"
           onClick={() => onPhotoClick?.(item.data, 0, { viewAll: true, group: item.title })}
           aria-label={`View all ${item.count} ${item.count === 1 ? 'photo' : 'photos'} in ${item.title}`}
         >
@@ -157,7 +151,7 @@ const ApplePhotoGrid = ({
         )}
 
         {/* Overlay on hover */}
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-200 ${
+        <div className={`absolute inset-0 bg-gradient-to-t from-[var(--color-overlay-50)] via-transparent to-transparent transition-opacity duration-200 ${
           isHovered || isSelected ? 'opacity-100' : 'opacity-0'
         }`}>
           {/* Selection checkbox */}
@@ -167,8 +161,8 @@ const ApplePhotoGrid = ({
                 onClick={(e) => handleSelectToggle(e, photo.id)}
                 className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors ${
                   isSelected 
-                    ? 'bg-primary-500 text-white' 
-                    : 'bg-[var(--color-surface)]/80 text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
+                    ? 'bg-primary-500 text-[var(--color-on-solid)]'
+                    : 'bg-[color-mix(in_srgb,var(--color-surface)_80%,transparent)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
                 }`}
                 aria-label={isSelected ? 'Deselect photo' : 'Select photo'}
                 aria-pressed={isSelected}
@@ -190,8 +184,8 @@ const ApplePhotoGrid = ({
               onClick={(e) => handleFavoriteToggle(e, photo.id)}
               className={`favorite-btn absolute top-2 right-2 p-1.5 rounded-full transition-colors ${
                 isFavorite 
-                  ? 'bg-[var(--color-error-light)]0 text-white' 
-                  : 'bg-[var(--color-surface)]/80 text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-error)]'
+                  ? 'bg-[var(--color-error)] text-[var(--color-on-solid)]'
+                  : 'bg-[color-mix(in_srgb,var(--color-surface)_80%,transparent)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)] hover:text-[var(--color-error)]'
               }`}
               aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               aria-pressed={isFavorite}
@@ -203,10 +197,10 @@ const ApplePhotoGrid = ({
           {/* Photo info on hover */}
           {photo.caption && (
             <div className="absolute bottom-0 left-0 right-0 p-2">
-              <p className="text-white text-sm font-medium truncate">
+              <p className="text-[var(--color-on-solid)] text-sm font-medium truncate">
                 {photo.caption}
               </p>
-              <p className="text-white/80 text-xs">
+              <p className="text-[var(--color-on-solid-80)] text-xs">
                 {formatDateHeader(photo.uploaded_at, DATE_GROUPS.TODAY)}
               </p>
             </div>
@@ -215,7 +209,7 @@ const ApplePhotoGrid = ({
 
         {/* Video indicator */}
         {photo.isVideo && (
-          <div className="absolute bottom-2 left-2 bg-black/60 text-white p-1.5 rounded">
+          <div className="absolute bottom-2 left-2 bg-[var(--color-overlay-50)] text-[var(--color-on-solid)] p-1.5 rounded">
             <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
             </svg>

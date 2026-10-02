@@ -91,7 +91,7 @@ const TenantList = () => {
         </div>
         <button
           onClick={() => navigate('/platform/tenants/create')}
-          className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Church
@@ -105,6 +105,7 @@ const TenantList = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-textSecondary)]" />
             <input
               type="text"
+              aria-label="Search churches"
               placeholder="Search churches..."
               value={searchTerm}
               onChange={(e) => updateFilter(setSearchTerm, e.target.value)}
@@ -113,6 +114,7 @@ const TenantList = () => {
           </div>
           <div className="flex gap-4">
             <select
+              aria-label="Filter churches by status"
               value={statusFilter}
               onChange={(e) => updateFilter(setStatusFilter, e.target.value)}
               className="px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -123,6 +125,7 @@ const TenantList = () => {
               <option value="pending">Pending</option>
             </select>
             <select
+              aria-label="Filter churches by tier"
               value={tierFilter}
               onChange={(e) => updateFilter(setTierFilter, e.target.value)}
               className="px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"

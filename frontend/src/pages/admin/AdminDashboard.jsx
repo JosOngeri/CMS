@@ -2,13 +2,12 @@ import { useState, useEffect } from 'react'
 import { Users, Settings, Megaphone, DollarSign, BarChart, Shield, Database, Image } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { FullPageLoading } from '../../components/common/Loading'
 
 const AdminDashboard = () => {
   const { user, api } = useAuth()
   const toast = useToast()
-  const navigate = useNavigate()
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalPayments: 0,
@@ -194,21 +193,21 @@ const AdminDashboard = () => {
             .map((module, index) => {
               const Icon = module.icon
               return (
-                <div
+                <Link
                   key={index}
-                  className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
-                  onClick={() => navigate(module.link)}
+                  to={module.link}
+                  className="bg-[var(--color-surface)] p-6 rounded-lg shadow-sm hover:shadow-md focus-visible:shadow-md transition-shadow cursor-pointer group block"
                 >
                   <div className={`inline-flex p-3 rounded-lg ${module.color} mb-4`}>
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600">
+                  <h3 className="font-semibold text-[var(--color-text)] mb-2 group-hover:text-primary-600 group-focus-within:text-primary-600">
                     {module.title}
                   </h3>
                   <p className="text-sm text-[var(--color-textSecondary)]">
                     {module.description}
                   </p>
-                </div>
+                </Link>
               )
             })}
         </div>

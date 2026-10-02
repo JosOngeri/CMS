@@ -15,7 +15,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Church, Mail, ArrowLeft, Loader2, CheckCircle } from 'lucide-react'
 import { useToast } from '../../contexts/ToastContext'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 import { useAuth } from '../../contexts/AuthContext'
 
 const ForgotPassword = () => {
@@ -23,7 +22,6 @@ const ForgotPassword = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
-  const { colors } = useColorPalette()
   const { api } = useAuth()
 
   const {
@@ -85,8 +83,8 @@ const ForgotPassword = () => {
     <div className="max-w-md w-full space-y-8">
       <div className="text-center">
         <div className="flex justify-center mb-4">
-          <div className="p-3 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
-            <Church className="h-8 w-8" style={{ color: colors.primary }} aria-hidden="true" />
+          <div className="p-3 rounded-full bg-[var(--color-primary-light)]">
+            <Church className="h-8 w-8 text-[var(--color-primary)]" aria-hidden="true" />
           </div>
         </div>
         <h2 className="text-2xl font-bold text-[var(--color-text)]">Reset your password</h2>
@@ -111,6 +109,7 @@ const ForgotPassword = () => {
               })}
               id="email"
               type="email"
+              inputMode="email"
               className="input w-full"
               aria-label="Email address"
               aria-invalid={errors.email ? 'true' : 'false'}

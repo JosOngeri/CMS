@@ -10,7 +10,7 @@ import { useChurchBranding } from '../../hooks/useChurchBranding';
 const HeroSection = () => {
   const { shortName, isMsabato, availableChurches, setChurch } = useChurchBranding();
   return (
-    <section className="church-gradient text-white relative overflow-hidden">
+    <section className="church-gradient text-[var(--color-on-solid)] relative overflow-hidden">
       {/* Decorative background pattern */}
       <div className="absolute inset-0 opacity-10" aria-hidden="true">
         <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--color-surface)] rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
@@ -30,27 +30,27 @@ const HeroSection = () => {
                   loading="lazy"
                 />
                 <div className="text-left">
-                  <h1 className="text-3xl md:text-5xl font-light text-white/90">Welcome to</h1>
-                  <h2 className="text-4xl md:text-6xl font-bold text-white">{shortName}</h2>
-                  <p className="text-xl md:text-2xl text-white/80 font-medium">
+                  <h1 className="text-3xl md:text-5xl font-light text-[var(--color-on-solid-80)]">Welcome to</h1>
+                  <h2 className="text-4xl md:text-6xl font-bold text-[var(--color-on-solid)]">{shortName}</h2>
+                  <p className="text-xl md:text-2xl text-[var(--color-on-solid-80)] font-medium">
                     Seventh-day Adventist Church
                   </p>
                 </div>
               </div>
 
-              <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto lg:mx-0">
+              <p className="text-lg md:text-xl text-[var(--color-on-solid-80)] mb-8 max-w-2xl mx-auto lg:mx-0">
                 Join us for worship, fellowship, and spiritual growth. A place where faith comes alive and community thrives.
               </p>
 
               {/* Church chooser */}
               {isMsabato && availableChurches.length > 0 && (
                 <div className="mb-8 max-w-md mx-auto lg:mx-0">
-                  <label className="block text-sm font-medium text-white/80 mb-2" htmlFor="church-picker">
+                  <label className="block text-sm font-medium text-[var(--color-on-solid-80)] mb-2" htmlFor="church-picker">
                     Choose your church
                   </label>
                   <select
                     id="church-picker"
-                    className="w-full rounded-lg border border-white/20 bg-[var(--color-surface)]/10 px-4 py-3 text-white placeholder-white/60 backdrop-blur-sm"
+                    className="w-full rounded-lg border border-[var(--color-on-solid-20)] bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] px-4 py-3 text-[var(--color-on-solid)] placeholder-[var(--color-on-solid-60)] backdrop-blur-sm"
                     onChange={(e) => {
                       const id = e.target.value;
                       const church = availableChurches.find(c => String(c.id) === String(id));
@@ -60,7 +60,7 @@ const HeroSection = () => {
                   >
                     <option value="">Select your church</option>
                     {availableChurches.map(church => (
-                      <option key={church.id} value={church.id} className="text-black">
+                      <option key={church.id} value={church.id} className="text-[var(--color-text)]">
                         {church.name}
                       </option>
                     ))}
@@ -70,11 +70,11 @@ const HeroSection = () => {
 
               {/* Quick Info Cards */}
               <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-8">
-                <div className="flex items-center gap-2 bg-[var(--color-surface)]/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] backdrop-blur-sm px-4 py-2 rounded-full">
                   <Calendar className="h-4 w-4" aria-hidden="true" />
                   <span className="text-sm">Sabbath Services</span>
                 </div>
-                <div className="flex items-center gap-2 bg-[var(--color-surface)]/10 backdrop-blur-sm px-4 py-2 rounded-full">
+                <div className="flex items-center gap-2 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] backdrop-blur-sm px-4 py-2 rounded-full">
                   <Users className="h-4 w-4" aria-hidden="true" />
                   <span className="text-sm">All Welcome</span>
                 </div>
@@ -84,15 +84,15 @@ const HeroSection = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   to="/announcements"
-                  className="btn btn-lg bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[var(--color-surface)]/90 shadow-xl hover:shadow-2xl transition-all duration-300 group"
+                  className="btn btn-lg bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[color-mix(in_srgb,var(--color-surface)_90%,transparent)] shadow-xl hover:shadow-2xl transition-all duration-300 group"
                   aria-label="View announcements"
                 >
                   <span>View Announcements</span>
-                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                  <ArrowRight className="h-5 w-5 ml-2 group-hover:translate-x-1 group-focus-within:translate-x-1 transition-transform" aria-hidden="true" />
                 </Link>
                 <Link
                   to="/auth/login"
-                  className="btn btn-lg bg-transparent border-2 border-white text-white hover:bg-[var(--color-surface)] hover:text-[var(--color-primary-strong)] transition-all duration-300"
+                  className="btn btn-lg bg-transparent border-2 border-[var(--color-on-solid)] text-[var(--color-on-solid)] hover:bg-[var(--color-surface)] hover:text-[var(--color-primary-strong)] transition-all duration-300"
                   aria-label="Access member portal"
                 >
                   Member Portal
@@ -103,17 +103,17 @@ const HeroSection = () => {
             {/* Right Side - Live Stream Preview */}
             <div className="flex-1 hidden lg:block">
               <div className="relative">
-                <div className="bg-[var(--color-surface)]/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                  <div className="aspect-video bg-black/50 rounded-xl flex items-center justify-center mb-4">
+                <div className="bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] backdrop-blur-sm rounded-2xl p-6 border border-[var(--color-on-solid-20)]">
+                  <div className="aspect-video bg-[var(--color-overlay-50)] rounded-xl flex items-center justify-center mb-4">
                     <div className="text-center">
-                      <Play className="h-16 w-16 mx-auto mb-4 text-white/80" aria-hidden="true" />
-                      <p className="text-white/80">Live Stream</p>
-                      <p className="text-white/60 text-sm">Saturdays 10:30 AM</p>
+                      <Play className="h-16 w-16 mx-auto mb-4 text-[var(--color-on-solid-80)]" aria-hidden="true" />
+                      <p className="text-[var(--color-on-solid-80)]">Live Stream</p>
+                      <p className="text-[var(--color-on-solid-80)] text-sm">Saturdays 10:30 AM</p>
                     </div>
                   </div>
                   <div className="text-center">
                     <h3 className="text-xl font-semibold mb-2">Watch Live</h3>
-                    <p className="text-white/80 text-sm">Join our Sabbath services online</p>
+                    <p className="text-[var(--color-on-solid-80)] text-sm">Join our Sabbath services online</p>
                   </div>
                 </div>
               </div>

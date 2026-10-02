@@ -1,3 +1,8 @@
+/**
+ * Multer memory-storage upload — CSV/JSON only, 5MB cap, single file per request.
+ * @exports multer instance
+ * @known Extension-only filter (no magic-byte check) — acceptable for text imports.
+ */
 const multer = require('multer');
 const path = require('path');
 

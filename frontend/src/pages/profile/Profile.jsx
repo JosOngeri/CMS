@@ -178,6 +178,8 @@ const Profile = () => {
                     }
                   })}
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   className="input w-full"
                 />
                 {errors.email && (
@@ -198,6 +200,8 @@ const Profile = () => {
                     }
                   })}
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   className="input w-full"
                   placeholder="+254 700 000 000"
                 />

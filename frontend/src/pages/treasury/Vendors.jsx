@@ -159,7 +159,7 @@ const Vendors = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Vendor</span>
@@ -227,11 +227,11 @@ const Vendors = () => {
             {filteredVendors.map((vendor) => (
               <div
                 key={vendor.id}
-                className="p-4 hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)]/50 transition-colors"
+                className="p-4 hover:bg-[var(--color-background)] hover:bg-[color-mix(in_srgb,var(--color-surface)_50%,transparent)] transition-colors"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="p-2 bg-[var(--color-primary-light)]/20 rounded-lg">
+                    <div className="p-2 bg-[color-mix(in_srgb,var(--color-primary-light)_20%,transparent)] rounded-lg">
                       <Building className="h-5 w-5 text-[var(--color-primary)]" />
                     </div>
                     <div>
@@ -343,7 +343,9 @@ const Vendors = () => {
                       Phone Number
                     </label>
                     <input
-                      type="text"
+                      type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={formData.phone_number}
                       onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                       className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
@@ -355,6 +357,8 @@ const Vendors = () => {
                     </label>
                     <input
                       type="email"
+                      inputMode="email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
@@ -421,7 +425,7 @@ const Vendors = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingVendor ? 'Update' : 'Create'}
                   </button>

@@ -9,7 +9,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { createLogger } = require('../helpers/controllerLogger');
-const { pool } = require('../config/database');
 
 const logger = createLogger('events.routes');
 
@@ -83,7 +82,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       WHERE e.id = $1
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await eventsRepository.query(query, [id]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
@@ -102,7 +101,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
         SELECT 1 FROM department_members 
         WHERE user_id = $1 AND department_id = $2
       `;
-      const deptMemberResult = await pool.query(deptMemberQuery, [req.user.id, event.department_id]);
+      const deptMemberResult = await eventsRepository.query(deptMemberQuery, [req.user.id, event.department_id]);
       
       if (deptMemberResult.rows.length === 0) {
         return res.status(403).json({ error: 'Access denied' });
@@ -118,7 +117,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
       ORDER BY ea.registered_at ASC
     `;
 
-    const attendeesResult = await pool.query(attendeesQuery, [id]);
+    const attendeesResult = await eventsRepository.query(attendeesQuery, [id]);
 
     res.json({ 
       event: {
@@ -164,7 +163,7 @@ router.post('/',
         RETURNING *
       `;
 
-      const result = await pool.query(query, [
+      const result = await eventsRepository.query(query, [
         title, description, event_date, location, department_id, req.user.id, max_attendees, is_public, posterUrl
       ]);
 
@@ -217,7 +216,7 @@ router.put('/:id',
         WHERE e.id = $4
       `;
 
-      const checkResult = await pool.query(checkQuery, [
+      const checkResult = await eventsRepository.query(checkQuery, [
         req.user.id,
         'Super Admin',
         ['Super Admin', 'Pastor', 'First Elder'],
@@ -260,7 +259,7 @@ router.put('/:id',
         RETURNING *
       `;
 
-      const result = await pool.query(updateQuery, [
+      const result = await eventsRepository.query(updateQuery, [
         title, description, event_date, location, department_id, max_attendees, is_public, posterUrl, id
       ]);
 
@@ -323,7 +322,7 @@ router.post('/:id/register', authenticateToken, async (req, res) => {
       WHERE e.id = $2
     `;
 
-    const eventResult = await pool.query(eventQuery, [req.user.id, id]);
+    const eventResult = await eventsRepository.query(eventQuery, [req.user.id, id]);
 
     if (eventResult.rows.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
@@ -338,7 +337,7 @@ router.post('/:id/register', authenticateToken, async (req, res) => {
     // Check if event has max attendees limit
     if (event.max_attendees) {
       const countQuery = 'SELECT COUNT(*) as count FROM event_attendance WHERE event_id = $1';
-      const countResult = await pool.query(countQuery, [id]);
+      const countResult = await eventsRepository.query(countQuery, [id]);
       
       if (parseInt(countResult.rows[0].count) >= event.max_attendees) {
         return res.status(400).json({ error: 'Event is fully booked' });
@@ -353,7 +352,7 @@ router.post('/:id/register', authenticateToken, async (req, res) => {
       RETURNING *
     `;
 
-    const result = await pool.query(registerQuery, [id, req.user.id]);
+    const result = await eventsRepository.query(registerQuery, [id, req.user.id]);
 
     if (result.rows.length === 0) {
       return res.status(400).json({ error: 'Already registered for this event' });
@@ -374,7 +373,7 @@ router.delete('/:id/register', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
+    const result = await eventsRepository.query(
       'DELETE FROM event_attendance WHERE event_id = $1 AND member_id = $2 RETURNING *',
       [id, req.user.id]
     );
@@ -411,7 +410,7 @@ router.patch('/:id/attendance/:userId',
 
       // Check if user has permission to mark attendance
       const eventQuery = 'SELECT organizer_id FROM events WHERE id = $1';
-      const eventResult = await pool.query(eventQuery, [id]);
+      const eventResult = await eventsRepository.query(eventQuery, [id]);
 
       if (eventResult.rows.length === 0) {
         return res.status(404).json({ error: 'Event not found' });
@@ -424,7 +423,7 @@ router.patch('/:id/attendance/:userId',
         return res.status(403).json({ error: 'Permission denied' });
       }
 
-      const result = await pool.query(
+      const result = await eventsRepository.query(
         'UPDATE event_attendance SET attended = $1 WHERE event_id = $2 AND member_id = $3 RETURNING *',
         [attended, id, userId]
       );
@@ -461,7 +460,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       WHERE e.id = $4
     `;
 
-    const checkResult = await pool.query(checkQuery, [
+    const checkResult = await eventsRepository.query(checkQuery, [
       req.user.id, 
       'Super Admin', 
       ['Super Admin', 'Pastor', 'First Elder'], 
@@ -476,7 +475,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Permission denied' });
     }
 
-    await pool.query('DELETE FROM events WHERE id = $1', [id]);
+    await eventsRepository.query('DELETE FROM events WHERE id = $1', [id]);
 
     res.json({ message: 'Event deleted successfully' });
   } catch (error) {
@@ -502,7 +501,7 @@ router.get('/:id/ticket-types', authenticateToken, async (req, res) => {
       ORDER BY tt.price ASC
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await eventsRepository.query(query, [id]);
     res.json({ ticket_types: result.rows });
   } catch (error) {
     logger.error('getTicketTypes', error);
@@ -544,7 +543,7 @@ router.post('/:id/ticket-types',
         WHERE e.id = $4
       `;
 
-      const checkResult = await pool.query(checkQuery, [
+      const checkResult = await eventsRepository.query(checkQuery, [
         req.user.id, 
         'Super Admin', 
         ['Super Admin', 'Pastor', 'First Elder'], 
@@ -565,7 +564,7 @@ router.post('/:id/ticket-types',
         RETURNING *
       `;
 
-      const result = await pool.query(query, [
+      const result = await eventsRepository.query(query, [
         id, name, description, price, max_quantity, available_from, available_until
       ]);
 
@@ -590,7 +589,7 @@ router.post('/:id/register-with-payment',
     body('notes').optional().isString()
   ],
   async (req, res) => {
-    const client = await pool.connect();
+    const client = await eventsRepository.beginTransaction();
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -599,8 +598,6 @@ router.post('/:id/register-with-payment',
 
       const { id } = req.params;
       const { phone_number, ticket_type_id, notes } = req.body;
-
-      await client.query('BEGIN');
 
       // Check if event exists and is accessible
       const eventQuery = `
@@ -773,7 +770,7 @@ router.get('/:id/registrations', authenticateToken, requireRole(['Super Admin', 
       ORDER BY er.registration_date DESC
     `;
 
-    const result = await pool.query(query, [id]);
+    const result = await eventsRepository.query(query, [id]);
     res.json({ registrations: result.rows });
   } catch (error) {
     logger.error('getEventRegistrations', error);

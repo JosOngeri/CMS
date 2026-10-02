@@ -58,6 +58,8 @@ const DocumentationManager = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('Delete this document?')) return;
+
     try {
       await docApi.delete(`/documentation/${id}`);
       toast.success('Document deleted');
@@ -82,7 +84,7 @@ const DocumentationManager = () => {
         <h2 className="text-2xl font-bold">Documentation Manager</h2>
         <button
           onClick={() => setSelectedDoc({ title: '', content: '', category: 'user-guide' })}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
         >
           <Plus size={16} />
           New Document
@@ -170,7 +172,7 @@ const DocumentationManager = () => {
               </div>
               <button
                 onClick={() => handleSave(selectedDoc)}
-                className="w-full py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+                className="w-full py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
               >
                 Save Document
               </button>

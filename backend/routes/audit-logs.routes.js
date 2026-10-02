@@ -21,7 +21,8 @@ router.get('/', authenticateToken, requireRole(['Super Admin', 'Pastor', 'First 
     } = req.query;
 
     const result = await auditLogRepository.getAuditLogs({
-      limit, offset, userId, action, tableName, departmentId, startDate, endDate
+      limit, offset, userId, action, tableName, departmentId, startDate, endDate,
+      churchId: req.user.church_id
     });
 
     res.json({
@@ -43,7 +44,7 @@ router.get('/:id', authenticateToken, requireRole(['Super Admin', 'Pastor', 'Fir
   try {
     const { id } = req.params;
 
-    const result = await auditLogRepository.getAuditLogById(id);
+    const result = await auditLogRepository.getAuditLogById(id, req.user.church_id);
 
     if (!result) {
       return res.status(404).json({
@@ -79,8 +80,8 @@ router.get('/department/:departmentId', authenticateToken, async (req, res) => {
 
     // If not admin, verify user is department head or admin
     if (!isAdmin) {
-      const deptCheck = await auditLogRepository.checkDepartmentHead(departmentId, userId);
-      const adminCheck = await auditLogRepository.checkDepartmentAdmin(departmentId, userId);
+      const deptCheck = await auditLogRepository.checkDepartmentHead(departmentId, userId, req.user.church_id);
+      const adminCheck = await auditLogRepository.checkDepartmentAdmin(departmentId, userId, req.user.church_id);
 
       if (!deptCheck && !adminCheck) {
         return res.status(403).json({
@@ -90,7 +91,7 @@ router.get('/department/:departmentId', authenticateToken, async (req, res) => {
       }
     }
 
-    const result = await auditLogRepository.getDepartmentAuditLogs(departmentId, limit, offset);
+    const result = await auditLogRepository.getDepartmentAuditLogs(departmentId, req.user.church_id, limit, offset);
 
     res.json({
       success: true,

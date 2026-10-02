@@ -99,7 +99,7 @@ const ChurchQuickActions = ({ limit = 6 }) => {
               to={action.link}
               className="group flex flex-col items-center p-5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl hover:shadow-lg hover:border-[var(--color-primary-light)] transition-all"
             >
-              <div className="p-4 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] mb-3 group-hover:scale-110 transition-transform">
+              <div className="p-4 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary)] mb-3 group-hover:scale-110 group-focus-within:scale-110 transition-transform">
                 <Icon size={24} aria-hidden="true" />
               </div>
               <span className="text-sm font-semibold text-[var(--color-text)] text-center mb-1">

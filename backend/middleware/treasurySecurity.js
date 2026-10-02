@@ -1,3 +1,9 @@
+/**
+ * Treasury guards — role check, IP whitelist, audit logging on response send, MFA/sensitive-path checks, in-memory limiter.
+ * @exports TreasurySecurityMiddleware (static class)
+ * @deps helpers/errorHandler, helpers/permissionChecker, config/database
+ * @known requireMFA/validateSensitiveDataAccess compare stripped req.path against '/api/treasury/*' → NEVER fire; IP checks read remoteAddress (always proxy IP behind Caddy); custom Map limiter duplicates express-rate-limit; audit insert lacks church_id — ledger.
+ */
 const { pool } = require('../config/database');
 const logger = require('../config/logging');
 const ipaddr = require('ipaddr.js');

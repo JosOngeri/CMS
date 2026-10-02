@@ -1,3 +1,8 @@
+/**
+ * express-rate-limit factories — Redis store when connected at boot, else in-memory; named limiters used by index.routes.js.
+ * @exports {authLimiter, generalLimiter, strictLimiter, apiLimiter, passwordResetLimiter, platformAuthLimiter, uploadLimiter, getRateLimitStats}
+ * @known Redis availability sampled once at module load (late-connecting Redis never adopted); platformAuthLimiter mount unverified — ledger.
+ */
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
 const redisCache = require('../services/redisCache');

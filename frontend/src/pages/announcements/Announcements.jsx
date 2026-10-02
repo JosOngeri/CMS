@@ -207,13 +207,13 @@ const Announcements = () => {
                 <div className="flex gap-3 mt-6 pt-4 border-t border-[var(--color-border)]">
                   <button
                     onClick={() => handleEdit(viewingAnnouncement)}
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg text-sm"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg text-sm"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(viewingAnnouncement.id)}
-                    className="px-4 py-2 bg-[var(--color-error)] text-white rounded-lg text-sm"
+                    className="px-4 py-2 bg-[var(--color-error)] text-[var(--color-on-solid)] rounded-lg text-sm"
                   >
                     Delete
                   </button>
@@ -246,8 +246,9 @@ const Announcements = () => {
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Title</label>
+                <label htmlFor="announcement-title" className="block text-sm font-medium text-[var(--color-text)] mb-1">Title</label>
                 <input
+                  id="announcement-title"
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
@@ -256,8 +257,9 @@ const Announcements = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Content</label>
+                <label htmlFor="announcement-content" className="block text-sm font-medium text-[var(--color-text)] mb-1">Content</label>
                 <textarea
+                  id="announcement-content"
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   rows={4}
@@ -266,8 +268,9 @@ const Announcements = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Priority</label>
+                <label htmlFor="announcement-priority" className="block text-sm font-medium text-[var(--color-text)] mb-1">Priority</label>
                 <select
+                  id="announcement-priority"
                   value={formData.priority}
                   onChange={(e) => setFormData({...formData, priority: e.target.value})}
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -280,7 +283,7 @@ const Announcements = () => {
               <div className="flex gap-3">
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
                 >
                   {editingAnnouncement ? 'Update' : 'Post'} Announcement
                 </button>

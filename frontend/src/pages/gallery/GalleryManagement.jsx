@@ -374,7 +374,7 @@ const GalleryManagement = () => {
             </div>
             <button
               onClick={() => navigate('/dashboard/telegram/auth')}
-              className="flex items-center space-x-2 bg-[var(--color-error)] hover:opacity-90 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-[var(--color-error)] hover:opacity-90 text-[var(--color-on-solid)] px-4 py-2 rounded-lg"
             >
               <Settings className="h-4 w-4" />
               <span>Configure Telegram</span>
@@ -397,7 +397,7 @@ const GalleryManagement = () => {
               {authStatus.primary !== 'authenticated' && (
                 <button
                   onClick={() => { setAuthTarget('primary'); setShowAuthModal(true); }}
-                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white text-sm rounded-lg"
+                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm rounded-lg"
                 >
                   Authenticate
                 </button>
@@ -419,7 +419,7 @@ const GalleryManagement = () => {
               {authStatus.fallback !== 'authenticated' && (
                 <button
                   onClick={() => { setAuthTarget('fallback'); setShowAuthModal(true); }}
-                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white text-sm rounded-lg"
+                  className="px-3 py-1 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm rounded-lg"
                 >
                   Authenticate
                 </button>
@@ -455,7 +455,7 @@ const GalleryManagement = () => {
           {canShowUploadButton && (
             <button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-[var(--color-on-solid)] px-4 py-2 rounded-lg"
               title={uploadButtonDesc}
             >
               {canRequestUpload && !canUpload && <Unlock className="h-4 w-4 mr-1" />}
@@ -467,7 +467,7 @@ const GalleryManagement = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center space-x-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center space-x-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
             <RefreshCw className={`h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
             <span>{syncing ? 'Syncing...' : 'Sync from Channel'}</span>
@@ -477,7 +477,7 @@ const GalleryManagement = () => {
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setFilterUntagged(!filterUntagged)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${filterUntagged ? 'bg-[var(--color-accent)] text-white' : 'bg-[var(--color-surface)]  text-[var(--color-text)] '}`}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${filterUntagged ? 'bg-[var(--color-accent)] text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)]  text-[var(--color-text)] '}`}
           >
             <Filter className="h-4 w-4" />
             <span>{filterUntagged ? 'Show All' : 'Untagged Only'}</span>
@@ -485,7 +485,7 @@ const GalleryManagement = () => {
           {selectedPhotos.size > 0 && (
             <button
               onClick={() => setShowBatchTagModal(true)}
-              className="flex items-center space-x-2 bg-[var(--color-success)] hover:opacity-90 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-[var(--color-success)] hover:opacity-90 text-[var(--color-on-solid)] px-4 py-2 rounded-lg"
             >
               <Tag className="h-4 w-4" />
               <span>Tag {selectedPhotos.size} Photo(s)</span>
@@ -606,7 +606,7 @@ const GalleryManagement = () => {
                 <button
                   type="submit"
                   disabled={uploading}
-                  className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-[var(--color-on-solid)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
                   {uploading ? (
                     <>
@@ -707,7 +707,7 @@ const GalleryManagement = () => {
                 <button
                   type="submit"
                   disabled={batchTagging}
-                  className="flex-1 px-4 py-2 bg-[var(--color-success)] hover:opacity-90 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="flex-1 px-4 py-2 bg-[var(--color-success)] hover:opacity-90 text-[var(--color-on-solid)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
                   {batchTagging ? (
                     <>
@@ -751,7 +751,7 @@ const GalleryManagement = () => {
               </p>
               <button
                 onClick={() => handleStartAuth(authTarget)}
-                className="w-full px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-white rounded-lg"
+                className="w-full px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
               >
                 Send Verification Code
               </button>
@@ -762,6 +762,9 @@ const GalleryManagement = () => {
                   </label>
                   <input
                     type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    aria-label="Telegram verification code"
                     value={authCode}
                     onChange={(e) => setAuthCode(e.target.value)}
                     className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)] "
@@ -780,7 +783,7 @@ const GalleryManagement = () => {
                   <button
                     type="submit"
                     disabled={authSubmitting}
-                    className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-[var(--color-on-solid)] rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {authSubmitting ? 'Verifying...' : 'Verify'}
                   </button>
@@ -803,13 +806,13 @@ const GalleryManagement = () => {
               <span className="text-[var(--color-textSecondary)]">Show:</span>
               <button
                 onClick={() => setFilterUntagged(false)}
-                className={`px-3 py-1 rounded ${!filterUntagged ? 'bg-primary-600 text-white' : 'bg-[var(--color-surface)] '}`}
+                className={`px-3 py-1 rounded ${!filterUntagged ? 'bg-primary-600 text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)] '}`}
               >
                 All
               </button>
               <button
                 onClick={() => setFilterUntagged(true)}
-                className={`px-3 py-1 rounded ${filterUntagged ? 'bg-primary-600 text-white' : 'bg-[var(--color-surface)] '}`}
+                className={`px-3 py-1 rounded ${filterUntagged ? 'bg-primary-600 text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)] '}`}
               >
                 Pending
               </button>

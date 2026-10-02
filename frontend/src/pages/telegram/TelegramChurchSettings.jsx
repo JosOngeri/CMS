@@ -144,6 +144,7 @@ const TelegramChurchSettings = () => {
               </label>
               <input
                 type="number"
+                inputMode="numeric"
                 name="syncIntervalHours"
                 value={config.syncIntervalHours || 1}
                 onChange={handleChange}
@@ -196,7 +197,7 @@ const TelegramChurchSettings = () => {
               type="button"
               onClick={handleSync}
               disabled={syncing || !config.channelUsername}
-              className="btn inline-flex items-center gap-2 bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary)]/90 disabled:opacity-50"
+              className="btn inline-flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-primary)_90%,transparent)] disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
               {syncing ? 'Starting...' : 'Sync Photos Now'}

@@ -1,18 +1,15 @@
 import { Loader2 } from 'lucide-react'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 
 /**
  * FullPageLoading - A full-page loading spinner
  */
 export const FullPageLoading = ({ message = 'Loading...', progress = null }) => {
-  const { colors } = useColorPalette()
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
-      <Loader2 className="w-12 h-12 animate-spin mb-4" style={{ color: colors.primary }} aria-hidden="true" />
-      <p style={{ color: colors.textSecondary }}>{message}</p>
+      <Loader2 className="w-12 h-12 animate-spin mb-4 text-[var(--color-primary)]" aria-hidden="true" />
+      <p className="text-[var(--color-textSecondary)]">{message}</p>
       {progress !== null && (
-        <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+        <p className="mt-2 text-sm text-[var(--color-textSecondary)]">
           {Math.round(progress)}%
         </p>
       )}
@@ -32,7 +29,7 @@ export const InlineLoading = ({ size = 'md', className = '' }) => {
   }
 
   return (
-    <Loader2 className={`animate-spin ${sizeClasses[size]} ${className}`} style={{ color: colors.primary }} aria-hidden="true" />
+    <Loader2 className={`animate-spin text-[var(--color-primary)] ${sizeClasses[size]} ${className}`} aria-hidden="true" />
   )
 }
 
@@ -40,14 +37,12 @@ export const InlineLoading = ({ size = 'md', className = '' }) => {
  * CardLoading - A skeleton loading state for cards
  */
 export const CardLoading = () => {
-  const { colors } = useColorPalette()
-
   return (
-    <div className="rounded-lg shadow-sm p-6" style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: '1px', borderStyle: 'solid' }}>
+    <div className="rounded-lg shadow-sm p-6 bg-[var(--color-surface)] border border-[var(--color-border)]">
       <div className="animate-pulse space-y-4">
-        <div className="h-4 rounded w-3/4" style={{ backgroundColor: colors.border }}></div>
-        <div className="h-4 rounded w-1/2" style={{ backgroundColor: colors.border }}></div>
-        <div className="h-4 rounded w-5/6" style={{ backgroundColor: colors.border }}></div>
+        <div className="h-4 rounded w-3/4 bg-[var(--color-border)]"></div>
+        <div className="h-4 rounded w-1/2 bg-[var(--color-border)]"></div>
+        <div className="h-4 rounded w-5/6 bg-[var(--color-border)]"></div>
       </div>
     </div>
   )
@@ -57,8 +52,6 @@ export const CardLoading = () => {
  * TableLoading - A skeleton loading state for table rows
  */
 export const TableLoading = ({ rows = 5, columns = 5 }) => {
-  const { colors } = useColorPalette()
-
   return (
     <>
       {Array.from({ length: rows }).map((_, rowIndex) => (
@@ -66,11 +59,8 @@ export const TableLoading = ({ rows = 5, columns = 5 }) => {
           {Array.from({ length: columns }).map((_, colIndex) => (
             <td key={colIndex} className="px-6 py-4">
               <div
-                className="h-4 rounded"
-                style={{
-                  backgroundColor: colors.border,
-                  width: `${Math.random() * 50 + 25}%`
-                }}
+                className="h-4 rounded bg-[var(--color-border)]"
+                style={{ width: `${Math.random() * 50 + 25}%` }}
               ></div>
             </td>
           ))}

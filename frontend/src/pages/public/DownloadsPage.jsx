@@ -31,27 +31,27 @@ function DownloadsPage() {
     if (!manifest?.latest) return null;
     const v = manifest.latest;
     return (
-      <section className="bg-[var(--color-primary-strong)] text-white rounded-2xl p-8 md:p-12 mb-16 shadow-xl">
+      <section className="bg-[var(--color-primary-strong)] text-[var(--color-on-solid)] rounded-2xl p-8 md:p-12 mb-16 shadow-xl">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div className="p-4 bg-[var(--color-surface)]/10 rounded-2xl">
+          <div className="p-4 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-2xl">
             <Smartphone className="w-12 h-12" />
           </div>
           <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold mb-2">{churchName} Android App</h1>
-            <p className="text-white/90 max-w-2xl">
+            <p className="text-[var(--color-on-solid-80)] max-w-2xl">
               Download the official {churchName} management app. Connect to your church, manage members, payments, events, and departments.
             </p>
           </div>
           <div className="flex flex-col items-start md:items-end gap-2">
             <div className="text-2xl font-bold">v{v.version}</div>
-            <div className="text-white/80 text-sm flex items-center gap-1">
+            <div className="text-[var(--color-on-solid-80)] text-sm flex items-center gap-1">
               <Calendar className="w-4 h-4" />
               {v.date}
             </div>
-            {v.size && <div className="text-white/70 text-sm">{formatBytes(v.size)}</div>}
+            {v.size && <div className="text-[var(--color-on-solid-80)] text-sm">{formatBytes(v.size)}</div>}
             <a
               href={`/api/apk/download/${v.version}`}
-              className="mt-4 inline-flex items-center gap-2 bg-[var(--color-surface)] text-[var(--color-primary)] px-6 py-3 rounded-xl font-bold hover:bg-[var(--color-surface)]/90 transition-colors shadow-lg"
+              className="mt-4 inline-flex items-center gap-2 bg-[var(--color-surface)] text-[var(--color-primary)] px-6 py-3 rounded-xl font-bold hover:bg-[color-mix(in_srgb,var(--color-surface)_90%,transparent)] transition-colors shadow-lg"
             >
               <Download className="w-5 h-5" />
               Download Latest
@@ -101,7 +101,7 @@ function DownloadsPage() {
                   {v.size && <span className="text-sm text-[var(--color-textSecondary)]">{formatBytes(v.size)}</span>}
                   <a
                     href={`/api/apk/download/${v.version}`}
-                    className="inline-flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-lg font-medium hover:bg-[var(--color-primary-strong)] hover:text-white hover:border-[var(--color-primary-strong)] transition-colors"
+                    className="inline-flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-lg font-medium hover:bg-[var(--color-primary-strong)] hover:text-[var(--color-on-solid)] hover:border-[var(--color-primary-strong)] transition-colors"
                   >
                     <Download className="w-4 h-4" />
                     Download

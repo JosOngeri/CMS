@@ -139,7 +139,7 @@ const Content = () => {
           permission={PERMISSIONS.CONTENT_CREATE}
           buttonProps={{
             onClick: () => openEditor(),
-            className: "px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]",
+            className: "px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]",
           }}
         >
           <Plus className="w-4 h-4 inline mr-2" />
@@ -265,7 +265,7 @@ const Content = () => {
               </button>
               <button
                 onClick={saveContent}
-                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+                className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
               >
                 <Save className="w-4 h-4 inline mr-2" />
                 Save

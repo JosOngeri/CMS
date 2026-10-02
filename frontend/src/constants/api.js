@@ -46,38 +46,36 @@ export const API_ENDPOINTS = {
     BY_ID: (id) => `/announcements/${id}`,
   },
 
-  // Departments
-  // Note the mix of `/departments` (public/crud) and `/department` (scoped).
+  // Departments — canonical plural mount. `/department/*` remains a 308
+  // redirect for older clients, but new code should always use `/departments/*`.
   DEPARTMENTS: {
     BASE: '/departments',
     BY_ID: (id) => `/departments/${id}`,
     AVAILABLE: '/departments/available',
     JOIN: '/departments/join',
     LEAVE: (id) => `/departments/leave/${id}`,
-
-    // Scoped endpoints live under the singular `/department` prefix.
-    MY_DEPARTMENTS: '/department/my-departments',
-    PENDING_REQUESTS: (id) => `/department/${id}/pending-requests`,
-    APPROVE_REQUEST: (deptId, userId) => `/department/${deptId}/approve/${userId}`,
-    REJECT_REQUEST: (deptId, userId) => `/department/${deptId}/reject/${userId}`,
-    DASHBOARD: (id) => `/department/${id}/dashboard`,
-    COMMUNICATIONS: (id) => `/department/${id}/communications`,
-    MEMBERS: (id) => `/department/${id}/members`,
-    MEETINGS: (id) => `/department/${id}/meetings`,
-    TASKS: (id) => `/department/${id}/tasks`,
-    TASK_BY_ID: (deptId, taskId) => `/department/${deptId}/tasks/${taskId}`,
-    RESOURCES: (id) => `/department/${id}/resources`,
-    ACTIVITY_FEED: (id) => `/department/${id}/activity-feed`,
-    ACTIVITY_SUMMARY: (id) => `/department/${id}/activity-summary`,
+    MY_DEPARTMENTS: '/departments/my-departments',
+    PENDING_REQUESTS: (id) => `/departments/${id}/pending-requests`,
+    APPROVE_REQUEST: (deptId, userId) => `/departments/${deptId}/approve/${userId}`,
+    REJECT_REQUEST: (deptId, userId) => `/departments/${deptId}/reject/${userId}`,
+    DASHBOARD: (id) => `/departments/${id}/dashboard`,
+    COMMUNICATIONS: (id) => `/departments/${id}/communications`,
+    MEMBERS: (id) => `/departments/${id}/members`,
+    MEETINGS: (id) => `/departments/${id}/meetings`,
+    TASKS: (id) => `/departments/${id}/tasks`,
+    TASK_BY_ID: (deptId, taskId) => `/departments/${deptId}/tasks/${taskId}`,
+    RESOURCES: (id) => `/departments/${id}/resources`,
+    ACTIVITY_FEED: (id) => `/departments/${id}/activity-feed`,
+    ACTIVITY_SUMMARY: (id) => `/departments/${id}/activity-summary`,
 
     // Department finance & operations
-    BUDGETS: (id) => `/department/${id}/budgets`,
-    BUDGET_BY_ID: (deptId, budgetId) => `/department/${deptId}/budgets/${budgetId}`,
-    OBLIGATIONS: (id) => `/department/${id}/obligations`,
-    COLLECTIONS: (id) => `/department/${id}/collections`,
-    REMITTANCES: (id) => `/department/${id}/remittances`,
-    PENDING_FUNDS: (id) => `/department/${id}/remittances/pending-funds`,
-    SUBCOMMITTEES: (id) => `/department/${id}/subcommittees`,
+    BUDGETS: (id) => `/departments/${id}/budgets`,
+    BUDGET_BY_ID: (deptId, budgetId) => `/departments/${deptId}/budgets/${budgetId}`,
+    OBLIGATIONS: (id) => `/departments/${id}/obligations`,
+    COLLECTIONS: (id) => `/departments/${id}/collections`,
+    REMITTANCES: (id) => `/departments/${id}/remittances`,
+    PENDING_FUNDS: (id) => `/departments/${id}/remittances/pending-funds`,
+    SUBCOMMITTEES: (id) => `/departments/${id}/subcommittees`,
   },
 
   // Obligations ("What I Owe")

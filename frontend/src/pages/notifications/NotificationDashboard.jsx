@@ -88,6 +88,8 @@ const NotificationDashboard = () => {
   };
 
   const deleteNotification = async (id) => {
+    if (!window.confirm('Delete this notification?')) return;
+
     try {
       await api.delete(API_ENDPOINTS.NOTIFICATIONS.DELETE(id));
       setNotifications(prev => prev.filter(n => n.id !== id));
@@ -157,7 +159,7 @@ const NotificationDashboard = () => {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             <CheckCheck className="w-4 h-4" />
             Mark all as read
@@ -171,7 +173,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'all'
-              ? 'bg-[var(--color-primary)] text-white'
+              ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]'
               : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
           }`}
         >
@@ -181,7 +183,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('unread')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'unread'
-              ? 'bg-[var(--color-primary)] text-white'
+              ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]'
               : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
           }`}
         >
@@ -191,7 +193,7 @@ const NotificationDashboard = () => {
           onClick={() => setFilter('read')}
           className={`px-4 py-2 rounded-lg transition-colors ${
             filter === 'read'
-              ? 'bg-[var(--color-primary)] text-white'
+              ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]'
               : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] hover:bg-[var(--color-surface)]'
           }`}
         >

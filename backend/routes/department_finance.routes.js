@@ -12,6 +12,7 @@ const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify');
 const { createLogger } = require('../helpers/controllerLogger');
+const departmentFinanceRepository = require('../repositories/DepartmentFinanceRepository');
 const {
   MANAGER_ROLES, hasManagerRole, getDepartmentForUser, logDeptActivity,
   canManageSubcommittee,
@@ -24,7 +25,7 @@ const logger = createLogger('department_finance');
 async function canManageDepartment(user, departmentId) {
   const roles = user.roles || [];
   if (roles.some((r) => MANAGER_ROLES.includes(r))) return true;
-  const head = await pool.query(
+  const head = await departmentFinanceRepository.query(
     `SELECT 1 FROM departments d WHERE d.id = $1 AND d.head_id = $2 AND d.is_active = true
      UNION
      SELECT 1 FROM department_leadership dl
@@ -42,7 +43,7 @@ async function canManageDepartment(user, departmentId) {
 
 /** True if user holds an active collector grant for this dept (or subcommittee). */
 async function isCollector(user, departmentId, subcommitteeId = null) {
-  const r = await pool.query(
+  const r = await departmentFinanceRepository.query(
     `SELECT 1 FROM department_leadership
      WHERE department_id = $1 AND user_id = $2 AND position = 'collector'
        AND is_active = true
@@ -61,7 +62,7 @@ async function canReconcile(user, departmentId, subcommitteeId = null) {
 
 /** Recompute one obligation from completed payments + reconciled txns. */
 async function recalcObligation(obligationId) {
-  await pool.query(
+  await departmentFinanceRepository.query(
     `UPDATE member_obligations mo SET
        paid_amount = COALESCE(p.paid, 0) + COALESCE(r.paid, 0),
        status = CASE
@@ -87,7 +88,7 @@ async function recalcObligation(obligationId) {
 // ===========================================================================
 router.get('/me/obligations', authenticateToken, async (req, res) => {
   try {
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT mo.*, d.name AS department_name, b.purpose, b.collection_deadline,
               b.target_amount AS budget_target
        FROM member_obligations mo
@@ -119,7 +120,7 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, error: 'target_amount is required' });
     }
 
-    const budget = await pool.query(
+    const budget = await departmentFinanceRepository.query(
       `INSERT INTO department_budgets
          (department_id, church_id, subcommittee_id, total_amount, target_amount,
           spent_amount, remaining_amount, fiscal_year, status, purpose,
@@ -130,7 +131,7 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
        collection_deadline || null, obligation_type || 'voluntary', req.user.id]
     );
 
-    const approval = await pool.query(
+    const approval = await departmentFinanceRepository.query(
       `INSERT INTO approval_requests
          (title, description, request_type, request_data, requester_id,
           department_id, module, amount, status, church_id)
@@ -140,7 +141,7 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
        JSON.stringify({ budget_id: budget.rows[0].id, department_id: dept.id }),
        req.user.id, dept.id, target_amount, dept.church_id]
     );
-    await pool.query(
+    await departmentFinanceRepository.query(
       'UPDATE department_budgets SET approval_request_id = $2 WHERE id = $1',
       [budget.rows[0].id, approval.rows[0].id]
     );
@@ -166,7 +167,7 @@ router.get('/:id/budgets', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT b.*,
               COALESCE((SELECT SUM(o.paid_amount) FROM member_obligations o
                         WHERE o.budget_id = b.id AND o.status <> 'cancelled'), 0) AS collected,
@@ -196,7 +197,7 @@ router.post('/:id/budgets/:bid/allocate', authenticateToken, async (req, res) =>
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
 
-    const b = await pool.query(
+    const b = await departmentFinanceRepository.query(
       `SELECT * FROM department_budgets WHERE id = $1 AND department_id = $2`,
       [req.params.bid, dept.id]
     );
@@ -212,7 +213,7 @@ router.post('/:id/budgets/:bid/allocate', authenticateToken, async (req, res) =>
     // Resolve member list for equal split
     let rows = [];
     if (mode === 'equal') {
-      const members = await pool.query(
+      const members = await departmentFinanceRepository.query(
         `SELECT user_id FROM department_members
          WHERE department_id = $1 AND is_active = true AND status = 'active'`,
         [dept.id]
@@ -229,7 +230,7 @@ router.post('/:id/budgets/:bid/allocate', authenticateToken, async (req, res) =>
       rows = allocations;
     } else if (mode === 'voluntary') {
       // No per-member rows — pool stays open; voluntary pledges join later
-      await pool.query(
+      await departmentFinanceRepository.query(
         `UPDATE department_budgets SET obligation_type = 'voluntary', updated_at = NOW() WHERE id = $1`,
         [budget.id]
       );
@@ -243,7 +244,7 @@ router.post('/:id/budgets/:bid/allocate', authenticateToken, async (req, res) =>
     const inserted = [];
     for (const a of rows) {
       if (!a.user_id || !(a.amount > 0)) continue;
-      const r = await pool.query(
+      const r = await departmentFinanceRepository.query(
         `INSERT INTO member_obligations
            (church_id, department_id, budget_id, user_id, amount,
             obligation_type, due_date, allocated_by)
@@ -285,7 +286,7 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
     const manager = await canManageDepartment(req.user, dept.id);
 
-    const budgets = await pool.query(
+    const budgets = await departmentFinanceRepository.query(
       `SELECT b.id, b.purpose, b.status, b.target_amount, b.obligation_type,
               b.collection_deadline, b.created_at, b.subcommittee_id,
               s.name AS subcommittee_name,
@@ -314,7 +315,7 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
 
     // Per-subcommittee rollup — targets vs collected for each auxiliary
     // arm that has budgets of its own.
-    const subs = await pool.query(
+    const subs = await departmentFinanceRepository.query(
       `SELECT s.id, s.name,
               COALESCE(SUM(b.target_amount), 0) AS target_amount,
               COUNT(DISTINCT b.id) AS budget_count,
@@ -344,7 +345,7 @@ router.get('/:id/collections', authenticateToken, async (req, res) => {
     // Per-member breakdown — leaders only
     let members = null;
     if (manager && result[0]) {
-      const r = await pool.query(
+      const r = await departmentFinanceRepository.query(
         `SELECT o.id, o.user_id, o.amount, o.paid_amount, o.status, o.obligation_type,
                 u.first_name, u.last_name, u.phone
          FROM member_obligations o JOIN users u ON u.id = o.user_id
@@ -370,7 +371,7 @@ router.put('/:id/obligations/:oid/waive', authenticateToken, async (req, res) =>
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `UPDATE member_obligations SET status = 'waived', waived_by = $3, updated_at = NOW()
        WHERE id = $1 AND department_id = $2 RETURNING *`,
       [req.params.oid, dept.id, req.user.id]
@@ -405,7 +406,7 @@ router.post('/:id/reconciliations', authenticateToken, async (req, res) => {
     let status = 'unassigned';
     let linkedObligation = null;
     if (obligation_id) {
-      const o = await pool.query(
+      const o = await departmentFinanceRepository.query(
         `SELECT * FROM member_obligations WHERE id = $1 AND department_id = $2`,
         [obligation_id, dept.id]
       );
@@ -420,7 +421,7 @@ router.post('/:id/reconciliations', authenticateToken, async (req, res) => {
 
     let row;
     try {
-      const r = await pool.query(
+      const r = await departmentFinanceRepository.query(
         `INSERT INTO mpesa_reconciliations
            (church_id, department_id, subcommittee_id, budget_id, obligation_id,
             tx_code, amount, payer_name, payer_phone, sms_timestamp, reconciled_by, status)
@@ -467,7 +468,7 @@ router.get('/:id/reconciliations', authenticateToken, async (req, res) => {
     if (!manager && !collector) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT r.*, u.first_name || ' ' || u.last_name AS reconciled_by_name,
               mo.user_id AS obligation_user_id
        FROM mpesa_reconciliations r
@@ -497,7 +498,7 @@ router.put('/:id/reconciliations/:rid/assign', authenticateToken, async (req, re
     if (!obligation_id && !budget_id) {
       return res.status(400).json({ success: false, error: 'obligation_id or budget_id required' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `UPDATE mpesa_reconciliations
        SET obligation_id = $3, budget_id = COALESCE($4, budget_id), status = 'reconciled'
        WHERE id = $1 AND department_id = $2 RETURNING *`,
@@ -577,14 +578,14 @@ router.post('/:id/parser/calibrate', authenticateToken, async (req, res) => {
       });
     }
 
-    const version = await pool.query(
+    const version = await departmentFinanceRepository.query(
       `SELECT COALESCE(MAX(version), 0) + 1 AS v FROM mpesa_parser_profiles
        WHERE church_id = $1 AND department_id IS NOT DISTINCT FROM $2
          AND subcommittee_id IS NOT DISTINCT FROM $3`,
       [churchId, isChurchScope ? null : dept.id, subcommittee_id || null]
     );
 
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `INSERT INTO mpesa_parser_profiles
          (church_id, department_id, subcommittee_id, version, ruleset, sample_sms, status, created_by)
        VALUES ($1,$2,$3,$4,$5,$6,'draft',$7) RETURNING id, version, status, ruleset`,
@@ -612,7 +613,7 @@ router.post('/:id/parser/test', authenticateToken, async (req, res) => {
       return res.status(404).json({ success: false, error: 'Department not found' });
     }
     const { profile_id, sample_sms } = req.body;
-    const p = await pool.query(
+    const p = await departmentFinanceRepository.query(
       `SELECT ruleset FROM mpesa_parser_profiles WHERE id = $1`,
       [profile_id]
     );
@@ -628,7 +629,7 @@ router.post('/:id/parser/test', authenticateToken, async (req, res) => {
 // Activate a draft profile (retires older versions for the scope)
 router.post('/:id/parser/profiles/:pid/activate', authenticateToken, async (req, res) => {
   try {
-    const p = await pool.query(
+    const p = await departmentFinanceRepository.query(
       `SELECT * FROM mpesa_parser_profiles WHERE id = $1`, [req.params.pid]
     );
     const profile = p.rows[0];
@@ -641,13 +642,13 @@ router.post('/:id/parser/profiles/:pid/activate', authenticateToken, async (req,
     }
     if (!allowed) return res.status(403).json({ success: false, error: 'Not authorized' });
 
-    await pool.query(
+    await departmentFinanceRepository.query(
       `UPDATE mpesa_parser_profiles SET status = 'retired'
        WHERE church_id = $1 AND department_id IS NOT DISTINCT FROM $2
          AND subcommittee_id IS NOT DISTINCT FROM $3 AND status = 'active'`,
       [profile.church_id, profile.department_id, profile.subcommittee_id]
     );
-    await pool.query(
+    await departmentFinanceRepository.query(
       `UPDATE mpesa_parser_profiles SET status = 'active' WHERE id = $1`, [profile.id]
     );
     res.json({ success: true, data: { id: profile.id, status: 'active' } });
@@ -667,7 +668,7 @@ router.get('/:id/parser/profiles', authenticateToken, async (req, res) => {
     }
     const { subcommittee_id } = req.query;
     const churchId = dept ? dept.church_id : req.user.church_id;
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT id, version, ruleset, status, created_at
        FROM mpesa_parser_profiles
        WHERE church_id = $1 AND department_id IS NOT DISTINCT FROM $2
@@ -696,7 +697,7 @@ router.get('/:id/remittances/pending-funds', authenticateToken, async (req, res)
     if (!manager && !collector) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT r.id, r.tx_code, r.amount, r.payer_name, r.payer_phone,
               r.sms_timestamp, r.created_at, r.reconciled_by,
               u.first_name || ' ' || u.last_name AS reconciled_by_name
@@ -726,7 +727,7 @@ router.get('/:id/remittances', authenticateToken, async (req, res) => {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
     const { status } = req.query;
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `SELECT rem.*,
               c.first_name || ' ' || c.last_name AS collector_name,
               t.first_name || ' ' || t.last_name AS treasurer_name
@@ -750,7 +751,7 @@ router.get('/:id/remittances', authenticateToken, async (req, res) => {
 
 /** Collector declares a batch handover. */
 router.post('/:id/remittances', authenticateToken, async (req, res) => {
-  const client = await pool.connect();
+  const client = await departmentFinanceRepository.beginTransaction();
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) {
@@ -769,8 +770,6 @@ router.post('/:id/remittances', authenticateToken, async (req, res) => {
       client.release();
       return res.status(400).json({ success: false, error: 'reconciliation_ids[] required' });
     }
-
-    await client.query('BEGIN');
 
     // Lock the items: must be this dept, reconciled, unremitted, and — for
     // collectors — reconciled by themselves (managers may remit anyone's).
@@ -848,7 +847,7 @@ router.put('/:id/remittances/:rid/confirm', authenticateToken, async (req, res) 
     if (!isTreasurer && !(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `UPDATE remittances
        SET status = 'confirmed', treasurer_id = $1, confirmed_at = NOW()
        WHERE id = $2 AND department_id = $3 AND status = 'pending'
@@ -881,7 +880,7 @@ router.put('/:id/remittances/:rid/dispute', authenticateToken, async (req, res) 
     if (!reason) {
       return res.status(400).json({ success: false, error: 'reason is required' });
     }
-    const r = await pool.query(
+    const r = await departmentFinanceRepository.query(
       `UPDATE remittances
        SET status = 'disputed', treasurer_id = $1, dispute_reason = $4
        WHERE id = $2 AND department_id = $3 AND status = 'pending'

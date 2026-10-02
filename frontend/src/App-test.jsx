@@ -2,10 +2,10 @@ import React from 'react'
 
 function App() {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+    <div className="p-5 font-body">
       <h1>SDA Church Kiserian Main</h1>
       <p>Frontend is working!</p>
-      <div style={{ backgroundColor: 'var(--color-background)', padding: '10px', margin: '10px 0' }}>
+      <div className="bg-[var(--color-background)] p-2.5 my-2.5">
         <h2>Test Page</h2>
         <p>If you can see this, the frontend server is working correctly.</p>
       </div>

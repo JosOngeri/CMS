@@ -17,6 +17,7 @@ const SettingNumber = ({ label, description, value, onChange, placeholder, disab
       <input
         id={inputId}
         type="number"
+        inputMode="decimal"
         value={value}
         onChange={handleChange}
         placeholder={placeholder}

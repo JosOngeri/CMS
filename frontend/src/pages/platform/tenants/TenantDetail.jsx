@@ -280,7 +280,7 @@ const TenantDetail = () => {
           <h2 id="tenant-action-title" className="text-lg font-semibold text-[var(--color-text)]">Confirm {pendingAction} church</h2>
           <p className="text-sm text-[var(--color-textSecondary)]">Provide a reason. This action is recorded in the platform audit log.</p>
           <textarea value={actionReason} onChange={(event) => setActionReason(event.target.value)} rows="3" className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" placeholder="Reason for this action" />
-          <div className="flex justify-end gap-3"><button onClick={() => { setPendingAction(null); setActionReason('') }} className="rounded-lg border border-[var(--color-border)] px-4 py-2">Cancel</button><button onClick={performAction} className="rounded-lg bg-[var(--color-error)] px-4 py-2 text-white">Confirm</button></div>
+          <div className="flex justify-end gap-3"><button onClick={() => { setPendingAction(null); setActionReason('') }} className="rounded-lg border border-[var(--color-border)] px-4 py-2">Cancel</button><button onClick={performAction} className="rounded-lg bg-[var(--color-error)] px-4 py-2 text-[var(--color-on-solid)]">Confirm</button></div>
         </div>
       </div>}
 

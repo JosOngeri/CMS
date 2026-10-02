@@ -83,7 +83,7 @@ const ServiceTimes = () => {
                 key={index}
                 className={`group relative p-8 rounded-2xl transition-all duration-300 cursor-pointer ${
                   service.highlight
-                    ? 'bg-gradient-to-br from-[var(--color-primary-strong)] to-[var(--color-primary-variant)] text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                    ? 'bg-gradient-to-br from-[var(--color-primary-strong)] to-[var(--color-primary-variant)] text-[var(--color-on-solid)] shadow-xl hover:shadow-2xl hover:-translate-y-1'
                     : 'bg-[var(--color-surface)] hover:shadow-lg border border-[var(--color-border)] shadow-sm'
                 }`}
                 onClick={() => addToCalendar(service.day, service.time)}
@@ -96,25 +96,25 @@ const ServiceTimes = () => {
                   </div>
                 )}
 
-                <div className={`mb-4 ${service.highlight ? 'text-white/90' : 'text-[var(--color-primary)]'}`}>
+                <div className={`mb-4 ${service.highlight ? 'text-[var(--color-on-solid-80)]' : 'text-[var(--color-primary)]'}`}>
                   <Icon className="h-10 w-10" aria-hidden="true" />
                 </div>
 
-                <h3 className={`font-bold text-xl mb-2 ${service.highlight ? 'text-white' : 'text-[var(--color-text)]'}`}>
+                <h3 className={`font-bold text-xl mb-2 ${service.highlight ? 'text-[var(--color-on-solid)]' : 'text-[var(--color-text)]'}`}>
                   {service.day}
                 </h3>
 
-                <p className={`text-lg mb-3 ${service.highlight ? 'text-white/90' : 'text-[var(--color-text)]'}`}>
+                <p className={`text-lg mb-3 ${service.highlight ? 'text-[var(--color-on-solid-80)]' : 'text-[var(--color-text)]'}`}>
                   {service.time}
                 </p>
 
-                <p className={`text-sm ${service.highlight ? 'text-white/70' : 'text-[var(--color-textSecondary)]'}`}>
+                <p className={`text-sm ${service.highlight ? 'text-[var(--color-on-solid-80)]' : 'text-[var(--color-textSecondary)]'}`}>
                   {service.description}
                 </p>
 
                 {service.highlight && (
-                  <div className="mt-6 pt-6 border-t border-white/20">
-                    <div className="flex items-center gap-2 text-sm text-white/80">
+                  <div className="mt-6 pt-6 border-t border-[var(--color-on-solid-20)]">
+                    <div className="flex items-center gap-2 text-sm text-[var(--color-on-solid-80)]">
                       <MapPin className="h-4 w-4" aria-hidden="true" />
                       <span>Main Sanctuary</span>
                     </div>

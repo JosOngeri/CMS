@@ -26,7 +26,7 @@ const ColorPaletteContext = createContext(null);
 // Generate a set of lighter/darker shades from a single hex colour.
 function generateShades(hexColor) {
   if (!hexColor || typeof hexColor !== 'string' || !hexColor.startsWith('#')) {
-    return { DEFAULT: hexColor || '#000000' };
+    return { DEFAULT: hexColor || 'var(--color-text)' };
   }
 
   const hex = hexColor.replace('#', '');

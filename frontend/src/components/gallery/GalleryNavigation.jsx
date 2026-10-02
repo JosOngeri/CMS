@@ -10,7 +10,6 @@ import {
   Trash2,
   Upload
 } from 'lucide-react'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
 
 const GalleryNavigation = ({
   photoCount = 0,
@@ -21,8 +20,6 @@ const GalleryNavigation = ({
   canUpload = false,
   onUploadClick
 }) => {
-  const { colors } = useColorPalette()
-
   const navItems = [
     {
       id: 'library',
@@ -60,20 +57,17 @@ const GalleryNavigation = ({
   }))
 
   return (
-    <nav className="w-64 h-full overflow-y-auto" style={{ backgroundColor: colors.surface, borderRight: `1px solid ${colors.border}` }}>
+    <nav className="w-64 h-full overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)]">
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold" style={{ color: colors.text }}>
+          <h2 className="text-lg font-semibold text-[var(--color-text)]">
             Gallery
           </h2>
           {canUpload && (
             <button
               onClick={onUploadClick}
-              className="p-2 rounded-lg transition-colors"
-              style={{ backgroundColor: colors.primary, color: 'white' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC' }
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary }
+              className="p-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
               aria-label="Upload photos"
             >
               <Upload className="h-4 w-4" aria-hidden="true" />
@@ -87,30 +81,20 @@ const GalleryNavigation = ({
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                currentView === item.id
+                  ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                  : 'text-[var(--color-text)] hover:bg-[var(--color-background)]'
+              }`}
               aria-label={item.label}
               aria-current={currentView === item.id ? 'true' : 'false'}
-              style={{
-                backgroundColor: currentView === item.id ? colors.primary + '20' : 'transparent',
-                color: currentView === item.id ? colors.primary : colors.text
-              }}
-              onMouseEnter={(e) => {
-                if (currentView !== item.id) {
-                  e.currentTarget.style.backgroundColor = colors.background
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentView !== item.id) {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                }
-              }}
             >
               <div className="flex items-center space-x-3">
-                <item.icon className="h-5 w-5" style={{ color: currentView === item.id ? colors.primary : colors.textSecondary }} aria-hidden="true" />
+                <item.icon className={`h-5 w-5 ${currentView === item.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`} aria-hidden="true" />
                 <span>{item.label}</span>
               </div>
               {item.count > 0 && (
-                <span className="text-xs" style={{ color: currentView === item.id ? colors.primary : colors.textSecondary }} aria-label={`${item.count} ${item.label}`}>
+                <span className={`text-xs ${currentView === item.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`} aria-label={`${item.count} ${item.label}`}>
                   {item.count.toLocaleString()}
                 </span>
               )}
@@ -119,11 +103,11 @@ const GalleryNavigation = ({
         </div>
 
         {/* Divider */}
-        <div className="my-4" style={{ borderTop: `1px solid ${colors.border}` }} />
+        <div className="my-4 border-t border-[var(--color-border)]" />
 
         {/* Categories Section */}
         <div className="mb-4">
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: colors.textSecondary }}>
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3 text-[var(--color-textSecondary)]">
             Categories
           </h3>
           <div className="space-y-1" role="navigation" aria-label="Photo categories">
@@ -132,30 +116,20 @@ const GalleryNavigation = ({
                 <button
                   key={item.id}
                   onClick={() => onViewChange(item.id)}
-                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                    currentView === item.id
+                      ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
+                      : 'text-[var(--color-text)] hover:bg-[var(--color-background)]'
+                  }`}
                   aria-label={item.label}
                   aria-current={currentView === item.id ? 'true' : 'false'}
-                  style={{
-                    backgroundColor: currentView === item.id ? colors.primary + '20' : 'transparent',
-                    color: currentView === item.id ? colors.primary : colors.text
-                  }}
-                  onMouseEnter={(e) => {
-                    if (currentView !== item.id) {
-                      e.currentTarget.style.backgroundColor = colors.background
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (currentView !== item.id) {
-                      e.currentTarget.style.backgroundColor = 'transparent'
-                    }
-                  }}
                 >
-                  <Tag className="h-4 w-4" style={{ color: currentView === item.id ? colors.primary : colors.textSecondary }} aria-hidden="true" />
+                  <Tag className={`h-4 w-4 ${currentView === item.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-textSecondary)]'}`} aria-hidden="true" />
                   <span className="truncate">{item.label}</span>
                 </button>
               ))
             ) : (
-              <p className="px-3 text-sm italic" style={{ color: colors.textSecondary }}>
+              <p className="px-3 text-sm italic text-[var(--color-textSecondary)]">
                 No categories yet
               </p>
             )}
@@ -163,32 +137,22 @@ const GalleryNavigation = ({
         </div>
 
         {/* Quick Actions */}
-        <div className="my-4 pt-4" style={{ borderTop: `1px solid ${colors.border}` }}>
-          <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3" style={{ color: colors.textSecondary }}>
+        <div className="my-4 pt-4 border-t border-[var(--color-border)]">
+          <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3 text-[var(--color-textSecondary)]">
             Quick Actions
           </h3>
           <div className="space-y-1">
             <button
               onClick={() => onViewChange('trash')}
-              className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors"
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
+                currentView === 'trash'
+                  ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
+                  : 'text-[var(--color-text)] hover:bg-[var(--color-background)]'
+              }`}
               aria-label="View recently deleted photos"
               aria-current={currentView === 'trash' ? 'true' : 'false'}
-              style={{
-                backgroundColor: currentView === 'trash' ? colors.error + '20' : 'transparent',
-                color: currentView === 'trash' ? colors.error : colors.text
-              }}
-              onMouseEnter={(e) => {
-                if (currentView !== 'trash') {
-                  e.currentTarget.style.backgroundColor = colors.background
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (currentView !== 'trash') {
-                  e.currentTarget.style.backgroundColor = 'transparent'
-                }
-              }}
             >
-              <Trash2 className="h-4 w-4" style={{ color: currentView === 'trash' ? colors.error : colors.textSecondary }} aria-hidden="true" />
+              <Trash2 className={`h-4 w-4 ${currentView === 'trash' ? 'text-[var(--color-error)]' : 'text-[var(--color-textSecondary)]'}`} aria-hidden="true" />
               <span>Recently Deleted</span>
             </button>
           </div>

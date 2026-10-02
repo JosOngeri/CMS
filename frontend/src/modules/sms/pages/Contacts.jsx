@@ -136,20 +136,20 @@ const Contacts = () => {
         <div className="flex gap-2">
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90"
+            className="px-4 py-2 bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90"
           >
             Export CSV
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
+            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90"
           >
             Add Contact
           </button>
         </div>
       </div>
 
-      <div className="mb-4 flex gap-4">
+      <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
         <input
           type="text"
           placeholder="Search contacts..."
@@ -179,7 +179,7 @@ const Contacts = () => {
         </select>
       </div>
 
-      <div className="bg-[var(--color-surface)] rounded-lg shadow overflow-hidden">
+      <div className="bg-[var(--color-surface)] rounded-lg shadow overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-[var(--color-background)]">
             <tr>
@@ -222,8 +222,8 @@ const Contacts = () => {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center">
-          <div className="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-[var(--color-overlay)] flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
               {editingContact ? 'Edit Contact' : 'Add Contact'}
             </h2>
@@ -242,6 +242,8 @@ const Contacts = () => {
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Phone</label>
                 <input
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   required
                   value={formData.phone}
                   onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -253,6 +255,8 @@ const Contacts = () => {
                 <label className="block text-sm font-medium text-[var(--color-text)] mb-1">Email</label>
                 <input
                   type="email"
+                  inputMode="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   className="w-full px-3 py-2 border rounded"
@@ -297,7 +301,7 @@ const Contacts = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:opacity-90"
+                  className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90"
                 >
                   {editingContact ? 'Update' : 'Create'}
                 </button>

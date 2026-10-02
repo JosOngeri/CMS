@@ -178,7 +178,7 @@ const Documents = () => {
           {canManage && (
             <button
               onClick={handleCreate}
-              className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+              className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg"
             >
               <Plus className="w-4 h-4 mr-2" />
               Upload
@@ -358,7 +358,7 @@ const Documents = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-md disabled:opacity-60"
+                  className="flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-md disabled:opacity-60"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {saving ? 'Saving...' : editingDocument ? 'Update' : 'Upload'}

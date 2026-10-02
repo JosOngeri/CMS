@@ -24,7 +24,7 @@ class CommentsController extends BaseController {
   async getComments(req, res) {
     try {
       const { entityType, entityId } = req.params;
-      const comments = await CommentsRepository.getCommentsForEntity(entityType, entityId);
+      const comments = await CommentsRepository.getCommentsForEntity(entityType, entityId, req.user.church_id);
       this.success(res, comments, 'Comments retrieved successfully');
     } catch (error) {
       this.logger.error('getComments', error);
@@ -54,11 +54,12 @@ class CommentsController extends BaseController {
         entity_type: entityType,
         entity_id: entityId,
         user_id: req.user.id,
+        church_id: req.user.church_id,
         content,
         type
       });
 
-      const commentWithUser = await CommentsRepository.getCommentWithUser(comment.id);
+      const commentWithUser = await CommentsRepository.getCommentWithUser(comment.id, req.user.church_id);
 
       this.success(res, commentWithUser, 'Comment created successfully');
     } catch (error) {
@@ -83,7 +84,7 @@ class CommentsController extends BaseController {
       const { commentId } = req.params;
       const { content } = req.body;
 
-      const comment = await CommentsRepository.findCommentById(commentId);
+      const comment = await CommentsRepository.findCommentById(commentId, req.user.church_id);
 
       if (!comment) {
         return this.notFound(res, 'Comment not found');
@@ -96,7 +97,7 @@ class CommentsController extends BaseController {
         return this.forbidden(res, 'Not authorized to edit this comment');
       }
 
-      const updated = await CommentsRepository.updateCommentContent(commentId, content);
+      const updated = await CommentsRepository.updateCommentContent(commentId, content, req.user.church_id);
 
       this.success(res, updated, 'Comment updated successfully');
     } catch (error) {
@@ -118,7 +119,7 @@ class CommentsController extends BaseController {
     try {
       const { commentId } = req.params;
 
-      const comment = await CommentsRepository.findCommentById(commentId);
+      const comment = await CommentsRepository.findCommentById(commentId, req.user.church_id);
 
       if (!comment) {
         return this.notFound(res, 'Comment not found');
@@ -131,7 +132,7 @@ class CommentsController extends BaseController {
         return this.forbidden(res, 'Not authorized to delete this comment');
       }
 
-      await CommentsRepository.deleteComment(commentId);
+      await CommentsRepository.deleteComment(commentId, req.user.church_id);
 
       this.success(res, null, 'Comment deleted successfully');
     } catch (error) {

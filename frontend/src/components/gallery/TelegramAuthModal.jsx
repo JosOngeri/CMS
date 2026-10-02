@@ -109,7 +109,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-[var(--color-primary)] rounded-full flex items-center justify-center">
-              <Smartphone className="h-5 w-5 text-white" />
+              <Smartphone className="h-5 w-5 text-[var(--color-on-solid)]" />
             </div>
             <h3 className="text-xl font-bold text-[var(--color-text)]">Telegram Authentication</h3>
           </div>
@@ -130,6 +130,8 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
                 </label>
                 <input
                   type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   placeholder="+254700000000"
@@ -149,7 +151,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[var(--color-primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] text-[var(--color-on-solid)] py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -199,7 +201,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[var(--color-primary)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-[var(--color-primary)] text-[var(--color-on-solid)] py-3 rounded-lg font-medium hover:bg-[var(--color-primary)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -236,7 +238,7 @@ const TelegramAuthModal = ({ isOpen, onClose }) => {
             </p>
             <button
               onClick={handleClose}
-              className="w-full bg-[var(--color-success)] text-white py-3 rounded-lg font-medium hover:bg-[var(--color-success)]"
+              className="w-full bg-[var(--color-success)] text-[var(--color-on-solid)] py-3 rounded-lg font-medium hover:bg-[var(--color-success)]"
             >
               Done
             </button>

@@ -3,15 +3,14 @@
  * Tests for Department Features Repository and Controller
  */
 
-const DepartmentFeaturesRepository = require('../../repositories/DepartmentFeaturesRepository');
-const ResponseHandler = require('../../utils/ResponseHandler');
-
-// Mock database
 jest.mock('../../config/database', () => ({
   pool: {
     query: jest.fn(),
   },
 }));
+
+const DepartmentFeaturesRepository = require('../../repositories/DepartmentFeaturesRepository');
+const ResponseHandler = require('../../utils/ResponseHandler');
 
 describe('DepartmentFeaturesRepository', () => {
   let mockPool;

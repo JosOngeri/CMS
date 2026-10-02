@@ -26,13 +26,11 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useColorPalette } from '../../../contexts/ColorPaletteContext';
 import { API_ENDPOINTS } from '../../../constants/api';
 
 const PermissionManagement = ({ departmentId }) => {
   const toast = useToast();
   const { api, user } = useAuth();
-  const { colors } = useColorPalette();
   const [admins, setAdmins] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -105,6 +103,8 @@ const PermissionManagement = ({ departmentId }) => {
   };
 
   const revokeAdmin = async (userId) => {
+    if (!window.confirm('Revoke admin access for this user?')) return;
+
     try {
       if (isAdmin) {
         // Admins can revoke admin access directly
@@ -141,7 +141,7 @@ const PermissionManagement = ({ departmentId }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div style={{ color: colors.textSecondary }}>Loading permissions...</div>
+        <div className="text-[var(--color-textSecondary)]">Loading permissions...</div>
       </div>
     );
   }
@@ -149,19 +149,16 @@ const PermissionManagement = ({ departmentId }) => {
   return (
     <div className="space-y-6">
       {/* Department Admins */}
-      <div className="rounded-lg shadow p-6" style={{ backgroundColor: colors.surface }}>
+      <div className="rounded-lg shadow p-6 bg-[var(--color-surface)]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2" style={{ color: colors.text }}>
-            <Shield className="w-5 h-5" style={{ color: colors.primary }} />
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-[var(--color-text)]">
+            <Shield className="w-5 h-5 text-[var(--color-primary)]" />
             Department Admins
           </h3>
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-white"
-            style={{ backgroundColor: colors.primary }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-[var(--color-on-solid)] bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition-colors"
           >
             <UserPlus className="w-4 h-4" />
             Add Admin
@@ -170,9 +167,9 @@ const PermissionManagement = ({ departmentId }) => {
 
         {admins.length === 0 ? (
           <div className="text-center py-8">
-            <Shield className="w-12 h-12 mx-auto mb-4" style={{ color: colors.border }} />
-            <p style={{ color: colors.textSecondary }}>No department admins assigned</p>
-            <p className="text-sm mt-1" style={{ color: colors.border }}>
+            <Shield className="w-12 h-12 mx-auto mb-4 text-[var(--color-border)]" />
+            <p className="text-[var(--color-textSecondary)]">No department admins assigned</p>
+            <p className="text-sm mt-1 text-[var(--color-border)]">
               Add admins to help manage the department
             </p>
           </div>
@@ -181,39 +178,35 @@ const PermissionManagement = ({ departmentId }) => {
             {admins.map((admin) => (
               <div
                 key={admin.id}
-                className="rounded-lg p-4 transition-shadow"
-                style={{ backgroundColor: colors.background, borderColor: colors.border, borderWidth: '1px', borderStyle: 'solid' }}
+                className="rounded-lg p-4 transition-shadow bg-[var(--color-background)] border border-[var(--color-border)]"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary + '20' }}>
-                      <span className="text-sm font-semibold" style={{ color: colors.primary }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-primary-100)]">
+                      <span className="text-sm font-semibold text-[var(--color-primary)]">
                         {admin.first_name?.[0] || 'U'}
                       </span>
                     </div>
                     <div>
-                      <h4 className="font-medium flex items-center gap-2" style={{ color: colors.text }}>
+                      <h4 className="font-medium flex items-center gap-2 text-[var(--color-text)]">
                         {admin.first_name} {admin.last_name}
-                        {admin.is_head && <Crown className="w-4 h-4" style={{ color: colors.warning }} />}
+                        {admin.is_head && <Crown className="w-4 h-4 text-[var(--color-warning)]" />}
                       </h4>
-                      <p className="text-sm" style={{ color: colors.textSecondary }}>{admin.role}</p>
+                      <p className="text-sm text-[var(--color-textSecondary)]">{admin.role}</p>
                     </div>
                   </div>
                   {!admin.is_head && (
                     <button
                       type="button"
                       onClick={() => revokeAdmin(admin.id)}
-                      className="p-1 rounded transition-colors"
-                      style={{ backgroundColor: 'transparent' }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.error + '20'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      className="p-1 rounded transition-colors hover:bg-[var(--color-error-light)]"
                       title="Revoke admin access"
                     >
-                      <UserMinus className="w-4 h-4" style={{ color: colors.error }} />
+                      <UserMinus className="w-4 h-4 text-[var(--color-error)]" />
                     </button>
                   )}
                 </div>
-                <div className="space-y-1 text-sm" style={{ color: colors.textSecondary }}>
+                <div className="space-y-1 text-sm text-[var(--color-textSecondary)]">
                   <p>{admin.email}</p>
                   {admin.phone_number && <p>{admin.phone_number}</p>}
                 </div>
@@ -225,39 +218,33 @@ const PermissionManagement = ({ departmentId }) => {
 
       {/* Add Admin Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-          <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: colors.surface }}>
-            <div className="flex items-center justify-between p-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
-              <h2 className="text-lg font-semibold" style={{ color: colors.text }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-overlay-50)]">
+          <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-[var(--color-surface)]">
+            <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
+              <h2 className="text-lg font-semibold text-[var(--color-text)]">
                 Add Department Admin
               </h2>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="p-2 rounded-lg transition-colors"
-                style={{ backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border + '20'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="p-2 rounded-lg transition-colors hover:bg-[var(--color-surfaceHover)]"
+                aria-label="Close add admin dialog"
               >
-                <X className="w-5 h-5" style={{ color: colors.textSecondary }} />
+                <X className="w-5 h-5 text-[var(--color-textSecondary)]" />
               </button>
             </div>
             <div className="p-6">
               {/* Search */}
               <div className="mb-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: colors.textSecondary }} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-textSecondary)]" />
                   <input
                     type="text"
+                    aria-label="Search members"
                     placeholder="Search members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-lg"
-                    style={{ 
-                      border: `1px solid ${colors.border}`,
-                      backgroundColor: colors.background,
-                      color: colors.text
-                    }}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]"
                   />
                 </div>
               </div>
@@ -266,8 +253,8 @@ const PermissionManagement = ({ departmentId }) => {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {filteredMembers.length === 0 ? (
                   <div className="text-center py-8">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: colors.border }} />
-                    <p style={{ color: colors.textSecondary }}>
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-[var(--color-border)]" />
+                    <p className="text-[var(--color-textSecondary)]">
                       {searchTerm ? 'No members found' : 'All members are already admins'}
                     </p>
                   </div>
@@ -275,23 +262,20 @@ const PermissionManagement = ({ departmentId }) => {
                   filteredMembers.map((member) => (
                     <div
                       key={member.id}
-                      className="flex items-center justify-between p-4 rounded-lg transition-colors"
-                      style={{ border: `1px solid ${colors.border}` }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border + '10'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      className="flex items-center justify-between p-4 rounded-lg transition-colors border border-[var(--color-border)] hover:bg-[var(--color-surfaceHover)]"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.border + '20' }}>
-                          <span className="text-sm font-semibold" style={{ color: colors.text }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--color-surfaceHover)]">
+                          <span className="text-sm font-semibold text-[var(--color-text)]">
                             {member.first_name?.[0] || 'U'}
                           </span>
                         </div>
                         <div>
-                          <h4 className="font-medium" style={{ color: colors.text }}>
+                          <h4 className="font-medium text-[var(--color-text)]">
                             {member.first_name} {member.last_name}
                           </h4>
-                          <p className="text-sm" style={{ color: colors.textSecondary }}>{member.email}</p>
-                          <p className="text-xs" style={{ color: colors.text }}>
+                          <p className="text-sm text-[var(--color-textSecondary)]">{member.email}</p>
+                          <p className="text-xs text-[var(--color-text)]">
                             Role: {member.role_in_department || 'Member'}
                           </p>
                         </div>
@@ -299,10 +283,7 @@ const PermissionManagement = ({ departmentId }) => {
                       <button
                         type="button"
                         onClick={() => grantAdmin(member.id)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-white"
-                        style={{ backgroundColor: colors.primary }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-[var(--color-on-solid)] bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition-colors"
                       >
                         <UserPlus className="w-4 h-4" />
                         Grant Admin

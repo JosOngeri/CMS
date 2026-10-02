@@ -179,7 +179,7 @@ const MemberDirectory = () => {
         <PermissionButton
           permission={PERMISSIONS.MEMBERS_EXPORT}
           buttonProps={{
-            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors",
+            className: "flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors",
           }}
           onClick={() => setShowExportModal(true)}
         >
@@ -312,6 +312,7 @@ const MemberDirectory = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-textSecondary)] w-4 h-4" />
               <input
                 type="text"
+                aria-label="Search members by name, email, or phone"
                 placeholder="Search members by name, email, or phone..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -321,6 +322,7 @@ const MemberDirectory = () => {
           </div>
 
           <select
+            aria-label="Filter members by role"
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
             className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -332,6 +334,7 @@ const MemberDirectory = () => {
           </select>
 
           <select
+            aria-label="Filter members by department"
             value={filterDepartment}
             onChange={(e) => setFilterDepartment(e.target.value)}
             className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -343,6 +346,7 @@ const MemberDirectory = () => {
           </select>
 
           <select
+            aria-label="Filter members by status"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -353,6 +357,7 @@ const MemberDirectory = () => {
           </select>
 
           <select
+            aria-label="Sort members"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
@@ -560,7 +565,7 @@ const MemberDirectory = () => {
                 <div className="space-y-2">
                   <button
                     onClick={() => handleExport('csv')}
-                    className="w-full px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-left"
+                    className="w-full px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-left"
                   >
                     Export as CSV
                   </button>

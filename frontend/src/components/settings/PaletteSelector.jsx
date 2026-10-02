@@ -36,7 +36,7 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               onClick={() => handlePaletteClick(key)}
               className={`relative p-4 rounded-lg border-2 transition-all ${
                 (selectedPalette === key || (typeof selectedPalette === 'object' && selectedPalette?.name === palette.name))
-                  ? 'border-primary ring-2 ring-primary/20'
+                  ? 'border-primary ring-2 ring-[color-mix(in_srgb,var(--color-primary)_20%,transparent)]'
                   : 'border-[var(--color-border)] hover:border-[var(--color-border)]'
               }`}
               style={{ backgroundColor: palette.surface }}

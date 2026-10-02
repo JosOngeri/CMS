@@ -28,8 +28,7 @@ import ChurchQuickActions from '../../components/dashboard/ChurchQuickActions'
 import SystemOrganismViz from '../../components/dashboard/SystemOrganismViz'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
-
-const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
+import { fmtKES } from '../../utils/format'
 
 const SuperAdminDashboard = () => {
   const { user, api } = useAuth()
@@ -205,7 +204,7 @@ const SuperAdminDashboard = () => {
           <div className="space-y-3">
             {activities.map((activity, index) => (
               <div key={activity.id || index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
-                <div className="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                <div className="p-2 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)]">
                   <Server className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <div className="flex-1 min-w-0">

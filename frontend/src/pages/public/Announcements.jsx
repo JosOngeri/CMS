@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Calendar, User, Tag, ArrowLeft, Search, Filter, AlertCircle, CheckCircle, Info } from 'lucide-react'
+import { fmtDate } from '../../utils/format'
 
 const Announcements = () => {
   const [announcements, setAnnouncements] = useState([])
@@ -76,29 +77,21 @@ const Announcements = () => {
     }
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
       {/* Header */}
-      <div className="church-gradient text-white py-16">
+      <div className="church-gradient text-[var(--color-on-solid)] py-16">
         <div className="container mx-auto px-4">
           <Link 
             to="/"
-            className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] mb-6 transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back to Home</span>
           </Link>
           
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Church Announcements</h1>
-          <p className="text-xl text-white/90 max-w-2xl">
+          <p className="text-xl text-[var(--color-on-solid-80)] max-w-2xl">
             Stay updated with the latest news, events, and important information from our church community
           </p>
         </div>
@@ -112,6 +105,7 @@ const Announcements = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" />
               <input
                 type="text"
+                aria-label="Search announcements"
                 placeholder="Search announcements..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -122,6 +116,7 @@ const Announcements = () => {
             <div className="relative">
               <Filter className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" />
               <select
+                aria-label="Filter announcements by priority"
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
                 className="input pl-12 appearance-none"
@@ -164,13 +159,13 @@ const Announcements = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-[var(--color-textSecondary)]">
                       <Calendar className="h-4 w-4" />
-                      <span>{formatDate(announcement.created_at)}</span>
+                      <span>{fmtDate(announcement.created_at, { month: 'long' })}</span>
                     </div>
                   </div>
 
                   {/* Content */}
                   <div className="p-6">
-                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] transition-colors line-clamp-2">
+                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] group-focus-within:text-[var(--color-primary)] transition-colors line-clamp-2">
                       {announcement.title}
                     </h3>
                     <p className="text-[var(--color-textSecondary)] mb-4 line-clamp-3">

@@ -72,14 +72,14 @@ const TenantCreate = () => {
       <Card className="p-6">
         {step === 1 && <div className="space-y-4">
           <h2 className="font-semibold text-[var(--color-text)]">Church identity</h2>
-          <label className="block text-sm text-[var(--color-text)]">Church name<input value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
-          <label className="block text-sm text-[var(--color-text)]">Church slug<input value={form.slug} onChange={(event) => updateField('slug', event.target.value.toLowerCase())} placeholder={slugSuggestion || 'church-name'} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
+          <label className="block text-sm text-[var(--color-text)]">Church name<input type="text" value={form.name} onChange={(event) => updateField('name', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
+          <label className="block text-sm text-[var(--color-text)]">Church slug<input type="text" value={form.slug} onChange={(event) => updateField('slug', event.target.value.toLowerCase())} placeholder={slugSuggestion || 'church-name'} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
           <button type="button" onClick={() => updateField('slug', slugSuggestion)} className="text-sm text-[var(--color-primary)]">Use suggested slug</button>
         </div>}
         {step === 2 && <div className="space-y-4">
           <h2 className="font-semibold text-[var(--color-text)]">Primary contact</h2>
-          <label className="block text-sm text-[var(--color-text)]">Contact name<input value={form.contactName} onChange={(event) => updateField('contactName', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
-          <label className="block text-sm text-[var(--color-text)]">Contact email<input type="email" value={form.contactEmail} onChange={(event) => updateField('contactEmail', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
+          <label className="block text-sm text-[var(--color-text)]">Contact name<input type="text" value={form.contactName} onChange={(event) => updateField('contactName', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
+          <label className="block text-sm text-[var(--color-text)]">Contact email<input type="email" inputMode="email" autoComplete="email" value={form.contactEmail} onChange={(event) => updateField('contactEmail', event.target.value)} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3" /></label>
         </div>}
         {step === 3 && <div className="space-y-4">
           <h2 className="font-semibold text-[var(--color-text)]">Subscription and review</h2>
@@ -91,7 +91,7 @@ const TenantCreate = () => {
         </div>}
         <div className="mt-8 flex justify-between gap-3">
           <button type="button" onClick={() => step === 1 ? navigate('/platform/tenants') : setStep((current) => current - 1)} className="rounded-lg border border-[var(--color-border)] px-4 py-2">{step === 1 ? 'Cancel' : 'Back'}</button>
-          {step < 3 ? <button type="button" onClick={nextStep} className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-white">Continue</button> : <button type="button" disabled={submitting} onClick={submit} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-white disabled:opacity-50"><CheckCircle className="h-4 w-4" />{submitting ? 'Creating...' : 'Create church'}</button>}
+          {step < 3 ? <button type="button" onClick={nextStep} className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-[var(--color-on-solid)]">Continue</button> : <button type="button" disabled={submitting} onClick={submit} className="inline-flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-[var(--color-on-solid)] disabled:opacity-50"><CheckCircle className="h-4 w-4" />{submitting ? 'Creating...' : 'Create church'}</button>}
         </div>
       </Card>
     </div>

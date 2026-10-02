@@ -18,6 +18,7 @@ import {
   User,
   Check
 } from 'lucide-react'
+import { fmtDateTime } from '../../utils/format'
 
 const PhotoLightbox = ({
   photos = [],
@@ -197,23 +198,10 @@ const PhotoLightbox = ({
     return `/api/gallery/image/${fileId}`
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Unknown date'
-    const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit'
-    })
-  }
-
   if (!isOpen || !currentPhoto) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex">
+    <div className="fixed inset-0 z-50 bg-[var(--color-media)] flex">
       {/* Main Image Area */}
       <div 
         className="flex-1 flex items-center justify-center relative overflow-hidden"
@@ -222,10 +210,10 @@ const PhotoLightbox = ({
         }}
       >
         {/* Top Toolbar */}
-        <div className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between bg-gradient-to-b from-black/50 to-transparent">
+        <div className="absolute top-0 left-0 right-0 z-10 p-4 flex items-center justify-between bg-gradient-to-b from-[var(--color-overlay-50)] to-transparent">
           <div className="flex items-center space-x-2">
             {/* Photo Counter */}
-            <span className="text-white/80 text-sm font-medium bg-black/30 px-3 py-1 rounded-full">
+            <span className="text-[var(--color-on-solid-80)] text-sm font-medium bg-[var(--color-overlay-50)] px-3 py-1 rounded-full">
               {currentIndex + 1} / {photos.length}
             </span>
           </div>
@@ -236,7 +224,7 @@ const PhotoLightbox = ({
               <button
                 onClick={() => setShowInfoPanel(!showInfoPanel)}
                 className={`p-2 rounded-full transition-colors ${
-                  showInfoPanel ? 'bg-[var(--color-surface)]/20 text-white' : 'text-white/80 hover:text-white hover:bg-[var(--color-surface)]/10'
+                  showInfoPanel ? 'bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] text-[var(--color-on-solid)]' : 'text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)]'
                 }`}
                 aria-label={showInfoPanel ? 'Hide photo info' : 'Show photo info'}
                 aria-pressed={showInfoPanel}
@@ -248,7 +236,7 @@ const PhotoLightbox = ({
             {/* Fullscreen Toggle */}
             <button
               onClick={toggleFullscreen}
-              className="p-2 text-white/80 hover:text-white hover:bg-[var(--color-surface)]/10 rounded-full transition-colors"
+              className="p-2 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-full transition-colors"
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               aria-pressed={isFullscreen}
             >
@@ -258,7 +246,7 @@ const PhotoLightbox = ({
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-2 text-white/80 hover:text-white hover:bg-[var(--color-surface)]/10 rounded-full transition-colors"
+              className="p-2 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-full transition-colors"
               aria-label="Close lightbox"
             >
               <X className="h-6 w-6" aria-hidden="true" />
@@ -309,14 +297,14 @@ const PhotoLightbox = ({
           <>
             <button
               onClick={() => navigate('prev')}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white hover:bg-[var(--color-surface)]/10 rounded-full transition-all"
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-full transition-all"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-8 w-8" aria-hidden="true" />
             </button>
             <button
               onClick={() => navigate('next')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-white/60 hover:text-white hover:bg-[var(--color-surface)]/10 rounded-full transition-all"
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] hover:bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] rounded-full transition-all"
               aria-label="Next photo"
             >
               <ChevronRight className="h-8 w-8" aria-hidden="true" />
@@ -325,20 +313,20 @@ const PhotoLightbox = ({
         )}
 
         {/* Zoom Controls */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-black/50 backdrop-blur-sm rounded-full px-3 py-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-1 bg-[var(--color-overlay-50)] backdrop-blur-sm rounded-full px-3 py-2">
           <button
             onClick={zoomOut}
-            className="p-1.5 text-white/70 hover:text-white transition-colors"
+            className="p-1.5 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] transition-colors"
             aria-label="Zoom out"
           >
             <ZoomOut className="h-5 w-5" aria-hidden="true" />
           </button>
-          <span className="text-white/70 text-sm min-w-[3rem] text-center" aria-live="polite">
+          <span className="text-[var(--color-on-solid-80)] text-sm min-w-[3rem] text-center" aria-live="polite">
             {Math.round(scale * 100)}%
           </span>
           <button
             onClick={zoomIn}
-            className="p-1.5 text-white/70 hover:text-white transition-colors"
+            className="p-1.5 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] transition-colors"
             aria-label="Zoom in"
           >
             <ZoomIn className="h-5 w-5" aria-hidden="true" />
@@ -346,7 +334,7 @@ const PhotoLightbox = ({
           {scale !== 1 && (
             <button
               onClick={resetZoom}
-              className="p-1.5 text-white/70 hover:text-white transition-colors ml-1"
+              className="p-1.5 text-[var(--color-on-solid-80)] hover:text-[var(--color-on-solid)] transition-colors ml-1"
               aria-label="Reset zoom"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
@@ -361,8 +349,8 @@ const PhotoLightbox = ({
             onClick={() => onFavoriteToggle?.(currentPhoto.id)}
             className={`p-3 rounded-full transition-colors ${
               isFavorite 
-                ? 'bg-[var(--color-error-light)]0 text-white' 
-                : 'bg-[var(--color-surface)]/10 text-white/80 hover:bg-[var(--color-surface)]/20 hover:text-white'
+                ? 'bg-[var(--color-error)] text-[var(--color-on-solid)]'
+                : 'bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] text-[var(--color-on-solid-80)] hover:bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] hover:text-[var(--color-on-solid)]'
             }`}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
             aria-pressed={isFavorite}
@@ -374,7 +362,7 @@ const PhotoLightbox = ({
           {onShare && (
             <button
               onClick={() => onShare?.(currentPhoto)}
-              className="p-3 bg-[var(--color-surface)]/10 text-white/80 hover:bg-[var(--color-surface)]/20 hover:text-white rounded-full transition-colors"
+              className="p-3 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] text-[var(--color-on-solid-80)] hover:bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] hover:text-[var(--color-on-solid)] rounded-full transition-colors"
               aria-label="Share photo"
             >
               <Share2 className="h-5 w-5" aria-hidden="true" />
@@ -385,7 +373,7 @@ const PhotoLightbox = ({
           {canDownload && (
             <button
               onClick={() => onDownload?.(currentPhoto)}
-              className="p-3 bg-[var(--color-surface)]/10 text-white/80 hover:bg-[var(--color-surface)]/20 hover:text-white rounded-full transition-colors"
+              className="p-3 bg-[color-mix(in_srgb,var(--color-surface)_10%,transparent)] text-[var(--color-on-solid-80)] hover:bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] hover:text-[var(--color-on-solid)] rounded-full transition-colors"
               aria-label="Download photo"
             >
               <Download className="h-5 w-5" aria-hidden="true" />
@@ -396,7 +384,7 @@ const PhotoLightbox = ({
           {canDelete && (
             <button
               onClick={() => onDelete?.(currentPhoto.id)}
-              className="p-3 bg-[var(--color-error-light)]0/80 text-white hover:bg-[var(--color-error-light)]0 rounded-full transition-colors"
+              className="p-3 bg-[color-mix(in_srgb,var(--color-error)_80%,transparent)] text-[var(--color-on-solid)] hover:bg-[var(--color-error)] rounded-full transition-colors"
               aria-label="Delete photo"
             >
               <Trash2 className="h-5 w-5" aria-hidden="true" />
@@ -407,7 +395,7 @@ const PhotoLightbox = ({
         {/* Caption Overlay (when info panel is closed) */}
         {!showInfoPanel && currentPhoto.caption && (
           <div className="absolute bottom-20 left-4 right-4 text-center">
-            <p className="text-white text-lg font-medium bg-black/30 inline-block px-4 py-2 rounded-lg backdrop-blur-sm">
+            <p className="text-[var(--color-on-solid)] text-lg font-medium bg-[var(--color-overlay-50)] inline-block px-4 py-2 rounded-lg backdrop-blur-sm">
               {currentPhoto.caption}
             </p>
           </div>
@@ -434,7 +422,7 @@ const PhotoLightbox = ({
             {/* Caption */}
             {currentPhoto.caption && (
               <div>
-                <h3 className="text-white font-semibold text-lg mb-1">
+                <h3 className="text-[var(--color-on-solid)] font-semibold text-lg mb-1">
                   {currentPhoto.caption}
                 </h3>
               </div>
@@ -456,7 +444,7 @@ const PhotoLightbox = ({
                 <Calendar className="h-5 w-5 text-[var(--color-textSecondary)] mt-0.5" />
                 <div>
                   <p className="text-[var(--color-textSecondary)] text-xs uppercase tracking-wider">Date</p>
-                  <p className="text-white text-sm">{formatDate(currentPhoto.uploaded_at || currentPhoto.created_at)}</p>
+                  <p className="text-[var(--color-on-solid)] text-sm">{fmtDateTime(currentPhoto.uploaded_at || currentPhoto.created_at, { weekday: 'long', month: 'long', hour: 'numeric', fallback: 'Unknown date' })}</p>
                 </div>
               </div>
 
@@ -466,7 +454,7 @@ const PhotoLightbox = ({
                   <Tag className="h-5 w-5 text-[var(--color-textSecondary)] mt-0.5" />
                   <div>
                     <p className="text-[var(--color-textSecondary)] text-xs uppercase tracking-wider">Category</p>
-                    <p className="text-white text-sm">{currentPhoto.category}</p>
+                    <p className="text-[var(--color-on-solid)] text-sm">{currentPhoto.category}</p>
                   </div>
                 </div>
               )}
@@ -477,7 +465,7 @@ const PhotoLightbox = ({
                   <MapPin className="h-5 w-5 text-[var(--color-textSecondary)] mt-0.5" />
                   <div>
                     <p className="text-[var(--color-textSecondary)] text-xs uppercase tracking-wider">Location</p>
-                    <p className="text-white text-sm">{currentPhoto.location}</p>
+                    <p className="text-[var(--color-on-solid)] text-sm">{currentPhoto.location}</p>
                   </div>
                 </div>
               )}
@@ -488,7 +476,7 @@ const PhotoLightbox = ({
                   <User className="h-5 w-5 text-[var(--color-textSecondary)] mt-0.5" />
                   <div>
                     <p className="text-[var(--color-textSecondary)] text-xs uppercase tracking-wider">Uploaded By</p>
-                    <p className="text-white text-sm">
+                    <p className="text-[var(--color-on-solid)] text-sm">
                       {currentPhoto.first_name} {currentPhoto.last_name}
                       {currentPhoto.username && (
                         <span className="text-[var(--color-textSecondary)]"> (@{currentPhoto.username})</span>

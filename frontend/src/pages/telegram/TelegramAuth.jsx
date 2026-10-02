@@ -314,6 +314,9 @@ const TelegramAuth = () => {
                 </p>
                 <input
                   type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  aria-label="Telegram verification code"
                   value={verificationState.code}
                   onChange={(e) => setVerificationState({ ...verificationState, code: e.target.value })}
                   className="w-full border rounded-lg p-3 mb-4"
@@ -323,7 +326,7 @@ const TelegramAuth = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleVerifyCode}
-                    className="flex-1 bg-[var(--color-primary)] text-white rounded-lg p-3 hover:bg-[var(--color-primary)]"
+                    className="flex-1 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg p-3 hover:bg-[var(--color-primary)]"
                   >
                     Verify
                   </button>
@@ -372,7 +375,7 @@ const TelegramAuth = () => {
             </p>
             <button
               onClick={() => setVerificationState({ phoneNumber: '', code: '', password: '', step: 'idle', methodId: null, error: null })}
-              className="w-full bg-[var(--color-primary)] text-white rounded-lg p-3 hover:bg-[var(--color-primary)]"
+              className="w-full bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg p-3 hover:bg-[var(--color-primary)]"
             >
               Done
             </button>
@@ -385,7 +388,7 @@ const TelegramAuth = () => {
         {!showAddMethod ? (
           <button
             onClick={() => setShowAddMethod(true)}
-            className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
+            className="flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
           >
             <Plus className="w-5 h-5" />
             Add Authentication Method
@@ -422,7 +425,7 @@ const TelegramAuth = () => {
             <div className="flex gap-2">
               <button
                 onClick={handleAddMethod}
-                className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
+                className="bg-[var(--color-primary)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
               >
                 Add Method
               </button>
@@ -577,6 +580,8 @@ const TelegramAuth = () => {
                     </label>
                     <input
                       type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       value={formData[method.id]?.phoneNumber || ''}
                       onChange={(e) => setFormData({
                         ...formData,
@@ -619,7 +624,7 @@ const TelegramAuth = () => {
                 <button
                   onClick={() => handleSaveMethod(method.id)}
                   disabled={saving}
-                  className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:bg-[var(--color-primary)] disabled:opacity-50"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save
@@ -627,7 +632,7 @@ const TelegramAuth = () => {
                 <button
                   onClick={() => handleTestConnection(method.id)}
                   disabled={testing}
-                  className="flex items-center gap-2 bg-[var(--color-success)] text-white px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
+                  className="flex items-center gap-2 bg-[var(--color-success)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:opacity-90 disabled:opacity-50"
                 >
                   {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <TestTube className="w-4 h-4" />}
                   Test Connection
@@ -635,7 +640,7 @@ const TelegramAuth = () => {
                 {method.type === 'mtproto' && (
                   <button
                     onClick={() => handleStartVerification(method.id)}
-                    className="flex items-center gap-2 bg-[var(--color-accent)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-accent)]"
+                    className="flex items-center gap-2 bg-[var(--color-accent)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:bg-[var(--color-accent)]"
                   >
                     <Shield className="w-4 h-4" />
                     Verify Account
@@ -655,7 +660,7 @@ const TelegramAuth = () => {
             </p>
             <button
               onClick={() => setShowAddMethod(true)}
-              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
+              className="bg-[var(--color-primary)] text-[var(--color-on-solid)] px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]"
             >
               Add Authentication Method
             </button>

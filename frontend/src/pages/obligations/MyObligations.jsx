@@ -62,7 +62,7 @@ const MyObligations = () => {
   const submitPay = async () => {
     setPayBusy(true);
     try {
-      await api.post('/payment/initiate', {
+      await api.post('/payments/initiate', {
         amount: parseFloat(payForm.amount),
         phoneNumber: payForm.phoneNumber,
         category: `${paying.department_name} contribution`,
@@ -145,7 +145,7 @@ const MyObligations = () => {
                     {o.status !== 'fulfilled' && (
                       <button
                         onClick={() => openPay(o)}
-                        className="mt-1 text-xs px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-white">
+                        className="mt-1 text-xs px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)]">
                         Pay
                       </button>
                     )}
@@ -177,18 +177,18 @@ const MyObligations = () => {
             <p className="text-sm text-[var(--color-textSecondary)]">{paying.purpose || 'Department obligation'}</p>
             <div>
               <label className="text-xs text-[var(--color-textSecondary)]">M-Pesa phone (254…)</label>
-              <input value={payForm.phoneNumber} onChange={(e) => setPayForm({ ...payForm, phoneNumber: e.target.value })}
+              <input type="tel" inputMode="tel" autoComplete="tel" value={payForm.phoneNumber} onChange={(e) => setPayForm({ ...payForm, phoneNumber: e.target.value })}
                 className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
             </div>
             <div>
               <label className="text-xs text-[var(--color-textSecondary)]">Amount (KES)</label>
-              <input type="number" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
+              <input type="number" inputMode="decimal" min="0" step="0.01" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })}
                 className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]" />
             </div>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setPaying(null)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
               <button onClick={submitPay} disabled={payBusy || !payForm.phoneNumber || !(payForm.amount > 0)}
-                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm disabled:opacity-50">
+                className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
                 {payBusy ? 'Sending…' : 'Send M-Pesa Prompt'}
               </button>
             </div>

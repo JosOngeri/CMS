@@ -117,7 +117,7 @@ function Header({ onMenuClick }) {
               aria-label="User menu"
             >
               <div className="w-10 h-10 rounded-full church-gradient flex items-center justify-center shadow-md flex-shrink-0">
-                <User className="h-5 w-5 text-white" />
+                <User className="h-5 w-5 text-[var(--color-on-solid)]" />
               </div>
               <div className="hidden md:block text-left">
                 <div className="flex items-center space-x-1">

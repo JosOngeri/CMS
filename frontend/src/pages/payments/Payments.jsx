@@ -144,6 +144,8 @@ const Payments = () => {
                   },
                 })}
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 className="input w-full"
                 placeholder="254 700 000 000"
               />
@@ -190,6 +192,7 @@ const Payments = () => {
                     <div className="w-32">
                       <input
                         type="number"
+                        inputMode="decimal"
                         value={item.amount}
                         onChange={(e) => updatePaymentItem(index, 'amount', e.target.value)}
                         className="input w-full"
@@ -280,7 +283,7 @@ const Payments = () => {
             </div>
           </div>
 
-          <div className="bg-[var(--color-primary-light)]/30 p-6 rounded-lg">
+          <div className="bg-[color-mix(in_srgb,var(--color-primary-light)_30%,transparent)] p-6 rounded-lg">
             <div className="flex items-center space-x-3 mb-4">
               <CheckCircle className="h-6 w-6 text-[var(--color-primary)]" />
               <h3 className="font-semibold text-[var(--color-text)]">Secure Payment</h3>

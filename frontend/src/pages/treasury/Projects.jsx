@@ -311,7 +311,7 @@ const Projects = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Project</span>
@@ -524,6 +524,7 @@ const Projects = () => {
                     </label>
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.01"
                       required
                       value={formData.budgeted_amount}
@@ -595,7 +596,7 @@ const Projects = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingProject ? 'Update' : 'Create'}
                   </button>

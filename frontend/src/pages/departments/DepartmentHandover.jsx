@@ -152,7 +152,7 @@ const DepartmentHandover = () => {
             const draft = checklistDrafts[h.id] || {};
             return (
               <div key={h.id} className="p-5 space-y-3">
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div>
                     <p className="font-medium text-[var(--color-text)]">
                       {h.department_name}
@@ -163,15 +163,15 @@ const DepartmentHandover = () => {
                       {h.outgoing_name || 'Vacant'} → {h.incoming_name} · {h.position.replace('_', ' ')}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     {isIncoming && h.status === 'pending' && (
                       <>
-                        <button onClick={() => act(h.id, 'accept')} className="btn btn-primary btn-sm">Accept</button>
-                        <button onClick={() => act(h.id, 'decline')} className="btn btn-secondary btn-sm">Decline</button>
+                        <button onClick={() => act(h.id, 'accept')} className="btn btn-primary btn-sm w-full sm:w-auto min-h-[44px]">Accept</button>
+                        <button onClick={() => act(h.id, 'decline')} className="btn btn-secondary btn-sm w-full sm:w-auto min-h-[44px]">Decline</button>
                       </>
                     )}
                     {isManager && ['pending', 'accepted'].includes(h.status) && (
-                      <button onClick={() => act(h.id, 'cancel')} className="btn btn-secondary btn-sm">Cancel</button>
+                      <button onClick={() => act(h.id, 'cancel')} className="btn btn-secondary btn-sm w-full sm:w-auto min-h-[44px]">Cancel</button>
                     )}
                   </div>
                 </div>
@@ -222,7 +222,7 @@ const DepartmentHandover = () => {
               <p className="p-6 text-sm text-[var(--color-textSecondary)]">No temporary grants expiring soon.</p>
             )}
             {expiring.map((l) => (
-              <div key={l.id} className="p-4 flex items-center justify-between">
+              <div key={l.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
                   <p className="text-sm font-medium text-[var(--color-text)]">{l.user_name} — {l.position.replace('_', ' ')}</p>
                   <p className="text-xs text-[var(--color-textSecondary)]">{l.department_name}</p>
@@ -252,7 +252,7 @@ const DepartmentHandover = () => {
                 const isSubLead = s.lead_user_id === user?.id;
                 return (
                   <div key={s.id} className="rounded-lg border border-[var(--color-border)] p-4 space-y-3">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div>
                         <p className="font-medium text-[var(--color-text)]">{s.name}</p>
                         <p className="text-xs text-[var(--color-textSecondary)]">
@@ -270,23 +270,25 @@ const DepartmentHandover = () => {
                     </div>
 
                     {/* Spend request — sub leads and dept managers */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Wallet className="w-4 h-4 text-[var(--color-textSecondary)]" />
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                      <Wallet className="w-4 h-4 text-[var(--color-textSecondary)] hidden sm:block" />
                       <input
-                        type="number" min="1" placeholder="Amount (KES)"
+                        type="number" min="1" inputMode="decimal" placeholder="Amount (KES)"
+                        aria-label={`Spend amount for ${s.name}`}
                         value={spend.amount}
                         onChange={(e) => setSpendDrafts((p) => ({ ...p, [s.id]: { ...spend, amount: e.target.value } }))}
-                        className="w-32 px-2 py-1.5 border border-[var(--color-border)] rounded text-sm"
+                        className="w-full sm:w-32 px-2 py-1.5 border border-[var(--color-border)] rounded text-sm min-h-[44px]"
                       />
                       <input
                         type="text" placeholder="What for?"
+                        aria-label={`Spend description for ${s.name}`}
                         value={spend.description}
                         onChange={(e) => setSpendDrafts((p) => ({ ...p, [s.id]: { ...spend, description: e.target.value } }))}
-                        className="flex-1 min-w-[140px] px-2 py-1.5 border border-[var(--color-border)] rounded text-sm"
+                        className="w-full sm:flex-1 sm:min-w-[140px] px-2 py-1.5 border border-[var(--color-border)] rounded text-sm min-h-[44px]"
                       />
                       <button
                         onClick={() => submitSpend(dept.id, s.id)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-white rounded hover:opacity-90"
+                        className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded hover:opacity-90 min-h-[44px]"
                       >
                         <Send className="w-3.5 h-3.5" /> Request approval
                       </button>
@@ -317,13 +319,13 @@ const LeadPicker = ({ departmentId, api, onPick, current }) => {
       .catch(() => setMembers([]));
   }, [open, api, departmentId]);
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex w-full sm:w-auto items-center gap-2">
       {open ? (
         <select
           autoFocus
           onChange={(e) => { onPick(e.target.value); setOpen(false); }}
           onBlur={() => setOpen(false)}
-          className="px-2 py-1.5 border border-[var(--color-border)] rounded text-sm"
+          className="w-full px-2 py-1.5 border border-[var(--color-border)] rounded text-sm min-h-[44px]"
           defaultValue=""
         >
           <option value="">Pick lead…</option>
@@ -334,7 +336,7 @@ const LeadPicker = ({ departmentId, api, onPick, current }) => {
           ))}
         </select>
       ) : (
-        <button onClick={() => setOpen(true)} className="btn btn-secondary btn-sm">
+        <button onClick={() => setOpen(true)} className="btn btn-secondary btn-sm w-full sm:w-auto min-h-[44px]">
           {current ? 'Replace lead' : 'Assign lead'}
         </button>
       )}

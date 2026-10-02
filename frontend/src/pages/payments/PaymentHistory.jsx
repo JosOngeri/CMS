@@ -20,6 +20,7 @@ import { FullPageLoading } from '../../components/common/Loading'
 import { PaymentsEmptyState } from '../../components/common/EmptyState'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { API_ENDPOINTS } from '../../constants/api'
+import { fmtDateTime } from '../../utils/format'
 
 const PaymentHistory = () => {
   const { api } = useAuth()
@@ -82,16 +83,6 @@ const PaymentHistory = () => {
     }
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   const filteredPayments = payments.filter(payment =>
     payment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     payment.phone_number.includes(searchTerm) ||
@@ -137,6 +128,7 @@ const PaymentHistory = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-textSecondary)]" />
             <input
               type="text"
+              aria-label="Search payments"
               placeholder="Search payments..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -147,6 +139,7 @@ const PaymentHistory = () => {
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[var(--color-textSecondary)]" />
             <select
+              aria-label="Filter payments by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="input pl-10 appearance-none"
@@ -199,7 +192,7 @@ const PaymentHistory = () => {
                       {payment.id.slice(-8)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
-                      {formatDate(payment.created_at)}
+                      {fmtDateTime(payment.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)] font-semibold">
                       KES {parseFloat(payment?.amount ?? 0).toLocaleString()}
@@ -249,7 +242,7 @@ const PaymentHistory = () => {
                 key={payment.id}
                 icon={DollarSign}
                 title={`KES ${parseFloat(payment?.amount ?? 0).toLocaleString()}`}
-                subtitle={`#${payment.id.slice(-8)} · ${formatDate(payment.created_at)}`}
+                subtitle={`#${payment.id.slice(-8)} · ${fmtDateTime(payment.created_at)}`}
                 badge={<span className={`badge ${getStatusColor(payment.status)}`}>{payment.status}</span>}
                 actions={
                   payment.status === 'completed' ? (

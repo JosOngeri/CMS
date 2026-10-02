@@ -97,7 +97,7 @@ const DepartmentOverview = () => {
         <button
           type="button"
           onClick={() => navigate('/dashboard/departments/new')}
-          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
+          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Department
@@ -152,6 +152,7 @@ const DepartmentOverview = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--color-textSecondary)] w-4 h-4" />
               <input
                 type="text"
+                aria-label="Search departments"
                 placeholder="Search departments..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -161,6 +162,7 @@ const DepartmentOverview = () => {
           </div>
           <div className="flex gap-2">
             <select
+              aria-label="Filter departments by category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -171,6 +173,7 @@ const DepartmentOverview = () => {
               ))}
             </select>
             <select
+              aria-label="Filter departments by status"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="px-4 py-2 border border-[var(--color-border)] rounded-lg focus:ring-2 focus:ring-[var(--color-primary)]"
@@ -231,7 +234,7 @@ const DepartmentOverview = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/dashboard/departments/${dept.slug || dept.id}`)}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
               >
                 View Dashboard
                 <ArrowRight className="w-4 h-4 ml-2" />

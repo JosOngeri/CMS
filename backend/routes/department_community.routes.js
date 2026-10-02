@@ -13,6 +13,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify');
 const SmsHub = require('../services/SmsHub');
 const { createLogger } = require('../helpers/controllerLogger');
+const departmentCommunityRepository = require('../repositories/DepartmentCommunityRepository');
 const {
   canManageSubcommittee, grantLeadership, logDeptActivity, getDepartmentForUser,
 } = require('../helpers/departmentLeadership');
@@ -27,7 +28,7 @@ async function canManageDepartment(user, departmentId) {
   if (roles.some(r => MANAGER_ROLES.includes(r) || r === 'Department Head')) {
     // Dept-scoped heads still need to belong to this dept
     if (!roles.some(r => MANAGER_ROLES.includes(r))) {
-      const own = await pool.query(
+      const own = await departmentCommunityRepository.query(
         `SELECT 1 FROM department_members
          WHERE department_id = $1 AND user_id = $2 AND is_active = true
            AND (role_in_department ILIKE '%head%' OR role = 'Admin')`,
@@ -37,7 +38,7 @@ async function canManageDepartment(user, departmentId) {
     }
     return true;
   }
-  const head = await pool.query(
+  const head = await departmentCommunityRepository.query(
     'SELECT head_id FROM departments WHERE id = $1', [departmentId]
   );
   return head.rows[0] && head.rows[0].head_id === user.id;
@@ -45,7 +46,7 @@ async function canManageDepartment(user, departmentId) {
 
 /** Verify the department exists inside the caller's church. */
 async function getDepartment(departmentId, churchId) {
-  const r = await pool.query(
+  const r = await departmentCommunityRepository.query(
     'SELECT * FROM departments WHERE id = $1 AND church_id = $2 AND is_active = true',
     [departmentId, churchId]
   );
@@ -64,7 +65,7 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
     const dept = await getDepartment(id, churchId);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
-    const existing = await pool.query(
+    const existing = await departmentCommunityRepository.query(
       `SELECT status, is_active FROM department_members
        WHERE department_id = $1 AND user_id = $2`,
       [id, userId]
@@ -74,14 +75,14 @@ router.post('/:id/join', authenticateToken, async (req, res) => {
       if (row.is_active) return res.status(409).json({ success: false, error: 'Already a member' });
       if (row.status === 'pending') return res.status(409).json({ success: false, error: 'Request already pending' });
       // Re-request after rejection/removal
-      await pool.query(
+      await departmentCommunityRepository.query(
         `UPDATE department_members SET status = 'pending', is_active = false,
          requested_at = NOW() WHERE department_id = $1 AND user_id = $2`,
         [id, userId]
       );
     } else {
-      const member = await pool.query('SELECT id FROM members WHERE user_id = $1', [userId]);
-      await pool.query(
+      const member = await departmentCommunityRepository.query('SELECT id FROM members WHERE user_id = $1', [userId]);
+      await departmentCommunityRepository.query(
         `INSERT INTO department_members
            (user_id, member_id, department_id, role, role_in_department, status, is_active, requested_at, church_id)
          VALUES ($1, $2, $3, 'Member', 'Member', 'pending', false, NOW(), $4)`,
@@ -112,7 +113,7 @@ router.get('/:id/subcommittees', authenticateToken, async (req, res) => {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `SELECT s.*,
               u.first_name || ' ' || u.last_name AS lead_name,
               (SELECT COUNT(*) FROM subcommittee_members sm
@@ -140,7 +141,7 @@ router.post('/:id/subcommittees', authenticateToken, async (req, res) => {
     const { name, description, lead_user_id, lead_allocation_type, lead_end_date } = req.body;
     if (!name) return res.status(400).json({ success: false, error: 'name is required' });
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO department_subcommittees (department_id, church_id, name, description, lead_user_id)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [dept.id, dept.church_id, name, description || null, lead_user_id || null]
@@ -181,7 +182,7 @@ router.put('/:id/subcommittees/:sid', authenticateToken, async (req, res) => {
     }
     const { name, description, lead_user_id, is_active, lead_allocation_type, lead_end_date } = req.body;
 
-    const before = await pool.query(
+    const before = await departmentCommunityRepository.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
       [req.params.sid, dept.id]
     );
@@ -202,7 +203,7 @@ router.put('/:id/subcommittees/:sid', authenticateToken, async (req, res) => {
       leadForUpdate = null;
     }
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `UPDATE department_subcommittees SET
          name = COALESCE($3, name),
          description = COALESCE($4, description),
@@ -239,7 +240,7 @@ router.delete('/:id/subcommittees/:sid', authenticateToken, async (req, res) => 
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    await pool.query(
+    await departmentCommunityRepository.query(
       `UPDATE department_subcommittees SET is_active = false, updated_at = NOW()
        WHERE id = $1 AND department_id = $2`,
       [req.params.sid, dept.id]
@@ -258,7 +259,7 @@ router.post('/:id/subcommittees/:sid/members', authenticateToken, async (req, re
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
 
     const targetUser = req.body.user_id || req.user.id;
-    const subRow = await pool.query(
+    const subRow = await departmentCommunityRepository.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
       [req.params.sid, dept.id]
     );
@@ -268,14 +269,14 @@ router.post('/:id/subcommittees/:sid/members', authenticateToken, async (req, re
       return res.status(403).json({ success: false, error: 'Only the head can assign others' });
     }
     // Target must be an approved dept member
-    const isMember = await pool.query(
+    const isMember = await departmentCommunityRepository.query(
       `SELECT 1 FROM department_members
        WHERE department_id = $1 AND user_id = $2 AND is_active = true`,
       [dept.id, targetUser]
     );
     if (!isMember.rows[0]) return res.status(400).json({ success: false, error: 'User is not a department member' });
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO subcommittee_members (subcommittee_id, user_id, role_in_subcommittee)
        VALUES ($1, $2, $3)
        ON CONFLICT (subcommittee_id, user_id) DO UPDATE SET is_active = true, role_in_subcommittee = $3
@@ -293,7 +294,7 @@ router.delete('/:id/subcommittees/:sid/members/:uid', authenticateToken, async (
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const sub = await pool.query(
+    const sub = await departmentCommunityRepository.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2',
       [req.params.sid, dept.id]
     );
@@ -301,7 +302,7 @@ router.delete('/:id/subcommittees/:sid/members/:uid', authenticateToken, async (
     if (req.params.uid !== req.user.id && !(await canManageSubcommittee(req.user, sub.rows[0]))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    await pool.query(
+    await departmentCommunityRepository.query(
       `UPDATE subcommittee_members SET is_active = false
        WHERE subcommittee_id = $1 AND user_id = $2`,
       [req.params.sid, req.params.uid]
@@ -320,7 +321,7 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const sub = await pool.query(
+    const sub = await departmentCommunityRepository.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',
       [req.params.sid, dept.id]
     );
@@ -334,7 +335,7 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
 
     // Route to the parent department head (fall back to null approver = any manager)
     const approver = dept.head_id || null;
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO approval_requests
          (title, description, request_type, request_data, entity_type, entity_id,
           requester_id, requested_by, approver_id, department_id, module,
@@ -378,7 +379,7 @@ router.get('/:id/subcommittees/:sid/budget', authenticateToken, async (req, res)
   try {
     const dept = await getDepartmentForUser(req.params.id, req.user);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const sub = await pool.query(
+    const sub = await departmentCommunityRepository.query(
       'SELECT * FROM department_subcommittees WHERE id = $1 AND department_id = $2 AND is_active = true',
       [req.params.sid, dept.id]
     );
@@ -387,11 +388,11 @@ router.get('/:id/subcommittees/:sid/budget', authenticateToken, async (req, res)
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
 
-    const budget = await pool.query(
+    const budget = await departmentCommunityRepository.query(
       `SELECT * FROM department_budgets WHERE subcommittee_id = $1 ORDER BY created_at DESC LIMIT 1`,
       [sub.rows[0].id]
     );
-    const requests = await pool.query(
+    const requests = await departmentCommunityRepository.query(
       `SELECT id, title, amount, status, requested_at, approved_at, rejected_at
        FROM approval_requests
        WHERE request_type = 'department_spend'
@@ -403,7 +404,7 @@ router.get('/:id/subcommittees/:sid/budget', authenticateToken, async (req, res)
     // Department roll-up for dept managers
     let rollup = null;
     if (await canManageDepartment(req.user, dept.id)) {
-      const rr = await pool.query(
+      const rr = await departmentCommunityRepository.query(
         `SELECT db.subcommittee_id, s.name AS subcommittee_name,
                 db.total_amount, db.spent_amount, db.remaining_amount
          FROM department_budgets db
@@ -431,7 +432,7 @@ router.get('/:id/programs', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `SELECT p.*,
               COALESCE((SELECT SUM(c.amount) FROM program_contributions c WHERE c.program_id = p.id), 0) AS raised
        FROM department_programs p
@@ -454,7 +455,7 @@ router.post('/:id/programs', authenticateToken, async (req, res) => {
     }
     const { name, description, status, start_date, end_date, budget_target } = req.body;
     if (!name) return res.status(400).json({ success: false, error: 'name is required' });
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO department_programs (department_id, church_id, name, description, status, start_date, end_date, budget_target, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
       [dept.id, dept.church_id, name, description || null, status || 'planned',
@@ -475,7 +476,7 @@ router.put('/:id/programs/:pid', authenticateToken, async (req, res) => {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
     const { name, description, status, start_date, end_date, budget_target } = req.body;
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `UPDATE department_programs SET
          name = COALESCE($3, name), description = COALESCE($4, description),
          status = COALESCE($5, status), start_date = COALESCE($6, start_date),
@@ -500,7 +501,7 @@ router.get('/:id/events', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `SELECT e.*,
               (SELECT COUNT(*) FROM event_attendance ea WHERE ea.event_id = e.id AND ea.rsvp_status = 'attending') AS rsvp_count,
               (SELECT ea2.rsvp_status FROM event_attendance ea2 WHERE ea2.event_id = e.id AND ea2.member_id = $2) AS my_rsvp
@@ -527,7 +528,7 @@ router.post('/:id/events', authenticateToken, async (req, res) => {
     if (!title || !event_date) {
       return res.status(400).json({ success: false, error: 'title and event_date are required' });
     }
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO events (title, description, event_date, event_time, location, department_id, program_id,
                            organizer_id, church_id, is_public, rsvp_required, rsvp_deadline)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, false, $10, $11) RETURNING *`,
@@ -555,14 +556,14 @@ router.post('/:id/communications', authenticateToken, async (req, res) => {
     const { title, body, type = 'announcement', send_sms = false, label = 'Announcement' } = req.body;
     if (!title || !body) return res.status(400).json({ success: false, error: 'title and body are required' });
 
-    const comm = await pool.query(
+    const comm = await departmentCommunityRepository.query(
       `INSERT INTO department_communications (department_id, church_id, title, body, type, send_sms, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
       [dept.id, dept.church_id, title, body, type, send_sms, req.user.id]
     );
 
     // Dept members
-    const members = await pool.query(
+    const members = await departmentCommunityRepository.query(
       `SELECT dm.user_id, u.phone
        FROM department_members dm
        JOIN users u ON u.id = dm.user_id
@@ -572,14 +573,14 @@ router.post('/:id/communications', authenticateToken, async (req, res) => {
 
     // 1) one message into each member's private thread
     for (const m of members.rows) {
-      const thread = await pool.query(
+      const thread = await departmentCommunityRepository.query(
         `INSERT INTO department_message_threads (department_id, church_id, member_id)
          VALUES ($1, $2, $3)
          ON CONFLICT (department_id, member_id) DO UPDATE SET updated_at = NOW()
          RETURNING id`,
         [dept.id, dept.church_id, m.user_id]
       );
-      await pool.query(
+      await departmentCommunityRepository.query(
         `INSERT INTO department_messages (thread_id, department_id, church_id, sender_id, label, body)
          VALUES ($1, $2, $3, $4, $5, $6)`,
         [thread.rows[0].id, dept.id, dept.church_id, req.user.id, label, `**${title}**\n\n${body}`]
@@ -640,7 +641,7 @@ router.get('/:id/threads', authenticateToken, async (req, res) => {
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `SELECT t.id AS thread_id, t.member_id,
               u.first_name || ' ' || u.last_name AS member_name,
               (SELECT body FROM department_messages m WHERE m.thread_id = t.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
@@ -665,7 +666,7 @@ router.get('/:id/threads/mine', authenticateToken, async (req, res) => {
   try {
     const dept = await getDepartment(req.params.id, req.user.church_id);
     if (!dept) return res.status(404).json({ success: false, error: 'Department not found' });
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO department_message_threads (department_id, church_id, member_id)
        VALUES ($1, $2, $3)
        ON CONFLICT (department_id, member_id) DO UPDATE SET updated_at = NOW()
@@ -683,7 +684,7 @@ router.get('/:id/threads/mine', authenticateToken, async (req, res) => {
 router.get('/:id/threads/:tid/messages', authenticateToken, async (req, res) => {
   try {
     const { tid } = req.params;
-    const thread = await pool.query(
+    const thread = await departmentCommunityRepository.query(
       'SELECT * FROM department_message_threads WHERE id = $1', [tid]
     );
     if (!thread.rows[0]) return res.status(404).json({ success: false, error: 'Thread not found' });
@@ -691,7 +692,7 @@ router.get('/:id/threads/:tid/messages', authenticateToken, async (req, res) => 
         !(await canManageDepartment(req.user, thread.rows[0].department_id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `SELECT m.*, u.first_name || ' ' || u.last_name AS sender_name
        FROM department_messages m
        JOIN users u ON u.id = m.sender_id
@@ -701,7 +702,7 @@ router.get('/:id/threads/:tid/messages', authenticateToken, async (req, res) => 
     );
     // Mark head's unread member messages as read when a manager views them
     if (await canManageDepartment(req.user, thread.rows[0].department_id)) {
-      await pool.query(
+      await departmentCommunityRepository.query(
         `UPDATE department_messages SET is_read = true
          WHERE thread_id = $1 AND sender_id = $2 AND is_read = false`,
         [tid, thread.rows[0].member_id]
@@ -721,7 +722,7 @@ router.post('/:id/threads/:tid/messages', authenticateToken, async (req, res) =>
     const { body, label } = req.body;
     if (!body) return res.status(400).json({ success: false, error: 'body is required' });
 
-    const thread = await pool.query(
+    const thread = await departmentCommunityRepository.query(
       'SELECT * FROM department_message_threads WHERE id = $1', [tid]
     );
     if (!thread.rows[0]) return res.status(404).json({ success: false, error: 'Thread not found' });
@@ -730,7 +731,7 @@ router.post('/:id/threads/:tid/messages', authenticateToken, async (req, res) =>
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
     const t = thread.rows[0];
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO department_messages (thread_id, department_id, church_id, sender_id, label, body)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [tid, t.department_id, t.church_id, req.user.id, label || null, body]
@@ -769,12 +770,12 @@ router.put('/:id/messages/:mid/label', authenticateToken, async (req, res) => {
   try {
     const { mid } = req.params;
     const { label } = req.body;
-    const msg = await pool.query('SELECT department_id FROM department_messages WHERE id = $1', [mid]);
+    const msg = await departmentCommunityRepository.query('SELECT department_id FROM department_messages WHERE id = $1', [mid]);
     if (!msg.rows[0]) return res.status(404).json({ success: false, error: 'Message not found' });
     if (!(await canManageDepartment(req.user, msg.rows[0].department_id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       'UPDATE department_messages SET label = $2 WHERE id = $1 RETURNING *',
       [mid, label || null]
     );
@@ -797,7 +798,7 @@ router.put('/:id/members/:uid/role', authenticateToken, async (req, res) => {
     }
     const { role } = req.body;
     if (!role) return res.status(400).json({ success: false, error: 'role is required' });
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `UPDATE department_members SET role_in_department = $3, updated_at = NOW()
        WHERE department_id = $1 AND user_id = $2 RETURNING *`,
       [dept.id, req.params.uid, role]
@@ -826,13 +827,13 @@ router.post('/:id/programs/:pid/contribute', authenticateToken, async (req, res)
   try {
     const { amount, method = 'manual', note } = req.body;
     if (!amount || isNaN(amount)) return res.status(400).json({ success: false, error: 'Valid amount required' });
-    const program = await pool.query(
+    const program = await departmentCommunityRepository.query(
       'SELECT * FROM department_programs WHERE id = $1 AND department_id = $2',
       [req.params.pid, req.params.id]
     );
     if (!program.rows[0]) return res.status(404).json({ success: false, error: 'Program not found' });
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO program_contributions (user_id, church_id, program_id, amount, method, note)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [req.user.id, req.user.church_id, req.params.pid, amount, method, note || null]
@@ -848,13 +849,13 @@ router.post('/:id/events/:eid/contribute', authenticateToken, async (req, res) =
   try {
     const { amount, method = 'manual', note } = req.body;
     if (!amount || isNaN(amount)) return res.status(400).json({ success: false, error: 'Valid amount required' });
-    const event = await pool.query(
+    const event = await departmentCommunityRepository.query(
       'SELECT * FROM events WHERE id = $1 AND department_id = $2',
       [req.params.eid, req.params.id]
     );
     if (!event.rows[0]) return res.status(404).json({ success: false, error: 'Event not found' });
 
-    const r = await pool.query(
+    const r = await departmentCommunityRepository.query(
       `INSERT INTO program_contributions (user_id, church_id, event_id, amount, method, note)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [req.user.id, req.user.church_id, req.params.eid, amount, method, note || null]

@@ -29,9 +29,7 @@ import Card from '../../components/common/Card'
 import ChurchStatsCard from '../../components/dashboard/ChurchStatsCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
-
-const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' }) : ''
+import { fmtDate, fmtKES } from '../../utils/format'
 
 const CollectorDashboard = () => {
   const { user, api } = useAuth()
@@ -110,10 +108,10 @@ const CollectorDashboard = () => {
       </div>
 
       {/* Money in hand hero — the number one thing a collector needs */}
-      <div className="church-gradient rounded-2xl p-6 text-white shadow-lg">
-        <p className="text-white/80 text-sm font-medium">Money in my hands</p>
+      <div className="church-gradient rounded-2xl p-6 text-[var(--color-on-solid)] shadow-lg">
+        <p className="text-[var(--color-on-solid-80)] text-sm font-medium">Money in my hands</p>
         <p className="text-3xl font-bold mt-1">{fmtKES(inHand)}</p>
-        <p className="text-white/70 text-sm mt-1">
+        <p className="text-[var(--color-on-solid-80)] text-sm mt-1">
           {pendingCount > 0
             ? `${pendingCount} collected payment${pendingCount === 1 ? '' : 's'} not yet handed over`
             : 'Everything you collected has been handed over'}
@@ -121,7 +119,7 @@ const CollectorDashboard = () => {
         {inHand > 0 && (
           <Link
             to="/dashboard/departments/handovers"
-            className="mt-4 inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)] text-[var(--color-primary)] font-semibold rounded-xl hover:bg-[var(--color-surface)]/90 transition-colors"
+            className="mt-4 inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)] text-[var(--color-primary)] font-semibold rounded-xl hover:bg-[color-mix(in_srgb,var(--color-surface)_90%,transparent)] transition-colors"
           >
             <HandCoins className="h-5 w-5" />
             Hand Over to Treasurer

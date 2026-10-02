@@ -1,3 +1,9 @@
+/**
+ * Church-user auth: Bearer/cookie JWT verification via IdentityService (5-min LRU identity cache), plus role/permission guards.
+ * @exports {authenticateToken, optionalAuth, requireRole, requirePermission, requireDepartmentPermission, extractToken, buildUserIdentity, invalidateUserCache}
+ * @deps helpers/security, services/IdentityService
+ * @known No is_active check (deactivated users keep access); 403 returned for invalid tokens (should be 401); requireDepartmentPermission only reads :departmentId; cached-identity mutation poisons cache — ledger.
+ */
 const { pool } = require('../config/database');
 const { verifyAccessToken } = require('../helpers/security');
 const IdentityService = require('../services/IdentityService');

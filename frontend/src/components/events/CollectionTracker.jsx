@@ -149,7 +149,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
         {isActive && canContribute && (
           <button
             onClick={() => setShowContributionForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Contribute
@@ -177,12 +177,13 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               </label>
               <input
                 type="number"
+                inputMode="decimal"
                 required
                 min="0"
                 step="0.01"
                 value={contributionForm.amount}
                 onChange={(e) => setContributionForm({ ...contributionForm, amount: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div>
@@ -192,7 +193,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               <select
                 value={contributionForm.payment_method}
                 onChange={(e) => setContributionForm({ ...contributionForm, payment_method: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
               >
                 <option value="cash">Cash</option>
                 <option value="mobile_money">Mobile Money (M-Pesa)</option>
@@ -208,7 +209,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                 rows={2}
                 value={contributionForm.notes}
                 onChange={(e) => setContributionForm({ ...contributionForm, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-white focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -233,7 +234,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-[var(--color-success)] text-white rounded-lg hover:opacity-90 transition-colors"
+                className="flex-1 px-4 py-2 bg-[var(--color-success)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 transition-colors"
               >
                 Submit
               </button>

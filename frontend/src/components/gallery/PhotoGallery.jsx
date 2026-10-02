@@ -66,6 +66,8 @@ const PhotoGallery = ({
   }
 
   const removeLabel = async (photo, label) => {
+    if (!window.confirm(`Remove label "${label}" from this photo?`)) return
+
     try {
       await api.delete(`/gallery/photos/${photo.id}/labels/${encodeURIComponent(label)}`)
       setLabelOverrides(prev => ({ ...prev, [photo.id]: photoLabels(photo).filter(l => l !== label) }))
@@ -281,7 +283,7 @@ const PhotoGallery = ({
           {showUploadButton && canUpload && onUpload && (
             <button
               onClick={onUpload}
-              className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg"
+              className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-[var(--color-on-solid)] px-4 py-2 rounded-lg"
               aria-label="Upload photo"
             >
               <Upload className="h-4 w-4" />
@@ -317,8 +319,8 @@ const PhotoGallery = ({
                 </div>
               )}
               {renderImage(photo, 'w-full h-48 object-cover')}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all">
-                <div className="absolute bottom-0 left-0 right-0 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 bg-[var(--color-overlay-40)] md:bg-transparent group-focus-within:bg-[var(--color-overlay-40)] md:group-hover:bg-[var(--color-overlay-40)] transition-all">
+                <div className="absolute bottom-0 left-0 right-0 p-2 text-[var(--color-on-solid)] opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100 transition-opacity">
                   <p className="text-sm font-medium truncate">{photo.caption || 'Untitled'}</p>
                   {photo.category && (
                     <p className="text-xs text-[var(--color-textSecondary)] flex items-center">
@@ -334,7 +336,7 @@ const PhotoGallery = ({
                         e.stopPropagation()
                         toggleFavorite(photo)
                       }}
-                      className={`p-2 rounded-full transition-opacity shadow-md ${isFav(photo) ? 'bg-[var(--color-error)] text-white opacity-100' : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] opacity-0 group-hover:opacity-100'}`}
+                      className={`p-2 rounded-full transition-opacity shadow-md min-h-[44px] min-w-[44px] flex items-center justify-center ${isFav(photo) ? 'bg-[var(--color-error)] text-[var(--color-on-solid)] opacity-100' : 'bg-[var(--color-surface)] text-[var(--color-textSecondary)] opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100'}`}
                       aria-label={isFav(photo) ? 'Remove from favourites' : 'Add to favourites'}
                       aria-pressed={isFav(photo)}
                     >
@@ -347,7 +349,7 @@ const PhotoGallery = ({
                         e.stopPropagation()
                         handleDelete(photo.id)
                       }}
-                      className="p-2 bg-[var(--color-error)] hover:opacity-90 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-2 bg-[var(--color-error)] hover:opacity-90 text-[var(--color-on-solid)] rounded-full opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px] flex items-center justify-center"
                       aria-label="Delete photo"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -435,35 +437,35 @@ const PhotoGallery = ({
       {/* Slideshow View */}
       {viewMode === 'slideshow' && (
         <div className="relative">
-          <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+          <div className="relative aspect-video bg-[var(--color-media)] rounded-lg overflow-hidden">
             {displayedPhotos.length > 0 && renderImage(displayedPhotos[slideshowIndex], 'w-full h-full object-contain')}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-              <h3 className="text-white font-semibold">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--color-media)] to-transparent p-4">
+              <h3 className="text-[var(--color-on-solid)] font-semibold">
                 {displayedPhotos[slideshowIndex]?.caption || 'Untitled'}
               </h3>
               {displayedPhotos[slideshowIndex]?.description && (
-                <p className="text-white text-sm opacity-80">
+                <p className="text-[var(--color-on-solid)] text-sm opacity-80">
                   {displayedPhotos[slideshowIndex].description}
                 </p>
               )}
             </div>
             <button
               onClick={() => navigateSlideshow('prev')}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-[var(--color-overlay-75)] text-[var(--color-on-solid)] rounded-full"
               aria-label="Previous photo"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={() => navigateSlideshow('next')}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 bg-[var(--color-overlay)] hover:bg-[var(--color-overlay-75)] text-[var(--color-on-solid)] rounded-full"
               aria-label="Next photo"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
             <button
               onClick={() => setIsSlideshowPlaying(!isSlideshowPlaying)}
-              className="absolute top-2 right-2 p-2 bg-[var(--color-overlay)] hover:bg-opacity-75 text-white rounded-full"
+              className="absolute top-2 right-2 p-2 bg-[var(--color-overlay)] hover:bg-[var(--color-overlay-75)] text-[var(--color-on-solid)] rounded-full"
               aria-label={isSlideshowPlaying ? 'Pause slideshow' : 'Play slideshow'}
               aria-pressed={isSlideshowPlaying}
             >
@@ -487,7 +489,7 @@ const PhotoGallery = ({
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-[var(--color-overlay-90)] z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedPhoto(null)}
           role="dialog"
           aria-modal="true"
@@ -499,7 +501,7 @@ const PhotoGallery = ({
               {isAuthenticated && (
                 <button
                   onClick={() => toggleFavorite(selectedPhoto)}
-                  className={`p-2 rounded-full ${isFav(selectedPhoto) ? 'bg-[var(--color-error)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text)]'}`}
+                  className={`p-2 rounded-full ${isFav(selectedPhoto) ? 'bg-[var(--color-error)] text-[var(--color-on-solid)]' : 'bg-[var(--color-surface)] text-[var(--color-text)]'}`}
                   aria-label={isFav(selectedPhoto) ? 'Remove from favourites' : 'Add to favourites'}
                   aria-pressed={isFav(selectedPhoto)}
                 >
@@ -514,7 +516,7 @@ const PhotoGallery = ({
                 <X className="h-6 w-6" />
               </button>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--color-media)] to-transparent p-4 text-[var(--color-on-solid)]">
               <h3 className="font-semibold text-lg">{selectedPhoto.caption || 'Untitled'}</h3>
               {selectedPhoto.description && (
                 <p className="text-sm opacity-80 mt-1">{selectedPhoto.description}</p>
@@ -560,7 +562,7 @@ const PhotoGallery = ({
                     />
                     <button
                       onClick={() => addLabel(selectedPhoto)}
-                      className="p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg"
+                      className="p-1.5 bg-primary-600 hover:bg-primary-700 text-[var(--color-on-solid)] rounded-lg"
                       aria-label="Add label"
                     >
                       <Plus className="h-4 w-4" />

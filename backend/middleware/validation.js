@@ -1,6 +1,7 @@
 /**
- * Input Validation Middleware
- * Provides comprehensive input validation and sanitization
+ * express-validator rule library + validate() error formatter.
+ * @exports {validate, validateRequest, commonValidations, validationRules, sanitizeInput, validateLength, validatePattern, validateFile}
+ * @known commonValidations/sanitizeInput/validateFile are UNUSED dead exports containing dormant bugs (isInt-only id rejects UUIDs; wildcard escape() would corrupt passwords); validateRequest echoes err.value back to clients — ledger.
  */
 
 const { body, validationResult, param, query } = require('express-validator');

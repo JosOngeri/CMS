@@ -1,3 +1,9 @@
+/**
+ * Global Express error handler — maps PG/JWT error codes to statuses, scrubs schema details in prod; also notFoundHandler + asyncHandler.
+ * @exports {errorHandler, notFoundHandler, asyncHandler}
+ * @deps helpers/errorHandler (AppError), config/logging
+ * @known Two sibling error-handler stacks exist (helpers/, utils/) — only this one is mounted — ledger Batch-6.
+ */
 const { AppError } = require('../helpers/errorHandler');
 const logger = require('../config/logging');
 

@@ -304,7 +304,7 @@ const Receipts = () => {
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     onClick={() => handleDownloadPDF(selectedReceipt.id)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     <Download className="h-4 w-4" />
                     <span>Download PDF</span>

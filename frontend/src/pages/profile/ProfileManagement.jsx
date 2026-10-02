@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import NotificationSettings from '../../components/settings/NotificationSettings'
 import PrivacySettings from '../../components/settings/PrivacySettings'
+import { fmtDateTime } from '../../utils/format'
 
 const ProfileManagement = () => {
   const { user, updateUser, api } = useAuth()
@@ -124,11 +125,6 @@ const ProfileManagement = () => {
     }
   }
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleString()
-  }
-
   if (!user) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -200,7 +196,7 @@ const ProfileManagement = () => {
                   <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
                     <User className="w-10 h-10 text-[var(--color-primary)]" />
                   </div>
-                  <button className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)] text-white rounded-full hover:bg-[var(--color-primary)]">
+                  <button className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full hover:bg-[var(--color-primary)]">
                     <Camera className="w-3 h-3" />
                   </button>
                 </div>
@@ -220,7 +216,7 @@ const ProfileManagement = () => {
               </div>
               <button
                 onClick={() => setShowEditForm(!showEditForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {showEditForm ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
                 {showEditForm ? 'Cancel' : 'Edit Profile'}
@@ -259,6 +255,8 @@ const ProfileManagement = () => {
                   <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Email</label>
                   <input
                     type="email"
+                    inputMode="email"
+                    autoComplete="email"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="input w-full"
@@ -269,6 +267,8 @@ const ProfileManagement = () => {
                   <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-1">Phone Number</label>
                   <input
                     type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={formData.phone_number}
                     onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
                     className="input w-full"
@@ -296,11 +296,11 @@ const ProfileManagement = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
                   >
                     {loading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-[var(--color-on-solid-20)] border-t-[var(--color-on-solid)] rounded-full animate-spin" />
                         <span>Saving...</span>
                       </>
                     ) : (
@@ -359,7 +359,7 @@ const ProfileManagement = () => {
               </div>
               <button
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 {showPasswordForm ? <X className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                 {showPasswordForm ? 'Cancel' : 'Change Password'}
@@ -453,11 +453,11 @@ const ProfileManagement = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] disabled:bg-[var(--color-surface)] disabled:bg-[var(--color-surface)] transition-colors"
                   >
                     {loading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-4 h-4 border-2 border-[var(--color-on-solid-20)] border-t-[var(--color-on-solid)] rounded-full animate-spin" />
                         <span>Updating...</span>
                       </>
                     ) : (
@@ -473,7 +473,7 @@ const ProfileManagement = () => {
           </div>
 
           {/* Security Info */}
-          <div className="bg-[var(--color-primary-light)]/20 border border-[var(--color-primary)] rounded-lg p-4">
+          <div className="bg-[color-mix(in_srgb,var(--color-primary-light)_20%,transparent)] border border-[var(--color-primary)] rounded-lg p-4">
             <div className="flex items-start gap-3">
               <Shield className="w-5 h-5 text-[var(--color-primary)] mt-0.5" />
               <div>
@@ -510,7 +510,7 @@ const ProfileManagement = () => {
                       {activity.description || activity.type}
                     </p>
                     <p className="text-sm text-[var(--color-textSecondary)]">
-                      {formatDate(activity.created_at)}
+                      {fmtDateTime(activity.created_at, { fallback: 'N/A' })}
                     </p>
                   </div>
                 </div>

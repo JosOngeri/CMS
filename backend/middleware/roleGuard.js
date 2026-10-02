@@ -1,3 +1,9 @@
+/**
+ * Role/permission guards throwing AppError via IdentityService.
+ * hasRole takes ONE array argument — hasRole(['A','B']). Callers passing varargs (smsHub/documentApproval routes) deadlock the check — ledger.
+ * @exports {hasRole, hasPermission, requireSuperAdmin}
+ * @deps services/IdentityService
+ */
 const IdentityService = require('../services/IdentityService');
 const { AppError } = require('../helpers/errorHandler');
 

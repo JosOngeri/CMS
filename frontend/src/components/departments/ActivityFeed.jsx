@@ -249,7 +249,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
           <p className="text-sm text-[var(--color-textSecondary)]">{error}</p>
           <button
             onClick={handleRefresh}
-            className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors min-h-[44px]"
+            className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors min-h-[44px]"
             aria-label="Retry loading activities"
           >
             Retry
@@ -277,7 +277,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
               <div className="flex items-center gap-2 mr-2">
                 <button
                   onClick={() => handleBulkAction('approve')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-success)] text-white text-xs rounded-lg hover:opacity-90 transition-colors min-h-[36px]"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-success)] text-[var(--color-on-solid)] text-xs rounded-lg hover:opacity-90 transition-colors min-h-[44px]"
                   aria-label="Approve all pending actions"
                   aria-busy={isProcessingBulk}
                 >
@@ -286,7 +286,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
                 </button>
                 <button
                   onClick={() => handleBulkAction('reject')}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-error)] text-white text-xs rounded-lg hover:opacity-90 transition-colors min-h-[36px]"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-error)] text-[var(--color-on-solid)] text-xs rounded-lg hover:opacity-90 transition-colors min-h-[44px]"
                   aria-label="Reject all pending actions"
                   aria-busy={isProcessingBulk}
                 >
@@ -297,7 +297,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
             )}
             <button
               onClick={handleRefresh}
-              className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+              className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               title="Refresh"
               aria-label="Refresh activities"
             >
@@ -305,7 +305,7 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
             </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
+              className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
               title="Filter"
               aria-label="Toggle filters"
             >
@@ -321,9 +321,9 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
               <button
                 key={option.id}
                 onClick={() => handleFilterChange(option.id)}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors min-h-[36px] ${
+                className={`px-3 py-1.5 rounded-full text-sm transition-colors min-h-[44px] ${
                   filterType === option.id
-                    ? 'bg-[var(--color-primary)] text-white'
+                    ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]'
                     : 'bg-[var(--color-surface)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'
                 }`}
                 aria-label={`Filter by ${option.label}`}

@@ -28,9 +28,7 @@ import { useChurchBranding } from '../../hooks/useChurchBranding'
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
-
-const fmtKES = (n) => `KES ${(Number(n) || 0).toLocaleString()}`
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-KE', { weekday: 'short', day: 'numeric', month: 'short' }) : null
+import { fmtDate, fmtKES } from '../../utils/format'
 
 const MemberDashboard = () => {
   const { user, api } = useAuth()
@@ -107,12 +105,12 @@ const MemberDashboard = () => {
 
       {/* Giving hero — the main reason a member is here */}
       {canSeeGiving && (
-        <div className="church-gradient rounded-2xl p-6 text-white shadow-lg">
+        <div className="church-gradient rounded-2xl p-6 text-[var(--color-on-solid)] shadow-lg">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-white/80 text-sm font-medium">Outstanding obligations</p>
+              <p className="text-[var(--color-on-solid-80)] text-sm font-medium">Outstanding obligations</p>
               <p className="text-3xl font-bold mt-1">{fmtKES(outstanding)}</p>
-              <p className="text-white/70 text-sm mt-1">
+              <p className="text-[var(--color-on-solid-80)] text-sm mt-1">
                 {outstanding > 0
                   ? `${obligations.filter(o => ['pending','partial'].includes(o.status)).length} pending across your departments`
                   : 'You are all settled — thank you for your faithfulness'}
@@ -121,14 +119,14 @@ const MemberDashboard = () => {
             <div className="flex gap-3">
               <Link
                 to="/dashboard/obligations"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)] text-[var(--color-primary)] font-semibold rounded-xl hover:bg-[var(--color-surface)]/90 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)] text-[var(--color-primary)] font-semibold rounded-xl hover:bg-[color-mix(in_srgb,var(--color-surface)_90%,transparent)] transition-colors"
               >
                 <HandCoins className="h-5 w-5" />
                 Give Now
               </Link>
               <Link
                 to="/dashboard/payments/my"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-[var(--color-surface)]/15 text-white font-medium rounded-xl hover:bg-[var(--color-surface)]/25 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-[color-mix(in_srgb,var(--color-surface)_15%,transparent)] text-[var(--color-on-solid)] font-medium rounded-xl hover:bg-[color-mix(in_srgb,var(--color-surface)_25%,transparent)] transition-colors"
               >
                 <Wallet className="h-5 w-5" />
                 History
@@ -243,7 +241,7 @@ const MemberDashboard = () => {
             <div className="space-y-3">
               {events.map(e => (
                 <div key={e.id} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--color-background)] border border-[var(--color-border)]">
-                  <div className="w-12 h-12 rounded-lg church-gradient text-white flex flex-col items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg church-gradient text-[var(--color-on-solid)] flex flex-col items-center justify-center flex-shrink-0">
                     <span className="text-xs font-medium">{e.event_date ? new Date(e.event_date).toLocaleDateString('en-KE', { month: 'short' }) : '—'}</span>
                     <span className="text-lg font-bold leading-none">{e.event_date ? new Date(e.event_date).getDate() : ''}</span>
                   </div>
@@ -271,7 +269,7 @@ const MemberDashboard = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             {departments.map(d => (
-              <span key={d.id || d.department_id} className="px-3 py-1.5 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] text-sm font-medium">
+              <span key={d.id || d.department_id} className="px-3 py-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)] text-sm font-medium">
                 {d.name || d.department_name}
               </span>
             ))}
@@ -286,7 +284,7 @@ const MemberDashboard = () => {
           <div className="space-y-3">
             {activity.map((a, i) => (
               <div key={a.id || i} className="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--color-background)] transition-colors">
-                <div className="p-2 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)]">
+                <div className="p-2 rounded-lg bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[var(--color-primary)]">
                   {a.type === 'payment' ? <CheckCircle className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
                 </div>
                 <div className="flex-1 min-w-0">

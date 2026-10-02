@@ -46,6 +46,8 @@ const Notifications = () => {
   };
 
   const deleteNotification = async (id) => {
+    if (!window.confirm('Delete this notification?')) return;
+
     try {
       await api.delete(`/notifications/${id}`);
       setNotifications(notifications.filter(n => n.id !== id));
@@ -98,7 +100,7 @@ const Notifications = () => {
         <div className="flex gap-2">
           <button
             onClick={markAllAsRead}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
           >
             Mark All as Read
           </button>

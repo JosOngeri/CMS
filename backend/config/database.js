@@ -1,3 +1,10 @@
+/**
+ * Postgres connection pool + query helper that logs duration/failures without leaking params.
+ * @exports {pool, queryWithLogging}
+ * @deps config/logging
+ * @tenant No scoping here — every caller is responsible for its own church_id filters.
+ * @known Most repositories call pool.query directly, bypassing queryWithLogging.
+ */
 const { Pool } = require('pg');
 const logger = require('./logging');
 

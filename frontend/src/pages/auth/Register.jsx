@@ -151,6 +151,7 @@ const Register = () => {
                 })}
                 id="email"
                 type="email"
+                inputMode="email"
                 className="input w-full"
                 aria-label="Email address"
                 aria-invalid={errors.email ? 'true' : 'false'}
@@ -178,6 +179,7 @@ const Register = () => {
                 })}
                 id="phone_number"
                 type="tel"
+                inputMode="tel"
                 className="input w-full"
                 aria-label="Phone number"
                 aria-invalid={errors.phone_number ? 'true' : 'false'}

@@ -227,7 +227,7 @@ const SEOManager = () => {
         </button>
         <button
           onClick={saveSEO}
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)]"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)]"
         >
           <Check size={16} />
           Save Settings

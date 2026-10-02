@@ -61,7 +61,7 @@ const DepartmentActivity = () => {
   const loadDepartmentInfo = async () => {
     try {
       setError(null);
-      const response = await api.get(`/department/${departmentId}/dashboard`);
+      const response = await api.get(`/departments/${departmentId}/dashboard`);
       
       if (response.data.success) {
         setDepartmentInfo(response.data.data.department);
@@ -109,7 +109,7 @@ const DepartmentActivity = () => {
           <p className="text-[var(--color-error)] mb-4">{error}</p>
           <button
             onClick={() => navigate('/dashboard/my-departments')}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+            className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
           >
             Back to My Departments
           </button>
@@ -150,7 +150,7 @@ const DepartmentActivity = () => {
               </button>
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
               >
                 <Download className="w-4 h-4" />
                 Export
@@ -208,7 +208,7 @@ const DepartmentActivity = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDateFilter}
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     Apply Filter
                   </button>

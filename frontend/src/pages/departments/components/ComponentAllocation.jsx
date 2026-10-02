@@ -21,12 +21,10 @@ import {
   Search,
 } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
-import { useColorPalette } from '../../../contexts/ColorPaletteContext';
 import { useAuth } from '../../../contexts/AuthContext';
 
 const ComponentAllocation = ({ departmentId }) => {
   const toast = useToast();
-  const { colors } = useColorPalette();
   const { api } = useAuth();
   const [availableComponents, setAvailableComponents] = useState([]);
   const [allocatedComponents, setAllocatedComponents] = useState([]);
@@ -80,6 +78,8 @@ const ComponentAllocation = ({ departmentId }) => {
   };
 
   const removeComponent = async (componentId) => {
+    if (!window.confirm('Remove this component from the department?')) return;
+
     try {
       await api.delete(`/departments/${departmentId}/components/${componentId}`);
       toast.success('Component removed successfully');
@@ -100,7 +100,7 @@ const ComponentAllocation = ({ departmentId }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div style={{ color: colors.textSecondary }}>Loading components...</div>
+        <div className="text-[var(--color-textSecondary)]">Loading components...</div>
       </div>
     );
   }
@@ -108,18 +108,15 @@ const ComponentAllocation = ({ departmentId }) => {
   return (
     <div className="space-y-6">
       {/* Allocated Components */}
-      <div className="rounded-lg shadow p-6" style={{ backgroundColor: colors.surface }}>
+      <div className="rounded-lg shadow p-6 bg-[var(--color-surface)]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold" style={{ color: colors.text }}>
+          <h3 className="text-lg font-semibold text-[var(--color-text)]">
             Allocated Components
           </h3>
           <button
             type="button"
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-white"
-            style={{ backgroundColor: colors.primary }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-[var(--color-on-solid)] bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition-colors"
           >
             <Plus className="w-4 h-4" />
             Add Component
@@ -128,9 +125,9 @@ const ComponentAllocation = ({ departmentId }) => {
 
         {allocatedComponents.length === 0 ? (
           <div className="text-center py-8">
-            <Building2 className="w-12 h-12 mx-auto mb-4" style={{ color: colors.border }} />
-            <p style={{ color: colors.textSecondary }}>No components allocated yet</p>
-            <p className="text-sm mt-1" style={{ color: colors.border }}>
+            <Building2 className="w-12 h-12 mx-auto mb-4 text-[var(--color-border)]" />
+            <p className="text-[var(--color-textSecondary)]">No components allocated yet</p>
+            <p className="text-sm mt-1 text-[var(--color-border)]">
               Add components to enable additional functionality
             </p>
           </div>
@@ -139,17 +136,16 @@ const ComponentAllocation = ({ departmentId }) => {
             {allocatedComponents.map((component) => (
               <div
                 key={component.id}
-                className="rounded-lg p-4 hover:shadow-md transition-shadow"
-                style={{ border: `1px solid ${colors.border}` }}
+                className="rounded-lg p-4 hover:shadow-md transition-shadow border border-[var(--color-border)]"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5" style={{ color: colors.success }} />
+                    <CheckCircle2 className="w-5 h-5 text-[var(--color-success)]" />
                     <div>
-                      <h4 className="font-medium" style={{ color: colors.text }}>
+                      <h4 className="font-medium text-[var(--color-text)]">
                         {component.name}
                       </h4>
-                      <p className="text-sm" style={{ color: colors.textSecondary }}>
+                      <p className="text-sm text-[var(--color-textSecondary)]">
                         {component.type}
                       </p>
                     </div>
@@ -157,20 +153,18 @@ const ComponentAllocation = ({ departmentId }) => {
                   <button
                     type="button"
                     onClick={() => removeComponent(component.id)}
-                    className="p-1 rounded transition-colors"
-                    style={{ backgroundColor: 'transparent' }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.error + '20'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="p-1 rounded transition-colors hover:bg-[var(--color-error-light)]"
+                    aria-label={`Remove ${component.name}`}
                   >
-                    <X className="w-4 h-4" style={{ color: colors.error }} />
+                    <X className="w-4 h-4 text-[var(--color-error)]" />
                   </button>
                 </div>
                 {component.description && (
-                  <p className="text-sm mb-2" style={{ color: colors.text }}>
+                  <p className="text-sm mb-2 text-[var(--color-text)]">
                     {component.description}
                   </p>
                 )}
-                <div className="text-xs" style={{ color: colors.textSecondary }}>
+                <div className="text-xs text-[var(--color-textSecondary)]">
                   Allocated by {component.granted_by_name || 'Unknown'} •{' '}
                   {new Date(component.granted_at).toLocaleDateString()}
                 </div>
@@ -182,39 +176,33 @@ const ComponentAllocation = ({ departmentId }) => {
 
       {/* Add Component Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-          <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ backgroundColor: colors.surface }}>
-            <div className="flex items-center justify-between p-6" style={{ borderBottom: `1px solid ${colors.border}` }}>
-              <h2 className="text-lg font-semibold" style={{ color: colors.text }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[var(--color-overlay-50)]">
+          <div className="rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-[var(--color-surface)]">
+            <div className="flex items-center justify-between p-6 border-b border-[var(--color-border)]">
+              <h2 className="text-lg font-semibold text-[var(--color-text)]">
                 Add Component
               </h2>
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="p-2 rounded-lg transition-colors"
-                style={{ backgroundColor: 'transparent' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border + '20'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                className="p-2 rounded-lg transition-colors hover:bg-[var(--color-surfaceHover)]"
+                aria-label="Close add component dialog"
               >
-                <X className="w-5 h-5" style={{ color: colors.textSecondary }} />
+                <X className="w-5 h-5 text-[var(--color-textSecondary)]" />
               </button>
             </div>
             <div className="p-6">
               {/* Search */}
               <div className="mb-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: colors.textSecondary }} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[var(--color-textSecondary)]" />
                   <input
                     type="text"
+                    aria-label="Search components"
                     placeholder="Search components..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 rounded-lg"
-                    style={{ 
-                      border: `1px solid ${colors.border}`,
-                      backgroundColor: colors.background,
-                      color: colors.text
-                    }}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)]"
                   />
                 </div>
               </div>
@@ -223,8 +211,8 @@ const ComponentAllocation = ({ departmentId }) => {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {filteredAvailableComponents.length === 0 ? (
                   <div className="text-center py-8">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: colors.border }} />
-                    <p style={{ color: colors.textSecondary }}>
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-[var(--color-border)]" />
+                    <p className="text-[var(--color-textSecondary)]">
                       {searchTerm ? 'No components found' : 'All components are already allocated'}
                     </p>
                   </div>
@@ -232,20 +220,17 @@ const ComponentAllocation = ({ departmentId }) => {
                   filteredAvailableComponents.map((component) => (
                     <div
                       key={component.id}
-                      className="flex items-center justify-between p-4 rounded-lg transition-colors"
-                      style={{ border: `1px solid ${colors.border}` }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.border + '10'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      className="flex items-center justify-between p-4 rounded-lg transition-colors border border-[var(--color-border)] hover:bg-[var(--color-surfaceHover)]"
                     >
                       <div className="flex-1">
-                        <h4 className="font-medium" style={{ color: colors.text }}>
+                        <h4 className="font-medium text-[var(--color-text)]">
                           {component.name}
                         </h4>
-                        <p className="text-sm" style={{ color: colors.textSecondary }}>
+                        <p className="text-sm text-[var(--color-textSecondary)]">
                           {component.type}
                         </p>
                         {component.description && (
-                          <p className="text-xs mt-1" style={{ color: colors.text }}>
+                          <p className="text-xs mt-1 text-[var(--color-text)]">
                             {component.description}
                           </p>
                         )}
@@ -253,10 +238,7 @@ const ComponentAllocation = ({ departmentId }) => {
                       <button
                         type="button"
                         onClick={() => allocateComponent(component.id)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-white"
-                        style={{ backgroundColor: colors.primary }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.primary + 'CC'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = colors.primary}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-[var(--color-on-solid)] bg-[var(--color-primary)] hover:bg-[var(--color-primary-600)] transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Add

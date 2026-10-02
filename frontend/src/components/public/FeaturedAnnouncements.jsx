@@ -67,7 +67,7 @@ const FeaturedAnnouncements = () => {
             aria-label="View all announcements"
           >
             <span>View All</span>
-            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 group-focus-within:translate-x-1 transition-transform" aria-hidden="true" />
           </Link>
         </div>
 
@@ -103,7 +103,7 @@ const FeaturedAnnouncements = () => {
 
                   {/* Content */}
                   <div className="p-6">
-                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] transition-colors">
+                    <h3 className="font-bold text-xl text-[var(--color-text)] mb-3 group-hover:text-[var(--color-primary)] group-focus-within:text-[var(--color-primary)] transition-colors">
                       {announcement.title}
                     </h3>
                     <p className="text-[var(--color-textSecondary)] mb-4 line-clamp-3">
@@ -116,7 +116,7 @@ const FeaturedAnnouncements = () => {
                       aria-label={`Read more about ${announcement.title}`}
                     >
                       <span>Read more</span>
-                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 group-focus-within:translate-x-1 transition-transform" aria-hidden="true" />
                     </Link>
                   </div>
                 </div>

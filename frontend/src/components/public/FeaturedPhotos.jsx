@@ -7,7 +7,6 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ImageIcon } from 'lucide-react';
 import { useDataFetch } from '../../hooks/useDataFetch';
 import { GalleryEmptyState, ErrorEmptyState } from '../common/EmptyState';
-import { useColorPalette } from '../../contexts/ColorPaletteContext';
 
 const FeaturedPhotos = () => {
   const { data, loading, error, isEmpty, refetch } = useDataFetch(
@@ -16,22 +15,18 @@ const FeaturedPhotos = () => {
       transform: (result) => result.data?.photos || []
     }
   );
-  const { colors } = useColorPalette()
 
   return (
-    <section className="py-16" style={{ backgroundColor: colors.surface }}>
+    <section className="py-16 bg-[var(--color-surface)]">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl font-bold" style={{ color: colors.text }}>
+          <h2 className="text-3xl font-bold text-[var(--color-text)]">
             Photo Gallery
           </h2>
           <Link
             to="/gallery"
-            className="flex items-center space-x-2 transition-colors"
+            className="flex items-center space-x-2 transition-opacity text-[var(--color-primary)] hover:opacity-80"
             aria-label="View full photo gallery"
-            style={{ color: colors.primary }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8' }
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '1' }
           >
             <span>View Full Gallery</span>
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -60,11 +55,11 @@ const FeaturedPhotos = () => {
                   className="w-full h-full object-cover"
                   loading="lazy"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/400x400?text=Photo';
+                    e.currentTarget.classList.add('hidden');
                   }}
                 />
-                <div className="absolute inset-0 transition-all" style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }} onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.4)'} onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0)'}>
-                  <div className="absolute bottom-0 left-0 right-0 p-2 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 bg-[var(--color-overlay-40)] md:bg-transparent group-focus-within:bg-[var(--color-overlay-40)] md:group-hover:bg-[var(--color-overlay-40)] transition-all">
+                  <div className="absolute bottom-0 left-0 right-0 p-2 text-[var(--color-on-solid)] opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100 transition-opacity">
                     <p className="text-sm font-medium truncate">{photo.caption || 'Photo'}</p>
                   </div>
                 </div>

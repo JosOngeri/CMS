@@ -201,7 +201,7 @@ const Budgets = () => {
         </div>
         <button
           onClick={() => setShowForm(true)}
-          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
         >
           <Plus className="h-4 w-4" />
           <span>Add Budget</span>
@@ -293,7 +293,7 @@ const Budgets = () => {
           return (
             <div
               key={budget.id}
-              className="p-4 hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)]/50 transition-colors"
+              className="p-4 hover:bg-[var(--color-background)] hover:bg-[color-mix(in_srgb,var(--color-surface)_50%,transparent)] transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -396,6 +396,7 @@ const Budgets = () => {
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
                       required
                       value={formData.fiscal_year}
                       onChange={(e) => setFormData({ ...formData, fiscal_year: parseInt(e.target.value) })}
@@ -457,6 +458,7 @@ const Budgets = () => {
                   </label>
                   <input
                     type="number"
+                    inputMode="decimal"
                     step="0.01"
                     required
                     value={formData.budgeted_amount}
@@ -478,7 +480,7 @@ const Budgets = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                   >
                     {editingBudget ? 'Update' : 'Create'}
                   </button>

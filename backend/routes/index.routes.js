@@ -1,3 +1,10 @@
+/**
+ * Canonical /api route table — mounts every domain router with its rate limiter + pagination clamp.
+ * Legacy singular mounts (/department, /payment) 308-redirect to plural.
+ * @exports express.Router
+ * @deps routes/*.routes.js, middleware/{rateLimiter,pagination}
+ * @known /treasury/dashboard + /treasury/chart-of-accounts mount AFTER two /treasury parents (fallthrough-dependent); accountingExport.controller has no mount (dead code) — ledger.
+ */
 const express = require('express');
 const router = express.Router();
 
@@ -21,7 +28,6 @@ const departmentRoutes = require('./department.routes');
 const departmentFeaturesRoutes = require('./departmentFeatures.routes');
 const departmentCategoriesRoutes = require('./department-categories.routes');
 const paymentsRoutes = require('./payments.routes');
-const paymentRoutes = require('./payment.routes');
 const membersRoutes = require('./members.routes');
 const eventsRoutes = require('./events.routes');
 const smsRoutes = require('./sms.routes');
@@ -67,16 +73,28 @@ router.use('/churches', generalLimiter, churchRoutes);
 router.use('/users', generalLimiter, clampQueryPagination(), usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);
 router.use('/announcements', generalLimiter, clampQueryPagination(), announcementsRoutes);
+// Canonical mount: every department endpoint lives under /api/departments.
+// department.routes.js is mounted first so its member-scoped paths win before
+// the generic /:identifier routes in departments.routes.js.
+router.use('/departments', generalLimiter, clampQueryPagination(), departmentRoutes);
 router.use('/departments', generalLimiter, clampQueryPagination(), departmentsRoutes);
 router.use('/departments', generalLimiter, require('./department_community.routes'));
 router.use('/departments', generalLimiter, require('./department_leadership.routes').router);
 router.use('/departments', generalLimiter, require('./department_finance.routes'));
-router.use('/department', generalLimiter, departmentRoutes);
+router.use('/department', generalLimiter, (req, res) => {
+  const suffix = req.originalUrl.slice(req.baseUrl.length);
+  res.redirect(308, `${req.baseUrl.replace(/\/department$/, '/departments')}${suffix}`);
+});
 router.use('/department-features', generalLimiter, departmentFeaturesRoutes);
 router.use('/department-categories', generalLimiter, departmentCategoriesRoutes);
 router.use('/apk', generalLimiter, require('./apk.routes'));
 router.use('/payments', strictLimiter, paymentsRoutes);
-router.use('/payment', strictLimiter, paymentRoutes);
+// Legacy singular mount keeps old clients working while every handler is
+// served from payments.routes.js.
+router.use('/payment', strictLimiter, (req, res) => {
+  const suffix = req.originalUrl.slice(req.baseUrl.length);
+  res.redirect(308, `${req.baseUrl.replace(/\/payment$/, '/payments')}${suffix}`);
+});
 router.use('/members', generalLimiter, clampQueryPagination(), membersRoutes);
 router.use('/events', generalLimiter, clampQueryPagination(), eventsRoutes);
 router.use('/sms', strictLimiter, smsRoutes);

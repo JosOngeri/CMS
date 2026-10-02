@@ -234,30 +234,30 @@ const PhotoGalleryPage = () => {
   return (
     <div className="min-h-screen bg-[var(--color-background)]">
       {/* Page Header */}
-      <section className="church-gradient text-white py-12">
+      <section className="church-gradient text-[var(--color-on-solid)] py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
               Photo Gallery
             </h1>
-            <p className="text-lg text-white/80 mb-6">
+            <p className="text-lg text-[var(--color-on-solid-80)] mb-6">
               Browse photos from our church events, sermons, and activities
             </p>
             <div className="flex items-center space-x-4">
               <Link
                 to="/auth/login"
-                className="inline-flex items-center space-x-2 bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[var(--color-surface)]/90 px-5 py-2.5 rounded-lg font-medium transition-colors"
+                className="inline-flex items-center space-x-2 bg-[var(--color-surface)] text-[var(--color-primary-strong)] hover:bg-[color-mix(in_srgb,var(--color-surface)_90%,transparent)] px-5 py-2.5 rounded-lg font-medium transition-colors"
               >
                 <span>Join Our Community</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <span className="text-white/70">
+              <span className="text-[var(--color-on-solid-80)]">
                 {totalCount.toLocaleString()} photos
               </span>
               {isAdmin && (
                 <button
                   onClick={() => setShowTelegramAuth(true)}
-                  className="inline-flex items-center space-x-2 bg-[var(--color-primary-light)] hover:bg-[var(--color-primary-light)] text-[var(--color-primary)] px-4 py-2.5 rounded-lg font-medium transition-colors border border-[var(--color-primary)]/30"
+                  className="inline-flex items-center space-x-2 bg-[var(--color-primary-light)] hover:bg-[var(--color-primary-light)] text-[var(--color-primary)] px-4 py-2.5 rounded-lg font-medium transition-colors border border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)]"
                 >
                   <Smartphone className="h-4 w-4" />
                   <span>Configure Telegram</span>
@@ -296,6 +296,7 @@ const PhotoGalleryPage = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" />
                     <input
                       type="text"
+                      aria-label="Search photos"
                       placeholder="Search photos..."
                       value={searchTerm}
                       onChange={handleSearch}
@@ -307,6 +308,7 @@ const PhotoGalleryPage = () => {
                   <div className="flex items-center space-x-2">
                     {/* Category Filter */}
                     <select
+                      aria-label="Filter photos by category"
                       value={selectedCategory}
                       onChange={(e) => {
                         setSelectedCategory(e.target.value)
@@ -367,11 +369,11 @@ const PhotoGalleryPage = () => {
                     <button
                       onClick={handleLoadMore}
                       disabled={loading}
-                      className="px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-[var(--color-surface)] text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                      className="px-6 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-[var(--color-surface)] text-[var(--color-on-solid)] rounded-lg font-medium transition-colors flex items-center space-x-2"
                     >
                       {loading ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <div className="w-4 h-4 border-2 border-[var(--color-on-solid-20)] border-t-[var(--color-on-solid)] rounded-full animate-spin" />
                           <span>Loading...</span>
                         </>
                       ) : (
