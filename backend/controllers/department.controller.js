@@ -56,6 +56,23 @@ class DepartmentController extends BaseController {
   }
 
   /**
+   * Resolve the department id from whichever param/middleware set it and verify
+   * it belongs to the caller's church. Routes mount this controller under both
+   * /:id/* and /:departmentId/*, and convertSlugToId may set req.departmentId.
+   * Returns the dept id, or sends 404 and returns null.
+   */
+  async _ownedDepartmentId(req, res) {
+    const departmentId = req.departmentId || req.params.id || req.params.departmentId;
+    const ownsDept = departmentId &&
+      await DepartmentRepository.departmentBelongsToChurch(departmentId, req.user.church_id);
+    if (!ownsDept) {
+      res.status(404).json({ success: false, error: 'Department not found' });
+      return null;
+    }
+    return departmentId;
+  }
+
+  /**
    * Get all departments for current user
    * @param {Object} req - Express request object
    * @param {Object} req.user - Authenticated user
@@ -474,7 +491,9 @@ class DepartmentController extends BaseController {
   // Grant admin access to user for department
   async grantDepartmentAdmin(req, res) {
     try {
-      const { departmentId } = req.params;
+      // Mounted at /:id/admins — was req.params.departmentId (always undefined)
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { userId } = req.body;
       const grantedBy = req.user.id;
       
@@ -523,7 +542,10 @@ class DepartmentController extends BaseController {
   // Revoke admin access from user for department
   async revokeDepartmentAdmin(req, res) {
     try {
-      const { departmentId, userId } = req.params;
+      // Mounted at /:id/admins/:userId — was req.params.departmentId (always undefined)
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
+      const { userId } = req.params;
       
       // Check if user is department head or admin
       const hasAdminRole = (req.user.roles || []).some(role =>
@@ -561,7 +583,9 @@ class DepartmentController extends BaseController {
   // Get department admins
   async getDepartmentAdmins(req, res) {
     try {
-      const { departmentId } = req.params;
+      // Mounted at /:id/admins — was req.params.departmentId (always undefined)
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const admins = await DepartmentRepository.getDepartmentAdmins(departmentId);
 
@@ -582,7 +606,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentMembers(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const members = await DepartmentRepository.getMembers(departmentId);
       res.json({ success: true, data: members });
     } catch (error) {
@@ -627,7 +652,9 @@ class DepartmentController extends BaseController {
         });
       }
 
-      const { departmentId } = req.params;
+      // convertSlugToId resolves req.departmentId (scoped); fall back to params
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const logoUrl = `/uploads/departments/${req.file.filename}`;
 
       await DepartmentRepository.updateLogo(departmentId, logoUrl);
@@ -657,7 +684,8 @@ class DepartmentController extends BaseController {
         });
       }
 
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const bannerUrl = `/uploads/departments/${req.file.filename}`;
 
       await DepartmentRepository.updateBanner(departmentId, bannerUrl);
@@ -680,7 +708,8 @@ class DepartmentController extends BaseController {
   // Update department colors
   async updateColors(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { logoColor, bannerColor } = req.body;
 
       await DepartmentRepository.updateColors(departmentId, logoColor, bannerColor);
@@ -702,7 +731,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentPermissions(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const permissions = await DepartmentRepository.getPermissions(departmentId);
 
@@ -715,7 +745,8 @@ class DepartmentController extends BaseController {
 
   async setDepartmentPermission(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { userId, permission, granted } = req.body;
 
       const perm = await DepartmentRepository.setPermission(departmentId, userId, permission, granted);
@@ -729,7 +760,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentActivity(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const activity = await DepartmentRepository.getActivity(departmentId);
 
@@ -742,7 +774,8 @@ class DepartmentController extends BaseController {
 
   async logDepartmentActivity(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { action, details } = req.body;
       const userId = req.user.id;
 
@@ -757,7 +790,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentBranding(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const branding = await DepartmentRepository.getBranding(departmentId);
 
@@ -774,7 +808,8 @@ class DepartmentController extends BaseController {
 
   async updateDepartmentBranding(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { logoUrl, bannerUrl, primaryColor, secondaryColor, accentColor } = req.body;
 
       await DepartmentRepository.updateBranding(departmentId, {
@@ -794,7 +829,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentBudget(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const budget = await DepartmentRepository.getBudget(departmentId);
 
@@ -807,7 +843,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentStatistics(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const statistics = await DepartmentRepository.getStatistics(departmentId);
 
@@ -823,7 +860,8 @@ class DepartmentController extends BaseController {
 
   async getDepartmentSettings(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
 
       const settingsRows = await DepartmentRepository.getSettings(departmentId);
 
@@ -841,7 +879,8 @@ class DepartmentController extends BaseController {
 
   async updateDepartmentSettings(req, res) {
     try {
-      const { departmentId } = req.params;
+      const departmentId = await this._ownedDepartmentId(req, res);
+      if (!departmentId) return;
       const { settings } = req.body;
 
       for (const [key, value] of Object.entries(settings)) {

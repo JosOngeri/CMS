@@ -288,23 +288,46 @@ class TelegramAuthController extends BaseController {
         return this.badRequest(res, 'Verification only available for MTProto methods');
       }
 
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      // Real MTProto flow: Telegram sends the code to the user's own Telegram
+      // app via auth.sendCode — we never see or return it. The previous code
+      // generated a local random number, returned it in the response, and
+      // logged it — "verification" that verified nothing.
+      const { TelegramClient } = require('telegram');
+      const { StringSession } = require('telegram/sessions');
 
-      if (!global.verificationCodes) {
-        global.verificationCodes = new Map();
+      const session = new StringSession(method.config.sessionString || '');
+      const client = new TelegramClient(
+        session,
+        parseInt(method.config.apiId),
+        method.config.apiHash,
+        { connectionRetries: 3 }
+      );
+
+      await client.connect();
+      const sendResult = await client.sendCode(
+        { apiId: parseInt(method.config.apiId), apiHash: method.config.apiHash },
+        phoneNumber
+      );
+      // Keep the session so sign-in can resume on the same DC
+      const pendingSession = client.session.save();
+      await client.disconnect();
+
+      if (!global.telegramPendingAuth) {
+        global.telegramPendingAuth = new Map();
       }
-      global.verificationCodes.set(phoneNumber, {
-        code: verificationCode,
+      global.telegramPendingAuth.set(phoneNumber, {
+        phoneCodeHash: sendResult.phoneCodeHash,
+        session: pendingSession,
+        methodId: method.id,
         expiresAt: Date.now() + 5 * 60 * 1000,
-        methodId: method.id
+        attempts: 0
       });
 
-      this.logger.info('startVerification', { phoneNumber, verificationCode });
+      this.logger.info('startVerification', { phoneNumber });
 
       this.success(res, {
         success: true,
-        message: 'Verification code sent',
-        code: verificationCode
+        message: 'Verification code sent to your Telegram app'
       });
     } catch (error) {
       this.logger.error('startVerification', error);
@@ -326,20 +349,59 @@ class TelegramAuthController extends BaseController {
     try {
       const { code, phoneNumber, methodId } = req.body;
 
-      const storedData = global.verificationCodes?.get(phoneNumber);
+      const storedData = global.telegramPendingAuth?.get(phoneNumber);
 
       if (!storedData) {
         return this.badRequest(res, 'No verification code found');
       }
 
       if (Date.now() > storedData.expiresAt) {
-        global.verificationCodes.delete(phoneNumber);
+        global.telegramPendingAuth.delete(phoneNumber);
         return this.badRequest(res, 'Verification code expired');
       }
 
-      if (code !== storedData.code) {
+      storedData.attempts++;
+      if (storedData.attempts > 5) {
+        global.telegramPendingAuth.delete(phoneNumber);
+        return this.badRequest(res, 'Too many attempts — request a new code');
+      }
+
+      // Ask Telegram to validate the code (real sign-in)
+      const { TelegramClient } = require('telegram');
+      const { StringSession } = require('telegram/sessions');
+      const { Api } = require('telegram/tl');
+
+      const method2 = await TelegramAuthRepository.findAuthMethodById(
+        methodId || storedData.methodId,
+        req.user.church_id,
+        true
+      );
+      if (!method2) {
+        return this.badRequest(res, 'Authentication method not found');
+      }
+
+      const signInClient = new TelegramClient(
+        new StringSession(storedData.session || ''),
+        parseInt(method2.config.apiId),
+        method2.config.apiHash,
+        { connectionRetries: 3 }
+      );
+      await signInClient.connect();
+      try {
+        await signInClient.invoke(new Api.auth.SignIn({
+          phoneNumber,
+          phoneCodeHash: storedData.phoneCodeHash,
+          phoneCode: code
+        }));
+      } catch (signInError) {
+        await signInClient.disconnect().catch(() => {});
+        if (String(signInError.message || '').includes('PASSWORD')) {
+          return this.badRequest(res, 'Two-factor password required — this flow does not support 2FA yet');
+        }
         return this.badRequest(res, 'Invalid verification code');
       }
+      const sessionString = signInClient.session.save();
+      await signInClient.disconnect().catch(() => {});
 
       const actualMethodId = methodId || storedData.methodId;
       const method = await TelegramAuthRepository.findAuthMethodById(
@@ -354,18 +416,22 @@ class TelegramAuthController extends BaseController {
 
       if (method.church_id === req.user.church_id) {
         await TelegramAuthRepository.updateConfigPhoneNumber(phoneNumber, actualMethodId, req.user.church_id);
+        // Persist the authenticated session so future sends don't re-verify
+        await TelegramAuthRepository.updateAuthMethod(actualMethodId, {
+          config: { ...method.config, phoneNumber, sessionString }
+        }, req.user.church_id);
       } else {
         await TelegramAuthRepository.createAuthMethod({
           type: method.type,
           name: `${method.name} (${req.user.church_slug || 'Church'})`,
-          config: { ...method.config, phoneNumber },
+          config: { ...method.config, phoneNumber, sessionString },
           is_active: true,
           is_default: true,
           church_id: req.user.church_id
         });
       }
 
-      global.verificationCodes.delete(phoneNumber);
+      global.telegramPendingAuth.delete(phoneNumber);
 
       this.success(res, {
         success: true,

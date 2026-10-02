@@ -2,7 +2,7 @@
  * Treasury guards — role check, IP whitelist, audit logging on response send, MFA/sensitive-path checks, in-memory limiter.
  * @exports TreasurySecurityMiddleware (static class)
  * @deps helpers/errorHandler, helpers/permissionChecker, config/database
- * @known requireMFA/validateSensitiveDataAccess compare stripped req.path against '/api/treasury/*' → NEVER fire; IP checks read remoteAddress (always proxy IP behind Caddy); custom Map limiter duplicates express-rate-limit; audit insert lacks church_id — ledger.
+ * @known Path checks now use router-relative paths (mounted-router fix); requireMFA only enforced for MFA-enabled users; audit insert writes real audit_log columns incl. church_id. IP checks still read remoteAddress behind Caddy; custom Map limiter duplicates express-rate-limit — ledger.
  */
 const { pool } = require('../config/database');
 const logger = require('../config/logging');
@@ -97,28 +97,19 @@ class TreasurySecurityMiddleware {
         try {
           const logData = {
             user_id: req.user?.id,
-            action: `${req.method} ${req.path}`,
-            method: req.method,
-            path: req.path,
-            ip: req.ip,
-            status_code: res.statusCode,
-            timestamp: new Date()
+            church_id: req.user?.church_id,
+            action: `${req.method} ${req.baseUrl}${req.path}`,
+            ip_address: req.ip,
+            user_agent: req.get('user-agent')
           };
 
-          const query = `
-            INSERT INTO audit_log (user_id, action, method, path, ip, status_code, timestamp)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
-          `;
-
-          await pool.query(query, [
-            logData.user_id,
-            logData.action,
-            logData.method,
-            logData.path,
-            logData.ip,
-            logData.status_code,
-            logData.timestamp
-          ]);
+          // Real audit_log columns: church_id, user_id, action, table_name,
+          // record_id, old_values, new_values, ip_address, user_agent, created_at
+          await pool.query(
+            `INSERT INTO audit_log (church_id, user_id, action, table_name, ip_address, user_agent)
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [logData.church_id, logData.user_id, logData.action, 'treasury', logData.ip_address, logData.user_agent]
+          );
 
           logger.info('Treasury action logged:', logData);
         } catch (error) {
@@ -133,21 +124,25 @@ class TreasurySecurityMiddleware {
   }
 
   // Require MFA for sensitive treasury operations
+  // NOTE: inside the mounted /api/treasury router req.path is already stripped
+  // of the mount prefix — paths here are relative (was '/api/treasury/*' → the
+  // startsWith never matched and the gate never fired).
   static requireMFA(req, res, next) {
     const sensitivePaths = [
-      '/api/treasury/journal-entries',
-      '/api/treasury/expenses',
-      '/api/treasury/budgets',
-      '/api/treasury/funds'
+      '/journal-entries',
+      '/expenses',
+      '/budgets',
+      '/funds',
+      '/module'
     ];
 
-    const isSensitive = sensitivePaths.some(path => req.path.startsWith(path));
+    const isSensitive = sensitivePaths.some(p => req.path === p || req.path.startsWith(p + '/'));
 
-    if (isSensitive) {
-      // Block unauthorized sensitive operations when the identity object lacks
-      // a verified MFA session (mfa_verified / mfaVerified).
+    // Only enforce for users who opted into MFA — otherwise every treasury
+    // request by a non-MFA user would 403.
+    if (isSensitive && req.user?.mfaEnabled) {
       const verified = req.user?.mfaVerified === true || req.user?.mfa_verified === true;
-      if (!req.user || !verified) {
+      if (!verified) {
         logger.warn(`MFA required but not verified for sensitive operation: ${req.path} by user ${req.user?.id}`);
         return sendForbidden(res, 'MFA verification required for this operation');
       }
@@ -187,15 +182,15 @@ class TreasurySecurityMiddleware {
     };
   }
 
-  // Validate sensitive data access
+  // Validate sensitive data access — paths relative to the mounted router
   static validateSensitiveDataAccess(req, res, next) {
     const sensitivePaths = [
-      '/api/treasury/reports',
-      '/api/treasury/export',
-      '/api/treasury/contributions'
+      '/reports',
+      '/export',
+      '/contributions'
     ];
 
-    const isSensitive = sensitivePaths.some(path => req.path.startsWith(path));
+    const isSensitive = sensitivePaths.some(p => req.path === p || req.path.startsWith(p + '/'));
 
     if (isSensitive) {
       // Log access to sensitive data

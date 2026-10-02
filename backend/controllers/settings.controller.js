@@ -125,7 +125,7 @@ class SettingsController extends BaseController {
       const { key } = req.params;
       const { value, label, description, is_public, is_editable, validation_rules } = req.body;
 
-      const setting = await SettingsRepository.getSettingByKeySimple(key);
+      const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
       if (!setting) {
         return this.notFound(res, 'Setting not found');
@@ -137,7 +137,7 @@ class SettingsController extends BaseController {
 
       const updatedSetting = await SettingsRepository.updateSetting(key, {
         value, label, description, is_public, is_editable, validation_rules
-      });
+      }, req.user.church_id);
 
       this.success(res, { setting: updatedSetting });
     } catch (error) {
@@ -169,14 +169,15 @@ class SettingsController extends BaseController {
         try {
           const { key, value } = settingData;
 
-          const setting = await SettingsRepository.getSettingByKeySimple(key);
+          const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
           if (!setting) {
             // Create setting if it doesn't exist
             const newSetting = await SettingsRepository.createSettingSimple(
               key,
               value,
-              key.replace('_', ' ').toUpperCase()
+              key.replace('_', ' ').toUpperCase(),
+              req.user.church_id
             );
             updated.push(newSetting);
             continue;
@@ -187,7 +188,7 @@ class SettingsController extends BaseController {
             continue;
           }
 
-          const result = await SettingsRepository.updateSettingValue(key, value);
+          const result = await SettingsRepository.updateSettingValue(key, value, req.user.church_id);
           updated.push(result);
         } catch (error) {
           errors.push({ key: settingData.key, error: error.message });
@@ -216,17 +217,23 @@ class SettingsController extends BaseController {
     try {
       const { key } = req.params;
 
-      const setting = await SettingsRepository.getSettingByKeySimple(key);
+      const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
       if (!setting) {
         return this.notFound(res, 'Setting not found');
+      }
+
+      // Only a church's own override rows are deletable — deleting a global
+      // default row would remove the setting for every church.
+      if (setting.church_id !== req.user.church_id) {
+        return this.forbidden(res, 'Global settings cannot be deleted');
       }
 
       if (!setting.is_editable) {
         return this.forbidden(res, 'This setting cannot be deleted');
       }
 
-      await SettingsRepository.deleteSettingByKey(key);
+      await SettingsRepository.deleteSettingByKey(key, req.user.church_id);
 
       this.success(res, { message: 'Setting deleted successfully' });
     } catch (error) {
@@ -247,7 +254,7 @@ class SettingsController extends BaseController {
     try {
       const { category } = req.query;
 
-      const settings = await SettingsRepository.exportSettings(category);
+      const settings = await SettingsRepository.exportSettings(category, req.user.church_id);
       const exportData = SettingsService.formatExportData(settings);
 
       this.success(res, { data: exportData });
@@ -284,7 +291,7 @@ class SettingsController extends BaseController {
 
           const result = await SettingsRepository.importSetting({
             key, value, value_type, category, label, description, is_public, is_editable, validation_rules
-          });
+          }, req.user.church_id);
 
           imported.push(result);
         } catch (error) {
@@ -314,7 +321,7 @@ class SettingsController extends BaseController {
     try {
       const { category } = req.query;
 
-      const rowCount = await SettingsRepository.resetToDefaults(category);
+      const rowCount = await SettingsRepository.resetToDefaults(category, req.user.church_id);
 
       this.success(res, { message: `Reset ${rowCount} settings to defaults` });
     } catch (error) {

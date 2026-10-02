@@ -20,10 +20,10 @@ class DepartmentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getIdBySlug(slug) {
+  async getIdBySlug(slug, churchId = null) {
     const result = await this.pool.query(
-      'SELECT id FROM departments WHERE slug = $1',
-      [slug]
+      `SELECT id FROM departments WHERE slug = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [slug, churchId] : [slug]
     );
     return result.rows[0];
   }

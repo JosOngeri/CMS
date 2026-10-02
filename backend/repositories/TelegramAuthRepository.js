@@ -90,7 +90,7 @@ class TelegramAuthRepository extends BaseRepository {
        SET config = jsonb_set(
          config,
          '{phoneNumber}',
-         $1
+         to_jsonb($1::text)
        ),
        updated_at = CURRENT_TIMESTAMP
        WHERE id = $2 AND church_id = $3

@@ -18,19 +18,27 @@ const convertSlugToId = async (req, res, next) => {
     
     logger.info('convertSlugToId', 'Input:', departmentId, 'Type:', typeof departmentId);
     
-    // If it's already a UUID, skip conversion
+    // If it's already a UUID, skip conversion — but still verify the
+    // department belongs to the caller's church (raw UUIDs were a
+    // cross-tenant bypass for every downstream route).
     if (departmentId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-      logger.info('convertSlugToId', 'Already a UUID, skipping conversion');
+      const owns = await departmentRepository.departmentBelongsToChurch(departmentId, req.user.church_id);
+      if (!owns) {
+        return res.status(404).json({
+          success: false,
+          error: 'Department not found'
+        });
+      }
       req.departmentId = departmentId;
       return next();
     }
-    
-    // Look up department by slug
+
+    // Look up department by slug (caller church only)
     logger.info('convertSlugToId', 'Looking up department by slug:', departmentId);
-    const result = await departmentRepository.getIdBySlug(departmentId);
-    
+    const result = await departmentRepository.getIdBySlug(departmentId, req.user.church_id);
+
     logger.info('convertSlugToId', 'Slug lookup result:', result);
-    
+
     if (!result) {
       logger.info('convertSlugToId', 'Department not found for slug:', departmentId);
       return res.status(404).json({
@@ -38,7 +46,7 @@ const convertSlugToId = async (req, res, next) => {
         error: 'Department not found'
       });
     }
-    
+
     req.departmentId = result.id;
     logger.info('convertSlugToId', 'Converted to UUID:', req.departmentId);
     next();
@@ -92,6 +100,23 @@ router.post('/join', authenticateToken, async (req, res) => {
       });
     }
 
+    // Only departments from the caller's church can be joined — filter the
+    // requested ids so a foreign church's department id can't be injected.
+    const owned = await departmentRepository.query(
+      'SELECT id FROM departments WHERE id = ANY($1) AND church_id = $2',
+      [department_ids, req.user.church_id]
+    );
+    const ownedIds = new Set(owned.rows.map(r => r.id));
+    const validIds = department_ids.filter(id => ownedIds.has(id));
+    const rejectedIds = department_ids.filter(id => !ownedIds.has(id));
+
+    if (validIds.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'No valid departments found'
+      });
+    }
+
     // Check if user is an admin (auto-approved)
     const isAdmin = ['Super Admin', 'Pastor', 'First Elder'].some(role => userRoles.includes(role));
 
@@ -100,7 +125,7 @@ router.post('/join', authenticateToken, async (req, res) => {
     const pendingCount = [];
     const approvedCount = [];
 
-    for (const departmentId of department_ids) {
+    for (const departmentId of validIds) {
       try {
         if (isAdmin) {
           // Auto-approve for admins

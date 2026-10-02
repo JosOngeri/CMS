@@ -699,15 +699,22 @@ router.get('/:identifier/pending-requests', authenticateToken, async (req, res) 
   try {
     const { identifier } = req.params;
 
-    // Get department ID from slug or ID
-    const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
+    // Get department ID from slug or ID (caller church only)
+    const deptQuery = 'SELECT id, head_id FROM departments WHERE (slug = $1 OR id::text = $1) AND church_id = $2';
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier, req.user.church_id]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
     }
 
     const departmentId = deptResult.rows[0].id;
+
+    // Pending requests expose member PII — heads/admins only
+    const isHeadOrAdmin = deptResult.rows[0].head_id === req.user.id ||
+      (req.user.roles || []).some(r => ['Super Admin', 'Pastor', 'First Elder'].includes(r));
+    if (!isHeadOrAdmin) {
+      return res.status(403).json({ error: 'Permission denied' });
+    }
 
     const result = await departmentsRepository.query(
       `SELECT dm.*, u.first_name, u.last_name, u.email, u.phone_number
@@ -730,9 +737,9 @@ router.post('/:identifier/approve/:userId', authenticateToken, async (req, res) 
   try {
     const { identifier, userId } = req.params;
 
-    // Get department ID from slug or ID
-    const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
+    // Get department ID from slug or ID (caller church only)
+    const deptQuery = 'SELECT id, head_id FROM departments WHERE (slug = $1 OR id::text = $1) AND church_id = $2';
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier, req.user.church_id]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -740,10 +747,18 @@ router.post('/:identifier/approve/:userId', authenticateToken, async (req, res) 
 
     const departmentId = deptResult.rows[0].id;
 
+    // Was: NO permission check — any authenticated user could approve
+    // memberships in any church's department
+    const isHeadOrAdmin = deptResult.rows[0].head_id === req.user.id ||
+      (req.user.roles || []).some(r => ['Super Admin', 'Pastor', 'First Elder'].includes(r));
+    if (!isHeadOrAdmin) {
+      return res.status(403).json({ error: 'Permission denied' });
+    }
+
     const result = await departmentsRepository.query(
-      `UPDATE department_members 
-       SET status = 'approved', 
-           approved_by = $1, 
+      `UPDATE department_members
+       SET status = 'approved',
+           approved_by = $1,
            approved_at = NOW(),
            joined_at = NOW()
        WHERE department_id = $2 AND user_id = $3 AND status = 'pending'
@@ -770,9 +785,9 @@ router.post('/:identifier/reject/:userId', authenticateToken, async (req, res) =
   try {
     const { identifier, userId } = req.params;
 
-    // Get department ID from slug or ID
-    const deptQuery = 'SELECT id FROM departments WHERE slug = $1 OR id::text = $1';
-    const deptResult = await departmentsRepository.query(deptQuery, [identifier]);
+    // Get department ID from slug or ID (caller church only)
+    const deptQuery = 'SELECT id, head_id FROM departments WHERE (slug = $1 OR id::text = $1) AND church_id = $2';
+    const deptResult = await departmentsRepository.query(deptQuery, [identifier, req.user.church_id]);
 
     if (deptResult.rows.length === 0) {
       return res.status(404).json({ error: 'Department not found' });
@@ -780,8 +795,14 @@ router.post('/:identifier/reject/:userId', authenticateToken, async (req, res) =
 
     const departmentId = deptResult.rows[0].id;
 
+    const isHeadOrAdmin = deptResult.rows[0].head_id === req.user.id ||
+      (req.user.roles || []).some(r => ['Super Admin', 'Pastor', 'First Elder'].includes(r));
+    if (!isHeadOrAdmin) {
+      return res.status(403).json({ error: 'Permission denied' });
+    }
+
     const result = await departmentsRepository.query(
-      `DELETE FROM department_members 
+      `DELETE FROM department_members
        WHERE department_id = $1 AND user_id = $2 AND status = 'pending'
        RETURNING *`,
       [departmentId, userId]

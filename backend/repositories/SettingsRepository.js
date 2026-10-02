@@ -5,21 +5,35 @@ class SettingsRepository extends BaseRepository {
     super('settings');
   }
 
+  // Reads merge global defaults (church_id IS NULL) with the caller's own
+  // church overrides; the church-scoped row wins when both exist.
+  // Writes with a churchId never touch global rows or other churches' rows —
+  // they update the caller's override, or clone the global row into a new
+  // override when only a global default exists.
   async getAll(churchId = null) {
     let query = `SELECT * FROM ${this.tableName}`;
     const params = [];
 
     if (churchId) {
-      query += ` WHERE church_id = $1`;
+      query += ` WHERE church_id = $1 OR church_id IS NULL
+                 ORDER BY church_id NULLS LAST, category, key`;
       params.push(churchId);
+    } else {
+      query += ` ORDER BY category, key`;
     }
-
-    query += ` ORDER BY category, key`;
 
     const result = await this.pool.query(query, params);
 
+    // Dedupe by key — the church-specific row sorts before its global twin.
+    const seen = new Set();
+    const rows = result.rows.filter(r => {
+      if (seen.has(r.key)) return false;
+      seen.add(r.key);
+      return true;
+    });
+
     // Group by category
-    return result.rows.reduce((acc, setting) => {
+    return rows.reduce((acc, setting) => {
       if (!acc[setting.category]) {
         acc[setting.category] = [];
       }
@@ -33,7 +47,8 @@ class SettingsRepository extends BaseRepository {
     const params = [key];
 
     if (churchId) {
-      query += ` AND church_id = $2`;
+      query += ` AND (church_id = $2 OR church_id IS NULL)
+                 ORDER BY church_id NULLS LAST LIMIT 1`;
       params.push(churchId);
     }
 
@@ -45,17 +60,66 @@ class SettingsRepository extends BaseRepository {
     return setting;
   }
 
-  async upsert(key, value, churchId = null) {
-    let query = `
-      INSERT INTO ${this.tableName} (key, value, church_id)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (key, church_id)
-      DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP
-      RETURNING *
-    `;
-    const params = [key, value, churchId];
+  // Fetches only the caller's own church-scoped row (never the global row).
+  async _getOwnRow(key, churchId) {
+    const result = await this.pool.query(
+      `SELECT * FROM ${this.tableName} WHERE key = $1 AND church_id = $2`,
+      [key, churchId]
+    );
+    return result.rows[0];
+  }
 
-    const result = await this.pool.query(query, params);
+  async _getGlobalRow(key) {
+    const result = await this.pool.query(
+      `SELECT * FROM ${this.tableName} WHERE key = $1 AND church_id IS NULL`,
+      [key]
+    );
+    return result.rows[0];
+  }
+
+  // Clones a global row into a per-church override with `overrides` applied.
+  async _cloneToChurchRow(globalRow, churchId, overrides = {}) {
+    const merged = { ...globalRow, ...overrides };
+    const result = await this.pool.query(
+      `INSERT INTO ${this.tableName}
+         (key, value, value_type, category, label, description, is_public,
+          is_editable, validation_rules, default_value, church_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       RETURNING *`,
+      [merged.key, merged.value, merged.value_type, merged.category,
+       merged.label, merged.description, merged.is_public, merged.is_editable,
+       merged.validation_rules, merged.default_value, churchId]
+    );
+    return result.rows[0];
+  }
+
+  async upsert(key, value, churchId = null) {
+    if (churchId) {
+      const own = await this._getOwnRow(key, churchId);
+      if (own) {
+        const result = await this.pool.query(
+          `UPDATE ${this.tableName} SET value = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE key = $2 AND church_id = $3 RETURNING *`,
+          [value, key, churchId]
+        );
+        return result.rows[0];
+      }
+      const global = await this._getGlobalRow(key);
+      if (global) return this._cloneToChurchRow(global, churchId, { value });
+      const result = await this.pool.query(
+        `INSERT INTO ${this.tableName} (key, value, value_type, category, label, is_public, is_editable, church_id)
+         VALUES ($1, $2, 'string', 'system', $1, false, true, $3)
+         RETURNING *`,
+        [key, value, churchId]
+      );
+      return result.rows[0];
+    }
+
+    const result = await this.pool.query(
+      `UPDATE ${this.tableName} SET value = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE key = $2 AND church_id IS NULL RETURNING *`,
+      [value, key]
+    );
     return result.rows[0];
   }
 
@@ -73,21 +137,34 @@ class SettingsRepository extends BaseRepository {
   }
 
   async getPublicSettings(churchId = null, churchSlug = null) {
+    // Resolve a slug to its church so that church's public overrides apply.
+    if (!churchId && churchSlug) {
+      const resolved = await this.pool.query(
+        `SELECT id FROM churches WHERE slug = $1`, [churchSlug]
+      );
+      churchId = resolved.rows[0]?.id || null;
+    }
+
     let query = `SELECT key, value, value_type FROM ${this.tableName} WHERE is_public = true`;
     const params = [];
 
     if (churchId) {
-      query += ` AND church_id = $1`;
+      query += ` AND (church_id = $1 OR church_id IS NULL)
+                 ORDER BY church_id NULLS LAST, key`;
       params.push(churchId);
+    } else {
+      // Unauthenticated/no church context: only global public rows.
+      query += ` AND church_id IS NULL ORDER BY key`;
     }
-
-    query += ` ORDER BY key`;
 
     const result = await this.pool.query(query, params);
 
+    // Church-specific row sorts before its global twin — first wins.
     const settings = {};
     result.rows.forEach(row => {
-      settings[row.key] = this.parseValue(row.value, row.value_type);
+      if (!(row.key in settings)) {
+        settings[row.key] = this.parseValue(row.value, row.value_type);
+      }
     });
 
     // Resolve church branding when a church is explicitly identified
@@ -174,7 +251,8 @@ class SettingsRepository extends BaseRepository {
     const params = [key];
 
     if (churchId) {
-      query += ' AND church_id = $2';
+      query += ` AND (church_id = $2 OR church_id IS NULL)
+                 ORDER BY church_id NULLS LAST LIMIT 1`;
       params.push(churchId);
     }
 
@@ -184,36 +262,59 @@ class SettingsRepository extends BaseRepository {
 
   async updateSetting(key, data, churchId = null) {
     const { value, label, description, is_public, is_editable, validation_rules } = data;
-    let query = `UPDATE settings
-       SET value = COALESCE($1, value),
+    const setClause = `SET value = COALESCE($1, value),
            label = COALESCE($2, label),
            description = COALESCE($3, description),
            is_public = COALESCE($4, is_public),
            is_editable = COALESCE($5, is_editable),
            validation_rules = COALESCE($6, validation_rules),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE key = $7`;
-    const params = [value, label, description, is_public, is_editable, validation_rules, key];
+           updated_at = CURRENT_TIMESTAMP`;
 
     if (churchId) {
-      query += ' AND church_id = $8';
-      params.push(churchId);
+      const own = await this._getOwnRow(key, churchId);
+      if (own) {
+        const result = await this.pool.query(
+          `UPDATE settings ${setClause} WHERE key = $7 AND church_id = $8 RETURNING *`,
+          [value, label, description, is_public, is_editable, validation_rules, key, churchId]
+        );
+        return result.rows[0];
+      }
+      // Only a global default exists — clone it into a church override.
+      const global = await this._getGlobalRow(key);
+      if (!global) return null;
+      const overrides = {};
+      for (const [k, v] of Object.entries({ value, label, description, is_public, is_editable, validation_rules })) {
+        if (v !== undefined && v !== null) overrides[k] = v;
+      }
+      return this._cloneToChurchRow(global, churchId, overrides);
     }
 
-    const result = await this.pool.query(query, params);
+    const result = await this.pool.query(
+      `UPDATE settings ${setClause} WHERE key = $7 AND church_id IS NULL RETURNING *`,
+      [value, label, description, is_public, is_editable, validation_rules, key]
+    );
     return result.rows[0];
   }
 
   async updateSettingValue(key, value, churchId = null) {
-    let query = 'UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2';
-    const params = [value, key];
-
     if (churchId) {
-      query += ' AND church_id = $3';
-      params.push(churchId);
+      const own = await this._getOwnRow(key, churchId);
+      if (own) {
+        const result = await this.pool.query(
+          'UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2 AND church_id = $3 RETURNING *',
+          [value, key, churchId]
+        );
+        return result.rows[0];
+      }
+      const global = await this._getGlobalRow(key);
+      if (!global) return null;
+      return this._cloneToChurchRow(global, churchId, { value });
     }
 
-    const result = await this.pool.query(query, params);
+    const result = await this.pool.query(
+      'UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2 AND church_id IS NULL RETURNING *',
+      [value, key]
+    );
     return result.rows[0];
   }
 
@@ -234,9 +335,12 @@ class SettingsRepository extends BaseRepository {
     if (churchId) {
       query += ' AND church_id = $2';
       params.push(churchId);
+    } else {
+      query += ' AND church_id IS NULL';
     }
 
-    await this.pool.query(query, params);
+    const result = await this.pool.query(query, params);
+    return result.rowCount;
   }
 
   async exportSettings(category, churchId = null) {
@@ -250,48 +354,98 @@ class SettingsRepository extends BaseRepository {
 
     if (churchId) {
       const paramIndex = params.length + 1;
-      query += ` AND church_id = $${paramIndex}`;
+      // Export merges global defaults with the church's own overrides.
+      query += ` AND (church_id = $${paramIndex} OR church_id IS NULL)
+                 ORDER BY church_id NULLS LAST, key`;
       params.push(churchId);
     }
 
     const result = await this.pool.query(query, params);
-    return result.rows;
+    const seen = new Set();
+    return result.rows.filter(r => {
+      if (seen.has(r.key)) return false;
+      seen.add(r.key);
+      return true;
+    });
   }
 
   async importSetting(data, churchId = null) {
     const { key, value, value_type, category, label, description, is_public, is_editable, validation_rules } = data;
+
+    if (churchId) {
+      const own = await this._getOwnRow(key, churchId);
+      if (own) {
+        const result = await this.pool.query(
+          `UPDATE settings SET
+             value = $1,
+             label = COALESCE($2, label),
+             description = COALESCE($3, description),
+             is_public = COALESCE($4, is_public),
+             is_editable = COALESCE($5, is_editable),
+             validation_rules = COALESCE($6, validation_rules),
+             updated_at = CURRENT_TIMESTAMP
+           WHERE key = $7 AND church_id = $8
+           RETURNING *`,
+          [value, label, description, is_public, is_editable, validation_rules, key, churchId]
+        );
+        return result.rows[0];
+      }
+      // Import always creates the caller's own church-scoped row.
+      const result = await this.pool.query(
+        `INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules, church_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING *`,
+        [key, value, value_type, category, label, description, is_public, is_editable, validation_rules, churchId]
+      );
+      return result.rows[0];
+    }
+
+    const global = await this._getGlobalRow(key);
+    if (global) {
+      const result = await this.pool.query(
+        `UPDATE settings SET
+           value = $1,
+           label = COALESCE($2, label),
+           description = COALESCE($3, description),
+           is_public = COALESCE($4, is_public),
+           is_editable = COALESCE($5, is_editable),
+           validation_rules = COALESCE($6, validation_rules),
+           updated_at = CURRENT_TIMESTAMP
+         WHERE key = $7 AND church_id IS NULL
+         RETURNING *`,
+        [value, label, description, is_public, is_editable, validation_rules, key]
+      );
+      return result.rows[0];
+    }
     const result = await this.pool.query(
       `INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules, church_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       ON CONFLICT (key, church_id) DO UPDATE SET
-         value = EXCLUDED.value,
-         label = COALESCE(EXCLUDED.label, settings.label),
-         description = COALESCE(EXCLUDED.description, settings.description),
-         is_public = COALESCE(EXCLUDED.is_public, settings.is_public),
-         is_editable = COALESCE(EXCLUDED.is_editable, settings.is_editable),
-         validation_rules = COALESCE(EXCLUDED.validation_rules, settings.validation_rules),
-         updated_at = CURRENT_TIMESTAMP
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL)
        RETURNING *`,
-      [key, value, value_type, category, label, description, is_public, is_editable, validation_rules, churchId]
+      [key, value, value_type, category, label, description, is_public, is_editable, validation_rules]
     );
     return result.rows[0];
   }
 
   async resetToDefaults(category, churchId = null) {
-    let query = 'UPDATE settings SET value = default_value WHERE default_value IS NOT NULL';
-    const params = [];
+    // For a church, "reset" removes its override rows so keys fall back to
+    // the global defaults. Without a churchId it resets the global rows.
+    if (churchId) {
+      let query = 'DELETE FROM settings WHERE church_id = $1';
+      const params = [churchId];
+      if (category) {
+        query += ' AND category = $2';
+        params.push(category);
+      }
+      const result = await this.pool.query(query, params);
+      return result.rowCount;
+    }
 
+    let query = 'UPDATE settings SET value = default_value, updated_at = CURRENT_TIMESTAMP WHERE default_value IS NOT NULL AND church_id IS NULL';
+    const params = [];
     if (category) {
       query += ' AND category = $1';
       params.push(category);
     }
-
-    if (churchId) {
-      const paramIndex = params.length + 1;
-      query += ` AND church_id = $${paramIndex}`;
-      params.push(churchId);
-    }
-
     const result = await this.pool.query(query, params);
     return result.rowCount;
   }
@@ -395,9 +549,9 @@ class SettingsRepository extends BaseRepository {
 
   async setMaintenanceSetting(key, value, userId) {
     await this.pool.query(
-      `INSERT INTO settings (key, value, value_type, category)
-       VALUES ($1, $2, 'boolean', 'system')
-       ON CONFLICT (key)
+      `INSERT INTO settings (key, value, value_type, category, label)
+       VALUES ($1, $2, 'boolean', 'system', $1)
+       ON CONFLICT (key) WHERE church_id IS NULL
        DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
       [key, value]
     );
@@ -405,17 +559,17 @@ class SettingsRepository extends BaseRepository {
 
   async setMaintenanceMessage(message, userId) {
     await this.pool.query(
-      `INSERT INTO settings (key, value, value_type, category)
-       VALUES ('maintenance_message', $1, 'string', 'system')
-       ON CONFLICT (key)
+      `INSERT INTO settings (key, value, value_type, category, label)
+       VALUES ('maintenance_message', $1, 'string', 'system', 'maintenance_message')
+       ON CONFLICT (key) WHERE church_id IS NULL
        DO UPDATE SET value = $1, updated_at = CURRENT_TIMESTAMP`,
       [message]
     );
   }
 
   async getMaintenanceModeSettings() {
-    const modeResult = await this.pool.query("SELECT value FROM settings WHERE key = 'maintenance_mode'");
-    const messageResult = await this.pool.query("SELECT value FROM settings WHERE key = 'maintenance_message'");
+    const modeResult = await this.pool.query("SELECT value FROM settings WHERE key = 'maintenance_mode' AND church_id IS NULL");
+    const messageResult = await this.pool.query("SELECT value FROM settings WHERE key = 'maintenance_message' AND church_id IS NULL");
 
     return {
       enabled: modeResult.rows.length > 0 ? modeResult.rows[0].value === 'true' : false,

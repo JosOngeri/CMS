@@ -13,6 +13,13 @@ router.use(authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder
 // All treasury routes require treasury access
 router.use(TreasurySecurityMiddleware.hasTreasuryAccess);
 
+// Sensitive-path MFA gate (only enforced for MFA-enabled users), sensitive-data
+// access logging, treasury action audit trail, and a per-IP limiter.
+router.use(TreasurySecurityMiddleware.requireMFA);
+router.use(TreasurySecurityMiddleware.validateSensitiveDataAccess);
+router.use(TreasurySecurityMiddleware.logTreasuryAction);
+router.use(TreasurySecurityMiddleware.treasuryRateLimit(200));
+
 // Mount modular treasury routes (NEW - Phase 1)
 router.use('/module', treasuryModuleRoutes);
 
