@@ -21,7 +21,7 @@ package.json.deploy
 
 # Dependencies
 node_modules/
-package-lock.json
+# package-lock.json is committed — npm ci in CI/deploy requires it
 yarn.lock
 pnpm-lock.yaml
 

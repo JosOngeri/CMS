@@ -27,12 +27,15 @@ npm install --production
 echo "Building frontend..."
 npm run build
 
-# Run database migrations if needed
+# Run database migrations — tracked, idempotent runner
 echo "Running database migrations..."
 cd ../backend
-# Add any new migration files here
-# psql -U kmaincms_user -d kmaincms -f database/migrations/003_add_snapshot_tables.sql
-# psql -U kmaincms_user -d kmaincms -f database/migrations/020_platform_admin_schema.sql
+node scripts/apply-migrations.js --mark-applied 049
+node scripts/apply-migrations.js
+
+# Platform JWT secret — church tokens use JWT_SECRET; platform tokens get their own.
+grep -q '^PLATFORM_JWT_SECRET=' .env 2>/dev/null \
+  || echo "PLATFORM_JWT_SECRET=$(openssl rand -hex 48)" >> .env
 
 # Restart PM2 application
 echo "Restarting PM2 application..."

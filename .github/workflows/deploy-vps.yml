@@ -40,16 +40,26 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         port: ${{ secrets.VPS_PORT || 22 }}
         script: |
+          set -e
           cd /var/www/kmaincms
           git pull origin main
           cd backend
-          npm install --production
+          npm ci --omit=dev
           cd ../frontend
-          npm install --production
+          npm ci
           npm run build
           cd ../backend
-          # Run database migrations if needed
-          # node run-global-username-migration.js
+
+          # Bootstrap the migration ledger on existing databases, then apply
+          # pending numbered migrations (050+). Idempotent — safe every deploy.
+          node scripts/apply-migrations.js --mark-applied 049
+          node scripts/apply-migrations.js
+
+          # Platform JWT secret: church tokens use JWT_SECRET; platform tokens
+          # need their own. Generate once on first deploy that has the code.
+          grep -q '^PLATFORM_JWT_SECRET=' .env 2>/dev/null \
+            || echo "PLATFORM_JWT_SECRET=$(openssl rand -hex 48)" >> .env
+
           pm2 restart kmaincms-backend
           sudo systemctl restart nginx
           
