@@ -215,8 +215,11 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
           </div>
 
-          {/* Navigation links — collapsible sub-sidebars via NestedNav */}
-          <nav className="flex-1 p-4 overflow-y-auto">
+          {/* Navigation links — collapsible sub-sidebars via NestedNav.
+              min-h-0 lets this flex child actually shrink/scroll inside the
+              viewport-bound sidebar; overscroll-contain keeps wheel scrolling
+              from bubbling into the page. */}
+          <nav className="flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain">
             <NestedNav sections={visibleSections} onNavigate={() => setIsOpen(false)} />
           </nav>
 

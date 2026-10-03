@@ -155,8 +155,8 @@ const PlatformShell = () => {
 
       {/* Main Content — full width on mobile, offset by sidebar at lg+ */}
       <div className="transition-all duration-300 lg:ml-64">
-        {/* Top Bar */}
-        <div className="bg-[var(--color-surface)] border-b border-[var(--color-border)] p-4">
+        {/* Top Bar — sticky so it stays frozen while page content scrolls */}
+        <div className="sticky top-0 z-30 bg-[var(--color-surface)] border-b border-[var(--color-border)] p-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}

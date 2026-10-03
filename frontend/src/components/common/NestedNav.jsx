@@ -149,7 +149,11 @@ function NestedNav({ sections, onNavigate, dense = false }) {
       {sections.map((section, si) => (
         <div key={section.title || si} className={si > 0 ? 'mt-5' : ''}>
           {section.title && (
-            <p className={`${dense ? 'px-3' : 'px-4'} mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-textSecondary)]`}>
+            // Sticky within the sidebar's own scrollport: the section name
+            // (e.g. Finance, Leadership) stays pinned while its long item
+            // list scrolls beneath it. -mx-4/px-4 stretches the background
+            // edge-to-edge so scrolled items don't peek through.
+            <p className={`sticky top-0 z-10 -mx-4 ${dense ? 'px-7' : 'px-8'} py-1.5 mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-textSecondary)] bg-[var(--color-surface)]`}>
               {section.title}
             </p>
           )}
