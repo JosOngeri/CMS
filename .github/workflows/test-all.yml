@@ -86,6 +86,11 @@ jobs:
         DB_PASSWORD: testpass
         DB_NAME: kmaincms_test
         NODE_ENV: test
+        # env-validation.js requires these before server.js will boot.
+        # CI-only throwaway values — not used against any real service.
+        JWT_SECRET: ci-test-jwt-secret-not-for-production-32chars
+        REFRESH_TOKEN_SECRET: ci-test-refresh-secret-not-for-prod-32ch
+        SESSION_SECRET: ci-test-session-secret-not-for-prod-32chars
     
     - name: Run integration tests
       working-directory: ./backend

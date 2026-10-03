@@ -324,7 +324,7 @@ router.post('/:id/rsvp', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    const rsvp = await MobileRepository.rsvpEvent(id, req.user.id, status);
+    const rsvp = await MobileRepository.rsvpEvent(id, req.user.id, status, req.user.church_id);
 
     res.json({
       success: true,
