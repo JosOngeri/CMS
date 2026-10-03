@@ -16,8 +16,9 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-# Copy built files
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Copy built files — vite.config.js outputs to dist-new, not dist (L766:
+# /app/dist never existed → every image built from this shipped an empty site)
+COPY --from=builder /app/dist-new /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf

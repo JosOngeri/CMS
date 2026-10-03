@@ -127,3 +127,7 @@ login-body*.json
 /releases/
 deployment test/
 **/.kotlin/
+
+# Generated test artifacts (can embed tokens/URLs from runs)
+frontend/playwright-report/
+frontend/test-results/

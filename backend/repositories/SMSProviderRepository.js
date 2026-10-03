@@ -1,12 +1,24 @@
 const BaseRepository = require('./BaseRepository');
+const { encrypt, decrypt } = require('../utils/secretBox');
 
 /**
  * SMS Provider Repository (Phase 9)
- * Manages SMS provider configurations and balances
+ * Manages SMS provider configurations and balances.
+ * L780: api_key is encrypted at rest (enc:v1: AES-256-GCM); reads decrypt so
+ * callers see plaintext exactly as before. Legacy plaintext rows still work.
  */
 class SMSProviderRepository extends BaseRepository {
   constructor() {
     super('sms_providers');
+  }
+
+  _decryptRow(row) {
+    if (row && row.api_key) row.api_key = decrypt(row.api_key);
+    return row;
+  }
+
+  _decryptRows(rows) {
+    return rows.map((r) => this._decryptRow(r));
   }
 
   /**
@@ -32,7 +44,7 @@ class SMSProviderRepository extends BaseRepository {
     `;
 
     const result = await this.pool.query(query, params);
-    return result.rows;
+    return this._decryptRows(result.rows);
   }
 
   /**
@@ -47,7 +59,7 @@ class SMSProviderRepository extends BaseRepository {
       WHERE id = $1
     `;
     const result = await this.pool.query(query, [id]);
-    return result.rows[0] || null;
+    return this._decryptRow(result.rows[0] || null);
   }
 
   /**
@@ -62,7 +74,7 @@ class SMSProviderRepository extends BaseRepository {
       WHERE name = $1
     `;
     const result = await this.pool.query(query, [name]);
-    return result.rows[0] || null;
+    return this._decryptRow(result.rows[0] || null);
   }
 
   /**
@@ -79,8 +91,8 @@ class SMSProviderRepository extends BaseRepository {
       RETURNING *
     `;
 
-    const result = await this.pool.query(query, [name, api_key, api_url, sender_id, church_id, priority]);
-    return result.rows[0];
+    const result = await this.pool.query(query, [name, encrypt(api_key), api_url, sender_id, church_id, priority]);
+    return this._decryptRow(result.rows[0]);
   }
 
   /**
@@ -100,7 +112,7 @@ class SMSProviderRepository extends BaseRepository {
     }
     if (data.api_key) {
       updates.push(`api_key = $${paramCount++}`);
-      values.push(data.api_key);
+      values.push(encrypt(data.api_key));
     }
     if (data.api_url) {
       updates.push(`api_url = $${paramCount++}`);
@@ -132,7 +144,7 @@ class SMSProviderRepository extends BaseRepository {
     `;
 
     const result = await this.pool.query(query, values);
-    return result.rows[0];
+    return this._decryptRow(result.rows[0]);
   }
 
   /**

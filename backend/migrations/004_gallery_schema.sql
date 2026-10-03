@@ -33,6 +33,10 @@ BEGIN
     WHERE table_name = 'gallery_albums' AND column_name = 'church_id'
   ) THEN
     ALTER TABLE gallery_albums ADD COLUMN church_id UUID NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+    -- L775: sentinel default exists only to satisfy NOT NULL during the
+    -- ALTER; 062_* reassigns sentinel rows to the oldest real church and
+    -- nothing should rely on it as a tenant. Fresh installs run 060+
+    -- afterwards, which clears it before real traffic.
   END IF;
 END $$;
 

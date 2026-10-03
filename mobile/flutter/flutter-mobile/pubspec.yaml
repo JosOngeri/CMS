@@ -7,69 +7,62 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
   flutter: '>=3.24.0'
 
+# L770: only packages actually imported under lib/ are declared. The offline
+# push/socket sync stack (firebase_messaging, socket_io_client, sqflite,
+# web_socket_channel, battery_plus, crypto, flutter_local_notifications) was
+# removed along with its dead services — restore from git history when the
+# feature ships. Collector SMS reconciliation parses pasted M-Pesa text via
+# SmsReconService; an SMS-inbox plugin (another_telephony) is deferred, not
+# declared, until the feature is implemented.
 dependencies:
   flutter:
     sdk: flutter
 
   # UI & Navigation
   cupertino_icons: ^1.0.6
-  material_design_icons_flutter: ^7.0.7296
   go_router: ^12.0.0
-  
+
   # HTTP & API
   dio: ^5.4.0
-  
+
   # State Management
   flutter_riverpod: ^2.4.0
-  
+
   # Storage
   shared_preferences: ^2.2.0
   flutter_secure_storage: ^9.0.0
-  sqflite: ^2.3.0
-  
+
   # Forms
   flutter_form_builder: ^9.0.0
   form_builder_validators: ^10.0.0
-  
+
   # UI Components
-  cached_network_image: ^3.3.0
   qr_flutter: ^4.1.0
-  
+
   # Utilities
   logger: ^2.0.0
-  crypto: ^3.0.3
-  
+
   # URL Launcher
   url_launcher: ^6.2.0
-  
-  # Path Provider
+
+  # Filesystem paths (imported directly by media_service)
   path_provider: ^2.1.0
-  
+  path: ^1.8.3
+
   # Connectivity
   connectivity_plus: ^5.0.0
-  
-  # WebSocket
-  web_socket_channel: ^2.4.0
-  
+
   # Biometric Authentication
   local_auth: ^2.1.0
-  
+
   # Image Picker
   image_picker: ^1.0.0
-  
+
   # Permissions
   permission_handler: ^11.0.0
 
-  # SMS inbox access for collector M-Pesa reconciliation
-  # (another_telephony = maintained fork of the discontinued telephony plugin)
-  firebase_core: ^3.8.0
-  firebase_messaging: ^15.1.6
-  socket_io_client: ^2.0.3+1
-  flutter_local_notifications: ^17.0.0
-
-  # Device info for real SDK checks (media permissions, SMS relay identity)
+  # Device info for real Android SDK checks (media permissions)
   device_info_plus: ^10.1.0
-  battery_plus: ^6.0.0
 
 dev_dependencies:
   flutter_test:
@@ -83,7 +76,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
+
   assets:
     - assets/images/
     - assets/animations/

@@ -19,7 +19,7 @@ class MobileRepository extends BaseRepository {
   }
 
   async getPendingApprovalsCount(userId, churchId = null) {
-    let query = `SELECT COUNT(*) as count FROM approval_requests WHERE status = $1 AND requester_id = $2`;
+    let query = `SELECT COUNT(*) as count FROM approval_requests WHERE status = $1 AND COALESCE(requester_id, requested_by) = $2`;
     const params = ['pending', userId];
 
     if (churchId) {

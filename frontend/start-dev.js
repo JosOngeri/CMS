@@ -11,7 +11,7 @@ console.log('🔑 Default Admin Login Credentials:');
 console.log('   Username: admin');
 console.log('   Password: admin@123');
 console.log('');
-console.log('🌐 Frontend URL: http://localhost:5180');
+console.log('🌐 Frontend URL: http://localhost:5181');
 console.log('📡 Backend API: http://localhost:5005');
 console.log('');
 console.log('👥 Other Test Users:');

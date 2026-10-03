@@ -1,5 +1,11 @@
 -- Phase 9: SMS Providers Migration
 -- Creates SMS providers table for hybrid SMS system
+--
+-- L780: this is the LEGACY migration path (see database/README.md). The
+-- api_key values below are intentionally nonfunctional placeholders — set real
+-- keys via the admin UI / SMSProviderRepository, which encrypts them at rest
+-- (utils/secretBox.js, key = SMS_KEYS_SECRET or JWT_SECRET). Never commit
+-- real provider keys to a migration file.
 
 -- Enable UUID extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

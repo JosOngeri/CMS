@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('User Workflows', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:5180');
+    await page.goto('http://localhost:5181');
   });
 
   test.describe('Authentication Workflows', () => {

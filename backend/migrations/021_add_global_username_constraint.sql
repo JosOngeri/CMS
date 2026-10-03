@@ -1,5 +1,11 @@
--- Add global username unique constraint
--- This ensures usernames are unique across all churches, not just within a single church
+-- Add global username unique constraint.
+-- Global (not per-church) is intentional: login resolves identifier → user
+-- without a church context, so a username must map to exactly one account
+-- across all tenants (see UserRepository.findByUsernameGlobal).
+--
+-- L773: the original version added the constraint before deduping and had no
+-- existence guard, so it failed both on dirty data and on re-runs. Dedupe
+-- first, then add the constraint only when absent.
 
 -- First, check if username column exists
 DO $$
@@ -12,8 +18,37 @@ BEGIN
   END IF;
 END $$;
 
--- Create unique constraint on username (global, not per-church)
--- Drop existing constraint if it exists
+-- Handle any existing duplicate usernames by appending a random suffix
+-- BEFORE creating the constraint — otherwise ADD CONSTRAINT fails first.
+DO $$
+DECLARE
+  duplicate_record RECORD;
+  suffix INTEGER;
+  new_username VARCHAR(50);
+BEGIN
+  FOR duplicate_record IN
+    SELECT username, COUNT(*) as count
+    FROM users
+    WHERE username IS NOT NULL
+    GROUP BY username
+    HAVING COUNT(*) > 1
+  LOOP
+    suffix := FLOOR(RANDOM() * 1000) + 1;
+    new_username := duplicate_record.username || '_' || suffix;
+
+    UPDATE users
+    SET username = new_username
+    WHERE id = (
+      SELECT id FROM users
+      WHERE username = duplicate_record.username
+      LIMIT 1
+    );
+
+    RAISE NOTICE 'Resolved duplicate username % -> %', duplicate_record.username, new_username;
+  END LOOP;
+END $$;
+
+-- Drop the legacy per-church-style constraint if present
 DO $$
 BEGIN
   IF EXISTS (
@@ -24,43 +59,19 @@ BEGIN
   END IF;
 END $$;
 
--- Add unique constraint on username (global uniqueness)
-ALTER TABLE users ADD CONSTRAINT users_username_unique UNIQUE (username);
+-- Add unique constraint only when absent (idempotent re-run safe)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE table_name = 'users' AND constraint_name = 'users_username_unique'
+  ) THEN
+    ALTER TABLE users ADD CONSTRAINT users_username_unique UNIQUE (username);
+  END IF;
+END $$;
 
 -- Create index for faster username lookups
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-
--- Handle any existing duplicate usernames by appending random suffix
-DO $$
-DECLARE
-  duplicate_record RECORD;
-  suffix INTEGER;
-  new_username VARCHAR(50);
-BEGIN
-  -- Find duplicate usernames
-  FOR duplicate_record IN 
-    SELECT username, COUNT(*) as count 
-    FROM users 
-    WHERE username IS NOT NULL 
-    GROUP BY username 
-    HAVING COUNT(*) > 1
-  LOOP
-    -- For each duplicate, add a random suffix to make them unique
-    suffix := FLOOR(RANDOM() * 1000) + 1;
-    new_username := duplicate_record.username || '_' || suffix;
-    
-    -- Update one of the duplicates
-    UPDATE users 
-    SET username = new_username 
-    WHERE id = (
-      SELECT id FROM users 
-      WHERE username = duplicate_record.username 
-      LIMIT 1
-    );
-    
-    RAISE NOTICE 'Resolved duplicate username % -> %', duplicate_record.username, new_username;
-  END LOOP;
-END $$;
 
 -- Add comment to document the constraint
 COMMENT ON CONSTRAINT users_username_unique ON users IS 'Ensures username is globally unique across all churches';

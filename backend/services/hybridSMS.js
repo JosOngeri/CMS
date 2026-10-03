@@ -1,6 +1,7 @@
 const apiHub = require('./apiHub');
 const { pool } = require('../config/database');
 const logger = require('../config/logging');
+const { decrypt } = require('../utils/secretBox');
 
 /**
  * Hybrid SMS Service (Phase 9)
@@ -33,6 +34,8 @@ class HybridSMS {
       `);
 
       for (const provider of result.rows) {
+        // L780: api_key may be enc:v1:-encrypted at rest — decrypt before use
+        provider.api_key = decrypt(provider.api_key);
         this.registerProvider(provider);
       }
 

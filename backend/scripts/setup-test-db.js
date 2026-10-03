@@ -85,7 +85,12 @@ async function setupTestDatabase() {
   }
 }
 
-setupTestDatabase().catch(error => {
-  console.error('Setup failed:', error.message);
-  process.exit(1);
-});
+// Only execute when run as a script; requiring this file (tests) is inert.
+if (require.main === module) {
+  setupTestDatabase().catch(error => {
+    console.error('Setup failed:', error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { runMigration, BENIGN_CODES, setupTestDatabase };

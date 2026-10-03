@@ -1,22 +1,24 @@
 -- Add M-Pesa STK Push Settings to the settings table
--- This allows easy switching between sandbox and production credentials
+-- L765: all credentials scrubbed — real Daraja values were committed here in
+-- plaintext (sandbox key/secret/passkey, B2C key/secret, initiator password).
+-- Those values MUST be rotated on the Daraja portal; empty strings below mean
+-- "configure via the admin UI or env", never commit secrets to SQL files.
 
--- M-Pesa Environment Settings
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
 VALUES ('mpesa_environment', 'sandbox', 'select', 'payment', 'M-Pesa Environment', 'Select sandbox for testing or production for live transactions', false, true, '{"enum": ["sandbox", "production"]}')
 ON CONFLICT (key) DO NOTHING;
 
 -- M-Pesa STK Push Credentials (Sandbox)
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_sandbox_consumer_key', 'zRIIzmbsF9eSivvxpnMjUIl3goKx9V0CxAG0m53KQai4lYkf', 'text', 'payment', 'Sandbox Consumer Key', 'Consumer Key from Daraja sandbox app', false, true, '{"minLength": 10}')
+VALUES ('mpesa_sandbox_consumer_key', '', 'text', 'payment', 'Sandbox Consumer Key', 'Consumer Key from Daraja sandbox app', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_sandbox_consumer_secret', 'WVhz6kHVABQGHK23DWHV1r4pOSxgqIfEwQdvMUxkbuHFR0AAMedUXLxYmlr4FhCQ', 'text', 'payment', 'Sandbox Consumer Secret', 'Consumer Secret from Daraja sandbox app', false, true, '{"minLength": 10}')
+VALUES ('mpesa_sandbox_consumer_secret', '', 'text', 'payment', 'Sandbox Consumer Secret', 'Consumer Secret from Daraja sandbox app', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_sandbox_passkey', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919', 'text', 'payment', 'Sandbox Passkey', 'Passkey from Daraja sandbox test data', false, true, '{"minLength": 10}')
+VALUES ('mpesa_sandbox_passkey', '', 'text', 'payment', 'Sandbox Passkey', 'Passkey from Daraja sandbox test data', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
@@ -24,7 +26,7 @@ VALUES ('mpesa_sandbox_shortcode', '174379', 'text', 'payment', 'Sandbox Shortco
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_sandbox_callback_url', 'https://webhook.site/fe92fd8e-1324-46b7-b730-fb89bc424a46', 'text', 'payment', 'Sandbox Callback URL', 'Callback URL for sandbox testing (use webhook.site for local testing)', false, true, '{"minLength": 10}')
+VALUES ('mpesa_sandbox_callback_url', '', 'text', 'payment', 'Sandbox Callback URL', 'Callback URL for sandbox testing (use webhook.site for local testing)', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 -- M-Pesa STK Push Credentials (Production)
@@ -50,23 +52,23 @@ ON CONFLICT (key) DO NOTHING;
 
 -- M-Pesa B2C Credentials (for payouts)
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_b2c_consumer_key', '4R9DRy6md4HMDC4G044HCYA4Rhleh4zdGDjOFnSOyjPGnngc', 'text', 'payment', 'B2C Consumer Key', 'Consumer Key for B2C payouts', false, true, '{"minLength": 10}')
+VALUES ('mpesa_b2c_consumer_key', '', 'text', 'payment', 'B2C Consumer Key', 'Consumer Key for B2C payouts', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_b2c_consumer_secret', 'S2b6efnuf6ATMpKVyEHze8zC7QCcEzrPwTngGPs9Et9G3Pr4KWXJHcABWfnimDuE', 'text', 'payment', 'B2C Consumer Secret', 'Consumer Secret for B2C payouts', false, true, '{"minLength": 10}')
+VALUES ('mpesa_b2c_consumer_secret', '', 'text', 'payment', 'B2C Consumer Secret', 'Consumer Secret for B2C payouts', false, true, '{"minLength": 10}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_b2c_initiator_name', 'Linet Gitonga', 'text', 'payment', 'B2C Initiator Name', 'Initiator name from M-Pesa Org portal', false, true, '{"minLength": 2}')
+VALUES ('mpesa_b2c_initiator_name', '', 'text', 'payment', 'B2C Initiator Name', 'Initiator name from M-Pesa Org portal', false, true, '{"minLength": 2}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_b2c_initiator_password', 'Sleepylynn@1', 'text', 'payment', 'B2C Initiator Password', 'Initiator password from M-Pesa Org portal', false, true, '{"minLength": 5}')
+VALUES ('mpesa_b2c_initiator_password', '', 'text', 'payment', 'B2C Initiator Password', 'Initiator password from M-Pesa Org portal', false, true, '{"minLength": 5}')
 ON CONFLICT (key) DO NOTHING;
 
 INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules)
-VALUES ('mpesa_b2c_shortcode', '5229801', 'text', 'payment', 'B2C Shortcode', 'Shortcode for B2C payouts', false, true, '{"minLength": 5, "maxLength": 6}')
+VALUES ('mpesa_b2c_shortcode', '', 'text', 'payment', 'B2C Shortcode', 'Shortcode for B2C payouts', false, true, '{"minLength": 5, "maxLength": 6}')
 ON CONFLICT (key) DO NOTHING;
 
 -- Payment Settings

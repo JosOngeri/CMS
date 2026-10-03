@@ -2,7 +2,8 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:5180',
+    // L767: vite dev server is pinned to 5181 — specs used to target 5180.
+    baseUrl: 'http://localhost:5181',
     supportFile: false,
     specPattern: 'cypress/e2e/**/*.cy.js',
     viewportWidth: 1280,

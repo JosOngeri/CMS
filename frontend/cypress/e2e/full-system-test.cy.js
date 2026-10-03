@@ -4,7 +4,7 @@
  */
 
 describe('Msabato CMS Full System Test', () => {
-  const baseUrl = 'http://localhost:5180';
+  const baseUrl = 'http://localhost:5181';
 
   beforeEach(() => {
     // Navigate to login

@@ -17,7 +17,7 @@ class ApprovalsRepository extends BaseRepository {
         COALESCE(u1.first_name || ' ' || u1.last_name, 'Unknown') as requester_name,
         COALESCE(u2.first_name || ' ' || u2.last_name, 'Unknown') as approver_name
       FROM ${this.tableName} ar
-      LEFT JOIN users u1 ON ar.requester_id = u1.id
+      LEFT JOIN users u1 ON COALESCE(ar.requester_id, ar.requested_by) = u1.id
       LEFT JOIN users u2 ON ar.approver_id = u2.id
       WHERE ar.church_id = $1`;
     const params = [churchId];
@@ -141,7 +141,7 @@ class ApprovalsRepository extends BaseRepository {
   }
 
   async getByRequester(requesterId, churchId) {
-    const query = `SELECT * FROM ${this.tableName} WHERE requester_id = $1 AND church_id = $2 ORDER BY created_at DESC`;
+    const query = `SELECT * FROM ${this.tableName} WHERE COALESCE(requester_id, requested_by) = $1 AND church_id = $2 ORDER BY created_at DESC`;
     const params = [requesterId, churchId];
 
     const result = await this.pool.query(query, params);
@@ -155,7 +155,7 @@ class ApprovalsRepository extends BaseRepository {
         COALESCE(u1.first_name || ' ' || u1.last_name, 'Unknown') as requester_name,
         COALESCE(u2.first_name || ' ' || u2.last_name, 'Unknown') as approver_name
       FROM ${this.tableName} ar
-      LEFT JOIN users u1 ON ar.requester_id = u1.id
+      LEFT JOIN users u1 ON COALESCE(ar.requester_id, ar.requested_by) = u1.id
       LEFT JOIN users u2 ON ar.approver_id = u2.id
       WHERE ar.id = $1 AND ar.church_id = $2
     `;

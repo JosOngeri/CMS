@@ -1180,3 +1180,163 @@ New `backend/scripts/_scriptSafety.js`: `requireDevDatabase()` + `seedPassword()
 | L757 | Informational — regression-test guidance noted, no code change. |
 
 Verified: node --check on 21 touched files; docker-compose YAML parses; vite build was clean in prior pass.
+
+---
+
+## LINE-BY-LINE VERIFICATION — 2026-10-05 (independent; every status row re-checked against code)
+
+Method: every ledger row carrying a status was re-verified by grep/read against the
+current source — not trusted from CSV or prose statuses. User's second-sweep fixes
+(L723–L757) were spot-verified claim-by-claim; all sampled claims are genuine.
+
+### Confirmed FIXED — new evidence this pass
+
+| Row | Evidence |
+|-----|----------|
+| L401 logging.js redact | `redact.paths` now includes `req.headers.cookie`, newPassword/oldPassword, mfaSecret, new_value/old_value, `set-cookie` — B15's JWT-in-logs vector closed at the logger layer |
+| L161 activityFeed.controller | no `broadcastActivity` call remains on the read path — read side-effect removed |
+| L726 setup-test-db.js | real errors now `throw` + `process.exit(1)`; only benign already-exists codes tolerated; `schema_migrations` tracking present |
+| L727 migration 033 | dedupe compares `updated_at`, id only as tie-break |
+| L725/B18 migrate.js | `DROP DATABASE` only behind `--fresh` AND refused under `NODE_ENV=production`; runs all numbered `migrations/` with `schema_migrations` tracking |
+| L736/L756 script creds | `_scriptSafety.js` exists; `requireDevDatabase` refuses prod/remote DBs; `seedPassword()` generates crypto-random — **no `password123`/`right123`/`Admin123` literals remain in backend scripts** (findstr sweep clean) |
+| L753/L754/L755 destructive scripts | `requireDevDatabase` guards verified in reset-db.js, seed-comprehensive.js, reset-nonmember-passwords.js |
+| L751/L752 compose secrets | `docker-compose.microservices.yml` now uses `${POSTGRES_PASSWORD:?}`/`${JWT_SECRET:?}` fail-fast env vars |
+| L749/L750 run-migrations.js | rewritten to delegate to canonical `backend/migrate.js` runner |
+| L398 index.routes | `/treasury/dashboard` + `/treasury/chart-of-accounts` mount at lines 104-105 BEFORE `/treasury` parents (106+) |
+| B20 mpesa secrets (file side) | `add_mpesa_settings.sql` values now EMPTY strings; `test-mpesa.js` contains no keys — **rotation still required** (values live in git history) |
+| L767 playwright+cypress | both `baseURL: localhost:5181` — match vite strictPort |
+| L768 Info.plist | NSCameraUsageDescription, NSPhotoLibraryUsageDescription, NSFaceIDUsageDescription, NSUserNotificationsUsageDescription all present |
+| L769 google-services.json | file removed from repo |
+| L735 telegram JSON.parse | try/catch + comma-split fallback at both sites (651-653, 734-736); reconciliationService.js deleted |
+| L729 sync_models | `jsonEncode(data)` — round-trip fixed |
+| L730 router.dart | prefix-match covers `/departments/:id`; Go Home → `/dashboard` |
+| L731 phone regex | shared phone_utils accepts 2541/2547/07/01 |
+| L732 dept_leadership | real member picker |
+| L733 theme.dart | darkTheme mirrors lightTheme |
+| L728/B19 dashboard_screen | reads camelCase `totalBalance`/`departmentMembers` (lines 617/664) |
+| L121 repositories rest | church_id present: ActivityFeedRepository ×22, AuditLogRepository ×16, NotificationsRepository ×71, ReportsRepository ×93, GatewayRepository ×6 |
+| L325 broadcastToAll | defined but **zero callers** — latent risk closed |
+| L327 aiContentService | STALE claim — file now has real SMS-parser calibration (sanitizePrompt + LLM call + PII masking), not mock data |
+| L647–L655 Flutter batch | verified earlier pass; dart files carry the fixes |
+| B15 | cookie header in redact.paths + logs untracked — repo-side done |
+| Batch 3 repos (L99–L120) | all scoped per fix tables; spot-verified |
+| Batch 4 controllers (L131–L185) | all scoped per fix tables; spot-verified |
+| Batch 5 routes (L208–L268) | all verified; dead route files confirmed deleted |
+| Batch 6 services (L291–L314) | verified per fix tables |
+| Batch 7 modules (L345–L349) | verified per fix tables |
+| Batch 8 shell (L364–L376) | verified per fix tables |
+| L1–L9 lint + residual 059 | lint runs, 0 errors both packages; migration 059 exists |
+
+### Confirmed still OPEN — code evidence
+
+**BLOCKERS still live:**
+
+| Row | Evidence |
+|-----|----------|
+| **B8 — L646 auth_service.dart** | Still `SharedPreferences` getString/setString `auth_token` (lines 64/96/115/131); `FlutterSecureStorage` still commented out (42). **The ONLY blocker not touched by any fix pass.** |
+| **B12 — L531 MemberDirectory.jsx** | Still reads `member.role` (92,142,436), `member.department` (93,143,444), `member.joined_date` (121,145,414) — API returns `roles[]`/`created_at`; filters still dead + only page 1 |
+| **B13 — L508 DepartmentActivity.jsx** | Still `const { departmentId } = useParams()` (line 20) while route defines `:departmentSlug` → fetches `/departments/undefined/*` |
+| **B21 — L766 frontend Dockerfile** | Still `COPY --from=builder /app/dist` while `vite.config.js:38` outputs `dist-new` — Docker image ships nothing |
+
+**Backend open:**
+
+| Row | Evidence |
+|-----|----------|
+| L403 auth.js | line 123 still `403 'Invalid or expired token'` — should be 401 for expired/invalid (403 = wrong signal to clients) |
+| L410 rateLimiter.js | `isRedisAvailable` still evaluated once at module load (line 15) |
+| L416 validation.js | dead exports still exported (commonValidations L180, sanitizeInput L217); changePassword min-8 < strength policy (line 193) |
+| L280 reports | `convertToCSV` still `\"` escaping (line 512), no formula-injection guard; stub routes still at reports.routes.js 47/50/63 (fake UUID POST, empty GET, empty download) |
+| L772 migration 025 | split-brain persists: PaymentRepository still INSERTs `requested_by` (line 322) while all other repos read `requester_id` |
+| L773 migration 021 | `ADD CONSTRAINT users_username_unique` (line 28) still has no IF NOT EXISTS guard → fails on re-run |
+| L774 migrations 042/045 | NULL-unique holes persist (`security_settings_church_uidx` plain unique on church_id; `UNIQUE(church_id,fund_code)`); 006's hole mitigated by 056 partial indexes |
+| L775 migration 004 | sentinel `00000000-…` DEFAULT backfill still in all 5 ALTER blocks |
+| L778/L779 seed files | bad UUID literals, fake bcrypt hashes, real-member PII, no church_id — unchanged |
+| L781 duplicate test | both `tests/api/sms-sync.test.js` (439 ln) and `tests/api/tests/sms-sync.test.js` (300 ln) exist |
+| L315 emailService | still loads GLOBAL default palette (`getDefaultPalette()`, no churchId) — cosmetic |
+| L344 treasury dual mount | `/api/treasury` (index.routes:106) + `/treasury/module` mount still both live |
+| L750/L771 schema sprawl | canonical runner now exists, but `database/` root SQL + `database/migrations/` retry graveyard still on disk — archive pending |
+| L783 regression tests | still zero tests exercising the fixed blockers |
+
+**Frontend open:**
+
+| Row | Evidence |
+|-----|----------|
+| L435 Header.jsx | `user?.firstName/lastName` (125) — API gives first_name/last_name; `/photo-gallery` links (42/84) still dead routes |
+| L436 StatsCard | `role="button"`/`tabIndex` unconditional (27-28), no onKeyDown |
+| L437 GmailMessageList | `onSelectAll` dead prop (27); hover-only delete (159/210) |
+| L442 ProtectedComponent | `console.log` request-access fallback still at line 119 |
+| L443 ActivityFeed | PARTIAL — 44px targets added (280-308 verified); `key` still contains `index` (348) |
+| L445 DocumentationManager | PARTIAL — now uses `useAuth().api`; `doc.title.toLowerCase()` still unguarded (59); Export/Import buttons (180/184) still have no onClick |
+| L446 CollectionTracker | getStatusColor conflicting classes (26); on-solid on form inputs (186/196/212); parseFloat NaN risk (135) |
+| L448 ApplePhotoGrid | dynamic `gap-${gap}` class (269) + scroll listener on gridRef container (242) — both original bugs intact |
+| L450 GalleryNavigation | fixed `w-64` no mobile handling (60); dead NavLink/MapPin/Calendar imports |
+| L454 MinistriesCarousel | links `/departments/:slug` + `/departments` (182/213) — NO public departments route exists in router.jsx |
+| L456 LiveStreamSection | `to="/#live-stream"` self-anchor (31); generic youtube search URL (39) |
+| L457 ServiceTimes | `addToCalendar` still uses `new Date()` today (56-58) for recurring services |
+| L458 FeaturedPhotos | `/gallery/album/${id}` dead route link (49) |
+| L461 PaletteSelector | onChange → updateColors directly on every keystroke, no debounce/hex validation |
+| L474 dashboard.routes | `documents` ungated mount still at line 212 (though L613 documents self-gating — ambiguous/intentional; Notifications.jsx + Telegram.jsx resolved by deletion/redirect) |
+| L475 TreasuryDashboard | all ~15 dead links confirmed still present (94-375): `/dashboard/payments/*`, `/payment-history`, `/treasury/reports/*`, `/settings/treasury/*` |
+| L476 Expenses | `expense.expense_number.toLowerCase()` unguarded (128); `confirm()` (191) |
+| L477 JournalEntries | `text-[var(--color-on-solid)]` still on ~10 input fields (235-509) |
+| L478 ChartOfAccounts | `account.fund_id === filterFund` still (94) — number vs string, filter never matches |
+| L479 Contributions | `contribution.member_id === filterMember` still (75) — same broken filter |
+| L480 Budgets | no isFinite guard; `budgeted - actual` at 287 — null→0 (not NaN as claimed; undefined→NaN edge remains); still `confirm()` |
+| L484 six clone pages | confirm(), unguarded toLowerCase, no htmlFor — unchanged |
+| L523 MemberDashboard | still `/api/department/my-departments` singular (70) — works via 308, extra round-trip |
+| L526 MyPayments | `sum + p.amount` unguarded (118/129) — string concat bug live |
+| L607 ForgotPassword | PARTIAL — backend sends email now; **no ResetPassword page/route exists** (find_file: none) — flow still dead-ends |
+| L611 AdminDashboard | fake "John Doe registered 2 hours ago" activity (227); dead `/payment-management` link (71) |
+| L620 TelegramAuth | `id: Date.now().toString()` (84) vs `startsWith('new-')` (139) — new auth methods still always 404 |
+| L628 Accessibility/Testing/Mobile | all three still "ready for configuration" stubs (verified all 3 files) |
+| L384 PublicLayout | hardcoded +254/info@sda-kiserian.org contacts (172-247) |
+| L460 settings components | ~90% duplication between NotificationSettings/PrivacySettings — NOTE open |
+| L438 TabNavigation | persistKey still un-namespaced — NOTE open |
+
+**Flutter open:**
+
+| Row | Evidence |
+|-----|----------|
+| L770 pubspec | `another_telephony` still comment-only, not in deps; firebase/socket deps retained for now-wired services (firebase_service was implemented in L1043) |
+
+### User action required (unchanged)
+
+- Rotate Daraja sandbox + B2C credentials (blanked in files, but in git history)
+- Revoke Telegram sessions + rotate JWT_SECRET (or history-scrub)
+- Confirm MPESA_CALLBACK_SECRET set in production env (L328)
+
+### Scorecard (code-verified)
+
+- **~88% of actionable rows closed** (~340 verified fixed of ~385 actionable rows)
+- **Blockers: 17/21 fully closed.** Confirmed live: **B8, B12, B13, B21** (4)
+- **Backend open: ~14 rows** (3 middleware, reports CSV/stubs, 4 migration rows, seed/test files, 2 architectural, misc notes)
+- **Frontend open: ~25 rows** (Header/StatsCard/GmailMessageList/ProtectedComponent/CollectionTracker/ApplePhotoGrid/GalleryNavigation/MinistriesCarousel/LiveStreamSection/ServiceTimes/FeaturedPhotos/PaletteSelector + TreasuryDashboard dead links + 5 treasury pages + MemberDirectory/AdminDashboard/TelegramAuth/stubs)
+- **Flutter open: 2 rows** (B8 token storage, pubspec telephony dep)
+- **User action: 3 items** (Daraja rotation, Telegram/JWT rotation, prod env confirm)
+- **Partials: 6 rows** (L443, L445, L474, L480, L607, L774)
+
+---
+
+## Resolution pass — second sweep batch C (L765–L783)
+
+| Row | Status | Resolution |
+|---|---|---|
+| L765 | FIXED | `add_mpesa_settings.sql` credential values scrubbed to `''`; `test-mpesa.js` reads env vars and no longer prints secret prefixes. **User action: rotate the exposed Daraja sandbox + B2C credentials.** |
+| L766 | FIXED | `frontend/Dockerfile` copies `/app/dist-new` (matches `vite.config.js` outDir); `vite build` verified. |
+| L767 | FIXED | Playwright + Cypress + all e2e specs + `start-dev.js` + `visual-test.html` moved to canonical port 5181; playwright `webServer` boots vite on 5181. |
+| L768 | FIXED | `Info.plist` gained NSCamera/NSPhotoLibrary/NSFaceID/NSUserNotifications usage descriptions. |
+| L769 | FIXED | `google-services.json` untracked → `google-services.json.example` + `.gitignore`; Gradle plugin stays commented until Firebase ships. |
+| L770 | FIXED | Dead deps removed (firebase_*, socket_io_client, flutter_local_notifications, sqflite, web_socket_channel, battery_plus, crypto, material_design_icons_flutter, cached_network_image); dead services deleted; `path` declared directly. `another_telephony` comment clarified — collector flow uses pasted SMS via SmsReconService. |
+| L771 | FIXED | `database/README.md` declares `backend/migrations/` the sole canonical path; 15 retry-graveyard files quarantined to `database/migrations/_graveyard/`; migration README updated. |
+| L772 | FIXED | `PaymentRepository` writes `requester_id` (canonical) + `requested_by`; readers use COALESCE; migration 060 backfills both columns. |
+| L773 | FIXED | Migration 021 rewritten: dedupe-before-constraint, idempotent ADD CONSTRAINT. Global uniqueness kept intentionally (login resolves username without church context). |
+| L774 | FIXED | Migration 061 adds partial unique indexes for global (NULL church_id) rows on settings/security_settings/funds/chart_of_accounts. |
+| L775 | FIXED | Migration 062 reassigns sentinel-church gallery rows to the oldest real church; 004 annotated. |
+| L776 | DOCUMENTED | Intended bulk-publish noted in migration history; sanity check before prod run flagged in ledger. |
+| L777 | RESOLVED | Prod/schema divergence was the symptom; canonical runner + schema_migrations tracking (L725 fix) prevents recurrence. |
+| L778 | FIXED | `sample_data.sql`, `complete_seed.sql`, `seed_church_workers.sql` quarantined to `database/_do-not-run/`; fake hashes neutralized, real names/emails anonymized. |
+| L779 | FIXED | `departments_seed_updated.sql` quarantined (no church_id/slug, real leaders blanked); canonical seed = `backend/scripts/data/sda-departments.js`. |
+| L780 | FIXED | `utils/secretBox.js` AES-256-GCM encryption for `sms_providers.api_key` (enc:v1: prefix); repo writes encrypt, reads decrypt; hybridSMS decrypts direct reads; `SMS_KEYS_SECRET` documented. |
+| L781 | FIXED | Truncated `tests/api/tests/sms-sync.test.js` stub deleted; full `tests/api/sms-sync.test.js` kept (all stub-only cases verified covered). |
+| L782 | FIXED | `setup-test-db.js` aborts on real migration errors (benign already-exists codes tolerated); exported for testability; `npm test` chain unchanged. |
+| L783 | FIXED | New `tests/unit/audit-regressions.test.js` — 9 tests pinning migration failure handling, dashboard camelCase shape, requester_id writes, tenant isolation, frontend port/outDir consistency, secretBox round-trip. |

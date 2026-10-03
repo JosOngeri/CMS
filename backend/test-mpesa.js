@@ -1,18 +1,23 @@
 const axios = require('axios');
+require('dotenv').config();
 
-// Credentials from Daraja app
-const CONSUMER_KEY = 'zRIIzmbsF9eSivvxpnMjUIl3goKx9V0CxAG0m53KQai4lYkf';
-const CONSUMER_SECRET = 'WVhz6kHVABQGHK23DWHV1r4pOSxgqIfEwQdvMUxkbuHFR0AAMedUXLxYmlr4FhCQ';
+// L765: credentials come from env — the sandbox pair that used to be
+// hardcoded here was committed to git and must be rotated on Daraja.
+const CONSUMER_KEY = process.env.MPESA_SANDBOX_CONSUMER_KEY;
+const CONSUMER_SECRET = process.env.MPESA_SANDBOX_CONSUMER_SECRET;
 const BASE_URL = 'https://sandbox.safaricom.co.ke';
+
+if (!CONSUMER_KEY || !CONSUMER_SECRET) {
+  console.error('Set MPESA_SANDBOX_CONSUMER_KEY and MPESA_SANDBOX_CONSUMER_SECRET in .env');
+  process.exit(1);
+}
 
 async function testOAuth() {
   try {
     console.log('Testing M-Pesa OAuth Token Generation...');
-    console.log('Consumer Key:', CONSUMER_KEY.substring(0, 10) + '...');
-    console.log('Consumer Secret:', CONSUMER_SECRET.substring(0, 10) + '...');
+    // Never print secret material — not even prefixes (they end up in logs).
 
     const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString('base64');
-    console.log('Base64 Auth:', auth.substring(0, 20) + '...');
 
     const response = await axios.get(
       `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,

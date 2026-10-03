@@ -49,6 +49,17 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- L768: usage descriptions required by image_picker, local_auth, and
+	     firebase_messaging — without these iOS crashes on first call and
+	     App Store review auto-rejects. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Used to take photos for your profile and gallery uploads.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Used to choose photos for your profile and gallery uploads.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Used to log you in securely with Face ID / Touch ID.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>Used to notify you about announcements, payments, and events.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
