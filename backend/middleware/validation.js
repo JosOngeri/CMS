@@ -14,10 +14,11 @@ const validateRequest = (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({
       success: false,
+      // Never echo err.value back — failed password/secret fields would leak
+      // the submitted value to the client and into any logged response.
       errors: errors.array().map(err => ({
         field: err.path,
-        message: err.msg,
-        value: err.value
+        message: err.msg
       }))
     });
   }

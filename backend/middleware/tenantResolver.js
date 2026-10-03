@@ -1,11 +1,16 @@
 /**
  * Tenant resolver — maps request → church via Host subdomain, x-tenant-slug header, ?tenant query, or DEFAULT_CHURCH_SLUG; 10-min cache.
  * @exports tenantResolver middleware
- * @deps config/database
- * @tenant sets req.church_id + req.church_slug (snake_case — identityGuard reads churchId and misses it)
- * @known Host and x-tenant-slug are client-controlled (spoofable cross-tenant); req.params.tenant_slug fallback is dead; suspended churches stay cached ≤10min; misses cost 2 uncached DB queries — ledger.
+ * @deps config/database, config/logging
+ * @tenant sets req.church_id + req.church_slug (snake_case)
+ * @known Subdomain extraction only runs on configured TENANT_BASE_DOMAINS and
+ *        skips reserved prefixes (cms/www/api/...) so Host-header spoofing can't
+ *        pick a tenant. x-tenant-slug is still client-controlled — it selects
+ *        PUBLIC tenant context only; all authenticated ops use req.user.church_id,
+ *        and identityGuard 403s when the resolved tenant differs from the user's.
  */
 const { pool } = require('../config/database');
+const logger = require('../config/logging');
 
 /**
  * Tenant Resolver Middleware (Phase 6 - Enhanced)
@@ -19,6 +24,17 @@ const { pool } = require('../config/database');
 // Tenant cache with 10-minute TTL to avoid DB hits on every request
 const tenantCache = new Map();
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+const SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+// Subdomains that never identify a tenant (platform/app surfaces).
+const RESERVED_SUBDOMAINS = new Set(['www', 'cms', 'api', 'app', 'platform', 'admin', 'mail', 'relay']);
+
+// Base domains whose subdomains may resolve to church slugs. Anything else
+// (IP, localhost, arbitrary Host header) is ignored for subdomain tenancy.
+const BASE_DOMAINS = (process.env.TENANT_BASE_DOMAINS || 'josongeri.co.ke,msabato.co.ke,msabato.org')
+  .split(',')
+  .map(d => d.trim().toLowerCase())
+  .filter(Boolean);
 
 function getCachedTenant(slug) {
   const cached = tenantCache.get(slug);
@@ -37,6 +53,22 @@ function setCachedTenant(slug, data) {
   });
 }
 
+function slugFromHost(host) {
+  if (!host) return null;
+  const hostname = host.split(':')[0].toLowerCase();
+
+  // Only treat a subdomain as a tenant slug when the host ends with a known
+  // base domain — `Host: victim-church.evil.com` must not resolve a tenant.
+  const base = BASE_DOMAINS.find(d => hostname === d || hostname.endsWith(`.${d}`));
+  if (!base || hostname === base) return null;
+
+  const potentialSlug = hostname.slice(0, hostname.length - base.length - 1);
+  // Reject nested subdomains and non-slug/reserved prefixes.
+  if (!potentialSlug || potentialSlug.includes('.')) return null;
+  if (!SLUG_RE.test(potentialSlug) || RESERVED_SUBDOMAINS.has(potentialSlug)) return null;
+  return potentialSlug;
+}
+
 const tenantResolver = async (req, res, next) => {
   // Whitelisted admin tools that can use query parameter overrides
   const QUERY_OVERRIDE_WHITELIST = [
@@ -48,44 +80,26 @@ const tenantResolver = async (req, res, next) => {
   const isWhitelistedPath = QUERY_OVERRIDE_WHITELIST.some(path => req.path.startsWith(path));
 
   // 1. Resolve Slug from various sources in priority order:
-  //    a. Subdomain (highest priority for production)
-  //    b. Headers for API/Mobile
-  //    c. Query parameters (only for whitelisted paths in production)
-  //    d. URL parameters
-  let slug = null;
+  //    a. Subdomain on a known base domain (production tenants)
+  //    b. x-tenant-slug header for API/Mobile (public tenant selection only —
+  //       authenticated operations always use req.user.church_id instead)
+  //    c. ?tenant query (whitelisted paths only in production)
+  //    d. DEFAULT_CHURCH_SLUG for single-tenant deployments
+  let slug = slugFromHost(req.headers.host);
 
-  // Extract from subdomain (e.g., kiserian-main-sda.msabato.org)
-  const host = req.headers.host;
-  if (host) {
-    const hostname = host.split(':')[0]; // Remove port if present
-    const parts = hostname.split('.');
-
-    // Check if we have a subdomain structure (at least 3 parts: subdomain.domain.tld)
-    if (parts.length >= 3) {
-      const potentialSlug = parts[0];
-      // Validate slug format (lowercase letters, numbers, hyphens)
-      if (potentialSlug.match(/^[a-z0-9]+(-[a-z0-9]+)*$/) && potentialSlug !== 'www') {
-        slug = potentialSlug;
-      }
+  if (!slug) {
+    const headerSlug = req.headers['x-tenant-slug'];
+    if (typeof headerSlug === 'string' && SLUG_RE.test(headerSlug)) {
+      slug = headerSlug;
     }
   }
 
-  // Fallback to header for API/Mobile clients
-  if (!slug) {
-    slug = req.headers['x-tenant-slug'];
-  }
-
-  // Fallback to query parameter (only allowed for whitelisted paths in production)
   if (!slug && (!isProduction || isWhitelistedPath)) {
-    slug = req.query.tenant;
+    const q = req.query.tenant;
+    if (typeof q === 'string' && SLUG_RE.test(q)) slug = q;
   }
 
-  // Fallback to URL parameter
-  if (!slug) {
-    slug = req.params.tenant_slug;
-  }
-
-  // Single-tenant deployment shortcut: use default church if configured
+  // Single-tenant deployment shortcut: use the configured default church.
   if (!slug && process.env.DEFAULT_CHURCH_SLUG) {
     slug = process.env.DEFAULT_CHURCH_SLUG;
   }
@@ -94,14 +108,20 @@ const tenantResolver = async (req, res, next) => {
     // For health checks or public routes that don't need tenancy
     if (req.path.includes('/health') || req.path === '/') return next();
 
-    // Fallback: If no slug, we can't isolate. Some public routes might allow this.
+    // No resolvable tenant — proceed without a church context. Authenticated
+    // handlers scope by req.user.church_id; tenantless public reads get the
+    // global/default behavior.
     return next();
   }
 
   try {
-    // Check cache first
+    // Check cache first — re-checks is_active so suspended churches stop
+    // resolving on cache hit too.
     const cached = getCachedTenant(slug);
     if (cached) {
+      if (cached.isActive === false) {
+        return res.status(403).json({ success: false, error: 'Church account is suspended' });
+      }
       req.church_id = cached.id;
       req.church_slug = slug;
       return next();
@@ -121,13 +141,17 @@ const tenantResolver = async (req, res, next) => {
       }
     }
 
-    // Last resort: use first active church for single-tenant deployments
+    // Single-tenant last resort: resolve the CONFIGURED default church by its
+    // own slug — never an arbitrary "first active church".
+    let resolvedSlug = slug;
     if (result.rows.length === 0 && process.env.DEFAULT_CHURCH_SLUG) {
       const defaultResult = await pool.query(
-        'SELECT id, is_active FROM churches WHERE is_active = true ORDER BY created_at LIMIT 1'
+        'SELECT id, is_active FROM churches WHERE slug = $1',
+        [process.env.DEFAULT_CHURCH_SLUG]
       );
       if (defaultResult.rows.length > 0) {
         result = defaultResult;
+        resolvedSlug = process.env.DEFAULT_CHURCH_SLUG;
       }
     }
 
@@ -135,21 +159,23 @@ const tenantResolver = async (req, res, next) => {
       return res.status(404).json({ success: false, error: 'Church tenant not found' });
     }
 
-    if (result.rows[0].is_active === false) {
+    const church = result.rows[0];
+
+    if (church.is_active === false) {
+      // Cache the suspension briefly so hits stay cheap.
+      setCachedTenant(slug, { id: church.id, isActive: false });
       return res.status(403).json({ success: false, error: 'Church account is suspended' });
     }
 
-    const churchId = result.rows[0].id;
+    // Cache the result (is_active cached too — re-checked on hit).
+    setCachedTenant(slug, { id: church.id, isActive: true });
 
-    // Cache the result
-    setCachedTenant(slug, { id: churchId });
-
-    req.church_id = churchId;
-    req.church_slug = slug;
+    req.church_id = church.id;
+    req.church_slug = resolvedSlug;
 
     next();
   } catch (error) {
-    console.error('Tenant resolution error:', error);
+    logger.error('Tenant resolution error:', error.message);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 };

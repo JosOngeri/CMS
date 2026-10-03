@@ -2,11 +2,12 @@
  * Platform-admin authentication (separate platform_users table) + role/permission guards for /api/platform/*.
  * @exports {authenticatePlatformUser, requirePlatformRole, requirePlatformPermission, normalizePermissions}
  * @deps config/platformJwt, config/database
- * @known jwt.verify checks signature only — no type/iss/aud claim enforcement (shared JWT_SECRET with church tokens); console.error instead of logger — ledger.
+ * @known jwt.verify enforces iss+aud claims and the `type:'platform'` payload claim — church tokens are rejected.
  */
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
-const { getPlatformJwtSecret } = require('../config/platformJwt');
+const { getPlatformJwtSecret, PLATFORM_JWT_VERIFY_OPTIONS } = require('../config/platformJwt');
+const logger = require('../config/logging');
 
 const ROLE_PERMISSIONS = {
   platform_owner: ['*'],
@@ -50,7 +51,16 @@ const authenticatePlatformUser = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, getPlatformJwtSecret());
+    const decoded = jwt.verify(token, getPlatformJwtSecret(), PLATFORM_JWT_VERIFY_OPTIONS);
+
+    // iss/aud prove the token was minted for the platform; the explicit type
+    // claim is the final guard against any church-token reuse.
+    if (decoded.type !== 'platform') {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid platform token'
+      });
+    }
 
     // Check if user exists in platform_users table
     const userResult = await pool.query(
@@ -78,7 +88,7 @@ const authenticatePlatformUser = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Platform authentication error:', error);
+    logger.error('Platform authentication error:', error.message);
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
         success: false, 

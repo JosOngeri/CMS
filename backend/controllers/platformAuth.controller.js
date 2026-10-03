@@ -2,7 +2,7 @@ const BaseController = require('./BaseController');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
-const { getPlatformJwtSecret } = require('../config/platformJwt');
+const { getPlatformJwtSecret, PLATFORM_JWT_SIGN_OPTIONS } = require('../config/platformJwt');
 const { logPlatformAudit } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 
@@ -79,7 +79,7 @@ class PlatformAuthController extends BaseController {
       const token = jwt.sign(
         { userId: platformUser.id, email: platformUser.email, role: platformUser.role, type: 'platform' },
         getPlatformJwtSecret(),
-        { expiresIn: '8h' }
+        PLATFORM_JWT_SIGN_OPTIONS
       );
 
       await pool.query(

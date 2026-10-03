@@ -1,23 +1,64 @@
 /**
- * CSRF middleware — SECURITY THEATER: any 64-char string passes; tokens are never bound to a session.
- * Real protection currently comes from SameSite cookies + the Bearer-header exemption.
+ * CSRF middleware — session-bound double-submit token.
+ * Token = `nonce.signature` where signature = HMAC(CSRF_SECRET, nonce|sessionBinding).
+ * sessionBinding = the request's jwt/platform_session cookie, or a csrf_sid
+ * cookie minted for pre-login clients. A token minted for one session can
+ * never validate against another session's cookies.
  * @exports {csrfTokenMiddleware, getCsrfToken}
- * @known Replace with a session-bound double-submit token or remove — ledger Batch-1 re-audit.
+ * @known Bearer-only clients are exempt (CSRF protects cookie sessions only);
+ *         /api/auth/login|register and the signed mpesa callback are exempt.
  */
 const crypto = require('crypto');
 
-// Generate CSRF token
-function getCsrfToken(req, res) {
-  const token = crypto.randomBytes(32).toString('hex');
-  res.json({ csrfToken: token });
+const CSRF_SECRET = process.env.CSRF_SECRET || process.env.JWT_SECRET;
+const SESSION_COOKIES = ['jwt', 'platform_session', 'csrf_sid'];
+
+function sessionBinding(req) {
+  for (const name of SESSION_COOKIES) {
+    const value = req.cookies && req.cookies[name];
+    if (value) return value;
+  }
+  return null;
 }
 
-// Validate CSRF token
-function validateCSRFToken(token) {
-  if (!token || typeof token !== 'string') {
-    return false;
+function sign(nonce, binding) {
+  return crypto
+    .createHmac('sha256', CSRF_SECRET)
+    .update(`${nonce}|${binding}`)
+    .digest('hex');
+}
+
+// Issue a token bound to the caller's session. Pre-login callers get an
+// anonymous csrf_sid cookie so their tokens are still session-bound.
+function getCsrfToken(req, res) {
+  let binding = sessionBinding(req);
+  if (!binding) {
+    binding = crypto.randomBytes(16).toString('hex');
+    res.cookie('csrf_sid', binding, {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/api',
+      maxAge: 24 * 60 * 60 * 1000
+    });
   }
-  return token.length === 64;
+  const nonce = crypto.randomBytes(16).toString('hex');
+  res.json({ csrfToken: `${nonce}.${sign(nonce, binding)}` });
+}
+
+// Validate `nonce.signature` against this request's session binding.
+function validateCSRFToken(token, req) {
+  if (!token || typeof token !== 'string') return false;
+  const dot = token.indexOf('.');
+  if (dot < 1) return false;
+  const nonce = token.slice(0, dot);
+  const presented = token.slice(dot + 1);
+  const binding = sessionBinding(req);
+  if (!nonce || !presented || !binding) return false;
+  const expected = sign(nonce, binding);
+  const a = Buffer.from(presented);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 // CSRF protection middleware
@@ -55,7 +96,7 @@ function csrfTokenMiddleware(req, res, next) {
 
   // Validate CSRF token for state-changing requests
   const token = req.headers['x-csrf-token'] || req.body._csrf;
-  if (!validateCSRFToken(token)) {
+  if (!validateCSRFToken(token, req)) {
     return res.status(403).json({ error: 'Invalid CSRF token' });
   }
 

@@ -57,7 +57,11 @@ describe('PlatformAuthController', () => {
     await controller.login(req, res);
 
     expect(bcrypt.compare).toHaveBeenCalledWith('correct-password', platformUser.password_hash);
-    expect(jwt.sign).toHaveBeenCalledWith(expect.objectContaining({ userId: platformUser.id, type: 'platform' }), 'platform-test-secret', { expiresIn: '8h' });
+    expect(jwt.sign).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: platformUser.id, type: 'platform' }),
+      'platform-test-secret',
+      expect.objectContaining({ expiresIn: '8h', issuer: 'msabato-platform', audience: 'platform' })
+    );
     expect(res.cookie).toHaveBeenCalledWith('platform_session', 'signed-platform-token', expect.objectContaining({ httpOnly: true }));
     expect(logPlatformAudit).toHaveBeenCalledWith(expect.objectContaining({ action: 'platform_auth.login_succeeded' }));
     expect(res.status).toHaveBeenCalledWith(200);
