@@ -4,6 +4,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { FullPageLoading } from '../components/common/Loading'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import NestedNav from '../components/common/NestedNav'
 
 // Lazy-loaded platform pages — same pattern as dashboard.routes.jsx
 const PlatformDashboard = lazy(() => import('../pages/platform/PlatformDashboard'))
@@ -53,14 +54,41 @@ const PlatformShell = () => {
   }
 
   const isOwner = platformUser?.role === 'platform_owner'
+  // NestedNav sections — Churches nests its sub-pages (detail/edit routes
+  // resolve to the parent via prefix matching).
   const navigation = [
-    { name: 'Dashboard', href: '/platform', icon: LayoutDashboard },
-    { name: 'Churches', href: '/platform/tenants', icon: Building },
-    { name: 'Analytics', href: '/platform/analytics', icon: BarChart3 },
-    { name: 'Monitoring', href: '/platform/monitoring', icon: HeartPulse },
-    { name: 'Audit Log', href: '/platform/audit', icon: ScrollText },
-    ...(isOwner ? [{ name: 'Admins', href: '/platform/admins', icon: ShieldCheck }] : []),
-    { name: 'Settings', href: '/platform/settings', icon: Settings },
+    {
+      title: null,
+      items: [
+        { path: '/platform', icon: LayoutDashboard, label: 'Dashboard' },
+      ],
+    },
+    {
+      title: 'Tenants',
+      items: [
+        {
+          path: '/platform/tenants', icon: Building, label: 'Churches',
+          children: [
+            { path: '/platform/tenants/create', label: 'New Church' },
+          ],
+        },
+      ],
+    },
+    {
+      title: 'Insights',
+      items: [
+        { path: '/platform/analytics', icon: BarChart3, label: 'Analytics' },
+        { path: '/platform/monitoring', icon: HeartPulse, label: 'Monitoring' },
+        { path: '/platform/audit', icon: ScrollText, label: 'Audit Log' },
+      ],
+    },
+    {
+      title: 'System',
+      items: [
+        ...(isOwner ? [{ path: '/platform/admins', icon: ShieldCheck, label: 'Admins' }] : []),
+        { path: '/platform/settings', icon: Settings, label: 'Settings' },
+      ],
+    },
   ]
 
   if (checkingSession) {
@@ -100,21 +128,9 @@ const PlatformShell = () => {
             </button>
           </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {navigation.map((item) => {
-              const Icon = item.icon
-              return (
-                <button
-                  key={item.name}
-                  onClick={() => { navigate(item.href); setSidebarOpen(false); }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-[var(--color-text)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
-                >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.name}</span>
-                </button>
-              )
-            })}
+          {/* Navigation — nested sub-sidebars, same component as the app sidebar */}
+          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            <NestedNav sections={navigation} dense onNavigate={() => setSidebarOpen(false)} />
           </nav>
 
           {/* User Info */}

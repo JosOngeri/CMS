@@ -18,7 +18,6 @@
  * - DashboardLayout.jsx      → renders this component
  */
 
-import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Settings,
@@ -44,14 +43,17 @@ import { useAuth } from '../../contexts/AuthContext';
 import { usePermission } from '../../hooks/usePermission';
 import { useChurchBranding } from '../../hooks/useChurchBranding';
 import { LEADERSHIP_ROLES } from '../../constants/roles';
+import NestedNav from './NestedNav';
 
 function Sidebar({ isOpen, setIsOpen }) {
   const { user, logout } = useAuth();
   const { churchName } = useChurchBranding();
   const { canAccessModule, isAny, isSuperAdmin } = usePermission();
-  const location = useLocation();
 
   // Menu sections, ordered from everyday member tasks down to admin tools.
+  // Items with `children` render an expandable sub-sidebar — every child path
+  // below is a real route (router/dashboard.routes.jsx) and permission-mapped
+  // in constants/permissions.js, so filtering can't expose anything new.
   const sections = [
     {
       title: null,
@@ -63,7 +65,12 @@ function Sidebar({ isOpen, setIsOpen }) {
       title: 'My Church',
       items: [
         { path: '/dashboard/obligations', icon: HandCoins, label: 'My Obligations' },
-        { path: '/dashboard/payments/my', icon: DollarSign, label: 'My Payments' },
+        {
+          path: '/dashboard/payments/my', icon: DollarSign, label: 'My Payments',
+          children: [
+            { path: '/dashboard/payments/history', label: 'Payment History' },
+          ],
+        },
         { path: '/dashboard/announcements', icon: Megaphone, label: 'Announcements' },
         { path: '/dashboard/events', icon: Calendar, label: 'Events' },
         { path: '/dashboard/my-departments', icon: Building2, label: 'My Departments' },
@@ -76,17 +83,58 @@ function Sidebar({ isOpen, setIsOpen }) {
     {
       title: 'Leadership',
       items: [
-        { path: '/dashboard/departments', icon: Building2, label: 'All Departments', roles: LEADERSHIP_ROLES },
+        {
+          path: '/dashboard/departments', icon: Building2, label: 'Departments', roles: LEADERSHIP_ROLES,
+          children: [
+            { path: '/dashboard/departments/categories', label: 'Categories' },
+            { path: '/dashboard/departments/handovers', label: 'Handovers' },
+            { path: '/dashboard/departments/head-allocation', label: 'Head Allocation' },
+            { path: '/dashboard/departments/settings', label: 'Dept Settings' },
+          ],
+        },
         { path: '/dashboard/members', icon: Users, label: 'People' },
         { path: '/dashboard/approvals', icon: CheckSquare, label: 'Approvals' },
-        { path: '/dashboard/sms', icon: MessageSquare, label: 'Communications', roles: LEADERSHIP_ROLES },
+        {
+          path: '/dashboard/sms', icon: MessageSquare, label: 'Communications', roles: LEADERSHIP_ROLES,
+          children: [
+            { path: '/dashboard/sms/dashboard', label: 'SMS Dashboard' },
+            { path: '/dashboard/sms/contacts', label: 'Contacts' },
+            { path: '/dashboard/sms/groups', label: 'Groups' },
+            {
+              path: '/dashboard/telegram', label: 'Telegram',
+              children: [
+                { path: '/dashboard/telegram/church', label: 'Church Channel' },
+                { path: '/dashboard/telegram/auth', label: 'Telegram Auth' },
+              ],
+            },
+          ],
+        },
         { path: '/dashboard/content', icon: FileText, label: 'Content', roles: LEADERSHIP_ROLES },
       ],
     },
     {
       title: 'Finance',
       items: [
-        { path: '/dashboard/treasury', icon: Landmark, label: 'Treasury' },
+        {
+          path: '/dashboard/treasury', icon: Landmark, label: 'Treasury',
+          children: [
+            { path: '/dashboard/treasury/accounts', label: 'Chart of Accounts' },
+            { path: '/dashboard/treasury/funds', label: 'Funds' },
+            { path: '/dashboard/treasury/budgets', label: 'Budgets' },
+            { path: '/dashboard/treasury/expenses', label: 'Expenses' },
+            { path: '/dashboard/treasury/journal-entries', label: 'Journal Entries' },
+            { path: '/dashboard/treasury/contributions', label: 'Contributions' },
+            { path: '/dashboard/treasury/pledges', label: 'Pledges' },
+            { path: '/dashboard/treasury/projects', label: 'Projects' },
+            { path: '/dashboard/treasury/recurring', label: 'Recurring' },
+            { path: '/dashboard/treasury/vendors', label: 'Vendors' },
+            { path: '/dashboard/treasury/reconciliations', label: 'Reconciliations' },
+            { path: '/dashboard/treasury/receipts', label: 'Receipts' },
+            { path: '/dashboard/treasury/assets', label: 'Assets' },
+            { path: '/dashboard/treasury/analytics', label: 'Analytics' },
+            { path: '/dashboard/treasury/reports', label: 'Reports' },
+          ],
+        },
         { path: '/dashboard/payments/management', icon: DollarSign, label: 'Payment Management' },
         { path: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
       ],
@@ -95,22 +143,38 @@ function Sidebar({ isOpen, setIsOpen }) {
       title: 'Administration',
       items: [
         { path: '/dashboard/users', icon: Users, label: 'User Management' },
-        { path: '/dashboard/admin', icon: Shield, label: 'Administration' },
+        {
+          path: '/dashboard/admin', icon: Shield, label: 'Administration',
+          children: [
+            { path: '/dashboard/admin/database', label: 'Database' },
+            { path: '/dashboard/admin/documents', label: 'Documents' },
+            { path: '/dashboard/monitoring', label: 'Monitoring' },
+            { path: '/dashboard/security', label: 'Security' },
+            { path: '/dashboard/seo', label: 'SEO' },
+            { path: '/dashboard/documentation', label: 'Documentation' },
+          ],
+        },
         { path: '/dashboard/admin/settings', icon: Settings, label: 'Settings' },
       ],
     },
   ];
 
   // Filter out items the user cannot reach. Super Admin sees everything.
-  const visibleSections = sections
-    .map(section => ({
-      ...section,
-      items: section.items.filter(item => {
-        if (isSuperAdmin()) return true;
-        if (item.roles && !isAny(item.roles)) return false;
-        return canAccessModule(item.path);
-      }),
+  // Recursive: a hidden parent drops its whole subtree, a child-less
+  // path-less group drops itself.
+  const itemAllowed = (item) => {
+    if (!isSuperAdmin() && item.roles && !isAny(item.roles)) return false;
+    return item.path ? canAccessModule(item.path) : true;
+  };
+  const filterItems = (items) => items
+    .map(item => ({
+      ...item,
+      children: item.children ? filterItems(item.children) : undefined,
     }))
+    .filter(item => itemAllowed(item) && (item.path || item.children?.length));
+
+  const visibleSections = sections
+    .map(section => ({ ...section, items: filterItems(section.items) }))
     .filter(section => section.items.length > 0);
 
   const handleLogout = async () => {
@@ -151,42 +215,9 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
           </div>
 
-          {/* Navigation links */}
+          {/* Navigation links — collapsible sub-sidebars via NestedNav */}
           <nav className="flex-1 p-4 overflow-y-auto">
-            {visibleSections.map((section, si) => (
-              <div key={si} className={si > 0 ? 'mt-5' : ''}>
-                {section.title && (
-                  <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-[var(--color-textSecondary)]">
-                    {section.title}
-                  </p>
-                )}
-                <ul className="space-y-1.5">
-                  {section.items.map((item) => {
-                    const Icon = item.icon;
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <li key={item.path}>
-                        <Link
-                          to={item.path}
-                          className={`flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ${
-                            isActive
-                              ? 'church-gradient text-[var(--color-on-solid)] shadow-md'
-                              : 'text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]'
-                          }`}
-                          onClick={() => setIsOpen(false)}
-                          aria-current={isActive ? 'page' : undefined}
-                        >
-                          <div className={`p-1.5 rounded-lg mr-3 ${isActive ? 'bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)]' : 'bg-[var(--color-background)]'}`}>
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          {item.label}
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
+            <NestedNav sections={visibleSections} onNavigate={() => setIsOpen(false)} />
           </nav>
 
           {/* User summary & logout */}
