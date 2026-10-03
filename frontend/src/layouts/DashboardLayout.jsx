@@ -19,6 +19,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
 import MobileBottomNav from '../components/common/MobileBottomNav';
+import ImpersonationBanner from '../components/common/ImpersonationBanner';
 import SkipNavigation from '../components/accessibility/SkipNavigation';
 
 function DashboardLayout() {
@@ -31,6 +32,7 @@ function DashboardLayout() {
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {/* Header sits outside the scrolling region — it stays frozen while
             main content scrolls underneath it. */}
+        <ImpersonationBanner />
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         <main id="main-content" className="flex-1 min-h-0 p-4 pb-24 md:p-6 lg:pb-6 overflow-y-auto overscroll-contain" tabIndex="-1">
           <Outlet />

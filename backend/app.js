@@ -217,6 +217,11 @@ app.use('/uploads', (req, res) => {
   res.status(404).json({ success: false, error: 'File not found' });
 });
 
+// Platform-managed IP rules (§6.3) — deny/allow list the superadmin
+// writes from the security console. Runs before rate limiting so blocked
+// IPs don't consume rate-limit budget; a denied IP sees 403 everywhere.
+app.use('/api', require('./middleware/platformIpRules'));
+
 // Global API baseline rate limit (100 req/min per IP in prod) — per-route
 // stricter limiters still apply on top of this for sensitive mounts.
 app.use('/api', apiLimiter);

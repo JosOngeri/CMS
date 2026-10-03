@@ -45,6 +45,7 @@ class ChurchRepository extends BaseRepository {
     values.push(limit, (page - 1) * limit);
     const query = [
       "SELECT c.id, c.name, c.slug, c.settings, c.is_active, c.created_at, c.updated_at,",
+      "c.trial_ends_at, c.onboarding_state, c.quarantined, c.is_demo,",
       "COALESCE(uc.user_count, 0) AS user_count, COALESCE(mc.member_count, 0) AS member_count,",
       "COUNT(*) OVER() AS total_count",
       "FROM churches c",

@@ -55,7 +55,8 @@ const buildUserIdentity = (identity) => {
     permissions: identity.permissions,
     mfaEnabled: identity.mfaEnabled,
     mfaVerified: identity.mfaVerified,
-    isActive: identity.isActive
+    isActive: identity.isActive,
+    churchQuarantined: identity.churchQuarantined
   };
 };
 
@@ -68,6 +69,21 @@ const authenticateToken = async (req, res, next) => {
     }
 
     const decoded = verifyAccessToken(token);
+
+    // Platform impersonation sessions carry an `impersonation` claim
+    // (services/platformImpersonation.service.js). Readonly sessions may
+    // only ever observe — mutating methods are rejected before any
+    // controller runs.
+    if (decoded.impersonation) {
+      req.impersonation = decoded.impersonation;
+      const isRead = ['GET', 'HEAD', 'OPTIONS'].includes(req.method);
+      if (decoded.impersonation.mode === 'readonly' && !isRead) {
+        return res.status(403).json({
+          success: false,
+          error: 'Read-only impersonation session — changes are disabled'
+        });
+      }
+    }
 
     // Check cache first to avoid DB hit on every request
     const cacheKey = decoded.userId;
@@ -116,6 +132,12 @@ const authenticateToken = async (req, res, next) => {
     // Checked against the (cached) identity so the flag refreshes within CACHE_TTL.
     if (req.user.isActive === false) {
       return res.status(403).json({ success: false, error: 'Account is deactivated' });
+    }
+
+    // §8.2 — a quarantined church is cut off entirely; platform operators
+    // lift quarantine from the console after investigation.
+    if (req.user.churchQuarantined === true) {
+      return res.status(503).json({ success: false, error: 'This church is temporarily unavailable' });
     }
 
     // MFA status lives in the JWT claim — identity.mfaVerified is always false.

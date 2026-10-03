@@ -65,5 +65,18 @@ jobs:
           
     - name: Verify deployment
       run: |
-        echo "Deployment completed successfully"
-        echo "Application should be available at https://cms.josongeri.co.ke"
+        # Poll the health endpoint — fail the run (and surface it in Actions)
+        # if the app doesn't come back healthy after restart.
+        for i in $(seq 1 12); do
+          STATUS=$(curl -s -o /tmp/health.json -w "%{http_code}" https://cms.josongeri.co.ke/api/health)
+          if [ "$STATUS" = "200" ]; then
+            echo "Health check passed on attempt $i"
+            cat /tmp/health.json
+            exit 0
+          fi
+          echo "Attempt $i: HTTP $STATUS — retrying in 10s"
+          sleep 10
+        done
+        echo "Health check FAILED after 12 attempts"
+        cat /tmp/health.json 2>/dev/null || true
+        exit 1

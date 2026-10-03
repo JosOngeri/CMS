@@ -1850,3 +1850,37 @@ Admin→+Super Admin, `ROLES.ADMIN` added to ADMIN_ROLES + DEPARTMENT_MANAGEMENT
 - `npm test` (fresh canonical DB incl. 076): **325 passed, 0 failed**.
 - eslint: 0 errors on all touched files.
 - Live endpoints re-probed with treasurer+admin+member tokens before/after.
+
+
+---
+
+## Platform control plane build (batch 2) — 2026-10-04
+
+Scope: superadmin console foundation F4–F6 plus real pages/endpoints for
+tenant admin, fleet, payments, security, data, incidents, billing, comms,
+support, config (sections 1,2,4,5,6,7,8,9,11,12,13 of the plan).
+
+### New findings fixed during the build
+
+- **IP rules were dead data** — `platform_ip_rules` had CRUD endpoints
+  but no enforcement. Added `middleware/platformIpRules.js` (cached 60s,
+  allow>deny, CIDR via ipaddr.js, fail-open on missing table) mounted
+  before the rate limiter in app.js. Covered by
+  `__tests__/unit/platformIpRules.test.js` (6 tests).
+- **Tenant lifecycle columns invisible** — `serializeTenant` in
+  churchPlatformGateway dropped `trial_ends_at`/`onboarding_state`/
+  `quarantined`/`is_demo`, so lifecycle UI had nothing to read. Extended
+  the gateway serializer + `getPlatformChurches` SELECT (the documented
+  aggregation path stays intact — no direct tenant-table reads added).
+- **Onboarding/trial UI missing** — added Lifecycle cards to
+  PlatformTenantAdmin (checklist toggles + extend/end trial).
+- **Fleet lacked jobs view** — added failed-jobs table with retry and
+  per-alert resolve.
+- **Deploy verify was an echo** — F6: workflow now polls
+  /api/health 12×10s and fails the run if unhealthy.
+
+### Verification
+
+- `npm test`: **331 passed, 0 failed** (6 new IP-rule tests included).
+- eslint: 0 errors on all touched frontend files.
+- `vite build`: clean.

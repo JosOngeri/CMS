@@ -190,9 +190,9 @@ export const buildPlatformNav = ({ isOwner }) => [
       {
         title: 'Tenant Administration',
         items: [
-          { path: '/platform/roadmap/tenant-admin', icon: UserCog, label: 'Administer a Church' },
-          { path: '/platform/roadmap/tenant-admin', icon: ToggleLeft, label: 'Feature Flags & Quotas' },
-          { path: '/platform/roadmap/tenant-admin', icon: GitMerge, label: 'Impersonate & Access' },
+          { path: '/platform/tenant-admin', icon: UserCog, label: 'Administer a Church' },
+          { path: '/platform/tenant-admin', icon: ToggleLeft, label: 'Feature Flags & Quotas' },
+          { path: '/platform/tenant-admin', icon: GitMerge, label: 'Impersonate & Access' },
         ],
       },
     ],
@@ -217,7 +217,7 @@ export const buildPlatformNav = ({ isOwner }) => [
         title: 'Monitoring & Health',
         items: [
           { path: '/platform/monitoring', icon: Activity, label: 'Monitoring' },
-          { path: '/platform/roadmap/monitoring', icon: Server, label: 'Fleet & Infrastructure' },
+          { path: '/platform/fleet', icon: Server, label: 'Fleet & Infrastructure' },
           { path: '/platform/roadmap/monitoring', icon: Plug, label: 'Integrations & Jobs' },
           { path: '/platform/roadmap/monitoring', icon: FileSearch, label: 'Logs & Alerts' },
         ],
@@ -225,8 +225,8 @@ export const buildPlatformNav = ({ isOwner }) => [
       {
         title: 'Payments & Oversight',
         items: [
-          { path: '/platform/roadmap/payments-oversight', icon: CreditCard, label: 'Payment Feed' },
-          { path: '/platform/roadmap/payments-oversight', icon: AlertOctagon, label: 'Failed & Stuck' },
+          { path: '/platform/payments', icon: CreditCard, label: 'Payment Feed' },
+          { path: '/platform/payments', icon: AlertOctagon, label: 'Failed & Stuck' },
           { path: '/platform/roadmap/payments-oversight', icon: SearchCheck, label: 'Reconciliation' },
         ],
       },
@@ -234,23 +234,23 @@ export const buildPlatformNav = ({ isOwner }) => [
         title: 'Security & Compliance',
         items: [
           { path: '/platform/audit', icon: ScrollText, label: 'Audit Log' },
-          { path: '/platform/roadmap/security', icon: ShieldCheck, label: 'Security Center' },
-          { path: '/platform/roadmap/security', icon: Ban, label: 'IP & Sessions' },
+          { path: '/platform/security', icon: ShieldCheck, label: 'Security Center' },
+          { path: '/platform/security', icon: Ban, label: 'IP & Sessions' },
         ],
       },
       {
         title: 'Data Management',
         items: [
-          { path: '/platform/roadmap/data-management', icon: DatabaseBackup, label: 'Backups & Export' },
+          { path: '/platform/data', icon: DatabaseBackup, label: 'Backups & Export' },
           { path: '/platform/roadmap/data-management', icon: Upload, label: 'Import & Migration' },
-          { path: '/platform/roadmap/data-management', icon: HardDrive, label: 'Storage & Schema' },
+          { path: '/platform/data', icon: HardDrive, label: 'Storage & Schema' },
         ],
       },
       {
         title: 'Disaster & Incident',
         items: [
-          { path: '/platform/roadmap/disaster', icon: Siren, label: 'Incident Playbook' },
-          { path: '/platform/roadmap/disaster', icon: Ban, label: 'Tenant Quarantine' },
+          { path: '/platform/incidents', icon: Siren, label: 'Incident Playbook' },
+          { path: '/platform/incidents', icon: Ban, label: 'Tenant Quarantine' },
           { path: '/platform/roadmap/disaster', icon: Undo2, label: 'Rollback & Forensics' },
         ],
       },
@@ -262,9 +262,9 @@ export const buildPlatformNav = ({ isOwner }) => [
       {
         title: 'Billing & Revenue',
         items: [
-          { path: '/platform/roadmap/billing', icon: Coins, label: 'Plans & Subscriptions' },
-          { path: '/platform/roadmap/billing', icon: FileSpreadsheet, label: 'Invoices & Dunning' },
-          { path: '/platform/roadmap/billing', icon: TrendingUp, label: 'Revenue Reports' },
+          { path: '/platform/billing', icon: Coins, label: 'Plans & Subscriptions' },
+          { path: '/platform/billing', icon: FileSpreadsheet, label: 'Invoices & Dunning' },
+          { path: '/platform/billing', icon: TrendingUp, label: 'Revenue Reports' },
         ],
       },
       {
@@ -279,7 +279,7 @@ export const buildPlatformNav = ({ isOwner }) => [
       {
         title: 'Communication',
         items: [
-          { path: '/platform/roadmap/communication', icon: MessageSquarePlus, label: 'Announcements' },
+          { path: '/platform/comms', icon: MessageSquarePlus, label: 'Announcements' },
           { path: '/platform/roadmap/communication', icon: Newspaper, label: 'Status Page' },
           { path: '/platform/roadmap/communication', icon: FileSignature, label: 'Templates' },
         ],
@@ -292,10 +292,10 @@ export const buildPlatformNav = ({ isOwner }) => [
       {
         title: 'Support Operations',
         items: [
-          { path: '/platform/roadmap/support', icon: Inbox, label: 'Ticket Inbox' },
+          { path: '/platform/support', icon: Inbox, label: 'Ticket Inbox' },
           { path: '/platform/roadmap/support', icon: Eye, label: 'Support Access' },
-          { path: '/platform/roadmap/support', icon: Bug, label: 'Known Issues' },
-          { path: '/platform/roadmap/support', icon: HeartHandshake, label: 'Health Scores' },
+          { path: '/platform/support', icon: Bug, label: 'Known Issues' },
+          { path: '/platform/support', icon: HeartHandshake, label: 'Health Scores' },
         ],
       },
     ],
@@ -307,10 +307,10 @@ export const buildPlatformNav = ({ isOwner }) => [
         title: 'Platform Configuration',
         items: [
           { path: '/platform/settings', icon: Settings, label: 'Settings' },
-          { path: '/platform/roadmap/platform-config', icon: Flag, label: 'Feature Flags' },
+          { path: '/platform/config', icon: Flag, label: 'Feature Flags' },
           { path: '/platform/roadmap/platform-config', icon: Palette, label: 'Branding & Defaults' },
           { path: '/platform/roadmap/platform-config', icon: Power, label: 'Maintenance Mode' },
-          { path: '/platform/roadmap/platform-config', icon: FileClock, label: 'Version & Changelog' },
+          { path: '/platform/config', icon: FileClock, label: 'Version & Changelog' },
         ],
       },
     ],

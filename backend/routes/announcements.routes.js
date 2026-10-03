@@ -13,6 +13,28 @@ router.get('/public/:id', (req, res) => announcementController.getPublicById(req
 // Get all announcements (public and user's department announcements)
 router.get('/', authenticateToken, (req, res) => announcementController.getAll(req, res));
 
+// Platform-level announcements — the SaaS operator broadcasting to all
+// churches (maintenance windows, releases). Authenticated church users only.
+router.get('/platform', authenticateToken, async (req, res) => {
+  try {
+    const { pool } = require('../config/database');
+    const result = await pool.query(
+      `SELECT id, title, body, severity, created_at, expires_at
+       FROM platform_announcements
+       WHERE is_active = true
+         AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+         AND target IN ('all', 'admins')
+       ORDER BY created_at DESC LIMIT 20`
+    );
+    res.json({ success: true, data: result.rows });
+  } catch (error) {
+    // The table may not exist yet on older databases — degrade to empty
+    // rather than breaking the church app's announcements feed.
+    if (error.code === '42P01') return res.json({ success: true, data: [] });
+    res.status(500).json({ success: false, error: 'Failed to fetch platform announcements' });
+  }
+});
+
 // Get single announcement
 router.get('/:id', authenticateToken, (req, res) => announcementController.getById(req, res));
 

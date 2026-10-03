@@ -39,6 +39,16 @@ const PlatformAuditLog   = lazy(() => import('../pages/platform/PlatformAuditLog
 const PlatformUsers      = lazy(() => import('../pages/platform/PlatformUsers'))
 const PlatformSettings   = lazy(() => import('../pages/platform/PlatformSettings'))
 const PlatformRoadmap    = lazy(() => import('../pages/platform/PlatformRoadmap'))
+const PlatformTenantAdmin = lazy(() => import('../pages/platform/PlatformTenantAdmin'))
+const PlatformFleet      = lazy(() => import('../pages/platform/PlatformFleet'))
+const PlatformPayments   = lazy(() => import('../pages/platform/PlatformPayments'))
+const PlatformSecurity   = lazy(() => import('../pages/platform/PlatformSecurity'))
+const PlatformData       = lazy(() => import('../pages/platform/PlatformData'))
+const PlatformIncidents  = lazy(() => import('../pages/platform/PlatformIncidents'))
+const PlatformBilling    = lazy(() => import('../pages/platform/PlatformBilling'))
+const PlatformComms      = lazy(() => import('../pages/platform/PlatformComms'))
+const PlatformSupport    = lazy(() => import('../pages/platform/PlatformSupport'))
+const PlatformConfig     = lazy(() => import('../pages/platform/PlatformConfig'))
 
 // True when the route is the item itself or any descendant — mirrors the
 // helpers inside Sidebar/NestedNav so the rail can highlight the group
@@ -301,6 +311,16 @@ const PlatformShell = () => {
               <Route path="audit" element={<PlatformAuditLog />} />
               <Route path="admins" element={<PlatformUsers />} />
               <Route path="settings" element={<PlatformSettings />} />
+              <Route path="tenant-admin" element={<PlatformTenantAdmin />} />
+              <Route path="fleet" element={<PlatformFleet />} />
+              <Route path="payments" element={<PlatformPayments />} />
+              <Route path="security" element={<PlatformSecurity />} />
+              <Route path="data" element={<PlatformData />} />
+              <Route path="incidents" element={<PlatformIncidents />} />
+              <Route path="billing" element={<PlatformBilling />} />
+              <Route path="comms" element={<PlatformComms />} />
+              <Route path="support" element={<PlatformSupport />} />
+              <Route path="config" element={<PlatformConfig />} />
               <Route path="roadmap/:slug" element={<PlatformRoadmap />} />
               <Route path="*" element={<Navigate to="/platform" replace />} />
             </Routes>

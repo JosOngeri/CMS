@@ -54,6 +54,10 @@ const serializeTenant = (church) => ({
   contact_email: church.settings?.contact_email || '',
   user_count: Number(church.user_count || 0),
   member_count: Number(church.member_count || 0),
+  trial_ends_at: church.trial_ends_at || null,
+  onboarding_state: church.onboarding_state || {},
+  quarantined: church.quarantined === true,
+  is_demo: church.is_demo === true,
   created_at: church.created_at,
   updated_at: church.updated_at
 });

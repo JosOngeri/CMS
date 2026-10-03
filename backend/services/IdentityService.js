@@ -38,6 +38,7 @@ class IdentityService {
         `SELECT u.id, u.email, u.username, u.first_name, u.last_name, 
                 u.phone, u.is_active, u.church_id,
                 c.slug as church_slug, c.name as church_name,
+                COALESCE(c.quarantined, false) as church_quarantined,
                 u.mfa_enabled, u.mfa_secret
          FROM users u
          LEFT JOIN churches c ON u.church_id = c.id
@@ -81,6 +82,8 @@ class IdentityService {
         churchId: user.church_id,
         churchSlug: user.church_slug,
         churchName: user.church_name,
+        // §8.2 — quarantined tenants are cut off by authenticateToken
+        churchQuarantined: user.church_quarantined || false,
         roles: rolesResult.rows.map(r => r.name),
         permissions: permissionsResult.rows.map(p => p.name),
         mfaEnabled: user.mfa_enabled || false,
