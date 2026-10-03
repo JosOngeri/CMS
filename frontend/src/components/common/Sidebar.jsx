@@ -274,23 +274,27 @@ function Sidebar({ isOpen, setIsOpen }) {
         />
       )}
 
-      {/* Sidebar — the drawer widens on desktop when a sub-sidebar is open:
-          w-64 primary rail + w-64 panel = lg:w-[32rem]. */}
+      {/* Sidebar — on desktop the primary rail retreats to icons when a
+          sub-sidebar is open: w-20 icon rail + w-64 panel = lg:w-[21rem].
+          Mobile keeps the full w-64 drawer; the panel covers it anyway. */}
       <div className={`fixed left-0 top-0 h-full bg-[var(--color-surface)] shadow-xl z-50 transition-[transform,width] duration-300 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 lg:static lg:z-0 w-64 flex-shrink-0 border-r border-[var(--color-border)] ${
-        activeEntry ? 'lg:w-[32rem]' : 'lg:w-64'
+        activeEntry ? 'lg:w-[21rem]' : 'lg:w-64'
       }`}>
         <div className="relative flex h-full">
-        <div className="w-64 flex-shrink-0 flex flex-col h-full min-h-0">
-          {/* Church name header */}
-          <div className="p-6 church-gradient">
-            <div className="flex items-center justify-between">
+        <div className={`w-64 flex-shrink-0 flex flex-col h-full min-h-0 ${
+          activeEntry ? 'lg:w-20' : 'lg:w-64'
+        }`}>
+          {/* Church name header — icon-only (centered initial) when the rail
+              has retreated for an open sub-sidebar */}
+          <div className={`p-6 church-gradient ${activeEntry ? 'lg:p-3' : ''}`}>
+            <div className={`flex items-center justify-between ${activeEntry ? 'lg:justify-center' : ''}`}>
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 rounded-lg bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)] flex items-center justify-center">
                   <span className="text-[var(--color-on-solid)] font-bold text-lg">{churchName?.charAt(0) || 'M'}</span>
                 </div>
-                <h1 className="text-lg font-bold text-[var(--color-on-solid)] truncate">{churchName}</h1>
+                <h1 className={`text-lg font-bold text-[var(--color-on-solid)] truncate ${activeEntry ? 'lg:hidden' : ''}`}>{churchName}</h1>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
@@ -304,7 +308,7 @@ function Sidebar({ isOpen, setIsOpen }) {
 
           {/* Primary rail — top-level entries only. Leaf entries navigate
               directly; group entries open the sub-sidebar panel beside them. */}
-          <nav className="flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain">
+          <nav className={`flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain ${activeEntry ? 'lg:px-2' : ''}`}>
             <ul className="space-y-1.5">
               {visibleEntries.map((entry) => {
                 const Icon = entry.icon;
@@ -318,41 +322,48 @@ function Sidebar({ isOpen, setIsOpen }) {
                     : 'text-[var(--color-text)] hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)]';
                 const inner = (
                   <>
-                    <span className={`p-1.5 rounded-lg mr-3 ${
+                    <span className={`p-1.5 rounded-lg ${activeEntry ? 'lg:mr-0 lg:mx-auto' : 'mr-3'} ${
                       selfActive
                         ? 'bg-[color-mix(in_srgb,var(--color-surface)_20%,transparent)]'
                         : 'bg-[var(--color-background)]'
                     }`}>
                       <Icon className="h-4 w-4" />
                     </span>
-                    <span className="flex-1 min-w-0 truncate">{entry.label}</span>
+                    <span className={`flex-1 min-w-0 truncate ${activeEntry ? 'lg:hidden' : ''}`}>{entry.label}</span>
                     {isGroup && (
                       <ChevronRight
                         aria-hidden="true"
                         className={`h-4 w-4 ml-2 transition-transform duration-200 ${
                           activeKey === entry.key ? 'rotate-90' : ''
-                        } text-[var(--color-textSecondary)]`}
+                        } text-[var(--color-textSecondary)] ${activeEntry ? 'lg:hidden' : ''}`}
                       />
                     )}
                   </>
                 );
+                const itemClasses = `flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ${classes} ${
+                  activeEntry ? 'lg:justify-center lg:px-0' : ''
+                }`;
                 return (
                   <li key={entry.key}>
                     {isGroup ? (
                       <button
                         type="button"
-                        className={`w-full flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ${classes}`}
+                        className={`w-full ${itemClasses}`}
                         onClick={() => setActiveKey(activeKey === entry.key ? null : entry.key)}
                         aria-expanded={activeKey === entry.key}
+                        aria-label={entry.label}
+                        title={entry.label}
                       >
                         {inner}
                       </button>
                     ) : (
                       <Link
                         to={entry.path}
-                        className={`flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 ${classes}`}
+                        className={itemClasses}
                         onClick={() => setIsOpen(false)}
                         aria-current={selfActive ? 'page' : undefined}
+                        aria-label={entry.label}
+                        title={entry.label}
                       >
                         {inner}
                       </Link>
@@ -363,13 +374,14 @@ function Sidebar({ isOpen, setIsOpen }) {
             </ul>
           </nav>
 
-          {/* User summary & logout */}
-          <div className="p-4 border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)]">
-            <div className="flex items-center space-x-3 mb-4 px-2">
+          {/* User summary & logout — avatar + icon button when the rail is
+              collapsed to icons */}
+          <div className={`p-4 border-t border-[var(--color-border)] bg-[color-mix(in_srgb,var(--color-background)_50%,transparent)] ${activeEntry ? 'lg:p-2' : ''}`}>
+            <div className={`flex items-center space-x-3 mb-4 px-2 ${activeEntry ? 'lg:justify-center lg:space-x-0 lg:px-0' : ''}`}>
               <div className="w-10 h-10 rounded-full bg-[var(--color-primary-light)] flex items-center justify-center text-[var(--color-primary)] font-bold">
                 {user?.first_name?.charAt(0)}{user?.last_name?.charAt(0)}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className={`flex-1 min-w-0 ${activeEntry ? 'lg:hidden' : ''}`}>
                 <p className="text-sm font-semibold text-[var(--color-text)] truncate">
                   {user?.first_name} {user?.last_name}
                 </p>
@@ -380,10 +392,12 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center px-4 py-2 text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors"
+              className={`w-full flex items-center px-4 py-2 text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] rounded-lg transition-colors ${activeEntry ? 'lg:justify-center lg:px-0' : ''}`}
+              aria-label="Sign Out"
+              title="Sign Out"
             >
-              <LogOut className="h-4 w-4 mr-3" />
-              Sign Out
+              <LogOut className={`h-4 w-4 ${activeEntry ? 'lg:mr-0' : 'mr-3'}`} />
+              <span className={activeEntry ? 'lg:hidden' : ''}>Sign Out</span>
             </button>
           </div>
         </div>
