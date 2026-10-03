@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { Building, Users, LogOut, Menu, X } from 'lucide-react'
+import { Building, LogOut, Menu, X, LayoutDashboard, BarChart3, HeartPulse, ScrollText, ShieldCheck, Settings } from 'lucide-react'
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { FullPageLoading } from '../components/common/Loading'
 import { useAuth } from '../contexts/AuthContext'
@@ -11,6 +11,11 @@ const TenantList        = lazy(() => import('../pages/platform/tenants/TenantLis
 const TenantDetail      = lazy(() => import('../pages/platform/tenants/TenantDetail'))
 const TenantCreate      = lazy(() => import('../pages/platform/tenants/TenantCreate'))
 const TenantSettings    = lazy(() => import('../pages/platform/tenants/TenantSettings'))
+const PlatformAnalytics  = lazy(() => import('../pages/platform/PlatformAnalytics'))
+const PlatformMonitoring = lazy(() => import('../pages/platform/PlatformMonitoring'))
+const PlatformAuditLog   = lazy(() => import('../pages/platform/PlatformAuditLog'))
+const PlatformUsers      = lazy(() => import('../pages/platform/PlatformUsers'))
+const PlatformSettings   = lazy(() => import('../pages/platform/PlatformSettings'))
 
 const PlatformShell = () => {
   const navigate = useNavigate()
@@ -47,9 +52,15 @@ const PlatformShell = () => {
     navigate('/platform/login', { replace: true })
   }
 
+  const isOwner = platformUser?.role === 'platform_owner'
   const navigation = [
-    { name: 'Dashboard', href: '/platform', icon: Building },
-    { name: 'Tenants', href: '/platform/tenants', icon: Users },
+    { name: 'Dashboard', href: '/platform', icon: LayoutDashboard },
+    { name: 'Churches', href: '/platform/tenants', icon: Building },
+    { name: 'Analytics', href: '/platform/analytics', icon: BarChart3 },
+    { name: 'Monitoring', href: '/platform/monitoring', icon: HeartPulse },
+    { name: 'Audit Log', href: '/platform/audit', icon: ScrollText },
+    ...(isOwner ? [{ name: 'Admins', href: '/platform/admins', icon: ShieldCheck }] : []),
+    { name: 'Settings', href: '/platform/settings', icon: Settings },
   ]
 
   if (checkingSession) {
@@ -152,6 +163,11 @@ const PlatformShell = () => {
               <Route path="tenants/create" element={<TenantCreate />} />
               <Route path="tenants/:id" element={<TenantDetail />} />
               <Route path="tenants/:id/edit" element={<TenantSettings />} />
+              <Route path="analytics" element={<PlatformAnalytics />} />
+              <Route path="monitoring" element={<PlatformMonitoring />} />
+              <Route path="audit" element={<PlatformAuditLog />} />
+              <Route path="admins" element={<PlatformUsers />} />
+              <Route path="settings" element={<PlatformSettings />} />
               <Route path="*" element={<Navigate to="/platform" replace />} />
             </Routes>
           </Suspense>

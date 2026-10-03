@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import {
-  ArrowLeft, Building, Users, DollarSign, Activity, Calendar,
-  Settings, MoreVertical, CheckCircle, AlertCircle, Clock, Edit, Trash2
+  ArrowLeft, Building, Users, DollarSign, Activity,
+  MoreVertical, CheckCircle, AlertCircle, Clock, Edit, Trash2
 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
-import { useColorPalette } from '../../../contexts/ColorPaletteContext'
 import Card from '../../../components/common/Card'
 import StatsCard from '../../../components/common/StatsCard'
 import { FullPageLoading } from '../../../components/common/Loading'
@@ -14,7 +13,6 @@ import { FullPageLoading } from '../../../components/common/Loading'
 const TenantDetail = () => {
   const { api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
   const navigate = useNavigate()
   const { id } = useParams()
   
@@ -202,25 +200,25 @@ const TenantDetail = () => {
           title="Total Users"
           value={stats.userCount}
           icon={Users}
-          color="bg-[var(--color-primary-light)] text-[var(--color-primary)]"
+          iconColor="bg-[var(--color-primary-light)] text-[var(--color-primary)]"
         />
         <StatsCard
           title="Members"
           value={stats.memberCount}
           icon={Users}
-          color="bg-[var(--color-success-light)] text-[var(--color-success)]"
+          iconColor="bg-[var(--color-success-light)] text-[var(--color-success)]"
         />
         <StatsCard
           title="Payments"
           value={stats.paymentCount}
           icon={DollarSign}
-          color="bg-[var(--color-accent-light)] text-[var(--color-accent)]"
+          iconColor="bg-[var(--color-accent-light)] text-[var(--color-accent)]"
         />
         <StatsCard
           title="Departments"
           value={stats.departmentCount}
           icon={Building}
-          color="bg-[var(--color-warning-light)] text-[var(--color-warning)]"
+          iconColor="bg-[var(--color-warning-light)] text-[var(--color-warning)]"
         />
       </div>
 

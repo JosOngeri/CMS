@@ -44,8 +44,12 @@ class ChurchRepository extends BaseRepository {
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
     values.push(limit, (page - 1) * limit);
     const query = [
-      "SELECT id, name, slug, settings, is_active, created_at, updated_at, COUNT(*) OVER() AS total_count",
-      "FROM churches",
+      "SELECT c.id, c.name, c.slug, c.settings, c.is_active, c.created_at, c.updated_at,",
+      "COALESCE(uc.user_count, 0) AS user_count, COALESCE(mc.member_count, 0) AS member_count,",
+      "COUNT(*) OVER() AS total_count",
+      "FROM churches c",
+      "LEFT JOIN (SELECT church_id, COUNT(*) AS user_count FROM users GROUP BY church_id) uc ON uc.church_id = c.id",
+      "LEFT JOIN (SELECT church_id, COUNT(*) AS member_count FROM members GROUP BY church_id) mc ON mc.church_id = c.id",
       whereClause,
       `ORDER BY ${safeSortBy} ${safeSortOrder}`,
       `LIMIT $${values.length - 1} OFFSET $${values.length}`
@@ -110,6 +114,47 @@ class ChurchRepository extends BaseRepository {
       [name, slug, JSON.stringify(settings)]
     );
     return result.rows[0];
+  }
+
+  /**
+   * Onboarding: create the church and its first Admin user atomically —
+   * a church without an admin account can't be logged into. Rolls the
+   * church insert back if the user insert fails (e.g. duplicate email).
+   */
+  async createChurchWithAdmin(tenant, admin) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const churchResult = await client.query(
+        'INSERT INTO churches (name, slug, settings) VALUES ($1, $2, $3) RETURNING *',
+        [tenant.name, tenant.slug, JSON.stringify(tenant.settings)]
+      );
+      const church = churchResult.rows[0];
+
+      const userResult = await client.query(
+        `INSERT INTO users (email, password_hash, first_name, last_name, username, is_active, email_verified, church_id, church_slug, slug)
+         VALUES ($1, $2, $3, $4, $5, true, true, $6, $7, $8)
+         RETURNING id, email, first_name, last_name`,
+        [admin.email, admin.passwordHash, admin.firstName, admin.lastName, admin.username, church.id, church.slug, admin.slug]
+      );
+      const adminUser = userResult.rows[0];
+
+      const roleResult = await client.query(
+        `INSERT INTO user_roles (user_id, role_id)
+         SELECT $1, id FROM roles WHERE name = 'Admin'
+         ON CONFLICT (user_id, role_id) DO NOTHING`,
+        [adminUser.id]
+      );
+
+      await client.query('COMMIT');
+      return { church, adminUser, roleAssigned: roleResult.rowCount > 0 };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
   }
 
   async updateChurch(id, updates, values) {

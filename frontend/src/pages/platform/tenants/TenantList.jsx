@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import {
-  Search, Filter, Plus, MoreVertical, Building, Users,
+  Search, Plus, Building, Users,
   DollarSign, Activity, CheckCircle, AlertCircle, Clock
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
 import { useToast } from '../../../contexts/ToastContext'
-import { useColorPalette } from '../../../contexts/ColorPaletteContext'
 import Card from '../../../components/common/Card'
 import { FullPageLoading } from '../../../components/common/Loading'
 import { EmptyState } from '../../../components/common/EmptyState'
@@ -14,7 +13,6 @@ import { EmptyState } from '../../../components/common/EmptyState'
 const TenantList = () => {
   const { api } = useAuth()
   const toast = useToast()
-  const { colors } = useColorPalette()
   const navigate = useNavigate()
   
   const [tenants, setTenants] = useState([])
@@ -131,6 +129,7 @@ const TenantList = () => {
               className="px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
             >
               <option value="all">All Tiers</option>
+              <option value="free">Free</option>
               <option value="basic">Basic</option>
               <option value="professional">Professional</option>
               <option value="enterprise">Enterprise</option>
@@ -190,7 +189,8 @@ const TenantList = () => {
           description={searchTerm || statusFilter !== 'all' || tierFilter !== 'all'
             ? 'Try adjusting your filters'
             : 'Get started by adding your first church tenant'}
-          action={searchTerm || statusFilter !== 'all' || tierFilter !== 'all'
+          action={Plus}
+          onAction={searchTerm || statusFilter !== 'all' || tierFilter !== 'all'
             ? null
             : () => navigate('/platform/tenants/create')
           }

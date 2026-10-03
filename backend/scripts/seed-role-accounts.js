@@ -154,10 +154,13 @@ const passwordHash = bcrypt.hashSync(seedPassword('role accounts'), 12);
   }
 
   // Platform-console login (/platform/login) authenticates against
-  // platform_users, not users — set its password_hash so the seeded
-  // admin@kmaincms.org account can actually log in.
+  // platform_users, not users. Migration 020 seeds admin@msabato.org with no
+  // password, so upsert the canonical owner row here — INSERT so it exists on
+  // fresh databases, UPDATE password_hash so re-runs keep it usable.
   await client.query(
-    `UPDATE platform_users SET password_hash = $1 WHERE email = 'admin@kmaincms.org'`,
+    `INSERT INTO platform_users (email, name, role, permissions, password_hash, is_active)
+     VALUES ('admin@kmaincms.org', 'Platform Owner', 'platform_owner', '["*"]'::jsonb, $1, true)
+     ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, is_active = true`,
     [passwordHash]
   );
   console.log('  Platform Owner -> admin@kmaincms.org (/platform/login)');

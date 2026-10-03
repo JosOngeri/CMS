@@ -56,7 +56,9 @@ FOR EACH ROW EXECUTE FUNCTION sync_pledge_amount_paid();
 CREATE OR REPLACE VIEW activity_feed AS
 SELECT
   'announcement' AS activity_type,
-  a.id,
+  -- approval_requests.id is INTEGER while the other sources are UUID —
+  -- cast all ids to text so the UNION has one common type.
+  a.id::text AS id,
   a.title,
   a.content AS description,
   a.created_at,
@@ -71,7 +73,7 @@ JOIN users u ON a.author_id = u.id
 UNION ALL
 SELECT
   'event_created' AS activity_type,
-  e.id,
+  e.id::text AS id,
   e.title,
   e.description,
   e.created_at,
@@ -86,7 +88,7 @@ JOIN users u ON e.organizer_id = u.id
 UNION ALL
 SELECT
   'member_joined' AS activity_type,
-  dm.user_id AS id,
+  dm.user_id::text AS id,
   CONCAT(u.first_name, ' ', u.last_name) AS title,
   'Joined the department' AS description,
   dm.joined_at AS created_at,
@@ -102,7 +104,7 @@ WHERE dm.is_active = true
 UNION ALL
 SELECT
   'approval_requested' AS activity_type,
-  ar.id,
+  ar.id::text AS id,
   ar.title,
   ar.description,
   ar.created_at,

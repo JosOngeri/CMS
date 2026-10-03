@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import {
   Users, DollarSign, TrendingUp, AlertCircle, Activity,
-  Building, ArrowRight, CheckCircle, Clock, BarChart
+  Building, CheckCircle, Clock
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
@@ -10,9 +10,10 @@ import Card from '../../components/common/Card'
 import StatsCard from '../../components/common/StatsCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import { fmtKES, fmtRelative } from '../../utils/format'
 
 const PlatformDashboard = () => {
-  const { user, api } = useAuth()
+  const { api } = useAuth()
   const toast = useToast()
   const [stats, setStats] = useState({
     totalChurches: 0,
@@ -30,7 +31,6 @@ const PlatformDashboard = () => {
   })
   const [recentActivities, setRecentActivities] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
 
   useEffect(() => {
     fetchPlatformData()
@@ -106,7 +106,7 @@ const PlatformDashboard = () => {
           type: activity.type,
           title: activity.title,
           description: activity.description,
-          time: activity.time,
+          time: fmtRelative(activity.created_at || activity.time),
           icon: iconMap[activity.type] || Activity,
           colorClass: colorClassMap[activity.type] || 'bg-[var(--color-surfaceHover)] text-[var(--color-textSecondary)]'
         }))
@@ -148,14 +148,14 @@ const PlatformDashboard = () => {
       description: 'View platform revenue and subscriptions',
       icon: DollarSign,
       color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
-      link: '/platform/analytics/revenue'
+      link: '/platform/analytics'
     },
     {
       title: 'System Health',
       description: 'Monitor platform performance',
       icon: Activity,
       color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
-      link: '/platform/monitoring/health'
+      link: '/platform/monitoring'
     }
   ]
 
@@ -177,29 +177,29 @@ const PlatformDashboard = () => {
           title="Total Churches"
           value={stats.totalChurches}
           icon={Building}
-          color="bg-[var(--color-primary-light)] text-[var(--color-primary)]"
-          trend={stats.newChurchesThisMonth > 0 ? `+${stats.newChurchesThisMonth} this month` : 'No new churches'}
+          iconColor="bg-[var(--color-primary-light)] text-[var(--color-primary)]"
+          subtitle={stats.newChurchesThisMonth > 0 ? `+${stats.newChurchesThisMonth} this month` : 'No new churches'}
         />
         <StatsCard
           title="Monthly Revenue"
-          value={`$${(stats.totalMRR / 1000).toFixed(0)}K`}
+          value={fmtKES(stats.totalMRR)}
           icon={DollarSign}
-          color="bg-[var(--color-success-light)] text-[var(--color-success)]"
-          trend="MRR"
+          iconColor="bg-[var(--color-success-light)] text-[var(--color-success)]"
+          subtitle="MRR estimate"
         />
         <StatsCard
           title="Active Churches"
           value={stats.activeChurches}
           icon={CheckCircle}
-          color="bg-[var(--color-accent-light)] text-[var(--color-accent)]"
-          trend={`${((stats.activeChurches / stats.totalChurches) * 100).toFixed(0)}% active rate`}
+          iconColor="bg-[var(--color-accent-light)] text-[var(--color-accent)]"
+          subtitle={stats.totalChurches > 0 ? `${((stats.activeChurches / stats.totalChurches) * 100).toFixed(0)}% active rate` : 'No churches yet'}
         />
         <StatsCard
           title="Platform Health"
           value={`${stats.platformHealthScore}%`}
           icon={Activity}
-          color="bg-[var(--color-warning-light)] text-[var(--color-warning)]"
-          trend={healthStatus.overall}
+          iconColor="bg-[var(--color-warning-light)] text-[var(--color-warning)]"
+          subtitle={healthStatus.overall}
         />
       </div>
 
@@ -211,10 +211,10 @@ const PlatformDashboard = () => {
             <TrendingUp className="h-5 w-5 text-[var(--color-textSecondary)]" />
           </div>
           <p className="text-3xl font-bold text-[var(--color-text)] mb-2">
-            {stats.churnRate.toFixed(1)}%
+            {(stats.churnRate || 0).toFixed(1)}%
           </p>
           <p className="text-sm text-[var(--color-textSecondary)]">
-            Monthly customer churn
+            Churches archived this month
           </p>
         </Card>
 
@@ -224,10 +224,10 @@ const PlatformDashboard = () => {
             <DollarSign className="h-5 w-5 text-[var(--color-textSecondary)]" />
           </div>
           <p className="text-3xl font-bold text-[var(--color-text)] mb-2">
-            ${stats.arpc.toFixed(0)}
+            {fmtKES(stats.arpc)}
           </p>
           <p className="text-sm text-[var(--color-textSecondary)]">
-            Average revenue per customer
+            Average revenue per church
           </p>
         </Card>
 

@@ -11,20 +11,26 @@ const logger = require('../config/logging');
 
 const ROLE_PERMISSIONS = {
   platform_owner: ['*'],
-  platform_admin: ['platform:read', 'tenant:read', 'tenant:manage', 'metrics:read', 'health:read', 'audit:read'],
-  support: ['platform:read', 'tenant:read']
+  platform_admin: ['platform:read', 'tenant:read', 'tenant:manage', 'metrics:read', 'health:read', 'audit:read', 'settings:manage'],
+  support_staff: ['platform:read', 'tenant:read'],
+  support: ['platform:read', 'tenant:read'] // legacy alias of support_staff
 };
+
+// Legacy rows store 'all' as the wildcard; requirePlatformPermission only
+// understands '*' — normalize so seeded owners aren't locked out of every
+// endpoint.
+const mapWildcard = (list) => list.map((permission) => (permission === 'all' ? '*' : permission));
 
 const normalizePermissions = (permissions, role) => {
   if (Array.isArray(permissions)) {
-    return permissions;
+    return mapWildcard(permissions);
   }
 
   if (typeof permissions === 'string') {
     try {
       const parsedPermissions = JSON.parse(permissions);
       if (Array.isArray(parsedPermissions)) {
-        return parsedPermissions;
+        return mapWildcard(parsedPermissions);
       }
     } catch {
       return ROLE_PERMISSIONS[role] || [];
@@ -152,5 +158,6 @@ module.exports = {
   authenticatePlatformUser,
   requirePlatformRole,
   requirePlatformPermission,
-  normalizePermissions
+  normalizePermissions,
+  ROLE_PERMISSIONS
 };

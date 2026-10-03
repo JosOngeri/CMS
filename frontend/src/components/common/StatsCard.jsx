@@ -62,10 +62,12 @@ const StatsCard = ({
         <>
           <span className="stat-value">{value}</span>
           {subtitle && <span className="stat-subtitle">{subtitle}</span>}
-          <span className={`stat-change ${changeType === 'positive' ? 'text-[var(--color-success)]' : changeType === 'negative' ? 'text-[var(--color-error)]' : 'text-[var(--color-textSecondary)]'}`}>
-            {changeType === 'positive' ? '↑' : changeType === 'negative' ? '↓' : ''} {change}
-            {trendPeriod && <span className="ml-1 text-xs text-[var(--color-textSecondary)]">{trendPeriod}</span>}
-          </span>
+          {(change !== undefined && change !== null && change !== '') && (
+            <span className={`stat-change ${changeType === 'positive' ? 'text-[var(--color-success)]' : changeType === 'negative' ? 'text-[var(--color-error)]' : 'text-[var(--color-textSecondary)]'}`}>
+              {changeType === 'positive' ? '↑' : changeType === 'negative' ? '↓' : ''} {change}
+              {trendPeriod && <span className="ml-1 text-xs text-[var(--color-textSecondary)]">{trendPeriod}</span>}
+            </span>
+          )}
         </>
       )}
     </div>
