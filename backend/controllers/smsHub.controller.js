@@ -22,11 +22,11 @@ class SmsHubController extends BaseController {
 
     try {
       if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
-        return ResponseHandler.error(res, 'Recipients array is required');
+        return ResponseHandler.error(res, 'Recipients array is required', 400);
       }
 
       if (!message || message.trim() === '') {
-        return ResponseHandler.error(res, 'Message is required');
+        return ResponseHandler.error(res, 'Message is required', 400);
       }
 
       // Church always comes from the authenticated identity — never req.body

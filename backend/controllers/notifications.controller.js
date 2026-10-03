@@ -187,6 +187,10 @@ class NotificationsController extends BaseController {
       const churchId = req.user.church_id;
       const { preferences } = req.body;
 
+      if (!preferences || typeof preferences !== 'object') {
+        return this.error(res, 'A preferences object is required', 400);
+      }
+
       const updated = await NotificationsRepository.updatePreferences(userId, preferences, churchId);
 
       this.success(res, updated, 'Preferences updated successfully');

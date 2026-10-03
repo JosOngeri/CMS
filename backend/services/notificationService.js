@@ -58,12 +58,20 @@ class NotificationService {
       }
 
       // Replace variables in template
-      const { title, message } = this.replaceVariables(template, variables);
+      const title = this.replaceVariables(template.title, variables);
+      const message = this.replaceVariables(template.message, variables);
+
+      // notification_templates.type_id is the type NAME; notifications.type_id
+      // is the notification_types.id UUID — resolve name → id.
+      const typeResult = await pool.query(
+        `SELECT id FROM notification_types WHERE name = $1 OR id::text = $1 LIMIT 1`,
+        [template.type_id]
+      );
 
       // Create notification
       const notification = await this.createNotification({
         user_id: userId,
-        type_id: template.type_id,
+        type_id: typeResult.rows[0] ? typeResult.rows[0].id : null,
         title,
         message,
         action_url: this.replaceVariables(template.action_url || null, variables),
@@ -110,7 +118,9 @@ class NotificationService {
     const query = `
       SELECT id, name, type_id, title, message, action_url, variables, church_id
       FROM notification_templates
-      WHERE id = $1 AND (church_id = $2 OR church_id IS NULL)
+      WHERE (name = $1 OR id::text = $1) AND (church_id = $2 OR church_id IS NULL)
+      ORDER BY church_id NULLS LAST
+      LIMIT 1
     `;
     const result = await pool.query(query, [templateId, churchId]);
     return result.rows[0] || null;

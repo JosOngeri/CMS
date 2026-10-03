@@ -18,6 +18,11 @@ CREATE TABLE IF NOT EXISTS users (
   first_name    VARCHAR(100) NOT NULL,
   last_name     VARCHAR(100) NOT NULL,
   phone_number  VARCHAR(20),
+  bio           TEXT,
+  address       TEXT,
+  city          VARCHAR(100),
+  country       VARCHAR(100),
+  date_of_birth DATE,
   slug          VARCHAR(100),
   church_id     UUID REFERENCES churches(id) ON DELETE SET NULL,
   is_active     BOOLEAN DEFAULT true,
@@ -63,12 +68,24 @@ CREATE TABLE IF NOT EXISTS departments (
   updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Shape mirrors 023_create_members.sql (prod reality): code reads dm.role,
+-- dm.status, dm.is_active, dm.approved_* — the legacy role_in_department is
+-- kept alongside for departmentLeadership.js compatibility.
 CREATE TABLE IF NOT EXISTS department_members (
-  user_id            UUID REFERENCES users(id) ON DELETE CASCADE,
-  department_id      UUID REFERENCES departments(id) ON DELETE CASCADE,
+  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  member_id          UUID, -- FK → members(id) added by 069 (members created at 023)
+  department_id      UUID NOT NULL REFERENCES departments(id) ON DELETE CASCADE,
+  role               VARCHAR(100),
+  role_in_department VARCHAR(100),
+  status             VARCHAR(50) DEFAULT 'active',
+  is_active          BOOLEAN DEFAULT true,
   joined_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  role_in_department VARCHAR(50),
-  PRIMARY KEY (user_id, department_id)
+  requested_at       TIMESTAMP,
+  approved_at        TIMESTAMP,
+  approved_by        UUID,
+  updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  church_id          UUID
 );
 
 CREATE TABLE IF NOT EXISTS announcements (
@@ -88,10 +105,10 @@ CREATE TABLE IF NOT EXISTS announcements (
 
 CREATE TABLE IF NOT EXISTS payments (
   id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  member_id            UUID REFERENCES users(id),
+  member_id            UUID, -- FK → members(id) added by 067 (members created at 023)
   transaction_id       VARCHAR(100) UNIQUE,
   mpesa_receipt_number VARCHAR(100),
-  phone_number         VARCHAR(20) NOT NULL,
+  phone_number         VARCHAR(20),
   amount               DECIMAL(10,2) NOT NULL,
   payment_date         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   status               VARCHAR(20) DEFAULT 'pending',

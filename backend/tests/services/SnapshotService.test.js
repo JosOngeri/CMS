@@ -37,7 +37,7 @@ describe('SnapshotService', () => {
     
     testChurchId = 'test-church-id';
     mockDatabaseConnection = {
-      query: jest.fn()
+      query: jest.fn().mockResolvedValue({ rows: [] })
     };
 
     // Set the mock repository on the service

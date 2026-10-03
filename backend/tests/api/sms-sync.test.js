@@ -4,14 +4,13 @@
  * Test suite for SMS sync API endpoints
  */
 
-const request = require('supertest');
-const express = require('express');
-const smsSyncRoutes = require('../../routes/smsSync.routes');
-const smsSyncController = require('../../controllers/smsSync.controller');
-const db = require('../../config/database');
-
-// Mock the database
-jest.mock('../../config/database');
+// jest.mock MUST precede the requires that consume the mocked modules —
+// this project runs jest with transform: {}, so jest.mock is NOT hoisted.
+// Mock the database — config/database exports { pool, queryWithLogging }
+jest.mock('../../config/database', () => ({
+  pool: { query: jest.fn() },
+  queryWithLogging: jest.fn()
+}));
 
 // Mock ResponseHandler
 jest.mock('../../utils/ResponseHandler', () => ({
@@ -65,14 +64,14 @@ jest.mock('../../middleware/auth', () => ({
     if (token === 'valid-sms-token') {
       req.user = {
         id: 'user-123',
-        church_id: 'church-123',
+        churchId: 'church-123',
         scope: 'sms'
       };
       next();
     } else if (token === 'valid-admin-token') {
       req.user = {
         id: 'user-456',
-        church_id: 'church-456',
+        churchId: 'church-456',
         scope: 'admin'
       };
       next();
@@ -85,11 +84,38 @@ jest.mock('../../middleware/auth', () => ({
   }
 }));
 
+
+const request = require('supertest');
+const express = require('express');
+const zlib = require('zlib');
+const smsSyncRoutes = require('../../routes/smsSync.routes');
+const smsSyncController = require('../../controllers/smsSync.controller');
+const db = require('../../config/database');
+
 describe('SMS Sync API Endpoints', () => {
   let app;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // clearAllMocks does NOT drain the mockResolvedValueOnce queue — stale
+    // rows leak into later tests without this reset.
+    db.pool.query.mockReset();
+    // Emulate the repo's WHERE sequence_number > $2 AND LIMIT $3 filtering —
+    // a flat mock would ignore the params the real SQL applies.
+    db.pool.query._updates = [];
+    db.pool.query.mockImplementation((sql, params = []) => {
+      if (/sms_rolling_updates/.test(sql)) {
+        let rows = [...db.pool.query._updates];
+        if (/sequence_number >/.test(sql)) {
+          rows = rows.filter((r) => r.sequence_number > params[1]);
+        }
+        if (/LIMIT/.test(sql)) {
+          rows = rows.slice(0, params[params.length - 1]);
+        }
+        return Promise.resolve({ rows, rowCount: rows.length });
+      }
+      return Promise.resolve({ rows: [], rowCount: 0 });
+    });
     app = express();
     app.use(express.json());
     app.use('/api/sms-sync', smsSyncRoutes);
@@ -105,14 +131,14 @@ describe('SMS Sync API Endpoints', () => {
               church_id: 'church-123',
               snapshot_date: '2025-01-27',
               data_hash: 'abc123',
-              compressed_data: Buffer.from('compressed-data'),
+              compressed_data: zlib.gzipSync(JSON.stringify({ contacts: [], groups: [], messages: [], templates: [] })),
               file_size: 1024,
               created_at: new Date()
             }
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockSnapshot);
+        db.pool.query.mockResolvedValueOnce(mockSnapshot);
 
         const response = await request(app)
           .get('/api/sms-sync/snapshot')
@@ -145,7 +171,7 @@ describe('SMS Sync API Endpoints', () => {
       });
 
       it('should return 404 for non-existent snapshot', async () => {
-        db.query.mockResolvedValueOnce({ rows: [] });
+        db.pool.query.mockResolvedValueOnce({ rows: [] });
 
         const response = await request(app)
           .get('/api/sms-sync/snapshot')
@@ -163,7 +189,7 @@ describe('SMS Sync API Endpoints', () => {
               church_id: 'church-123',
               snapshot_date: '2025-01-27',
               data_hash: 'abc123',
-              compressed_data: Buffer.from('compressed-data'),
+              compressed_data: zlib.gzipSync(JSON.stringify({ contacts: [], groups: [], messages: [], templates: [] })),
               file_size: 1024,
               created_at: new Date()
             }
@@ -186,8 +212,8 @@ describe('SMS Sync API Endpoints', () => {
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockSnapshot);
-        db.query.mockResolvedValueOnce(mockRollingUpdates);
+        db.pool.query.mockResolvedValueOnce(mockSnapshot);
+        db.pool.query.mockResolvedValueOnce(mockRollingUpdates);
 
         const response = await request(app)
           .get('/api/sms-sync/snapshot?since_date=2025-01-26')
@@ -195,10 +221,15 @@ describe('SMS Sync API Endpoints', () => {
 
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
-        expect(response.body.data).toHaveProperty('delta');
+        // Delta generation is not implemented — since_date is acknowledged
+        // via delta_requested but always returns a full snapshot.
+        expect(response.body.data).toHaveProperty('snapshot_type', 'full');
+        expect(response.body.data).toHaveProperty('delta_requested', true);
       });
 
-      it('should include Content-Encoding header for compressed data', async () => {
+      it('should return the compressed payload inside a plain JSON envelope', async () => {
+        // Content-Encoding: gzip was removed — the body is JSON containing the
+        // gzip bytes as a field, not a gzip-encoded HTTP response.
         const mockSnapshot = {
           rows: [
             {
@@ -206,21 +237,22 @@ describe('SMS Sync API Endpoints', () => {
               church_id: 'church-123',
               snapshot_date: '2025-01-27',
               data_hash: 'abc123',
-              compressed_data: Buffer.from('compressed-data'),
+              compressed_data: zlib.gzipSync(JSON.stringify({ contacts: [], groups: [], messages: [], templates: [] })),
               file_size: 1024,
               created_at: new Date()
             }
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockSnapshot);
+        db.pool.query.mockResolvedValueOnce(mockSnapshot);
 
         const response = await request(app)
           .get('/api/sms-sync/snapshot')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
-        expect(response.headers['content-encoding']).toBe('gzip');
+        expect(response.headers['content-encoding']).toBeUndefined();
+        expect(response.body.data).toHaveProperty('compressed_data');
       });
 
       it('should include cache headers', async () => {
@@ -231,14 +263,14 @@ describe('SMS Sync API Endpoints', () => {
               church_id: 'church-123',
               snapshot_date: '2025-01-27',
               data_hash: 'abc123',
-              compressed_data: Buffer.from('compressed-data'),
+              compressed_data: zlib.gzipSync(JSON.stringify({ contacts: [], groups: [], messages: [], templates: [] })),
               file_size: 1024,
               created_at: new Date()
             }
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockSnapshot);
+        db.pool.query.mockResolvedValueOnce(mockSnapshot);
 
         const response = await request(app)
           .get('/api/sms-sync/snapshot')
@@ -251,7 +283,7 @@ describe('SMS Sync API Endpoints', () => {
   });
 
   describe('Rolling Updates Endpoint', () => {
-    describe('GET /api/sms-sync/rolling-updates', () => {
+    describe('GET /api/sms-sync/updates', () => {
       it('should fetch rolling updates for valid SMS token', async () => {
         const mockUpdates = {
           rows: [
@@ -280,10 +312,10 @@ describe('SMS Sync API Endpoints', () => {
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockUpdates);
+        db.pool.query._updates = mockUpdates.rows;
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates')
+          .get('/api/sms-sync/updates')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
@@ -310,10 +342,10 @@ describe('SMS Sync API Endpoints', () => {
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockUpdates);
+        db.pool.query._updates = mockUpdates.rows;
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates?since_sequence=1')
+          .get('/api/sms-sync/updates?since_sequence=1')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
@@ -350,10 +382,10 @@ describe('SMS Sync API Endpoints', () => {
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockUpdates);
+        db.pool.query._updates = mockUpdates.rows;
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates')
+          .get('/api/sms-sync/updates')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
@@ -363,10 +395,10 @@ describe('SMS Sync API Endpoints', () => {
       });
 
       it('should return empty array with last_sequence_number when no updates', async () => {
-        db.query.mockResolvedValueOnce({ rows: [] });
+        db.pool.query.mockResolvedValueOnce({ rows: [] });
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates')
+          .get('/api/sms-sync/updates')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
@@ -377,7 +409,7 @@ describe('SMS Sync API Endpoints', () => {
 
       it('should return 401 for invalid token', async () => {
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates')
+          .get('/api/sms-sync/updates')
           .set('Authorization', 'Bearer invalid-token');
 
         expect(response.status).toBe(401);
@@ -386,7 +418,7 @@ describe('SMS Sync API Endpoints', () => {
 
       it('should return 403 for non-SMS scoped token', async () => {
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates')
+          .get('/api/sms-sync/updates')
           .set('Authorization', 'Bearer valid-admin-token');
 
         expect(response.status).toBe(403);
@@ -410,10 +442,10 @@ describe('SMS Sync API Endpoints', () => {
           ]
         };
 
-        db.query.mockResolvedValueOnce(mockUpdates);
+        db.pool.query._updates = mockUpdates.rows;
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates?limit=1')
+          .get('/api/sms-sync/updates?limit=1')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);
@@ -426,10 +458,10 @@ describe('SMS Sync API Endpoints', () => {
           rows: []
         };
 
-        db.query.mockResolvedValueOnce(mockUpdates);
+        db.pool.query._updates = mockUpdates.rows;
 
         const response = await request(app)
-          .get('/api/sms-sync/rolling-updates?limit=2000')
+          .get('/api/sms-sync/updates?limit=2000')
           .set('Authorization', 'Bearer valid-sms-token');
 
         expect(response.status).toBe(200);

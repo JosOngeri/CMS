@@ -65,8 +65,10 @@ module.exports = {
     },
     department: {
       create: [
+        // slug is derived from name inside the route — requiring it in the
+        // body rejected every legitimate create call.
         body('name').notEmpty().withMessage('Department name is required'),
-        body('slug').notEmpty().withMessage('Department slug is required')
+        body('slug').optional()
       ],
       addMember: [
         body('userId').notEmpty().withMessage('User ID is required'),

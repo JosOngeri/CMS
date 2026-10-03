@@ -402,6 +402,10 @@ class AuthController extends BaseController {
       if (firstName !== undefined) updates.first_name = firstName;
       if (lastName !== undefined) updates.last_name = lastName;
       if (phone !== undefined) updates.phone = phone;
+      // Extended profile fields the web form collects (migration 065)
+      for (const key of ['bio', 'address', 'city', 'country', 'date_of_birth']) {
+        if (req.body[key] !== undefined) updates[key] = req.body[key];
+      }
 
       const result = await UserRepository.updateProfile(userId, updates);
 

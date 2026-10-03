@@ -97,6 +97,13 @@ function csrfTokenMiddleware(req, res, next) {
     return next();
   }
 
+  // No session cookie and no header auth — the request is anonymous, so
+  // there is no cookie session for CSRF to forge. Let auth middleware
+  // produce a 401 rather than a misleading CSRF 403.
+  if (!hasSessionCookie) {
+    return next();
+  }
+
   // Validate CSRF token for state-changing requests
   const token = req.headers['x-csrf-token'] || req.body._csrf;
   if (!validateCSRFToken(token, req)) {

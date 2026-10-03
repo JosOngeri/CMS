@@ -19,6 +19,7 @@ router.get('/:id', authenticateToken, (req, res) => announcementController.getBy
 // Create announcement (authenticated users)
 router.post('/',
   authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'First Elder', 'Department Head']),
   validationRules.announcement.create,
   validate,
   (req, res) => announcementController.create(req, res)

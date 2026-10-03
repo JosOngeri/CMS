@@ -37,6 +37,7 @@ module.exports = {
     }
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup/global-setup.js'],
+  globalSetup: '<rootDir>/tests/setup/seed-test-db.js',
   testTimeout: 30000,
   verbose: true,
   coverageReporters: ['text', 'lcov', 'html'],

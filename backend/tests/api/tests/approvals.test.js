@@ -34,10 +34,10 @@ beforeEach(() => {
     const identity = identityFor(userId);
     return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
   });
-  db.query.mockReset();
+  db.pool.query.mockReset();
   db.pool.query.mockReset();
   db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
-  db.query.mockResolvedValue({ rows: [], rowCount: 0 });
+  db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
 });
 
 // =============================================================================
@@ -49,7 +49,7 @@ describe('GET /api/approvals', () => {
       seedTestApproval({ id: 1, title: 'Approval 1' }),
       seedTestApproval({ id: 2, title: 'Approval 2' }),
     ];
-    db.query.mockResolvedValueOnce({ rows: approvals, rowCount: 2 });
+    db.pool.query.mockResolvedValueOnce({ rows: approvals, rowCount: 2 });
 
     const res = await request(app)
       .get('/api/approvals')
@@ -57,7 +57,7 @@ describe('GET /api/approvals', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.approvals).toHaveLength(2);
+    expect(res.body.data.approvals).toHaveLength(2);
   });
 
   it('returns 401 when no auth token provided', async () => {
@@ -67,7 +67,7 @@ describe('GET /api/approvals', () => {
 
   it('supports filter parameter', async () => {
     const approvals = [seedTestApproval({ id: 1, status: 'pending' })];
-    db.query.mockResolvedValueOnce({ rows: approvals, rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: approvals, rowCount: 1 });
 
     const res = await request(app)
       .get('/api/approvals?filter=pending')
@@ -83,9 +83,7 @@ describe('GET /api/approvals', () => {
 describe('PUT /api/approvals/:id/approve', () => {
   it('returns 200 when approving a request', async () => {
     const approval = seedTestApproval({ id: 1, status: 'pending' });
-    db.query
-      .mockResolvedValueOnce({ rows: [approval], rowCount: 1 })
-      .mockResolvedValueOnce({ rows: [{ ...approval, status: 'approved' }], rowCount: 1 });
+    db.pool.query.mockResolvedValue({ rows: [approval], rowCount: 1 });
 
     const res = await request(app)
       .put('/api/approvals/1/approve')
@@ -116,9 +114,7 @@ describe('PUT /api/approvals/:id/approve', () => {
 describe('PUT /api/approvals/:id/reject', () => {
   it('returns 200 when rejecting a request', async () => {
     const approval = seedTestApproval({ id: 1, status: 'pending' });
-    db.query
-      .mockResolvedValueOnce({ rows: [approval], rowCount: 1 })
-      .mockResolvedValueOnce({ rows: [{ ...approval, status: 'rejected' }], rowCount: 1 });
+    db.pool.query.mockResolvedValue({ rows: [approval], rowCount: 1 });
 
     const res = await request(app)
       .put('/api/approvals/1/reject')
@@ -135,9 +131,7 @@ describe('PUT /api/approvals/:id/reject', () => {
 describe('PUT /api/approvals/:id/delegate', () => {
   it('returns 200 when delegating a request', async () => {
     const approval = seedTestApproval({ id: 1, status: 'pending' });
-    db.query
-      .mockResolvedValueOnce({ rows: [approval], rowCount: 1 })
-      .mockResolvedValueOnce({ rows: [{ ...approval, delegated_to: 2 }], rowCount: 1 });
+    db.pool.query.mockResolvedValue({ rows: [approval], rowCount: 1 });
 
     const res = await request(app)
       .put('/api/approvals/1/delegate')
@@ -158,7 +152,7 @@ describe('GET /api/approvals/workflows', () => {
       { id: 1, name: 'Workflow 1', steps: [] },
       { id: 2, name: 'Workflow 2', steps: [] },
     ];
-    db.query.mockResolvedValueOnce({ rows: workflows, rowCount: 2 });
+    db.pool.query.mockResolvedValueOnce({ rows: workflows, rowCount: 2 });
 
     const res = await request(app)
       .get('/api/approvals/workflows')
@@ -166,7 +160,7 @@ describe('GET /api/approvals/workflows', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.workflows).toHaveLength(2);
+    expect(res.body.data.workflows).toHaveLength(2);
   });
 });
 
@@ -176,7 +170,7 @@ describe('GET /api/approvals/workflows', () => {
 describe('POST /api/approvals/workflows', () => {
   it('returns 200 when creating a workflow', async () => {
     const workflow = { id: 1, name: 'New Workflow', description: 'Test', steps: [] };
-    db.query.mockResolvedValueOnce({ rows: [workflow], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [workflow], rowCount: 1 });
 
     const res = await request(app)
       .post('/api/approvals/workflows')
@@ -203,7 +197,7 @@ describe('POST /api/approvals/workflows', () => {
 describe('GET /api/approvals/analytics', () => {
   it('returns 200 and analytics data', async () => {
     const analytics = { total: 100, approved: 80, rejected: 10, pending: 10, avg_hours: 24.5 };
-    db.query.mockResolvedValueOnce({ rows: [analytics], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [analytics], rowCount: 1 });
 
     const res = await request(app)
       .get('/api/approvals/analytics')
@@ -211,6 +205,6 @@ describe('GET /api/approvals/analytics', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.analytics).toBeDefined();
+    expect(res.body.data.analytics).toBeDefined();
   });
 });

@@ -214,10 +214,13 @@ describe('POST /api/mpesa/callback — signature enforcement', () => {
     expect(MpesaService.processCallback).toHaveBeenCalled();
   });
 
-  it('accepts without signature when no secret configured (Safaricom compat)', async () => {
+  it('refuses the callback when no secret is configured', async () => {
+    // Hardened contract: with MPESA_CALLBACK_SECRET unset, accepting unsigned
+    // callbacks would allow forged payment confirmations — the endpoint
+    // returns 503 instead of processing them.
     delete process.env.MPESA_CALLBACK_SECRET;
     const res = await api('post', '/api/mpesa/callback').send({ Body: {} });
-    expect(res.status).toBe(200);
-    expect(MpesaService.processCallback).toHaveBeenCalled();
+    expect(res.status).toBe(503);
+    expect(MpesaService.processCallback).not.toHaveBeenCalled();
   });
 });

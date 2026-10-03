@@ -48,6 +48,16 @@ class DocumentApprovalService {
         }
       }
 
+      // The document must exist in this church — otherwise the request is
+      // created against a dangling entity_id and the status update no-ops.
+      const doc = await pool.query(
+        'SELECT id FROM documents WHERE id = $1 AND church_id = $2',
+        [documentId, churchId]
+      );
+      if (!doc.rows[0]) {
+        throw new Error('Document not found in this church');
+      }
+
       const requiredApprovals = this.approvalLevels[approvalLevel] || 2;
 
       const result = await pool.query(
@@ -74,18 +84,24 @@ class DocumentApprovalService {
 
       const approvers = await this.getApprovers(departmentId, approvalLevel, churchId);
 
+      // Notification delivery is best-effort — a template/socket hiccup must
+      // not roll back a successfully created approval request.
       for (const approver of approvers) {
-        await notificationService.createFromTemplate(
-          'approval_request',
-          {
-            documentId,
-            requesterName: metadata.requesterName || 'A user',
-            documentTitle: metadata.documentTitle || 'Document',
-            approvalLevel
-          },
-          approver.id,
-          approver.church_id
-        );
+        try {
+          await notificationService.createFromTemplate(
+            'approval_request',
+            {
+              documentId,
+              requesterName: metadata.requesterName || 'A user',
+              documentTitle: metadata.documentTitle || 'Document',
+              approvalLevel
+            },
+            approver.id,
+            approver.church_id
+          );
+        } catch (notifyError) {
+          logger.error('Approval-request notification failed:', notifyError.message);
+        }
       }
 
       logger.info(`Document approval request created: ${documentId} by ${requesterId}`);

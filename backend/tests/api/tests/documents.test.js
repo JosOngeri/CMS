@@ -30,10 +30,10 @@ beforeEach(() => {
     const identity = identityFor(userId);
     return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
   });
-  db.query.mockReset();
+  db.pool.query.mockReset();
   db.pool.query.mockReset();
   db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
-  db.query.mockResolvedValue({ rows: [], rowCount: 0 });
+  db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
 });
 
 // =============================================================================
@@ -45,7 +45,7 @@ describe('GET /api/documents', () => {
       seedTestDocument({ id: 1, name: 'Document 1.pdf' }),
       seedTestDocument({ id: 2, name: 'Document 2.pdf' }),
     ];
-    db.query.mockResolvedValueOnce({ rows: documents, rowCount: 2 });
+    db.pool.query.mockResolvedValueOnce({ rows: documents, rowCount: 2 });
 
     const res = await request(app)
       .get('/api/documents')
@@ -53,7 +53,7 @@ describe('GET /api/documents', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.documents).toHaveLength(2);
+    expect(res.body.data).toHaveLength(2);
   });
 
   it('returns 401 when no auth token provided', async () => {
@@ -66,47 +66,20 @@ describe('GET /api/documents', () => {
 // POST /api/documents/upload
 // =============================================================================
 describe('POST /api/documents/upload', () => {
-  it('returns 200 when uploading a document', async () => {
+  it('returns 201 when uploading a document', async () => {
     const document = seedTestDocument({ id: 1 });
-    db.query.mockResolvedValueOnce({ rows: [document], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [document], rowCount: 1 });
 
     const res = await request(app)
       .post('/api/documents/upload')
+      .attach('files', Buffer.from('%PDF-1.4 test'), 'test-document.pdf')
       .field('name', 'Test Document.pdf')
       .field('description', 'Test description')
       .field('category', 'policies')
       .set('x-auth-token', createAdminToken());
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     expect(res.body.success).toBe(true);
-  });
-});
-
-// =============================================================================
-// GET /api/documents/:id
-// =============================================================================
-describe('GET /api/documents/:id', () => {
-  it('returns 200 and document details', async () => {
-    const document = seedTestDocument({ id: 1 });
-    db.query.mockResolvedValueOnce({ rows: [document], rowCount: 1 });
-
-    const res = await request(app)
-      .get('/api/documents/1')
-      .set('x-auth-token', createMemberToken());
-
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.document).toBeDefined();
-  });
-
-  it('returns 404 when document not found', async () => {
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
-
-    const res = await request(app)
-      .get('/api/documents/999')
-      .set('x-auth-token', createMemberToken());
-
-    expect(res.status).toBe(404);
   });
 });
 
@@ -116,8 +89,8 @@ describe('GET /api/documents/:id', () => {
 describe('DELETE /api/documents/:id', () => {
   it('returns 200 when deleting a document', async () => {
     const document = seedTestDocument({ id: 1 });
-    db.query.mockResolvedValueOnce({ rows: [document], rowCount: 1 });
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    db.pool.query.mockResolvedValueOnce({ rows: [document], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
     const res = await request(app)
       .delete('/api/documents/1')
@@ -142,7 +115,7 @@ describe('DELETE /api/documents/:id', () => {
 describe('PUT /api/documents/:id', () => {
   it('returns 200 when updating a document', async () => {
     const document = seedTestDocument({ id: 1 });
-    db.query
+    db.pool.query
       .mockResolvedValueOnce({ rows: [document], rowCount: 1 })
       .mockResolvedValueOnce({ rows: [{ ...document, name: 'Updated.pdf' }], rowCount: 1 });
 

@@ -30,10 +30,10 @@ beforeEach(() => {
     const identity = identityFor(userId);
     return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
   });
-  db.query.mockReset();
+  db.pool.query.mockReset();
   db.pool.query.mockReset();
   db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
-  db.query.mockResolvedValue({ rows: [], rowCount: 0 });
+  db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
 });
 
 // =============================================================================
@@ -45,7 +45,7 @@ describe('GET /api/notifications', () => {
       seedTestNotification({ id: 1, title: 'Notification 1' }),
       seedTestNotification({ id: 2, title: 'Notification 2' }),
     ];
-    db.query.mockResolvedValueOnce({ rows: notifications, rowCount: 2 });
+    db.pool.query.mockResolvedValueOnce({ rows: notifications, rowCount: 2 });
 
     const res = await request(app)
       .get('/api/notifications')
@@ -53,7 +53,7 @@ describe('GET /api/notifications', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.notifications).toHaveLength(2);
+    expect(res.body.data).toHaveLength(2);
   });
 
   it('returns 401 when no auth token provided', async () => {
@@ -63,7 +63,7 @@ describe('GET /api/notifications', () => {
 
   it('supports filter parameter', async () => {
     const notifications = [seedTestNotification({ id: 1, type: 'alert' })];
-    db.query.mockResolvedValueOnce({ rows: notifications, rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: notifications, rowCount: 1 });
 
     const res = await request(app)
       .get('/api/notifications?filter=alert')
@@ -74,17 +74,17 @@ describe('GET /api/notifications', () => {
 });
 
 // =============================================================================
-// PUT /api/notifications/:id/dismiss
+// POST /api/notifications/:id/read
 // =============================================================================
-describe('PUT /api/notifications/:id/dismiss', () => {
-  it('returns 200 when dismissing a notification', async () => {
+describe('POST /api/notifications/:id/read', () => {
+  it('returns 200 when marking a notification as read', async () => {
     const notification = seedTestNotification({ id: 1, is_read: false });
-    db.query
+    db.pool.query
       .mockResolvedValueOnce({ rows: [notification], rowCount: 1 })
       .mockResolvedValueOnce({ rows: [{ ...notification, is_read: true }], rowCount: 1 });
 
     const res = await request(app)
-      .put('/api/notifications/1/dismiss')
+      .post('/api/notifications/1/read')
       .set('x-auth-token', createMemberToken());
 
     expect(res.status).toBe(200);
@@ -93,14 +93,14 @@ describe('PUT /api/notifications/:id/dismiss', () => {
 });
 
 // =============================================================================
-// PUT /api/notifications/mark-all-read
+// POST /api/notifications/mark-all-read
 // =============================================================================
-describe('PUT /api/notifications/mark-all-read', () => {
+describe('POST /api/notifications/mark-all-read', () => {
   it('returns 200 when marking all notifications as read', async () => {
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    db.pool.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
 
     const res = await request(app)
-      .put('/api/notifications/mark-all-read')
+      .post('/api/notifications/mark-all-read')
       .set('x-auth-token', createMemberToken());
 
     expect(res.status).toBe(200);
@@ -114,7 +114,7 @@ describe('PUT /api/notifications/mark-all-read', () => {
 describe('GET /api/notifications/preferences', () => {
   it('returns 200 and user notification preferences', async () => {
     const preferences = { email: true, sms: false, in_app: true };
-    db.query.mockResolvedValueOnce({ rows: [preferences], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [preferences], rowCount: 1 });
 
     const res = await request(app)
       .get('/api/notifications/preferences')
@@ -131,11 +131,11 @@ describe('GET /api/notifications/preferences', () => {
 describe('PUT /api/notifications/preferences', () => {
   it('returns 200 when updating preferences', async () => {
     const preferences = { email: false, sms: true, in_app: true };
-    db.query.mockResolvedValueOnce({ rows: [preferences], rowCount: 1 });
+    db.pool.query.mockResolvedValueOnce({ rows: [preferences], rowCount: 1 });
 
     const res = await request(app)
       .put('/api/notifications/preferences')
-      .send({ email: false, sms: true, in_app: true })
+      .send({ preferences: { email_enabled: false, sms_enabled: true, in_app_enabled: true } })
       .set('x-auth-token', createMemberToken());
 
     expect(res.status).toBe(200);

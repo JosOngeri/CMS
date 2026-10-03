@@ -56,8 +56,9 @@ class SmsSyncController extends BaseController {
       // Filter snapshot data by user_id for user-specific data
       const userFilteredData = this.filterDataByUser(snapshot.data, userId);
 
-      // Return compressed data with appropriate headers
-      res.setHeader('Content-Encoding', 'gzip');
+      // The payload is a JSON envelope containing compressed_data as a field —
+      // setting Content-Encoding: gzip would make every HTTP client try to
+      // gunzip the JSON body itself and fail.
       res.setHeader('Content-Type', 'application/json');
       res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 hour cache
 

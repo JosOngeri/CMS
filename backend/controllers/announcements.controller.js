@@ -152,8 +152,16 @@ class AnnouncementController extends BaseController {
         return this.forbidden(res, 'Permission denied');
       }
 
+      // Partial-update semantics: the repository writes every column, so
+      // merge the existing row — an omitted field must not be nulled out.
       const announcement = await AnnouncementsRepository.updateAnnouncement(id, {
-        title, content, announcement_type, department_id, priority, expires_at, is_public
+        title: title !== undefined ? title : existing.title,
+        content: content !== undefined ? content : existing.content,
+        announcement_type: announcement_type !== undefined ? announcement_type : existing.announcement_type,
+        department_id: department_id !== undefined ? department_id : existing.department_id,
+        priority: priority !== undefined ? priority : existing.priority,
+        expires_at: expires_at !== undefined ? expires_at : existing.expires_at,
+        is_public: is_public !== undefined ? is_public : existing.is_public
       }, req.user.church_id);
 
       if (!announcement) {

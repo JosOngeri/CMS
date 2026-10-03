@@ -456,7 +456,8 @@ class UserRepository extends BaseRepository {
     // key outside this set (e.g. church_id, roles, password_hash) is dropped.
     const ALLOWED_COLUMNS = new Set([
       'first_name', 'last_name', 'phone', 'phone_number', 'avatar_url',
-      'email', 'username', 'updated_at'
+      'email', 'username', 'bio', 'address', 'city', 'country',
+      'date_of_birth', 'updated_at'
     ]);
 
     const fields = [];

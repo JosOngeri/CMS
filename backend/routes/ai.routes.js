@@ -5,7 +5,9 @@ const { authenticateToken } = require('../middleware/auth');
 
 router.use(authenticateToken);
 
-router.post('/condense', aiController.condenseAnnouncement);
-router.get('/usage-stats', aiController.getUsageStats);
+// .bind() — unbound method references lose `this` (aiContentService/logger),
+// which crashed the handler before it could even send an error response.
+router.post('/condense', aiController.condenseAnnouncement.bind(aiController));
+router.get('/usage-stats', aiController.getUsageStats.bind(aiController));
 
 module.exports = router;

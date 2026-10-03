@@ -24,6 +24,10 @@ class DocumentApprovalController extends BaseController {
     const { documentId, departmentId, approvalLevel, metadata } = req.body;
     const requesterId = req.user.id;
 
+    if (!documentId || !departmentId || !approvalLevel) {
+      return this.badRequest(res, 'documentId, departmentId, and approvalLevel are required');
+    }
+
     try {
       const approvalRequest = await DocumentApprovalService.createApprovalRequest({
         documentId,
@@ -37,6 +41,9 @@ class DocumentApprovalController extends BaseController {
       this.created(res, approvalRequest);
     } catch (error) {
       this.logger.error('createApprovalRequest', error);
+      if (/not found/i.test(error.message)) {
+        return this.notFound(res, error.message);
+      }
       this.error(res, 'Failed to create approval request');
     }
   }
@@ -51,9 +58,12 @@ class DocumentApprovalController extends BaseController {
 
     try {
       const result = await DocumentApprovalService.approveDocument(approvalRequestId, approverId, comments, req.user.church_id);
-      this.success(res, { message: 'Document approved successfully' });
+      this.success(res, { message: 'Document approved successfully', result });
     } catch (error) {
       this.logger.error('approveDocument', error);
+      if (/not pending|own request|not an approver|already approved|not found/i.test(error.message)) {
+        return this.badRequest(res, error.message);
+      }
       this.error(res, 'Failed to approve document');
     }
   }
@@ -68,9 +78,12 @@ class DocumentApprovalController extends BaseController {
 
     try {
       const result = await DocumentApprovalService.rejectDocument(approvalRequestId, approverId, comments, req.user.church_id);
-      this.success(res, { message: 'Document rejected successfully' });
+      this.success(res, { message: 'Document rejected successfully', result });
     } catch (error) {
       this.logger.error('rejectDocument', error);
+      if (/not pending|own request|not an approver|already|not found/i.test(error.message)) {
+        return this.badRequest(res, error.message);
+      }
       this.error(res, 'Failed to reject document');
     }
   }

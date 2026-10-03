@@ -249,8 +249,10 @@ if (!isDevelopment) {
     }
   }));
 
-  // SPA fallback - serve index.html for non-API routes
-  app.get('*', (req, res) => {
+  // SPA fallback - serve index.html for non-API routes.
+  // /api/* misses must fall through to the JSON 404 handler, not return HTML.
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
     const indexPath = path.join(__dirname, '../frontend/dist/index.html');
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);

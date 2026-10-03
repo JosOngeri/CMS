@@ -99,10 +99,13 @@ describe('SMS Authentication Controller', () => {
           success: true,
           data: expect.objectContaining({
             accessToken: expect.any(String),
+            // database_connection_key is deliberately stripped from the
+            // response — leaking a DB key would be a security defect.
             church: expect.objectContaining({
               id: testChurch.id,
               slug: testChurch.slug,
-              database_connection_key: expect.any(String)
+              name: testChurch.name,
+              is_active: testChurch.is_active
             }),
             sync_config: expect.any(Object)
           })

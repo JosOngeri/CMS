@@ -21,30 +21,41 @@
 
 // -- jest.mock calls are hoisted – must appear before any require --------------
 
-jest.mock('../../../config/database', () => ({
-  pool: {
-    query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
-    connect: jest.fn().mockResolvedValue({ query: jest.fn(), release: jest.fn() }),
-    end: jest.fn(),
-  },
-  query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
-}));
+jest.mock('../../../config/database', () => {
+  // One shared jest.fn for both access styles — repositories call
+  // pool.query while some helpers use query() directly.
+  const mockQuery = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
+  return {
+    pool: {
+      query: mockQuery,
+      connect: jest.fn().mockResolvedValue({ query: jest.fn(), release: jest.fn() }),
+      end: jest.fn(),
+    },
+    query: mockQuery,
+  };
+});
 
 jest.mock('../../../utils/emailService.js', () => ({
   sendEmail: jest.fn().mockResolvedValue({ sent: true }),
+  sendPasswordReset: jest.fn().mockResolvedValue({ sent: true }),
 }));
 
 // -- Imports -------------------------------------------------------------------
 jest.mock('../../../services/IdentityService', () => ({
   getIdentity: jest.fn(),
   invalidateIdentityCache: jest.fn(),
+  hasAnyRole: jest.fn((identity, roles) =>
+    Array.isArray(identity && identity.roles) && identity.roles.some(r => roles.includes(r))),
+  validateMFA: jest.fn().mockResolvedValue(false),
+  setMFAVerified: jest.fn(identity => ({ ...identity, mfaVerified: true })),
 }));
 
 const request  = require('supertest');
 const bcrypt   = require('bcryptjs');
 const app      = require('../../../app');
 const db       = require('../../../config/database');
-const { sendEmail } = require('../../../utils/emailService');
+const emailService = require('../../../utils/emailService');
+const { sendEmail } = emailService;
 const IdentityService = require('../../../services/IdentityService');
 const { createAdminToken, createMemberToken, seedTestUser, TEST_UUIDS, identityFor } = require('../setup/test-helpers');
 
@@ -57,15 +68,56 @@ const TEST_PASSWORD_HASH = bcrypt.hashSync(TEST_PASSWORD, 4);
 
 const mockUserRow = (overrides = {}) =>
   seedTestUser({
-    id:                  TEST_UUIDS.member,
-    username:            'testuser',
-    email:               'testuser@msabato.co.ke',
-    password:            TEST_PASSWORD_HASH,   // real hash of TEST_PASSWORD
-    role:                'Member',
-    status:              'active',
-    is_active:           true,
+    id:                    TEST_UUIDS.member,
+    username:              'testuser',
+    email:                 'testuser@msabato.co.ke',
+    password:              TEST_PASSWORD_HASH,   // real hash of TEST_PASSWORD
+    password_hash:         TEST_PASSWORD_HASH,   // controller compares this column
+    role:                  'Member',
+    status:                'active',
+    is_active:             true,
+    church_id:             TEST_UUIDS.church,
+    failed_login_attempts: 0,
+    locked_until:          null,
     ...overrides,
   });
+
+const TEST_CHURCH_ROW = {
+  id: TEST_UUIDS.church, slug: 'test-church', name: 'Test Church', is_active: true,
+};
+
+/**
+ * SQL-text dispatcher for the mocked pool. Each endpoint runs several
+ * queries per call, so positional mockResolvedValueOnce chains are brittle —
+ * dispatch on the targeted table instead. Tests that need an empty result
+ * (e.g. "user not found") pass different row sets via the options.
+ */
+const dbDispatch = ({
+  users = [], resetTokens = [], churches = [TEST_CHURCH_ROW],
+  insertedUser = null, member = null,
+} = {}) => (text) => {
+  const sql = String((text && text.text) || text || '');
+  if (/from\s+users\b/i.test(sql)) {
+    // WHERE id = … lookups (e.g. assignRole's church-membership check) must
+    // see the member row, not the email/username duplicate-check set.
+    const idRows = member ? [member] : (insertedUser ? [insertedUser] : users);
+    const rows = /where\s+id\s*=/i.test(sql) ? idRows : users;
+    return Promise.resolve({ rows, rowCount: rows.length });
+  }
+  if (/from\s+churches\b/i.test(sql)) {
+    return Promise.resolve({ rows: churches, rowCount: churches.length });
+  }
+  if (/insert\s+into\s+users\b/i.test(sql)) {
+    return Promise.resolve({ rows: insertedUser ? [insertedUser] : [{}], rowCount: 1 });
+  }
+  if (/select[\s\S]*from\s+password_reset_tokens/i.test(sql)) {
+    return Promise.resolve({ rows: resetTokens, rowCount: resetTokens.length });
+  }
+  if (/from\s+roles\b|\buser_roles\b/i.test(sql)) {
+    return Promise.resolve({ rows: [{ id: 'role-1', name: 'Member' }], rowCount: 1 });
+  }
+  return Promise.resolve({ rows: [{ id: TEST_UUIDS.member }], rowCount: 1 });
+};
 
 // -----------------------------------------------------------------------------
 
@@ -76,11 +128,9 @@ beforeEach(() => {
     return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
   });
   db.query.mockReset();
-  db.pool.query.mockReset();
-  // Restore default stubs after resetAllMocks
-  db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });
   db.query.mockResolvedValue({ rows: [], rowCount: 0 });
   sendEmail.mockResolvedValue({ sent: false });
+  emailService.sendPasswordReset.mockResolvedValue({ sent: true });
 });
 
 // =============================================================================
@@ -88,77 +138,72 @@ beforeEach(() => {
 // =============================================================================
 describe('POST /api/auth/login', () => {
   // -- happy path --------------------------------------------------------------
-  it('returns 200 and a JWT token for valid credentials', async () => {
-    const user = mockUserRow();
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 }); // User.findOne
+  it('returns 200 with access/refresh tokens for valid credentials', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [mockUserRow()] }));
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ username: 'testuser', password: TEST_PASSWORD });
+      .send({ email: 'testuser@msabato.co.ke', password: TEST_PASSWORD });
 
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('token');
-    expect(typeof res.body.token).toBe('string');
+    expect(res.body.success).toBe(true);
+    expect(typeof res.body.data.accessToken).toBe('string');
+    expect(typeof res.body.data.refreshToken).toBe('string');
+    expect(res.body.data.user.email).toBe('testuser@msabato.co.ke');
   });
 
   // -- wrong password ----------------------------------------------------------
-  it('returns 400 { error: "Invalid credentials" } when password is wrong', async () => {
-    const user = mockUserRow();
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
+  it('returns 401 { error: "Invalid credentials" } when password is wrong', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [mockUserRow()] }));
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ username: 'testuser', password: 'wrong_password_totally' });
+      .send({ email: 'testuser@msabato.co.ke', password: 'wrong_password_totally' });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
     expect(res.body.error).toBe('Invalid credentials');
   });
 
   // -- user not found ----------------------------------------------------------
-  it('returns 400 { error: "Invalid credentials" } when user does not exist', async () => {
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+  it('returns 401 { error: "Invalid credentials" } when user does not exist', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [] }));
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ username: 'ghostuser', password: 'any' });
+      .send({ email: 'ghost@msabato.co.ke', password: 'any' });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(401);
     expect(res.body.error).toBe('Invalid credentials');
   });
 
   // -- inactive / deactivated user ---------------------------------------------
-  it('returns 403 with "deactivated" message for inactive accounts', async () => {
-    const user = mockUserRow({ is_active: false });
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
+  it('returns 401 for inactive accounts (no existence leak)', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [mockUserRow({ is_active: false })] }));
 
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ username: 'testuser', password: TEST_PASSWORD });
+      .send({ email: 'testuser@msabato.co.ke', password: TEST_PASSWORD });
 
-    expect(res.status).toBe(403);
-    expect(res.body.error).toMatch(/deactivated/i);
+    expect(res.status).toBe(401);
+    expect(res.body.error).toBe('Invalid credentials');
   });
 
-  // -- missing username ---------------------------------------------------------
-  it('returns 400 or 500 when username is missing', async () => {
+  // -- missing email -----------------------------------------------------------
+  it('returns 400 when email is missing', async () => {
     const res = await request(app)
       .post('/api/auth/login')
       .send({ password: TEST_PASSWORD });
 
-    expect([400, 500]).toContain(res.status);
+    expect(res.status).toBe(400);
   });
 
   // -- missing password ---------------------------------------------------------
-  it('returns 400 when password is missing (comparison fails)', async () => {
-    const user = mockUserRow();
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
-
+  it('returns 400 when password is missing', async () => {
     const res = await request(app)
       .post('/api/auth/login')
-      .send({ username: 'testuser' });
+      .send({ email: 'testuser@msabato.co.ke' });
 
-    // bcrypt.compare(undefined, hash) -> 400
-    expect([400, 500]).toContain(res.status);
+    expect(res.status).toBe(400);
   });
 });
 
@@ -167,39 +212,51 @@ describe('POST /api/auth/login', () => {
 // =============================================================================
 describe('POST /api/auth/register', () => {
   const validPayload = {
-    username: 'newuser',
-    password: 'StrongPass1!',
-    role:     'Member',
-    email:    'newuser@msabato.co.ke',
+    email:      'newuser@msabato.co.ke',
+    username:   'newuser',
+    first_name: 'New',
+    last_name:  'User',
+    password:   'Str0ng#Falcon',  // passes validatePasswordStrength (no sequences/common words)
   };
 
   // -- happy path --------------------------------------------------------------
-  it('returns 200 and a JWT token for valid registration', async () => {
-    const savedUser = mockUserRow({ id: 99, username: 'newuser', email: 'newuser@msabato.co.ke' });
-    db.query
-      .mockResolvedValueOnce({ rows: [], rowCount: 0 })                // findOne (no dup)
-      .mockResolvedValueOnce({ rows: [savedUser], rowCount: 1 });      // INSERT RETURNING
+  it('returns 200 and the created user for valid registration', async () => {
+    const savedUser = seedTestUser({
+      id: TEST_UUIDS.member, username: 'newuser',
+      email: 'newuser@msabato.co.ke', first_name: 'New', last_name: 'User',
+    });
+    db.query.mockImplementation(dbDispatch({ users: [], insertedUser: savedUser }));
 
     const res = await request(app)
       .post('/api/auth/register')
       .send(validPayload);
 
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('token');
-    expect(typeof res.body.token).toBe('string');
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.user.email).toBe('newuser@msabato.co.ke');
   });
 
-  // -- duplicate username ------------------------------------------------------
-  it('returns 400 { error: "User already exists" } for duplicate username', async () => {
-    const existingUser = mockUserRow({ username: 'newuser' });
-    db.query.mockResolvedValueOnce({ rows: [existingUser], rowCount: 1 });
+  // -- duplicate email ----------------------------------------------------------
+  it('returns 409 { error: "Email already registered" } for a duplicate email', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [mockUserRow()] }));
 
     const res = await request(app)
       .post('/api/auth/register')
       .send(validPayload);
 
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('Email already registered');
+  });
+
+  // -- weak password -------------------------------------------------------------
+  it('returns 400 for a password that fails the strength policy', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [] }));
+
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({ ...validPayload, password: 'Password123!' }); // common word + sequence
+
     expect(res.status).toBe(400);
-    expect(res.body.error).toBe('User already exists');
   });
 
   // -- missing required fields -----------------------------------------------
@@ -208,7 +265,7 @@ describe('POST /api/auth/register', () => {
       .post('/api/auth/register')
       .send({ username: 'incomplete' });
 
-    expect([400, 500]).toContain(res.status);
+    expect(res.status).toBe(400);
   });
 });
 
@@ -216,24 +273,34 @@ describe('POST /api/auth/register', () => {
 // POST /api/auth/forgot-password
 // =============================================================================
 describe('POST /api/auth/forgot-password', () => {
-  it('returns 200 when email exists (email sent)', async () => {
-    const user = mockUserRow();
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
-    db.query.mockResolvedValueOnce({ rows: [{ ...user, reset_token: 'token' }], rowCount: 1 });
+  // Pre-login endpoints are CSRF-protected: mint a session-bound token via
+  // /api/csrf-token and present it with the same cookie jar, like a browser.
+  const csrfAgent = async () => {
+    const agent = request.agent(app);
+    const csrf = await agent.get('/api/csrf-token');
+    return { agent, token: csrf.body.csrfToken };
+  };
 
-    const res = await request(app)
+  it('returns 200 and sends a reset link when the email exists', async () => {
+    db.query.mockImplementation(dbDispatch({ users: [mockUserRow()] }));
+    const { agent, token } = await csrfAgent();
+
+    const res = await agent
       .post('/api/auth/forgot-password')
+      .set('x-csrf-token', token)
       .send({ email: 'testuser@msabato.co.ke' });
 
     expect(res.status).toBe(200);
-    expect(sendEmail).toHaveBeenCalled();
+    expect(emailService.sendPasswordReset).toHaveBeenCalled();
   });
 
   it('returns 200 even when email does not exist (security best practice)', async () => {
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    db.query.mockImplementation(dbDispatch({ users: [] }));
+    const { agent, token } = await csrfAgent();
 
-    const res = await request(app)
+    const res = await agent
       .post('/api/auth/forgot-password')
+      .set('x-csrf-token', token)
       .send({ email: 'nonexistent@msabato.co.ke' });
 
     expect(res.status).toBe(200);
@@ -244,24 +311,50 @@ describe('POST /api/auth/forgot-password', () => {
 // POST /api/auth/reset-password
 // =============================================================================
 describe('POST /api/auth/reset-password', () => {
-  it('returns 200 when reset token is valid', async () => {
-    const user = mockUserRow({ reset_token: 'valid_token' });
-    db.query.mockResolvedValueOnce({ rows: [user], rowCount: 1 });
-    db.query.mockResolvedValueOnce({ rows: [{ ...user, password: 'new_hash' }], rowCount: 1 });
+  const csrfAgent = async () => {
+    const agent = request.agent(app);
+    const csrf = await agent.get('/api/csrf-token');
+    return { agent, token: csrf.body.csrfToken };
+  };
 
-    const res = await request(app)
+  it('returns 200 when the reset token is valid', async () => {
+    db.query.mockImplementation(dbDispatch({
+      users: [mockUserRow()],
+      resetTokens: [{ user_id: TEST_UUIDS.member }],
+    }));
+    const { agent, token } = await csrfAgent();
+
+    const res = await agent
       .post('/api/auth/reset-password')
-      .send({ token: 'valid_token', newPassword: 'NewPass123!' });
+      .set('x-csrf-token', token)
+      .send({ token: 'valid_token', newPassword: 'Str0ng#Falcon' });
 
     expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
   });
 
-  it('returns 400 when reset token is invalid', async () => {
-    db.query.mockResolvedValueOnce({ rows: [], rowCount: 0 });
+  it('returns 400 when the reset token is invalid', async () => {
+    db.query.mockImplementation(dbDispatch({ resetTokens: [] }));
+    const { agent, token } = await csrfAgent();
 
-    const res = await request(app)
+    const res = await agent
       .post('/api/auth/reset-password')
-      .send({ token: 'invalid_token', newPassword: 'NewPass123!' });
+      .set('x-csrf-token', token)
+      .send({ token: 'invalid_token', newPassword: 'Str0ng#Falcon' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('returns 400 when the new password fails the strength policy', async () => {
+    db.query.mockImplementation(dbDispatch({
+      resetTokens: [{ user_id: TEST_UUIDS.member }],
+    }));
+    const { agent, token } = await csrfAgent();
+
+    const res = await agent
+      .post('/api/auth/reset-password')
+      .set('x-csrf-token', token)
+      .send({ token: 'valid_token', newPassword: 'NewPass123!' });
 
     expect(res.status).toBe(400);
   });
