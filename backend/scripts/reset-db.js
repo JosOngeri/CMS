@@ -1,6 +1,10 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { pool } = require('../config/database');
+const { requireDevDatabase } = require('./_scriptSafety');
+
+// L753: DROP SCHEMA public CASCADE — full wipe. Refuse on prod/remote DBs.
+requireDevDatabase('reset-db.js');
 
 async function resetDatabase() {
   const client = await pool.connect();
@@ -20,18 +24,13 @@ async function resetDatabase() {
 
     await client.query(schemaSQL);
 
-    console.log('Running migration files 004-010...');
+    console.log('Running migrations in numeric order...');
     const migrationsDir = path.join(__dirname, '../migrations');
-    const migrationFiles = [
-      '004_gallery_schema.sql',
-      '005_fix_missing_columns.sql',
-      '006_settings_schema.sql',
-      '007_auth_tables.sql',
-      '008_permissions_schema.sql',
-      '009_add_church_id_to_main_schema.sql',
-      '010_documents_schema.sql'
-    ];
+    const migrationFiles = (await fs.readdir(migrationsDir))
+      .filter((f) => f.endsWith('.sql'))
+      .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
 
+    const BENIGN = new Set(['42P07', '42701', '42710']); // already-exists class
     for (const migrationFile of migrationFiles) {
       const migrationPath = path.join(migrationsDir, migrationFile);
       try {
@@ -40,8 +39,12 @@ async function resetDatabase() {
         await client.query(migrationSQL);
         console.log(`  ✅ ${migrationFile} completed`);
       } catch (error) {
-        console.error(`  ❌ Error executing ${migrationFile}:`, error.message);
-        // Continue with other migrations even if one fails
+        if (BENIGN.has(error.code)) {
+          console.log(`  ⏭️  ${migrationFile} — objects already present in complete_schema, skipped`);
+        } else {
+          console.error(`  ❌ Error executing ${migrationFile}:`, error.message);
+          throw error; // real failures must abort, not silently diverge schema
+        }
       }
     }
 

@@ -3,6 +3,10 @@ const { Client } = require('pg');
 const bcrypt = require('bcryptjs');
 
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+
+// L756: refuse prod/remote DBs; no hardcoded password.
+requireDevDatabase('seed-admin.js');
 
 async function main() {
   const client = new Client({
@@ -23,7 +27,7 @@ async function main() {
     ON CONFLICT (name) DO NOTHING
   `);
 
-  const passwordHash = bcrypt.hashSync('right123', 10);
+  const passwordHash = bcrypt.hashSync(seedPassword('admin'), 12);
   const church = await client.query(
     "SELECT id FROM churches WHERE slug = 'kiserian-main-sda'"
   );

@@ -177,7 +177,7 @@ const Login = () => {
         {/* Register Link */}
         <div className="text-center">
           <p className="text-sm text-[var(--color-textSecondary)] ">
-            Don't have an account?{' '}
+            Don&rsquo;t have an account?{' '}
             <Link
               to="/auth/register"
               className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-600)]"

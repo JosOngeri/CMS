@@ -90,7 +90,7 @@ const TelegramChurchSettings = () => {
 
       <div className="bg-[var(--color-surface)] rounded-2xl shadow-md p-6 mb-6">
         <p className="text-[var(--color-textSecondary)] mb-6">
-          Configure the Telegram channel that this church's photo gallery should pull from. Each church can use its own channel.
+          Configure the Telegram channel that this church&rsquo;s photo gallery should pull from. Each church can use its own channel.
         </p>
 
         <form onSubmit={handleSave} className="space-y-6">

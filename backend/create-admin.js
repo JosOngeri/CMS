@@ -1,10 +1,14 @@
 const { pool } = require('./config/database');
 const { hashPassword } = require('./helpers/security');
+const { requireDevDatabase, seedPassword } = require('./scripts/_scriptSafety');
+
+// L736: no hardcoded admin password; refuse against prod/remote DBs.
+requireDevDatabase('create-admin.js');
 
 async function createAdmin() {
   try {
-    const email = 'admin@msabato.org';
-    const password = 'Admin123';
+    const email = process.env.SEED_ADMIN_EMAIL || 'admin@msabato.org';
+    const password = seedPassword('admin');
     const firstName = 'Admin';
     const lastName = 'User';
 

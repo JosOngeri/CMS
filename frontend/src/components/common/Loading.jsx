@@ -93,10 +93,12 @@ export const ButtonLoading = ({ size = 'md' }) => {
  * withLoading - HOC to add loading state to components
  */
 export const withLoading = (Component, LoadingComponent = FullPageLoading) => {
-  return ({ loading, ...props }) => {
+  const WithLoading = ({ loading, ...props }) => {
     if (loading) {
       return <LoadingComponent />
     }
     return <Component {...props} />
   }
+  WithLoading.displayName = `withLoading(${Component.displayName || Component.name || 'Component'})`
+  return WithLoading
 }

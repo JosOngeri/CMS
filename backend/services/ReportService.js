@@ -47,7 +47,7 @@ class ReportService {
    * @returns {string} Header text
    */
   generateStatementHeader(userInfo) {
-    const header = `COLLECTION STATEMENT\n`;
+    let header = `COLLECTION STATEMENT\n`;
     header += `Generated: ${new Date().toLocaleString()}\n`;
     header += `User ID: ${userInfo.id || 'N/A'}\n`;
     header += `User Name: ${userInfo.name || 'N/A'}\n\n`;

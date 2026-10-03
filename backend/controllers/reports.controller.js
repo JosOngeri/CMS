@@ -225,21 +225,24 @@ class ReportsController extends BaseController {
       const churchId = req.user.church_id;
 
       switch (reportType) {
-        case 'financial':
+        case 'financial': {
           const financialResult = await this.getFinancialReportData(startDate, endDate, churchId);
           data = financialResult;
           filename = 'financial_report';
           break;
-        case 'department':
+        }
+        case 'department': {
           const deptResult = await this.getDepartmentReportData(startDate, endDate, churchId);
           data = deptResult;
           filename = 'department_report';
           break;
-        case 'attendance':
+        }
+        case 'attendance': {
           const attendanceResult = await this.getAttendanceReportData(startDate, endDate, churchId);
           data = attendanceResult;
           filename = 'attendance_report';
           break;
+        }
         default:
           return this.badRequest(res, 'Invalid report type');
       }

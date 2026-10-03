@@ -644,7 +644,15 @@ class TelegramController extends BaseController {
       if (albumId) filters.albumId = albumId;
       if (startDate) filters.startDate = startDate;
       if (endDate) filters.endDate = endDate;
-      if (tags) filters.tags = JSON.parse(tags);
+      // Accept JSON array or comma-separated tags (same convention as
+      // filterPhotosByTags) — unguarded JSON.parse 500s on malformed input.
+      if (tags) {
+        try {
+          filters.tags = JSON.parse(tags);
+        } catch {
+          filters.tags = tags.split(',').map((t) => t.trim());
+        }
+      }
       filters.limit = parseInt(limit);
       filters.offset = parseInt(offset);
 

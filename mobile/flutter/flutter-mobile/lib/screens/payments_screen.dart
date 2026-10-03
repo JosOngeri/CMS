@@ -5,6 +5,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../services/api_service.dart';
+import '../utils/phone_utils.dart';
 import '../widgets/loading_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/payment_method_card.dart';
@@ -94,9 +95,12 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
         'description': '$_selectedCategory payment',
       };
 
-      // Add phone number for STK Push
+      // Add phone number for STK Push — normalize local 07/01 formats
+      // to the 254… format Daraja requires.
       if (_paymentMethod == 'STK Push') {
-        paymentData['phoneNumber'] = _phoneController.text;
+        paymentData['phoneNumber'] =
+            normalizeKenyanPhone(_phoneController.text) ??
+                _phoneController.text.trim();
       }
 
       Map<String, dynamic> result;
@@ -393,15 +397,14 @@ class _PaymentsScreenState extends State<PaymentsScreen> {
                           label: 'Phone Number',
                           prefixIcon: Icons.phone,
                           keyboardType: TextInputType.phone,
-                          hintText: '2547XXXXXXXX',
+                          hintText: '2547XXXXXXXX or 07XXXXXXXX',
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.required(
                               errorText: 'Please enter phone number',
                             ),
-                            FormBuilderValidators.match(
-                              r'^2547\d{8}$',
-                              errorText: 'Enter valid number: 2547XXXXXXXX',
-                            ),
+                            (value) => isValidKenyanPhone(value ?? '')
+                                ? null
+                                : 'Enter a valid number (2547…/2541…/07…/01…)',
                           ]),
                         ),
                       ],

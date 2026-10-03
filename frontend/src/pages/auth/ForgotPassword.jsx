@@ -54,12 +54,12 @@ const ForgotPassword = () => {
           </div>
           <h2 className="text-2xl font-bold text-[var(--color-text)]">Email Sent</h2>
           <p className="mt-2 text-sm text-[var(--color-textSecondary)]">
-            We've sent a password reset link to your email. Please check your inbox and follow the instructions.
+            We&rsquo;ve sent a password reset link to your email. Please check your inbox and follow the instructions.
           </p>
         </div>
         <div className="bg-[var(--color-surface)] py-6 px-6 shadow-lg rounded-lg space-y-4 text-sm text-[var(--color-text)]">
           <p className="text-[var(--color-textSecondary)]">
-            Didn't receive the email? Check your spam folder or request another reset link.
+            Didn&rsquo;t receive the email? Check your spam folder or request another reset link.
           </p>
         </div>
         <div className="text-center space-y-4">
@@ -89,7 +89,7 @@ const ForgotPassword = () => {
         </div>
         <h2 className="text-2xl font-bold text-[var(--color-text)]">Reset your password</h2>
         <p className="mt-2 text-sm text-[var(--color-textSecondary)]">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&rsquo;ll send you a link to reset your password.
         </p>
       </div>
 

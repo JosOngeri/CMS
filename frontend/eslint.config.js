@@ -10,12 +10,12 @@
  *    hex literals.
  *  - Test files get node + vitest globals (`global`, `describe`, `vi`, ...).
  */
-const js = require('@eslint/js');
-const globals = require('globals');
-const react = require('eslint-plugin-react');
-const reactHooks = require('eslint-plugin-react-hooks');
+import js from '@eslint/js';
+import globals from 'globals';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 
-module.exports = [
+export default [
   js.configs.recommended,
   {
     ignores: [
@@ -38,6 +38,8 @@ module.exports = [
       sourceType: 'module',
       globals: {
         ...globals.browser,
+        // Vite statically replaces process.env.NODE_ENV at build time.
+        process: 'readonly',
       },
     },
     plugins: {

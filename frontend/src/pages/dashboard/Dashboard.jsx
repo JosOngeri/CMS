@@ -73,7 +73,7 @@ const Dashboard = () => {
         <div>
           <h1 className="page-title">Home</h1>
           <p className="page-subtitle">
-            Welcome back, {user?.first_name}! Here's what's happening at {churchName} today.
+            Welcome back, {user?.first_name}! Here&rsquo;s what&rsquo;s happening at {churchName} today.
           </p>
         </div>
       </div>

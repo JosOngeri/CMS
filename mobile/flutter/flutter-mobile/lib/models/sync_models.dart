@@ -1,4 +1,6 @@
 // Sync data models for Android app with user isolation
+import 'dart:convert';
+
 class SyncMetadata {
   final int? id;
   final String userId; // User-scoped metadata
@@ -65,7 +67,9 @@ class RollingUpdate {
       'sequence_number': sequenceNumber,
       'table_name': tableName,
       'operation': operation,
-      'data': data.toString(),
+      // L729: store real JSON, not Dart's map repr — fromMap must be able
+      // to decode it back (Map.from(string) throws a type-cast error).
+      'data': jsonEncode(data),
       'timestamp': timestamp.toIso8601String(),
     };
   }
@@ -77,7 +81,9 @@ class RollingUpdate {
       sequenceNumber: map['sequence_number'],
       tableName: map['table_name'],
       operation: map['operation'],
-      data: Map<String, dynamic>.from(map['data']),
+      data: map['data'] is String
+          ? Map<String, dynamic>.from(jsonDecode(map['data'] as String))
+          : Map<String, dynamic>.from(map['data'] as Map),
       timestamp: DateTime.parse(map['timestamp']),
     );
   }

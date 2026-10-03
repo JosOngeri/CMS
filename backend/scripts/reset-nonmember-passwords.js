@@ -1,13 +1,22 @@
 /**
  * One-off: reset passwords for non-seeded (non "member*" username) accounts
  * to the shared dev password so they can be documented.
- * Usage: node scripts/reset-nonmember-passwords.js [password]
+ * Usage: node scripts/reset-nonmember-passwords.js <password>
+ * L755: no default password — a mass reset to a known shared string must be
+ * an explicit, intentional act.
  */
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
+const { requireDevDatabase } = require('./_scriptSafety');
 
-const password = process.argv[2] || 'right123';
+requireDevDatabase('reset-nonmember-passwords.js');
+
+const password = process.argv[2];
+if (!password || password.length < 8) {
+  console.error('Usage: node scripts/reset-nonmember-passwords.js <password>  (min 8 chars, no default)');
+  process.exit(1);
+}
 
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',

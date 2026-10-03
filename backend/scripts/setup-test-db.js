@@ -30,14 +30,25 @@ async function ensureDatabase() {
   }
 }
 
+// L726: failures must be loud. We track applied files in schema_migrations so
+// re-runs skip cleanly; any error applying a *new* migration aborts setup —
+// a test DB that silently diverges from prod schema masks schema bugs.
+const BENIGN_CODES = new Set(['42P07', '42701', '42710', '42P04']); // already-exists class
+
 async function runMigration(pool, filePath) {
+  const filename = path.basename(filePath);
+  const sql = fs.readFileSync(filePath, 'utf8');
   try {
-    const sql = fs.readFileSync(filePath, 'utf8');
     await pool.query(sql);
-    console.log(`Ran migration: ${path.basename(filePath)}`);
   } catch (error) {
-    console.warn(`Skipped migration: ${path.basename(filePath)} - ${error.message}`);
+    if (!BENIGN_CODES.has(error.code)) throw error; // real failures abort setup
+    console.warn(`Migration ${filename} reported existing objects (${error.code}) — marking applied`);
   }
+  await pool.query(
+    'INSERT INTO schema_migrations (filename) VALUES ($1) ON CONFLICT (filename) DO NOTHING',
+    [filename]
+  );
+  console.log(`Ran migration: ${filename}`);
 }
 
 async function setupTestDatabase() {
@@ -52,11 +63,19 @@ async function setupTestDatabase() {
 
   const pool = new Pool({ ...connection, database: targetDatabase });
   try {
+    await pool.query(
+      'CREATE TABLE IF NOT EXISTS schema_migrations (filename TEXT PRIMARY KEY, applied_at TIMESTAMPTZ DEFAULT now())'
+    );
+    const applied = new Set(
+      (await pool.query('SELECT filename FROM schema_migrations')).rows.map(r => r.filename)
+    );
+
     const migrationFiles = fs.readdirSync(migrationsDir)
       .filter(file => file.endsWith('.sql'))
       .sort();
 
     for (const file of migrationFiles) {
+      if (applied.has(file)) continue;
       await runMigration(pool, path.join(migrationsDir, file));
     }
 

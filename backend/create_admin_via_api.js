@@ -4,7 +4,9 @@ const { pool } = require('./config/database');
 async function createAdminUser() {
   try {
     // Hash the password
-    const hashedPassword = await bcrypt.hash('Right123', 12);
+    const { requireDevDatabase, seedPassword } = require('./scripts/_scriptSafety');
+    requireDevDatabase('create_admin_via_api.js');
+    const hashedPassword = await bcrypt.hash(seedPassword('admin via api'), 12);
 
     // Check if user exists
     const existingUser = await pool.query('SELECT id FROM users WHERE email = $1', ['admin@kiseriansda.org']);
@@ -66,7 +68,7 @@ async function createAdminUser() {
     console.log('Super Admin role assigned successfully');
     console.log('Admin login credentials:');
     console.log('Email: admin@kiseriansda.org');
-    console.log('Password: Right123');
+    console.log('Password: (printed at seed time — SEED_PASSWORD or generated)');
 
     process.exit(0);
   } catch (error) {

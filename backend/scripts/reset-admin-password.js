@@ -11,13 +11,14 @@ const pool = new Pool({
 
 async function resetAdminPassword() {
   try {
-    const newPassword = 'admin123';
+    const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+    requireDevDatabase('reset-admin-password.js');
+    const newPassword = seedPassword('admin reset');
     const saltRounds = 12;
     const passwordHash = await bcrypt.hash(newPassword, saltRounds);
     
     console.log('Resetting admin password...');
-    console.log('New password:', newPassword);
-    console.log('Password hash:', passwordHash);
+    // never print the password hash — it's an offline-crack target
     
     const result = await pool.query(
       'UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id, email',

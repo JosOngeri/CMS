@@ -52,7 +52,7 @@ services:
     image: postgres:15-alpine
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in the environment}
       - POSTGRES_DB=kmaincms
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -67,8 +67,8 @@ services:
     ports:
       - "5001:5001"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
-      - JWT_SECRET=your-secret-key-change-in-production
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET in the environment}
       - JWT_EXPIRES_IN=7d
       - NODE_ENV=production
       - PORT=5001
@@ -85,7 +85,7 @@ services:
     ports:
       - "5002:5002"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5002
       - SERVICE_NAME=content-service
@@ -101,7 +101,7 @@ services:
     ports:
       - "5003:5003"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5003
       - SERVICE_NAME=departments-service
@@ -117,7 +117,7 @@ services:
     ports:
       - "5004:5004"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5004
       - SERVICE_NAME=gallery-service
@@ -133,7 +133,7 @@ services:
     ports:
       - "5005:5005"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5005
       - SERVICE_NAME=treasury-service
@@ -149,7 +149,7 @@ services:
     ports:
       - "5006:5006"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5006
       - SERVICE_NAME=payments-service
@@ -165,7 +165,7 @@ services:
     ports:
       - "5007:5007"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5007
       - SERVICE_NAME=sms-service
@@ -181,7 +181,7 @@ services:
     ports:
       - "5008:5008"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5008
       - SERVICE_NAME=documents-service
@@ -197,7 +197,7 @@ services:
     ports:
       - "5009:5009"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5009
       - SERVICE_NAME=approvals-service
@@ -213,7 +213,7 @@ services:
     ports:
       - "5010:5010"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5010
       - SERVICE_NAME=notifications-service
@@ -229,7 +229,7 @@ services:
     ports:
       - "5011:5011"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5011
       - SERVICE_NAME=settings-service
@@ -245,7 +245,7 @@ services:
     ports:
       - "5012:5012"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5012
       - SERVICE_NAME=reports-service
@@ -261,7 +261,7 @@ services:
     ports:
       - "5013:5013"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5013
       - SERVICE_NAME=analytics-service
@@ -277,7 +277,7 @@ services:
     ports:
       - "5014:5014"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5014
       - SERVICE_NAME=search-service
@@ -293,7 +293,7 @@ services:
     ports:
       - "5015:5015"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5015
       - SERVICE_NAME=security-service
@@ -309,7 +309,7 @@ services:
     ports:
       - "5016:5016"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5016
       - SERVICE_NAME=mobile-service
@@ -325,7 +325,7 @@ services:
     ports:
       - "5017:5017"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kmaincms
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/kmaincms
       - NODE_ENV=production
       - PORT=5017
       - SERVICE_NAME=telegram-service

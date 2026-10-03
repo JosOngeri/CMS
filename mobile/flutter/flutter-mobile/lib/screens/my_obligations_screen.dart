@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/phone_utils.dart';
 import '../app/theme.dart';
 
 /// Member's financial obligations across all departments — required targets
@@ -109,7 +110,7 @@ class _MyObligationsScreenState extends State<MyObligationsScreen> {
               controller: phoneCtrl,
               keyboardType: TextInputType.phone,
               decoration: const InputDecoration(
-                  labelText: 'M-Pesa phone (2547XXXXXXXX)',
+                  labelText: 'M-Pesa phone (2547… or 07…)',
                   border: OutlineInputBorder()),
             ),
             const SizedBox(height: 16),
@@ -128,9 +129,9 @@ class _MyObligationsScreenState extends State<MyObligationsScreen> {
     );
     if (ok != true) return;
     final amount = double.tryParse(amountCtrl.text) ?? 0;
-    final phone = phoneCtrl.text.trim();
-    if (amount <= 0 || !RegExp(r'^2547\d{8}$').hasMatch(phone)) {
-      _snack('Enter a valid amount and phone number (2547XXXXXXXX)',
+    final phone = normalizeKenyanPhone(phoneCtrl.text);
+    if (amount <= 0 || phone == null) {
+      _snack('Enter a valid amount and phone number (2547… or 07…)',
           isError: true);
       return;
     }

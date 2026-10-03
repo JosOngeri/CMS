@@ -144,7 +144,7 @@ const SMS = () => {
       const columns = line.split(',').map(col => col.trim().replace(/"/g, ''))
       columns.forEach(column => {
         // Check if column looks like a phone number
-        const phoneRegex = /[\d\s\-\+\(\)]+/
+        const phoneRegex = /[\d\s\-()+]/
         const match = column.match(phoneRegex)
         if (match) {
           const phone = match[0].replace(/\D/g, '')
@@ -429,7 +429,7 @@ const SMS = () => {
                 )}
                 
                 <div className="text-xs text-[var(--color-textSecondary)] ">
-                  CSV should have a 'phone' column. Supports formats: 254712345678, 0712345678, 712345678
+                  CSV should have a &lsquo;phone&rsquo; column. Supports formats: 254712345678, 0712345678, 712345678
                 </div>
               </div>
             </div>

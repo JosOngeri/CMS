@@ -68,16 +68,16 @@ class UserRepository extends BaseRepository {
   async findByIdentifier(identifier) {
     // Check if identifier is email, username, or phone
     const isEmail = identifier.includes('@');
-    const cleanIdentifier = identifier.replace(/[\s\-\(\)]/g, '');
+    const cleanIdentifier = identifier.replace(/[\s\-()]/g, '');
     const isPhone = /^\d{10,15}$/.test(cleanIdentifier);
-    
+
     if (isEmail) {
       return this.findByEmail(identifier);
     } else if (isPhone) {
       return this.findByPhone(cleanIdentifier);
-    } else {
-      return this.findByUsername(identifier);
     }
+    return this.findByUsername(identifier);
+
   }
 
   async findByResetToken(token, churchId = null) {
@@ -116,7 +116,7 @@ class UserRepository extends BaseRepository {
 
   async updateResetToken(userId, token, expiry) {
     const result = await this.pool.query(
-      `UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3 RETURNING *`,
+      'UPDATE users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3 RETURNING *',
       [token, expiry, userId]
     );
     return result.rows[0];
@@ -124,7 +124,7 @@ class UserRepository extends BaseRepository {
 
   async updatePassword(userId, hashedPassword) {
     const result = await this.pool.query(
-      `UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2 RETURNING *`,
+      'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2 RETURNING *',
       [hashedPassword, userId]
     );
     return result.rows[0];
@@ -151,7 +151,7 @@ class UserRepository extends BaseRepository {
       paramIndex++;
     }
 
-    let deptJoin = '';
+    const deptJoin = '';
     let deptFilter = '';
     if (department) {
       deptFilter = ` AND EXISTS (SELECT 1 FROM department_members dm WHERE dm.user_id = u.id AND dm.department_id = $${paramIndex})`;
@@ -324,7 +324,7 @@ class UserRepository extends BaseRepository {
   async assignRolesByNames(userId, roleNames, churchId) {
     // Get role IDs from role names
     const roleResult = await this.pool.query(
-      `SELECT id, name FROM roles WHERE name = ANY($1::text[])`,
+      'SELECT id, name FROM roles WHERE name = ANY($1::text[])',
       [roleNames]
     );
 
@@ -460,7 +460,7 @@ class UserRepository extends BaseRepository {
     let paramCount = 1;
 
     for (const [key, value] of Object.entries(updates)) {
-      if (!ALLOWED_COLUMNS.has(key)) continue;
+      if (!ALLOWED_COLUMNS.has(key)) {continue;}
       if (value === 'CURRENT_TIMESTAMP') {
         fields.push(`${key} = CURRENT_TIMESTAMP`);
       } else {
@@ -485,11 +485,11 @@ class UserRepository extends BaseRepository {
     const params = [];
 
     if (churchId) {
-      query += ` AND church_id = $1`;
+      query += ' AND church_id = $1';
       params.push(churchId);
     }
 
-    query += ` ORDER BY created_at DESC`;
+    query += ' ORDER BY created_at DESC';
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -507,11 +507,11 @@ class UserRepository extends BaseRepository {
     const params = [];
 
     if (churchId) {
-      query += ` WHERE u.church_id = $1`;
+      query += ' WHERE u.church_id = $1';
       params.push(churchId);
     }
 
-    query += ` GROUP BY u.id ORDER BY u.first_name, u.last_name`;
+    query += ' GROUP BY u.id ORDER BY u.first_name, u.last_name';
 
     const result = await this.pool.query(query, params);
     return result.rows.map(user => ({

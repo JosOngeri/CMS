@@ -36,18 +36,20 @@ const TabNavigation = ({ tabs, activeTab, onTabChange, persistKey = null, varian
       if (currentIndex === -1) return
 
       switch (event.key) {
-        case 'ArrowLeft':
+        case 'ArrowLeft': {
           event.preventDefault()
           const prevIndex = currentIndex > 0 ? currentIndex - 1 : tabButtons.length - 1
           tabButtons[prevIndex].focus()
           setFocusedIndex(prevIndex)
           break
-        case 'ArrowRight':
+        }
+        case 'ArrowRight': {
           event.preventDefault()
           const nextIndex = currentIndex < tabButtons.length - 1 ? currentIndex + 1 : 0
           tabButtons[nextIndex].focus()
           setFocusedIndex(nextIndex)
           break
+        }
         case 'Home':
           event.preventDefault()
           tabButtons[0].focus()
@@ -59,13 +61,14 @@ const TabNavigation = ({ tabs, activeTab, onTabChange, persistKey = null, varian
           setFocusedIndex(tabButtons.length - 1)
           break
         case 'Enter':
-        case ' ':
+        case ' ': {
           event.preventDefault()
           const tabId = tabs[currentIndex]?.id
           if (tabId) {
             handleTabClick(tabId, currentIndex)
           }
           break
+        }
       }
     }
 

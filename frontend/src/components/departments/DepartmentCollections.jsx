@@ -663,7 +663,7 @@ const DepartmentCollections = ({ departmentId, canManage }) => {
               <h3 className="font-semibold text-[var(--color-text)]">M-Pesa Parser Setup</h3>
             </div>
             <p className="text-sm text-[var(--color-textSecondary)]">
-              Paste one real payment SMS. AI builds a parsing ruleset for this department's collections —
+              Paste one real payment SMS. AI builds a parsing ruleset for this department&rsquo;s collections —
               names and numbers are masked before leaving the server.
             </p>
             <textarea rows={5} value={sampleSms} onChange={(e) => setSampleSms(e.target.value)}

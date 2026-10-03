@@ -1,6 +1,11 @@
 const fs = require('fs').promises;
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { pool } = require('./config/database');
+const { requireDevDatabase } = require('./scripts/_scriptSafety');
+
+// L736: mass-creates accounts — refuse on prod/remote DBs.
+requireDevDatabase('create-department-users.js');
 
 class DepartmentUserCreator {
   constructor() {
@@ -125,7 +130,8 @@ class DepartmentUserCreator {
         name: name,
         firstName: firstName,
         username: this.generateUsername(name),
-        password: `${firstName}@123`,
+        // L736: per-user random password instead of predictable `${name}@123`.
+        password: crypto.randomBytes(9).toString('base64url'),
         department: department,
         category: category,
         role: memberRole,
@@ -215,7 +221,9 @@ class DepartmentUserCreator {
                 ON CONFLICT (user_id, department_id) DO NOTHING
               `, [userId, departmentId, user.role]);
               
-              console.log(`✅ Created user: ${user.username} (${user.name}) - ${user.department} - ${user.role}`);
+              // Passwords are random per user — print once at creation time
+              // so they can be distributed; they are never stored in the repo.
+              console.log(`✅ Created user: ${user.username} (${user.name}) - ${user.department} - ${user.role} — initial password: ${user.password}`);
             } else {
               console.log(`⚠️  Department not found: ${user.department} for user: ${user.username}`);
             }

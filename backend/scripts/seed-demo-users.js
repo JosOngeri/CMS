@@ -1,28 +1,33 @@
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
 
-const SALT_ROUNDS = 8;
+// L756: refuse prod/remote DBs; no hardcoded demo passwords.
+requireDevDatabase('seed-demo-users.js');
+
+const SALT_ROUNDS = 12;
+const sharedPassword = seedPassword('demo users');
 
 const demoUsers = [
   {
     firstName: 'Admin',
     lastName: 'User',
     email: 'admin@sda.org',
-    password: 'admin123',
+    password: sharedPassword,
     role: 'Super Admin',
   },
   {
     firstName: 'Pastor',
     lastName: 'John',
     email: 'pastor@sda.org',
-    password: 'pastor123',
+    password: sharedPassword,
     role: 'Pastor',
   },
   {
     firstName: 'Church',
     lastName: 'Member',
     email: 'member@sda.org',
-    password: 'member123',
+    password: sharedPassword,
     role: 'Member',
   },
 ];

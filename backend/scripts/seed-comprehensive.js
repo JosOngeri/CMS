@@ -1,6 +1,10 @@
 require('dotenv').config();
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+
+// L754: TRUNCATEs live tables — refuse on prod/remote DBs.
+requireDevDatabase('seed-comprehensive.js');
 
 async function seed() {
   const client = await pool.connect();
@@ -17,7 +21,9 @@ async function seed() {
     const roles = {};
     rolesRes.rows.forEach(r => roles[r.name] = r.id);
 
-    const passwordHash = await bcrypt.hash('password123', 12);
+    // L736: no hardcoded creds — SEED_PASSWORD env or a generated random one.
+    const sharedPassword = seedPassword('all seeded users');
+    const passwordHash = await bcrypt.hash(sharedPassword, 12);
 
     // 3. Create Users
     console.log('Creating users...');
@@ -123,7 +129,7 @@ async function seed() {
 
     await client.query('COMMIT');
     console.log('✅ Comprehensive seeding completed successfully!');
-    console.log('\nLogin Credentials (Password for all: password123):');
+    console.log('\nSeeded login accounts (password printed above — SEED_PASSWORD or generated):');
     users.forEach(u => console.log(`- ${u.role}: ${u.email}`));
 
   } catch (error) {

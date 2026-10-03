@@ -409,8 +409,18 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         case 'Department Head':
           final stats = await _apiService!.dio.get('/dashboard/department-stats');
           final health = await _apiService!.dio.get('/dashboard/department-health');
+          // department-stats returns a List of per-dept objects (camelCase) —
+          // aggregate them; Map.from(list) would throw (L728).
+          final deptList = stats.data['data'] is List
+              ? stats.data['data'] as List
+              : const [];
+          num sumOf(String key) => deptList.fold<num>(
+              0, (s, d) => s + (((d as Map?)?[key] as num?) ?? 0));
           _roleData = {
-            ...Map<String, dynamic>.from(stats.data['data'] ?? {}),
+            'departmentMembers': sumOf('departmentMembers'),
+            'pendingTasks': sumOf('pendingTasks'),
+            'departmentEvents': sumOf('departmentEvents'),
+            'departmentBudget': sumOf('departmentBudget'),
             ...Map<String, dynamic>.from(health.data['data'] ?? {}),
           };
           break;
@@ -604,28 +614,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return [
       _buildStatCard(
         'Total Balance',
-        'KES ${_roleData?['total_balance'] ?? 0}',
+        'KES ${_roleData?['totalBalance'] ?? 0}',
         Icons.account_balance_wallet,
         AppTheme.successColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Income (Month)',
-        'KES ${_roleData?['monthly_income'] ?? 0}',
+        'KES ${_roleData?['monthlyIncome'] ?? 0}',
         Icons.trending_up,
         AppTheme.accentColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Expenses (Month)',
-        'KES ${_roleData?['monthly_expenses'] ?? 0}',
+        'KES ${_roleData?['monthlyExpenses'] ?? 0}',
         Icons.trending_down,
         AppTheme.errorColor,
         onTap: () => context.go('/payments'),
       ),
       _buildStatCard(
         'Pending Payments',
-        '${_roleData?['pending_payments'] ?? 0}',
+        '${_roleData?['pendingPayments'] ?? 0}',
         Icons.pending_actions,
         AppTheme.warningColor,
         onTap: () => context.go('/payments'),
@@ -651,28 +661,28 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     return [
       _buildStatCard(
         'Dept Members',
-        '${_roleData?['department_members'] ?? 0}',
+        '${_roleData?['departmentMembers'] ?? 0}',
         Icons.people,
         AppTheme.primaryColor,
         onTap: () => context.push('/members'),
       ),
       _buildStatCard(
         'Pending Tasks',
-        '${_roleData?['pending_tasks'] ?? 0}',
+        '${_roleData?['pendingTasks'] ?? 0}',
         Icons.task_alt,
         AppTheme.warningColor,
         onTap: () => context.push('/departments'),
       ),
       _buildStatCard(
         'Dept Events',
-        '${_roleData?['department_events'] ?? 0}',
+        '${_roleData?['departmentEvents'] ?? 0}',
         Icons.event,
         AppTheme.accentColor,
         onTap: () => context.go('/events'),
       ),
       _buildStatCard(
         'Dept Budget',
-        'KES ${_roleData?['department_budget'] ?? 0}',
+        'KES ${_roleData?['departmentBudget'] ?? 0}',
         Icons.account_balance,
         AppTheme.successColor,
         onTap: () => context.push('/departments'),

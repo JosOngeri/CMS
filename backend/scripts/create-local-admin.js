@@ -1,12 +1,16 @@
 const { pool } = require('../config/database');
 const bcrypt = require('bcryptjs');
+const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+
+// L756: refuse prod/remote DBs; no hardcoded password.
+requireDevDatabase('create-local-admin.js');
 
 async function createLocalAdmin() {
   try {
     console.log('Creating local admin user...');
 
     // Hash password
-    const passwordHash = await bcrypt.hash('Right123', 12);
+    const passwordHash = await bcrypt.hash(seedPassword('local admin'), 12);
     console.log('Password hashed');
 
     // Add missing columns if they don't exist
@@ -99,7 +103,7 @@ async function createLocalAdmin() {
 
     console.log('Done! You can now login with:');
     console.log('Email: admin@kiserian-sda.co.ke');
-    console.log('Password: Right123');
+    console.log('Password: (printed at hash time above — SEED_PASSWORD or generated)');
 
     await pool.end();
     process.exit(0);

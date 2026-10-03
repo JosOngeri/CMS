@@ -115,11 +115,11 @@ function normalizeText(raw) {
 }
 
 function isAllCaps(line) {
-  return /^[A-Z][A-Z\s&./'’()\-]*$/u.test(line) && line.length > 1;
+  return /^[A-Z][A-Z\s&./'’()-]*$/u.test(line) && line.length > 1;
 }
 
 function removeBullet(raw) {
-  return raw.replace(/^\s*[\d\.a-z)\]\-]+\s*/, '').trim();
+  return raw.replace(/^\s*[\d.a-z)\]-]+\s*/, '').trim();
 }
 
 function cleanTitle(name) {
@@ -138,10 +138,10 @@ const knownRoles = new Set([
 
 function normalizeRole(role) {
   const r = role ? role.toLowerCase().trim() : '';
-  if (r === 'assistants') return 'Assistant';
-  if (r === 'sponsors') return 'Sponsor';
-  if (r === 'assistant secretaries') return 'Assistant Secretary';
-  if (r === 'co-ordinator') return 'Coordinator';
+  if (r === 'assistants') {return 'Assistant';}
+  if (r === 'sponsors') {return 'Sponsor';}
+  if (r === 'assistant secretaries') {return 'Assistant Secretary';}
+  if (r === 'co-ordinator') {return 'Coordinator';}
   return role ? role.trim() : 'Member';
 }
 
@@ -155,50 +155,50 @@ function isQuote(s) {
 
 function sectionRole(name) {
   const n = name.toUpperCase();
-  if (n === 'ELDERS') return 'Elder';
-  if (n === 'DEACONS') return 'Deacon';
-  if (n === 'DEACONESSES') return 'Deaconess';
+  if (n === 'ELDERS') {return 'Elder';}
+  if (n === 'DEACONS') {return 'Deacon';}
+  if (n === 'DEACONESSES') {return 'Deaconess';}
   return 'Member';
 }
 
 function getHeadRole(name) {
   const n = name.toUpperCase();
-  if (n.includes('DIRECTOR') || n === 'CHURCH CHOIR' || n === 'ADVENTURER CLUB' || n === 'PATHFINDER' || n === 'PERSONAL MINISTRY' || n === 'PUBLISHING DIRECTOR') return 'Director';
-  if (n.includes('TREASURER')) return 'Treasurer';
-  if (n.includes('CLERK')) return 'Clerk';
-  if (n.includes('SECRETARY')) return 'Secretary';
-  if (n.includes('CO-ORDINATOR') || n.includes('COORDINATOR')) return 'Coordinator';
-  if (n.includes('SUPERINTENDENT')) return 'Superintendent';
-  if (n === 'SCHOOL CHAIR') return 'Chair';
-  if (n === 'CAMP MEETING') return 'Chairperson';
-  if (n === 'ELDERS') return 'Elder';
-  if (n.includes('DEACON')) return 'Head';
-  if (n === 'CHURCH BOARD MEMBERS') return 'Member';
-  if (n === 'CHORISTERS') return 'Member';
+  if (n.includes('DIRECTOR') || n === 'CHURCH CHOIR' || n === 'ADVENTURER CLUB' || n === 'PATHFINDER' || n === 'PERSONAL MINISTRY' || n === 'PUBLISHING DIRECTOR') {return 'Director';}
+  if (n.includes('TREASURER')) {return 'Treasurer';}
+  if (n.includes('CLERK')) {return 'Clerk';}
+  if (n.includes('SECRETARY')) {return 'Secretary';}
+  if (n.includes('CO-ORDINATOR') || n.includes('COORDINATOR')) {return 'Coordinator';}
+  if (n.includes('SUPERINTENDENT')) {return 'Superintendent';}
+  if (n === 'SCHOOL CHAIR') {return 'Chair';}
+  if (n === 'CAMP MEETING') {return 'Chairperson';}
+  if (n === 'ELDERS') {return 'Elder';}
+  if (n.includes('DEACON')) {return 'Head';}
+  if (n === 'CHURCH BOARD MEMBERS') {return 'Member';}
+  if (n === 'CHORISTERS') {return 'Member';}
   return 'Leader';
 }
 
 function getDeptCategory(name) {
   const n = name.toUpperCase();
-  if (n === 'ELDERS' || n.includes('DEACON') || n === 'TREASURER' || n === 'CHURCH CLERK' || n === 'CHURCH BOARD MEMBERS' || n === 'STEWARDSHIP LEADER' || n === 'RELIGIOUS LIBERTY LEADER') return 'Leadership';
-  if (n === 'EDUCATION SECRETARY' || n === 'SABBATH SCHOOL SUPERINTENDENT' || n === 'SCHOOL CHAIR' || n === 'LIBRARIAN' || n.includes('V.O.P')) return 'Education';
-  if (n === 'YOUTH MINISTRY' || n === 'ADVENTURER CLUB' || n === 'PATHFINDER' || n === 'AMBASSADORS' || n === 'VBS' || n === 'CHILDREN MINISTRY' || n.includes('KID') || n === 'MASTER GUIDE') return 'Youth';
-  if (n === 'MUSIC CO-ORDINATOR' || n === 'CHURCH CHOIR' || n === 'CHORISTERS' || n === 'PIANIST' || n === 'PA SYSTEM') return 'Worship';
-  if (n === 'COMMUNICATION SECRETARY' || n === 'INTEREST COORDINATOR') return 'Support';
-  if (n === 'CAMP MEETING' || n === 'A.M.R.') return 'Special';
+  if (n === 'ELDERS' || n.includes('DEACON') || n === 'TREASURER' || n === 'CHURCH CLERK' || n === 'CHURCH BOARD MEMBERS' || n === 'STEWARDSHIP LEADER' || n === 'RELIGIOUS LIBERTY LEADER') {return 'Leadership';}
+  if (n === 'EDUCATION SECRETARY' || n === 'SABBATH SCHOOL SUPERINTENDENT' || n === 'SCHOOL CHAIR' || n === 'LIBRARIAN' || n.includes('V.O.P')) {return 'Education';}
+  if (n === 'YOUTH MINISTRY' || n === 'ADVENTURER CLUB' || n === 'PATHFINDER' || n === 'AMBASSADORS' || n === 'VBS' || n === 'CHILDREN MINISTRY' || n.includes('KID') || n === 'MASTER GUIDE') {return 'Youth';}
+  if (n === 'MUSIC CO-ORDINATOR' || n === 'CHURCH CHOIR' || n === 'CHORISTERS' || n === 'PIANIST' || n === 'PA SYSTEM') {return 'Worship';}
+  if (n === 'COMMUNICATION SECRETARY' || n === 'INTEREST COORDINATOR') {return 'Support';}
+  if (n === 'CAMP MEETING' || n === 'A.M.R.') {return 'Special';}
   return 'Ministry';
 }
 
 function getFinalRole(memberRole, headRole) {
-  if (headRole && (memberRole === 'Member' || memberRole === 'Leader')) return headRole;
+  if (headRole && (memberRole === 'Member' || memberRole === 'Leader')) {return headRole;}
   return memberRole;
 }
 
 function parseName(fullName) {
   const cleaned = cleanTitle(fullName);
   const parts = cleaned.split(/\s+/).filter(p => p);
-  if (parts.length === 0) return { first_name: 'Unknown', last_name: 'Unknown' };
-  if (parts.length === 1) return { first_name: parts[0], last_name: 'Unknown' };
+  if (parts.length === 0) {return { first_name: 'Unknown', last_name: 'Unknown' };}
+  if (parts.length === 1) {return { first_name: parts[0], last_name: 'Unknown' };}
   return { first_name: parts[0], last_name: parts.slice(1).join(' ') };
 }
 
@@ -231,19 +231,19 @@ function parseWorkersFile() {
     return peopleMap.get(key);
   }
 
-  for (let raw of lines) {
+  for (const raw of lines) {
     const trimmed = raw.trim();
-    if (!trimmed) continue;
-    if (trimmed.startsWith('*') || trimmed.toLowerCase().includes('elders to appoint')) continue;
+    if (!trimmed) {continue;}
+    if (trimmed.startsWith('*') || trimmed.toLowerCase().includes('elders to appoint')) {continue;}
 
-    let cleaned = removeBullet(raw);
-    if (!cleaned) continue;
+    const cleaned = removeBullet(raw);
+    if (!cleaned) {continue;}
     let normalized = normalizeText(cleaned);
 
     if (/^KID\s+/i.test(normalized) && !isAllCaps(normalized)) {
-      if (normalized.toLowerCase().includes('prayer')) pendingRole = 'Prayer Coordinator';
-      else if (normalized.toLowerCase().includes('footprint for parents')) pendingRole = 'Footprint for Parents';
-      else if (normalized.toLowerCase().includes('footprints for children')) pendingRole = 'Footprints for Children';
+      if (normalized.toLowerCase().includes('prayer')) {pendingRole = 'Prayer Coordinator';}
+      else if (normalized.toLowerCase().includes('footprint for parents')) {pendingRole = 'Footprint for Parents';}
+      else if (normalized.toLowerCase().includes('footprints for children')) {pendingRole = 'Footprints for Children';}
       continue;
     }
 
@@ -265,11 +265,11 @@ function parseWorkersFile() {
       continue;
     }
 
-    if (!current) continue;
+    if (!current) {continue;}
 
     normalized = cleanTitle(normalized);
-    if (!normalized || normalized.length < 3) continue;
-    if (normalized.toLowerCase() === 'chair' || normalized.toLowerCase() === 'assistant') continue;
+    if (!normalized || normalized.length < 3) {continue;}
+    if (normalized.toLowerCase() === 'chair' || normalized.toLowerCase() === 'assistant') {continue;}
 
     const isBullet = /^[-]\s+/.test(raw);
     const parts = normalized.split(/\s+-\s+|\s*-\s*/).map(p => p.trim()).filter(p => p);
@@ -290,15 +290,15 @@ function parseWorkersFile() {
         name = parts[0];
         role = normalizeRole(parts[1]);
         if (parts.length > 2) {
-          if (isLocation(parts[2])) location = parts[2];
-          else if (isQuote(parts[2])) location = currentLocation;
+          if (isLocation(parts[2])) {location = parts[2];}
+          else if (isQuote(parts[2])) {location = currentLocation;}
         }
       } else if (isQuote(right)) {
         name = parts[0];
         role = currentRole;
         if (parts.length > 2) {
-          if (isLocation(parts[2])) location = parts[2];
-          else if (isQuote(parts[2])) location = currentLocation;
+          if (isLocation(parts[2])) {location = parts[2];}
+          else if (isQuote(parts[2])) {location = currentLocation;}
         }
       } else if (isLocation(right)) {
         name = parts[0];
@@ -314,8 +314,8 @@ function parseWorkersFile() {
       }
     } else {
       name = normalized;
-      if (isBullet) role = currentRole;
-      else role = current.sectionRole || 'Member';
+      if (isBullet) {role = currentRole;}
+      else {role = current.sectionRole || 'Member';}
     }
 
     if (pendingRole) {
@@ -324,16 +324,16 @@ function parseWorkersFile() {
     }
 
     name = cleanTitle(name);
-    if (!name || name.length < 2) continue;
+    if (!name || name.length < 2) {continue;}
 
     if (role) {
       role = normalizeRole(role);
-      if (role === 'Assistant') currentRole = 'Assistant';
-      else currentRole = role;
+      if (role === 'Assistant') {currentRole = 'Assistant';}
+      else {currentRole = role;}
     }
-    if (location) currentLocation = location;
+    if (location) {currentLocation = location;}
 
-    if (!current.head) current.head = name;
+    if (!current.head) {current.head = name;}
     if (!current.members.find(m => m.name === name)) {
       current.members.push({ name, role: role || 'Member', location });
     }
@@ -360,13 +360,13 @@ function parseWorkersFile() {
 
       if (section.name === 'ELDERS') {
         person.roles.add('Elder');
-        if (member.role === '1st Elder') person.roles.add('First Elder');
+        if (member.role === '1st Elder') {person.roles.add('First Elder');}
       }
-      if (section.name === 'DEACONS') person.roles.add('Deacon');
-      if (section.name === 'DEACONESSES') person.roles.add('Deaconess');
-      if (section.name === 'TREASURER' && isHead) person.roles.add('Treasurer');
-      if (section.name === 'CHURCH CLERK' && isHead) person.roles.add('Clerk');
-      if (section.name === 'CHURCH BOARD MEMBERS') person.roles.add('Church Board Member');
+      if (section.name === 'DEACONS') {person.roles.add('Deacon');}
+      if (section.name === 'DEACONESSES') {person.roles.add('Deaconess');}
+      if (section.name === 'TREASURER' && isHead) {person.roles.add('Treasurer');}
+      if (section.name === 'CHURCH CLERK' && isHead) {person.roles.add('Clerk');}
+      if (section.name === 'CHURCH BOARD MEMBERS') {person.roles.add('Church Board Member');}
     }
   }
 
@@ -443,7 +443,7 @@ function generatePerson({ idx, isChild, firstName, lastName, gender, city, role,
     occupation,
     city: city || randomChoice(cities),
     address: randomChoice(addresses),
-    notes: isChild ? null : `Generated member record`,
+    notes: isChild ? null : 'Generated member record',
     role,
     roles,
     userRole,
@@ -513,7 +513,7 @@ async function seed() {
     const passwordHash = bcrypt.hashSync(DEFAULT_PASSWORD, 8);
 
     const churchRes = await client.query('SELECT id FROM churches ORDER BY created_at LIMIT 1');
-    if (!churchRes.rows.length) throw new Error('No church found');
+    if (!churchRes.rows.length) {throw new Error('No church found');}
     const churchId = churchRes.rows[0].id;
 
     const adminRes = await client.query("SELECT id FROM users WHERE email = 'admin@kiseriansda.org' OR email = 'admin@msabato.org' ORDER BY created_at LIMIT 1");
@@ -534,7 +534,7 @@ async function seed() {
 
     const rolesRes = await client.query('SELECT id, name FROM roles');
     const roleIds = {};
-    for (const r of rolesRes.rows) roleIds[r.name] = r.id;
+    for (const r of rolesRes.rows) {roleIds[r.name] = r.id;}
 
     const { sections, people } = parseWorkersFile();
     const fileCount = people.length;
@@ -567,10 +567,10 @@ async function seed() {
 
     // Delete existing seed data for idempotency
     const seedEmailPattern = `${EMAIL_PREFIX}%@${EMAIL_DOMAIN}`;
-    await client.query(`DELETE FROM members WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)`, [seedEmailPattern]);
-    await client.query(`DELETE FROM department_members WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)`, [seedEmailPattern]);
-    await client.query(`DELETE FROM notifications WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)`, [seedEmailPattern]);
-    await client.query(`DELETE FROM sms_logs WHERE recipient_phone IN (SELECT phone FROM users WHERE email LIKE $1)`, [seedEmailPattern]);
+    await client.query('DELETE FROM members WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', [seedEmailPattern]);
+    await client.query('DELETE FROM department_members WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', [seedEmailPattern]);
+    await client.query('DELETE FROM notifications WHERE user_id IN (SELECT id FROM users WHERE email LIKE $1)', [seedEmailPattern]);
+    await client.query('DELETE FROM sms_logs WHERE recipient_phone IN (SELECT phone FROM users WHERE email LIKE $1)', [seedEmailPattern]);
 
     console.log(`Creating ${allMembers.length} users...`);
     const idByEmail = {};
@@ -602,8 +602,8 @@ async function seed() {
     const deptIdByName = {};
     const deptIdBySlug = {};
     for (const section of sections) {
-      if (section.members.length === 0 || !section.head) continue;
-      if (DOCX_TO_CATALOG[section.name] === null) continue; // e.g. CHURCH BOARD MEMBERS — role, not a dept
+      if (section.members.length === 0 || !section.head) {continue;}
+      if (DOCX_TO_CATALOG[section.name] === null) {continue;} // e.g. CHURCH BOARD MEMBERS — role, not a dept
       const catalog = CATALOG_BY_SLUG[DOCX_TO_CATALOG[section.name]];
       const deptName = catalog ? catalog.name : section.name;
       const category = catalog ? catalog.category : getDeptCategory(section.name);
@@ -625,7 +625,7 @@ async function seed() {
     // Second pass: wire parents for auxiliary departments
     for (const section of sections) {
       const catalog = CATALOG_BY_SLUG[DOCX_TO_CATALOG[section.name]];
-      if (!catalog || !catalog.parent) continue;
+      if (!catalog || !catalog.parent) {continue;}
       const parentId = deptIdBySlug[catalog.parent];
       const childId = deptIdByName[section.name];
       if (parentId && childId) {
@@ -635,7 +635,7 @@ async function seed() {
 
     // Update department heads
     for (const section of sections) {
-      if (!section.head || !deptIdByName[section.name]) continue;
+      if (!section.head || !deptIdByName[section.name]) {continue;}
       const headPerson = people.find(p => p.name === section.head);
       if (headPerson && headPerson.userId) {
         await client.query('UPDATE departments SET head_id = $1 WHERE id = $2', [headPerson.userId, deptIdByName[section.name]]);
@@ -648,14 +648,14 @@ async function seed() {
     const ROLE_FOR_POSITION = { head: 'Department Head', assistant: 'Assistant Department Head', secretary: null };
     for (const section of sections) {
       const deptId = deptIdByName[section.name];
-      if (!deptId) continue;
+      if (!deptId) {continue;}
       for (const member of section.members) {
         const person = people.find(p => p.name === member.name);
-        if (!person || !person.userId) continue;
+        if (!person || !person.userId) {continue;}
         const position = member.name === section.head ? 'head'
           : /assistant/i.test(member.role) ? 'assistant'
-          : /secretary/i.test(member.role) ? 'secretary' : null;
-        if (!position) continue;
+            : /secretary/i.test(member.role) ? 'secretary' : null;
+        if (!position) {continue;}
         await client.query(
           `INSERT INTO department_leadership
              (department_id, church_id, user_id, position, allocation_type, appointed_by, is_active)
@@ -681,12 +681,12 @@ async function seed() {
 
     console.log('Creating department memberships...');
     for (const section of sections) {
-      if (!deptIdByName[section.name]) continue;
+      if (!deptIdByName[section.name]) {continue;}
       const deptId = deptIdByName[section.name];
       const headRole = getHeadRole(section.name);
       for (const member of section.members) {
         const person = people.find(p => p.name === member.name);
-        if (!person || !person.userId) continue;
+        if (!person || !person.userId) {continue;}
         const isHead = member.name === section.head;
         const finalRole = getFinalRole(member.role, isHead ? headRole : null);
         const joined = randomDateBetween(5, 0);
@@ -702,7 +702,7 @@ async function seed() {
     console.log('Assigning user roles...');
     for (const person of allMembers) {
       for (const roleName of person.roles) {
-        if (!roleIds[roleName]) continue;
+        if (!roleIds[roleName]) {continue;}
         await client.query(
           'INSERT INTO user_roles (user_id, role_id, church_id) VALUES ($1, $2, $3) ON CONFLICT (user_id, role_id) DO NOTHING',
           [person.userId, roleIds[roleName], churchId]
@@ -714,7 +714,7 @@ async function seed() {
     const notifications = [];
     for (const person of allMembers) {
       const templateIndexes = new Set();
-      while (templateIndexes.size < 3) templateIndexes.add(randomInt(0, notificationTemplates.length - 1));
+      while (templateIndexes.size < 3) {templateIndexes.add(randomInt(0, notificationTemplates.length - 1));}
       for (const idx of templateIndexes) {
         const t = notificationTemplates[idx];
         notifications.push([person.userId, t.type, t.title, t.body, false, churchId, randomDateBetween(1, 0)]);
@@ -743,7 +743,7 @@ async function seed() {
 }
 
 async function bulkInsert(client, table, columns, rows) {
-  if (!rows.length) return;
+  if (!rows.length) {return;}
   const batchSize = 100;
   for (let i = 0; i < rows.length; i += batchSize) {
     const batch = rows.slice(i, i + batchSize);

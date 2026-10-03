@@ -118,9 +118,9 @@ const SiteSettings = () => {
     const currentValue = changes[setting.key] !== undefined ? changes[setting.key] : setting.value
 
     switch (setting.value_type) {
-      case 'number':
-        const rules = typeof setting.validation_rules === 'string' 
-          ? JSON.parse(setting.validation_rules) 
+      case 'number': {
+        const rules = typeof setting.validation_rules === 'string'
+          ? JSON.parse(setting.validation_rules)
           : setting.validation_rules
         return (
           <SettingNumber
@@ -135,6 +135,7 @@ const SiteSettings = () => {
             step={rules?.step}
           />
         )
+      }
       case 'boolean':
         return (
           <SettingBoolean
@@ -157,9 +158,9 @@ const SiteSettings = () => {
             disabled={!setting.is_editable || !canManageSettings}
           />
         )
-      case 'select':
-        const selectRules = typeof setting.validation_rules === 'string' 
-          ? JSON.parse(setting.validation_rules) 
+      case 'select': {
+        const selectRules = typeof setting.validation_rules === 'string'
+          ? JSON.parse(setting.validation_rules)
           : setting.validation_rules
         const options = selectRules?.enum?.map(val => ({ value: val, label: val })) || []
         return (
@@ -173,6 +174,7 @@ const SiteSettings = () => {
             disabled={!setting.is_editable || !canManageSettings}
           />
         )
+      }
       default:
         return (
           <SettingInput

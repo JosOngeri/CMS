@@ -36,7 +36,9 @@ async function main() {
   });
   await client.connect();
 
-  const passwordHash = bcrypt.hashSync('right123', 10);
+  const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+requireDevDatabase('seed-role-accounts.js');
+const passwordHash = bcrypt.hashSync(seedPassword('role accounts'), 12);
 
   // Ensure Treasurer role exists
   await client.query(

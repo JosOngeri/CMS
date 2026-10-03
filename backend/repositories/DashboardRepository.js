@@ -701,7 +701,7 @@ class DashboardRepository extends BaseRepository {
   async getDepartmentHealthMetrics(departmentId, churchId = null) {
     try {
       // Get task completion rate
-      const taskQuery = `
+      let taskQuery = `
         SELECT
           COUNT(*) as total_tasks,
           COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_tasks
@@ -718,7 +718,7 @@ class DashboardRepository extends BaseRepository {
       const taskResult = await this.pool.query(taskQuery, taskParams);
 
       // Get active member count
-      const memberQuery = `
+      let memberQuery = `
         SELECT COUNT(*) as active_members
         FROM department_members
         WHERE department_id = $1 AND is_active = true
@@ -733,7 +733,7 @@ class DashboardRepository extends BaseRepository {
       const memberResult = await this.pool.query(memberQuery, memberParams);
 
       // Get budget utilization
-      const budgetQuery = `
+      let budgetQuery = `
         SELECT
           COALESCE(SUM(budget_amount), 0) as total_budget,
           COALESCE(SUM(actual_spend), 0) as spent_budget

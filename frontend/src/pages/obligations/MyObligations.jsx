@@ -165,7 +165,7 @@ const MyObligations = () => {
         <div className="flex items-start gap-2 text-sm text-[var(--color-textSecondary)] bg-[var(--color-surface)] rounded-lg p-4">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           Required obligations are tracked by your department head. Pay via M-Pesa or hand cash to your
-          department's designated collector who can reconcile the payment for you.
+          department&rsquo;s designated collector who can reconcile the payment for you.
         </div>
       )}
 

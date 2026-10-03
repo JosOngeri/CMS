@@ -1,6 +1,6 @@
 /**
  * Security Audit Script for Msabato CMS Backend
- * 
+ *
  * This script performs security checks on the codebase
  * to identify potential vulnerabilities and security issues.
  */
@@ -94,7 +94,7 @@ function checkForHardcodedCredentials(content) {
     /bearer\s+[a-zA-Z0-9\-._~+/]+=*/gi,
     /sk-[a-zA-Z0-9]{32,}/g, // OpenAI API keys
     /ghp_[a-zA-Z0-9]{36}/g, // GitHub personal access tokens
-    /xox[baprs]-[a-zA-Z0-9\-]+/g // Slack tokens
+    /xox[baprs]-[a-zA-Z0-9-]+/g // Slack tokens
   ];
 
   const found = [];
@@ -137,11 +137,11 @@ async function runSecurityAudit() {
   const gitignoreContent =
     readFile(path.join(backendDir, '.gitignore')) ||
     readFile(path.join(repoRoot, '.gitignore'));
-  
+
   if (gitignoreContent) {
     const requiredIgnores = ['.env', '*.key', '*.pem', 'credentials', 'secrets'];
     const missingIgnores = requiredIgnores.filter(ignore => !gitignoreContent.includes(ignore));
-    
+
     if (missingIgnores.length === 0) {
       addCheck('.gitignore configuration', 'PASS', 'All sensitive files are ignored', 'high');
     } else {

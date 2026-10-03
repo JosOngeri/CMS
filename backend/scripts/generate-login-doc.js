@@ -25,7 +25,7 @@ const churchNames = {
 let md = '# Msabato CMS - User Login Details\n\n';
 md += `**Site:** https://msabato.co.ke  \n`;
 md += `**Generated:** ${new Date().toISOString().slice(0, 10)}  \n`;
-md += `**Password for every account:** \`right123\`\n\n`;
+md += `**Password:** set at seed time via SEED_PASSWORD or generated — see seed script output\n\n`;
 md += '> Member phone numbers were randomly generated (+2547...) during seeding and are not real numbers.\n\n';
 
 // --- Quick reference: one account per role per church ---
@@ -39,10 +39,10 @@ Object.keys(byChurch).sort().forEach(slug => {
   md += '| Role | Login | Password |\n|---|---|---|\n';
   roleOrder.forEach(role => {
     const u = users.find(x => (x.roles || '').includes(role));
-    md += `| ${role} | ${u ? u.email : '—'} | right123 |\n`;
+    md += `| ${role} | ${u ? u.email : '—'} | (seed password) |\n`;
   });
   const member = users.find(x => /^member1@/.test(x.email)) || users.find(x => /^member\d+@/.test(x.email));
-  md += `| ${memberLabel} | ${member ? member.email : '—'} | right123 |\n\n`;
+  md += `| ${memberLabel} | ${member ? member.email : '—'} | (seed password) |\n\n`;
 });
 
 // Admin / staff (non memberN@ accounts)

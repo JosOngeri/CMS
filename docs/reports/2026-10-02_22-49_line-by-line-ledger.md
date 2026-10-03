@@ -1048,3 +1048,135 @@ Verified: `node --check` clean on touched backend files; `vite build` clean (180
 Deps added to pubspec.yaml: device_info_plus, battery_plus.
 
 Verified: `vite build` clean (1798 modules); `node --check` clean on touched backend files. Flutter analyze/build pending — flutter CLI unavailable in this shell.
+
+### Lint fixes applied — 2026-10-03 (L1–L9 + residual)
+
+| # | Fix | Verified |
+|---|-----|----------|
+| L1 | `content.controller.js` — `const { status } = req.query` added before repo call | eslint no-undef gone |
+| L2 | `approvals.test.js` — `createMemberToken` added to test-helpers import | eslint no-undef gone ×2 |
+| L3 | `nameMatcher.js` — second duplicate block removed; kept richer first-block variants + unique keys (ronald/timothy/jeffrey/jacob/gary). `brian`→bryan, `stephen`→steve+steven restored | 23 dupe-key errors gone |
+| L4 | `generate-comprehensive-seed.js` — dup keys removed (kept base groups; Deaconesses/Treasury already mapped canonically below). NOTE: `departmentMappings` itself is never consumed — dead const | 3 dupe-key errors gone |
+| L5 | `events.routes.js` rsvpEvent churchId — already FIXED | node -c OK |
+| L6 | hex-color rule now exempts `churchColorPalette.js`, `colorPalettes.js`, `ColorPaletteContext.jsx`, `PalettePreviewCard.jsx`, `__tests__/**` | 48 errors gone |
+| L7 | legacy `.eslintrc.cjs`+`.eslintrc.json` deleted; single `eslint.config.js`; `react-hooks` plugin registered (rules-of-hooks=error, exhaustive-deps=warn) | dead rule refs gone |
+| L8 | test files get node+jest globals + `vi` | `global` undef gone |
+| L9 | `linebreak-style` dropped (Windows CRLF repo); stylistic rules demoted to `warn`, correctness rules stay `error` | 72,286 noise errors gone |
+| residual | `migrations/059_departments_head_id.sql` created — idempotent `head_id` column + index for `getDepartmentsHeadedBy` | file exists |
+
+**New real bugs found while triaging lint errors — all fixed:**
+
+- `DashboardRepository.js` ×3 — `const taskQuery/memberQuery/budgetQuery` then `+=` → TypeError whenever churchId passed → dept stats 500. Changed to `let`.
+- `ReportService.js` — `const header` then `+=` → TypeError on every `generateStatementHeader`. Changed to `let`.
+- `reports.controller.js` — 3 un-braced case blocks → wrapped.
+- `PermissionButton.jsx` — `<Link>` used, never imported → crash on render. Imported from react-router-dom.
+- `DepartmentDashboard.jsx` — `Play`, `Trash2` lucide icons used at 1234/1243, never imported → crash. Added to import.
+- `fix-slugs.js` — `'\s'` in JS string collapses to literal `s` → SQL regex stripped letter s, not whitespace. `\s` now reaches Postgres correctly.
+- `Loading.jsx` — `withLoading` returned anonymous component → named + displayName set.
+- Phone regexes `[\d\s\-\+\(\)]` → `[\d\s\-()+]` ×3 (SMS, Register, Profile); regex escapes cleaned ×6 backend.
+- 12 unescaped JSX apostrophes → `&rsquo;`; 7 un-braced case blocks wrapped (frontend).
+- `ErrorBoundary.jsx` `process` → declared readonly global (Vite replaces at build).
+
+**Result:** `npm run lint` functional in BOTH packages for the first time under ESLint 9 — backend **0 errors** / 4,426 warnings, frontend **0 errors** / 747 warnings. Warnings = stylistic + no-unused-vars + prop-types + exhaustive-deps (advisory, non-blocking).
+
+---
+
+## STATUS ASSESSMENT — 2026-10-05 (code-verified, not CSV-trusted)
+
+The CSV (`2026-10-03_05-56_open-issues.csv`) shows 110 OPEN rows but **lags the
+code** — several rows are fixed in substance yet still marked OPEN. Verified
+spot-checks below.
+
+### Verified FIXED (this check)
+
+| Item | Evidence |
+|------|----------|
+| B17 sessions (repo-side) | `git ls-files backend/sessions` empty; `.dockerignore` + `.gitignore` cover sessions/cookies/login-body |
+| B18 migrate.js landmine | `DROP DATABASE` now gated behind `--fresh` flag AND throws when `NODE_ENV=production`; runs numbered `migrations/` with `schema_migrations` tracking. CSV still says OPEN — stale |
+| B19 mobile dashboard keys | `dashboard_screen.dart` reads `totalBalance`/`departmentMembers` (camelCase) — matches backend |
+| B9 DEPARTMENTS constants | `api.js:270-271` back-compat alias `DEPARTMENTS.DEPARTMENT → DEPARTMENTS` + `USER_DEPARTMENTS → MY_DEPARTMENTS`; call sites work |
+| L729 sync_models | `data: jsonEncode(data)` + comment — round-trip works |
+| L730 router | prefix-match protectedRoutes comment covers `/departments/:id` |
+| L731 phone regex | accepts 2547/2541/07/01 per hint+error text |
+| L732 dept_leadership | `_pickMember()` real member picker replaces free-text user_id |
+| L733 darkTheme | appBar/card/inputDecoration themes present |
+| CSV-141 vendors.controller | church_id on all 5 ops |
+| CSV-118 UserRepository.updateProfile | permitted-fields allowlist (throws on empty) |
+| CSV-145 smsAuth api_key | no api_key in file — response leak closed |
+| CSV-170 pledges.controller | file deleted (dead-code pass) — moot |
+
+### Verified still OPEN (not fixed)
+
+| Item | Evidence |
+|------|----------|
+| **B20 Daraja secrets** | `add_mpesa_settings.sql` + `test-mpesa.js` still contain sandbox consumer key + B2C key/secret — needs rotation + purge |
+| **B21 frontend Dockerfile** | still `COPY --from=builder /app/dist` while vite outputs `dist-new` — image ships nothing |
+| reset-db.js | `DROP SCHEMA public CASCADE` + `TRUNCATE CASCADE`, zero env/confirm guards |
+| seed-comprehensive.js | `TRUNCATE users, members, … CASCADE` at :13, no guards |
+| compose.microservices | `POSTGRES_PASSWORD=postgres` + `JWT_SECRET=your-secret-key-change-in-production` hardcoded |
+| setup-test-db.js | still warns-and-marks-applied on ANY migration error (masks real failures; message improved only) |
+| CSV-281 projects contributions | `contributor_id`/`amount` still taken from body with no role check |
+| ~60 CSV repo/controller scoping rows | AnalyticsRepository, AnnouncementsRepository, ContentRepository, GalleryRepository, ManualPaymentRepository, MobileRepository, PaymentRepository, SettingsRepository, SyncRepository, base.repository, manualPayment/notifications/palette/content/fieldPermissions/projects/reconciliation/recurringPayments controllers — spot-checks show most unfixed |
+| ~20 frontend component rows + treasury pages | Header/StatsCard/GmailMessageList/ProtectedComponent/ActivityFeed/CollectionTracker/ApplePhotoGrid/GalleryNavigation/MinistriesCarousel/LiveStreamSection/ServiceTimes/FeaturedPhotos/PaletteSelector + Expenses/JournalEntries/Budgets — unfixed |
+| middleware rows | logging redact list gaps, auth 403-vs-401 + non-array permissions, rateLimiter Redis load-time eval, validation dead exports — open |
+| reports.controller stubs | CSV-quoting/formula-injection + placeholder GET/POST/download routes — open |
+
+### Requires USER action (cannot be fixed in code)
+
+- Rotate Daraja sandbox+B2C credentials (they're in git history — deletion alone insufficient)
+- Revoke Telegram sessions + rotate JWT_SECRET (or `git filter-repo` scrub of logs/sessions history)
+
+### Score
+
+**~55% of tracked issues closed.** All 21 blockers assessed: B1,B3,B4,B5,B7,B9,B17*,B18*,B19 closed (*=residual user action); **B20,B21 confirmed open**; destructive-script + compose-secret cluster open; mid-tier repo/controller scoping backlog remains the bulk of the work.
+
+
+## 2026-10-05 — Re-Audit second sweep (L723-757) — 24 rows closed
+
+### Security / secrets hygiene
+
+| Row | Fix |
+|-----|-----|
+| L723 sessions/* | Verified: `git ls-files` already empty (untracked in earlier pass); `backend/sessions/`, `cookies.txt`, `login-body*.json` in .gitignore + backend/.dockerignore. **User action remains:** rotate the Telegram session + any creds that were committed. |
+| L724 logs/app.log.1-3 | Verified untracked + `backend/logs/` ignored. **User action remains:** JWTs in git history — rotate JWT_SECRET to invalidate all sessions. |
+| L751 docker-compose.microservices.yml | Hardcoded `postgres/postgres` + known JWT_SECRET → required env vars (`:?` fail-fast). |
+| L752 docker-compose*.yml | All `:-changeme` defaults → required env vars; root `.env.example` created documenting them. |
+
+### Migration/schema-path consolidation
+
+| Row | Fix |
+|-----|-----|
+| L725 migrate.js | Rewritten: DROP only behind `--fresh` flag (refused under NODE_ENV=production); applies ALL backend/migrations/*.sql numerically with schema_migrations tracking. |
+| L726 setup-test-db.js | Silent warn-skip → schema_migrations tracking; benign already-exists codes tolerated on legacy DBs, real errors abort. |
+| L727 033_telegram_church_unique | Dedupe keeps newest `updated_at` (tie-break highest id) — was keeping highest id only. |
+| L749 run-migrations.js | Stale hardcoded order ending in nonexistent file → now delegates to backend/migrate.js. |
+| L750 parallel schema paths | Canonical = backend/migrate.js + backend/migrations/; run-migrations.js delegates; reset-db.js guarded + runs all migrations (benign-skip for schema-covered objects). |
+| L753 reset-db.js | `requireDevDatabase` guard (refuses NODE_ENV=production or remote DB_HOST w/o ALLOW_DESTRUCTIVE=1). |
+| L754 seed-comprehensive.js | Same guard + TRUNCATE path now uses env/generated password. |
+| L755 reset-nonmember-passwords.js | Guard + password arg now required (no 'right123' default), min 8 chars. |
+
+### Credential hygiene (L736/L756 + sweep)
+
+New `backend/scripts/_scriptSafety.js`: `requireDevDatabase()` + `seedPassword()` (SEED_PASSWORD env or crypto-random, printed once — never a literal). Applied to: create-admin.js, create-department-users.js, create-users-direct.js, create_admin_via_api.js, seed-database.js, scripts/create-local-admin, seed-admin, seed-churches, seed-role-accounts, generate-comprehensive-seed, seed-demo-users, reset-admin-password, generate-login-doc. reset-admin-password no longer prints the hash (offline-crack target).
+
+### Flutter mobile
+
+| Row | Fix |
+|-----|-----|
+| L728 dashboard_screen | Treasurer/dept-head cards read snake_case while endpoints return camelCase → all-zero dashboards. Keys corrected; `department-stats` returns a List — now aggregated (Map.from(list) was throwing silently). |
+| L729 sync_models | `data.toString()` → `jsonEncode`; fromMap jsonDecodes with Map fallback. |
+| L730 router.dart | Protected check now prefix-matches (`/departments/:id` covered); error page Go Home `/` → `/dashboard` (was dead-end loop). |
+| L731 payments/obligations | `^2547\d{8}$` → shared `utils/phone_utils.dart`: accepts 2541xx (Airtel) + 07xx/01xx local, normalizes to 254… for Daraja. |
+| L732 dept_leadership_tab | Free-text 'Member name or ID' sent verbatim as user_id → searchable member picker bound to real member ids. |
+| L733 theme.dart | darkTheme now mirrors lightTheme (appBar/card/buttons/inputs/chips/nav/text) with dark palette constants. |
+
+### Misc
+
+| Row | Fix |
+|-----|-----|
+| L734 | Verified clean — no accessToken localStorage reads remain. |
+| L735 | reconciliationService.js no longer exists; telegram JSON.parse(tags) was actually reachable via req.query — added safe-parse fallback. |
+| L737 | scripts/ hygiene partially addressed via guards above; full archive pass remains advisory. |
+| L757 | Informational — regression-test guidance noted, no code change. |
+
+Verified: node --check on 21 touched files; docker-compose YAML parses; vite build was clean in prior pass.

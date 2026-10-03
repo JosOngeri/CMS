@@ -1,5 +1,9 @@
 const { pool } = require('./config/database');
 const bcrypt = require('bcryptjs');
+const { requireDevDatabase, seedPassword } = require('./scripts/_scriptSafety');
+
+// L736: seeds accounts — refuse on prod/remote DBs; no hardcoded passwords.
+requireDevDatabase('seed-database.js');
 
 async function seedDatabase() {
   try {
@@ -66,13 +70,14 @@ async function seedDatabase() {
       memberId = roleMap['Member'];
     }
 
-    // Hash passwords
-    const adminPassword = await bcrypt.hash('admin123', 10);
-    const pastorPassword = await bcrypt.hash('pastor123', 10);
-    const elderPassword = await bcrypt.hash('elder123', 10);
-    const treasurerPassword = await bcrypt.hash('treasurer123', 10);
-    const clerkPassword = await bcrypt.hash('clerk123', 10);
-    const memberPassword = await bcrypt.hash('member123', 10);
+    // Hash passwords — one shared generated/env password (L736, no literals)
+    const sharedSeedPassword = seedPassword('all seed users');
+    const adminPassword = await bcrypt.hash(sharedSeedPassword, 12);
+    const pastorPassword = adminPassword;
+    const elderPassword = adminPassword;
+    const treasurerPassword = adminPassword;
+    const clerkPassword = adminPassword;
+    const memberPassword = adminPassword;
 
     // Insert sample users if they don't exist
     if (!adminUserId || !pastorUserId || !elderUserId || !treasurerUserId || !clerkUserId || !memberUserId) {
@@ -143,13 +148,8 @@ async function seedDatabase() {
     `, [pastorUserId, deptMap['Sabbath School'], pastorUserId, deptMap['Community Outreach'], adminUserId, deptMap['Youth Ministry'], memberUserId, deptMap['Sabbath School']]);
 
     console.log('Database seeded successfully!');
-    console.log('Sample users created:');
-    console.log('  Admin: admin / admin123');
-    console.log('  Pastor: pastor / pastor123');
-    console.log('  Elder: elder / elder123');
-    console.log('  Treasurer: treasurer / treasurer123');
-    console.log('  Church Clerk: clerk / clerk123');
-    console.log('  Member: member / member123');
+    console.log('Sample users created (password printed at seed start — SEED_PASSWORD or generated):');
+    console.log('  admin, pastor, elder, treasurer, clerk, member');
 
   } catch (error) {
     console.error('Error seeding database:', error);

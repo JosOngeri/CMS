@@ -63,9 +63,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return null;
       }
 
-      // Protected routes - redirect to login if not authenticated
-      final protectedRoutes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications', '/collect-payments', '/gallery'];
-      if (protectedRoutes.contains(state.matchedLocation) && !isAuthenticated) {
+      // Protected routes - redirect to login if not authenticated.
+      // Prefix match covers parameterized paths like /departments/:id.
+      const protectedPrefixes = ['/dashboard', '/payments', '/events', '/announcements', '/profile', '/departments', '/documents', '/members', '/approvals', '/obligations', '/handovers', '/notifications', '/collect-payments', '/gallery'];
+      final isProtected = protectedPrefixes.any((p) =>
+          state.matchedLocation == p ||
+          state.matchedLocation.startsWith('$p/'));
+      if (isProtected && !isAuthenticated) {
         debugPrint('=== Router: Redirecting to /login (protected route) ===');
         return '/login';
       }
@@ -193,7 +197,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             const Text('Page not found'),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () => context.go('/'),
+              // '/' isn't a route — that go() lands back on this error page.
+              onPressed: () => context.go('/dashboard'),
               child: const Text('Go Home'),
             ),
           ],

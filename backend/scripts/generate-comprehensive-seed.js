@@ -394,7 +394,9 @@ async function generateSeedData() {
       const { firstName, lastName } = parseName(worker.name);
       const username = `${firstName.toLowerCase()}.${lastName.toLowerCase()}`.replace(/'/g, '').replace(/\s/g, '') + workerIndex;
       const email = generateEmail(firstName, lastName, `worker${workerIndex}`);
-      const passwordHash = await bcrypt.hash('password123', 12);
+      const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+requireDevDatabase('generate-comprehensive-seed.js');
+      const passwordHash = await bcrypt.hash(seedPassword('seeded users'), 12);
       workerIndex++;
       
       // Check if user exists first

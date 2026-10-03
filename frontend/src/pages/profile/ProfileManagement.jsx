@@ -516,7 +516,7 @@ const ProfileManagement = () => {
                 <ul className="text-sm text-[var(--color-primary-light)] mt-2 space-y-1">
                   <li>• Use a strong password with at least 8 characters</li>
                   <li>• Include a mix of letters, numbers, and special characters</li>
-                  <li>• Don't reuse passwords from other sites</li>
+                  <li>• Don&rsquo;t reuse passwords from other sites</li>
                   <li>• Enable two-factor authentication when available</li>
                 </ul>
               </div>

@@ -140,32 +140,34 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
     );
   }
 
+  /// Step 1 — pick a real member (L732). Returns {'id': …, 'name': …} or null.
+  /// The old free-text field sent a name verbatim as user_id → every
+  /// non-numeric appointment failed server-side.
+  Future<Map<String, dynamic>?> _pickMember() async {
+    final searchCtrl = TextEditingController();
+    return showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => _MemberPickerDialog(api: widget.api, searchCtrl: searchCtrl),
+    );
+  }
+
   Future<void> _appoint() async {
-    final memberCtrl = TextEditingController();
+    final member = await _pickMember();
+    if (member == null || !mounted) return;
+
     String position = 'assistant';
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setD) => AlertDialog(
-          title: const Text('Appoint Leader'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: memberCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Member name or ID'),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: position,
-                decoration: const InputDecoration(labelText: 'Position'),
-                items: _positions
-                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                    .toList(),
-                onChanged: (v) => setD(() => position = v ?? 'assistant'),
-              ),
-            ],
+          title: Text('Appoint ${member['name']}'),
+          content: DropdownButtonFormField<String>(
+            value: position,
+            decoration: const InputDecoration(labelText: 'Position'),
+            items: _positions
+                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                .toList(),
+            onChanged: (v) => setD(() => position = v ?? 'assistant'),
           ),
           actions: [
             TextButton(
@@ -178,9 +180,9 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
         ),
       ),
     );
-    if (ok != true || memberCtrl.text.trim().isEmpty) return;
+    if (ok != true) return;
     final res = await widget.api.appointLeader(widget.deptId, {
-      'user_id': memberCtrl.text.trim(),
+      'user_id': member['id'],
       'position': position,
     });
     _result(res);
@@ -219,5 +221,123 @@ class _DeptLeadershipTabState extends State<DeptLeadershipTab> {
       backgroundColor: res['success'] == true ? AppTheme.successColor : AppTheme.errorColor,
     ));
     if (res['success'] == true) _load();
+  }
+}
+
+/// Searchable member picker — returns {'id', 'name'} via Navigator.pop.
+class _MemberPickerDialog extends StatefulWidget {
+  final ApiService api;
+  final TextEditingController searchCtrl;
+
+  const _MemberPickerDialog({required this.api, required this.searchCtrl});
+
+  @override
+  State<_MemberPickerDialog> createState() => _MemberPickerDialogState();
+}
+
+class _MemberPickerDialogState extends State<_MemberPickerDialog> {
+  List<dynamic> _members = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+    widget.searchCtrl.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.searchCtrl.removeListener(_onSearchChanged);
+    super.dispose();
+  }
+
+  // Simple debounce — rebuild-at-most-once-per-400ms.
+  DateTime _lastKeystroke = DateTime.fromMillisecondsSinceEpoch(0);
+  void _onSearchChanged() {
+    _lastKeystroke = DateTime.now();
+    final stamp = _lastKeystroke;
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (_lastKeystroke == stamp && mounted) _fetch();
+    });
+  }
+
+  Future<void> _fetch() async {
+    final res = await widget.api.getMembers(
+      search: widget.searchCtrl.text.trim(),
+      limit: 50,
+    );
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (res['success'] == true) {
+        _members = res['members'] as List? ?? [];
+        _error = null;
+      } else {
+        _error = res['error']?.toString();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Member'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 360,
+        child: Column(
+          children: [
+            TextField(
+              controller: widget.searchCtrl,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Search members',
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _error != null
+                      ? Center(
+                          child: Text(_error!,
+                              style: const TextStyle(color: AppTheme.errorColor)))
+                      : _members.isEmpty
+                          ? const Center(child: Text('No members found'))
+                          : ListView.builder(
+                              itemCount: _members.length,
+                              itemBuilder: (ctx, i) {
+                                final m = _members[i] as Map<String, dynamic>;
+                                final name =
+                                    '${m['first_name'] ?? ''} ${m['last_name'] ?? ''}'
+                                        .trim();
+                                final display =
+                                    name.isNotEmpty ? name : (m['email']?.toString() ?? 'Unknown');
+                                final id = m['id'] ?? m['user_id'];
+                                return ListTile(
+                                  dense: true,
+                                  title: Text(display),
+                                  subtitle: m['email'] != null
+                                      ? Text(m['email'].toString())
+                                      : null,
+                                  onTap: () => Navigator.pop(context,
+                                      {'id': id, 'name': display}),
+                                );
+                              },
+                            ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+      ],
+    );
   }
 }

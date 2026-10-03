@@ -339,7 +339,7 @@ const GalleryManagement = () => {
               Access Denied
             </h3>
             <p className="text-[var(--color-textSecondary)] ">
-              You don't have permission to view the gallery.
+              You don&rsquo;t have permission to view the gallery.
             </p>
           </div>
         </Card>

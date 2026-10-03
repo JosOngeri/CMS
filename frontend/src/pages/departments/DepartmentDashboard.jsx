@@ -40,6 +40,8 @@ import {
   CheckCircle2,
   Image,
   DollarSign,
+  Play,
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';

@@ -23,7 +23,7 @@ const LiveStreamSection = () => {
 
           <h2 className="text-4xl md:text-5xl font-bold mb-6">Join Our Live Stream</h2>
           <p className="text-xl text-[var(--color-on-solid-80)] mb-8 max-w-2xl mx-auto">
-            Can't make it to church? Join us online for our live services and experience worship from anywhere in the world.
+            Can&rsquo;t make it to church? Join us online for our live services and experience worship from anywhere in the world.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">

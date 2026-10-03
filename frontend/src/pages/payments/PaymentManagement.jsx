@@ -183,10 +183,11 @@ const PaymentManagement = () => {
         case 'today':
           matchesPeriod = paymentDate.toDateString() === now.toDateString()
           break
-        case 'week':
+        case 'week': {
           const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
           matchesPeriod = paymentDate >= weekAgo
           break
+        }
         case 'month':
           matchesPeriod = paymentDate.getMonth() === now.getMonth() && paymentDate.getFullYear() === now.getFullYear()
           break

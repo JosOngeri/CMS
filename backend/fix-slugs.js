@@ -20,7 +20,7 @@ async function fixSlugs() {
     await client.query(`
       CREATE OR REPLACE FUNCTION generate_slug(text VARCHAR) RETURNS VARCHAR AS $$
       BEGIN
-        RETURN lower(regexp_replace(regexp_replace(text, '[^a-zA-Z0-9\s-]', '', 'g'), '\s+', '_', 'g'));
+        RETURN lower(regexp_replace(regexp_replace(text, '[^a-zA-Z0-9\\s-]', '', 'g'), '\\s+', '_', 'g'));
       END;
       $$ LANGUAGE plpgsql
     `);

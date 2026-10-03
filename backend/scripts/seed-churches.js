@@ -119,7 +119,9 @@ async function main() {
   await client.query('CREATE UNIQUE INDEX IF NOT EXISTS department_members_user_dept_key ON department_members(user_id, department_id)');
   await client.query('CREATE UNIQUE INDEX IF NOT EXISTS members_user_id_key ON members(user_id)');
 
-  const passwordHash = bcrypt.hashSync('right123', 10);
+  const { requireDevDatabase, seedPassword } = require('./_scriptSafety');
+requireDevDatabase('seed-churches.js');
+const passwordHash = bcrypt.hashSync(seedPassword('church users'), 12);
   const memberRole = await client.query("SELECT id FROM roles WHERE name = 'Member'");
   const memberRoleId = memberRole.rows[0] && memberRole.rows[0].id;
 

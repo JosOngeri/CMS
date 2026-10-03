@@ -1,5 +1,10 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { pool } = require('./config/database');
+const { requireDevDatabase } = require('./scripts/_scriptSafety');
+
+// L736: mass-creates accounts — refuse on prod/remote DBs.
+requireDevDatabase('create-users-direct.js');
 
 // Direct user creation based on the workers list we already read
 const departmentMembers = [
@@ -147,7 +152,7 @@ class DirectUserCreator {
           // Generate username and password
           const username = this.generateUsername(member.name);
           const firstName = member.name.split(' ')[0].toLowerCase().replace(/[^a-z]/g, '');
-          const password = `${firstName}@123`;
+          const password = crypto.randomBytes(9).toString('base64url');
           
           // Hash password
           const hashedPassword = await bcrypt.hash(password, 10);
@@ -212,9 +217,9 @@ class DirectUserCreator {
     console.log('🔧 Creating test users for easy access...');
     
     const testUsers = [
-      { username: 'admin', firstName: 'admin', password: 'admin@123', role: 'Super Admin' },
-      { username: 'pastor', firstName: 'pastor', password: 'pastor@123', role: 'Pastor' },
-      { username: 'member', firstName: 'member', password: 'member@123', role: 'Member' }
+      { username: 'admin', firstName: 'admin', password: crypto.randomBytes(9).toString('base64url'), role: 'Super Admin' },
+      { username: 'pastor', firstName: 'pastor', password: crypto.randomBytes(9).toString('base64url'), role: 'Pastor' },
+      { username: 'member', firstName: 'member', password: crypto.randomBytes(9).toString('base64url'), role: 'Member' }
     ];
     
     for (const testUser of testUsers) {
