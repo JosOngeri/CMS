@@ -13,8 +13,10 @@ FROM node:20-alpine
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 WORKDIR /app
 COPY backend/package*.json ./backend/
-RUN npm install --prefix backend --production
+RUN npm install --prefix backend --omit=dev
 COPY backend/ ./backend/
+# routes/health.js reads ../../package.json for the version banner
+COPY package.json ./package.json
 # Vite builds to dist-new; the backend serves frontend/dist — rename on copy.
 COPY --from=frontend-builder /app/frontend/dist-new ./frontend/dist
 
