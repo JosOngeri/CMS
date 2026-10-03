@@ -132,6 +132,10 @@ class AuthController extends BaseController {
           avatarUrl: user.avatar_url || null,
           churchId: user.church_id,
           roles: identity.roles,
+          // Permission strings — without them the SPA renders with
+          // permissions:[] and every permission-gated nav item hides until a
+          // manual refresh re-fetches /auth/profile.
+          permissions: identity.permissions,
           mfaEnabled: identity.mfaEnabled,
           mfaVerified: identity.mfaVerified
         },
