@@ -404,6 +404,7 @@ class AuthController extends BaseController {
       // Semantic audit entry — a profile update is not a login attempt
       await logAction(pool, {
         actorId: userId,
+        churchId: req.user?.church_id || null,
         action: 'auth.profile_updated',
         tableName: 'users',
         recordId: userId,
@@ -475,6 +476,7 @@ class AuthController extends BaseController {
       // Semantic audit entry — a password change is not a login attempt
       await logAction(pool, {
         actorId: userId,
+        churchId: req.user?.church_id || null,
         action: 'auth.password_changed',
         tableName: 'users',
         recordId: userId,
@@ -535,6 +537,7 @@ class AuthController extends BaseController {
       // Semantic audit entry — not a login attempt
       await logAction(pool, {
         actorId: user.id,
+        churchId: user.church_id || null,
         action: 'auth.password_reset_requested',
         tableName: 'users',
         recordId: user.id,

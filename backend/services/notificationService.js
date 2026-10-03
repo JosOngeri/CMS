@@ -261,13 +261,17 @@ class NotificationService {
       params.push(filters.end_date);
     }
 
+    // Clamp limit to a sane integer and parameterize it — never interpolate.
+    const limit = Math.min(Math.max(parseInt(filters.limit, 10) || 100, 1), 1000);
+    params.push(limit);
+
     const query = `
       SELECT n.*, nd.status, nd.delivered_at
       FROM notifications n
       LEFT JOIN notification_delivery nd ON n.id = nd.notification_id
       WHERE ${conditions.join(' AND ')}
       ORDER BY n.created_at DESC
-      LIMIT ${filters.limit || 100}
+      LIMIT $${paramCount}
     `;
 
     const result = await pool.query(query, params);

@@ -467,7 +467,9 @@ class GalleryController extends BaseController {
         orderDirection: 'DESC',
         timestampColumn: 'uploaded_at',
         additionalWhere: extraWhere,
-        additionalParams: [churchId]
+        additionalParams: [churchId],
+        allowedTables: ['gallery_photos'],
+        allowedColumns: ['uploaded_at', 'created_at']
       });
 
       const rows = await GalleryRepository.executePaginatedQuery(query, params);

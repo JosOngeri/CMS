@@ -4,6 +4,22 @@
  * More efficient than offset-based pagination for large datasets
  */
 
+// SQL identifiers (table/column names) can't be parameterized — validate them
+// against a strict identifier pattern and, when the caller supplies allowlists,
+// against those too (ledger Batch-6 L314).
+const IDENTIFIER_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const DIRECTIONS = new Set(['ASC', 'DESC']);
+
+function assertIdentifier(value, kind, allowlist = null) {
+  if (typeof value !== 'string' || !IDENTIFIER_RE.test(value)) {
+    throw new Error(`Invalid ${kind} identifier`);
+  }
+  if (allowlist && !allowlist.includes(value)) {
+    throw new Error(`${kind} '${value}' is not in the allowed list`);
+  }
+  return value;
+}
+
 class CursorPagination {
   /**
    * Parse cursor string to extract offset and timestamp
@@ -48,37 +64,42 @@ class CursorPagination {
       limit = 20,
       orderBy = 'created_at',
       orderDirection = 'DESC',
-      timestampColumn = 'created_at'
+      timestampColumn = 'created_at',
+      allowedColumns = null
     } = options;
 
-    const { offset, timestamp } = this.parseCursor(cursor);
-    
-    let whereClause = '';
-    const params = [];
-    let paramIndex = 1;
-
-    // Add cursor-based filtering
-    if (timestamp && orderDirection === 'DESC') {
-      whereClause = `WHERE ${timestampColumn} < $${paramIndex}`;
-      params.push(timestamp);
-      paramIndex++;
-    } else if (timestamp && orderDirection === 'ASC') {
-      whereClause = `WHERE ${timestampColumn} > $${paramIndex}`;
-      params.push(timestamp);
-      paramIndex++;
+    // Validate interpolated identifiers and direction before use
+    assertIdentifier(timestampColumn, 'timestampColumn', allowedColumns);
+    assertIdentifier(orderBy, 'orderBy', allowedColumns);
+    const direction = String(orderDirection).toUpperCase();
+    if (!DIRECTIONS.has(direction)) {
+      throw new Error('Invalid orderDirection — must be ASC or DESC');
     }
 
-    // Add limit
-    const limitClause = `LIMIT $${paramIndex}`;
-    params.push(limit + 1); // Fetch one extra to determine if there are more results
-    paramIndex++;
+    const { offset, timestamp } = this.parseCursor(cursor);
+
+    let whereClause = '';
+    const params = [];
+
+    // Add cursor-based filtering (cursor timestamp is always $1 when present)
+    if (timestamp && direction === 'DESC') {
+      whereClause = `WHERE ${timestampColumn} < $1`;
+      params.push(timestamp);
+    } else if (timestamp && direction === 'ASC') {
+      whereClause = `WHERE ${timestampColumn} > $1`;
+      params.push(timestamp);
+    }
+
+    // Fetch one extra row to determine if there are more results
+    const fetchLimit = limit + 1;
 
     return {
       whereClause,
-      limitClause,
-      params,
+      params,          // cursor params only — LIMIT placeholder is appended by the caller
+      fetchLimit,
       offset,
-      timestamp
+      timestamp,
+      direction
     };
   }
 
@@ -125,35 +146,49 @@ class CursorPagination {
       orderDirection = 'DESC',
       timestampColumn = 'created_at',
       additionalWhere = '',
-      additionalParams = []
+      additionalParams = [],
+      allowedTables = null,
+      allowedColumns = null
     } = options;
 
-    const { whereClause, limitClause, params } = this.buildQuery({
+    // Interpolated into the query text — must be validated identifiers
+    assertIdentifier(tableName, 'table', allowedTables);
+
+    const { whereClause, params, fetchLimit, direction } = this.buildQuery({
       cursor,
       limit,
       orderBy,
       orderDirection,
-      timestampColumn
+      timestampColumn,
+      allowedColumns
     });
+
+    // Reindex additionalWhere: the caller writes its placeholders starting at
+    // $2 (after the optional cursor param at $1). LIMIT comes last.
+    const offsetBase = params.length; // 0 or 1 cursor params
+    const reindexedWhere = additionalWhere
+      ? additionalWhere.replace(/\$(\d+)/g, (_, n) => `$${offsetBase + Number(n) - 1}`)
+      : '';
+    const limitIndex = offsetBase + additionalParams.length + 1;
 
     // Combine where clauses
     let finalWhere = whereClause;
-    if (additionalWhere) {
-      finalWhere = finalWhere 
-        ? `${whereClause} AND (${additionalWhere})`
-        : `WHERE ${additionalWhere}`;
+    if (reindexedWhere) {
+      finalWhere = finalWhere
+        ? `${whereClause} AND (${reindexedWhere})`
+        : `WHERE ${reindexedWhere}`;
     }
 
     const query = `
       SELECT * FROM ${tableName}
       ${finalWhere}
-      ORDER BY ${orderBy} ${orderDirection}
-      ${limitClause}
+      ORDER BY ${orderBy} ${direction}
+      LIMIT $${limitIndex}
     `;
 
     return {
       query,
-      params: [...params, ...additionalParams]
+      params: [...params, ...additionalParams, fetchLimit]
     };
   }
 

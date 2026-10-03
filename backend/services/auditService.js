@@ -128,10 +128,13 @@ class AuditService {
         LIMIT $${paramCount++} OFFSET $${paramCount++}
       `;
 
+      // Count query takes only the filter params (limit/offset are excluded);
+      // data query takes filters + limit + offset.
+      const filterValues = values.slice();
       values.push(limit, offset);
 
       const [countResult, dataResult] = await Promise.all([
-        pool.query(countQuery, values.slice(0, paramCount - 2)),
+        pool.query(countQuery, filterValues),
         pool.query(dataQuery, values)
       ]);
 

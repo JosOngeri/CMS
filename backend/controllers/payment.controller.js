@@ -270,11 +270,11 @@ class PaymentController extends BaseController {
 
           // Send SMS notification if payment is completed
           if (statusResult.status === 'completed') {
-            sendPaymentCompletionSMS(payment).catch(smsError => {
+            sendPaymentCompletionSMS(payment, churchId).catch(smsError => {
               this.logger.error('Failed to send payment completion SMS', smsError);
             });
           } else if (statusResult.status === 'failed') {
-            sendPaymentFailureSMS(payment, statusResult.error || 'Payment failed').catch(smsError => {
+            sendPaymentFailureSMS(payment, statusResult.error || 'Payment failed', churchId).catch(smsError => {
               this.logger.error('Failed to send payment failure SMS', smsError);
             });
           }
@@ -597,7 +597,7 @@ class PaymentController extends BaseController {
       await PaymentRepository.updatePaymentStatus(refund.payment_id, 'refunded', churchId);
 
       // Send SMS notification for refund approval
-      sendRefundStatusSMS({ ...refund, status: 'approved' }, payment).catch(smsError => {
+      sendRefundStatusSMS({ ...refund, status: 'approved' }, payment, churchId).catch(smsError => {
         this.logger.error('Failed to send refund approval SMS', smsError);
       });
 
@@ -653,7 +653,7 @@ class PaymentController extends BaseController {
       const payment = await PaymentRepository.getPaymentByIdSimple(refund.payment_id, churchId);
 
       // Send SMS notification for refund rejection
-      sendRefundStatusSMS({ ...refund, status: 'rejected' }, payment).catch(smsError => {
+      sendRefundStatusSMS({ ...refund, status: 'rejected' }, payment, churchId).catch(smsError => {
         this.logger.error('Failed to send refund rejection SMS', smsError);
       });
 

@@ -1,4 +1,5 @@
 const SnapshotRepository = require('../repositories/SnapshotRepository');
+const { pool } = require('../config/database');
 const { createLogger } = require('../helpers/controllerLogger');
 const crypto = require('crypto');
 const zlib = require('zlib');
@@ -58,21 +59,18 @@ class SnapshotService {
   }
 
   async collectChurchData(churchId, databaseConnection) {
+    const db = databaseConnection || pool;
     try {
-      // This is a placeholder implementation
-      // In a real implementation, you would query actual data from the church's database
-      // For now, we'll return a sample structure
-      
       const snapshotData = {
         metadata: {
           church_id: churchId,
           snapshot_timestamp: new Date().toISOString(),
           snapshot_version: '1.0'
         },
-        contacts: await this.queryContacts(churchId, databaseConnection),
-        groups: await this.queryGroups(churchId, databaseConnection),
-        messages: await this.queryMessages(churchId, databaseConnection),
-        templates: await this.queryTemplates(churchId, databaseConnection)
+        contacts: await this.queryContacts(churchId, db),
+        groups: await this.queryGroups(churchId, db),
+        messages: await this.queryMessages(churchId, db),
+        templates: await this.queryTemplates(churchId, db)
       };
 
       return snapshotData;
@@ -82,24 +80,59 @@ class SnapshotService {
     }
   }
 
-  async queryContacts(churchId, databaseConnection) {
-    // Placeholder implementation - query actual contacts from church database
-    return [];
+  // All queries are church-scoped; a missing table logs a warning and yields
+  // an empty list rather than aborting the whole snapshot (schema drift).
+  async safeQuery(db, sql, params, label) {
+    try {
+      const result = await db.query(sql, params);
+      return result.rows;
+    } catch (error) {
+      if (error.code === '42P01' || error.code === '42703') {
+        logger.warn(`Snapshot query skipped — ${label} source missing: ${error.message}`);
+        return [];
+      }
+      throw error;
+    }
   }
 
-  async queryGroups(churchId, databaseConnection) {
-    // Placeholder implementation - query actual groups from church database
-    return [];
+  async queryContacts(churchId, db) {
+    return this.safeQuery(db,
+      `SELECT id, name, phone, email, group_id, source, status, metadata, created_by AS user_id, created_at, updated_at
+       FROM sms_contacts
+       WHERE church_id = $1
+       ORDER BY created_at DESC`,
+      [churchId], 'contacts');
   }
 
-  async queryMessages(churchId, databaseConnection) {
-    // Placeholder implementation - query actual messages from church database
-    return [];
+  async queryGroups(churchId, db) {
+    return this.safeQuery(db,
+      `SELECT id, name, description, source, contact_count, created_at, updated_at
+       FROM sms_groups
+       WHERE church_id = $1
+       ORDER BY created_at DESC`,
+      [churchId], 'groups');
   }
 
-  async queryTemplates(churchId, databaseConnection) {
-    // Placeholder implementation - query actual templates from church database
-    return [];
+  async queryMessages(churchId, db) {
+    // sms_logs has no church_id column in older schemas — scope through the
+    // sender's user row so only this church's messages are snapshotted.
+    return this.safeQuery(db,
+      `SELECT sl.id, sl.message, sl.status, sl.created_at, sl.sent_by AS user_id
+       FROM sms_logs sl
+       JOIN users u ON sl.sent_by = u.id
+       WHERE u.church_id = $1
+       ORDER BY sl.created_at DESC
+       LIMIT 5000`,
+      [churchId], 'messages');
+  }
+
+  async queryTemplates(churchId, db) {
+    return this.safeQuery(db,
+      `SELECT id, name, content, category, is_favorite, created_by AS user_id, created_at, updated_at
+       FROM message_templates
+       WHERE church_id = $1
+       ORDER BY created_at DESC`,
+      [churchId], 'templates');
   }
 
   async compressData(data) {

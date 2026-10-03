@@ -181,9 +181,9 @@ class TelegramService {
 
   async handleChannelPost(post) {
     try {
-      // Find channel by chat ID
+      // Find channel by chat ID (fetch church_id for tenant-scoped writes)
       const channelResult = await pool.query(
-        'SELECT id FROM telegram_channels WHERE channel_id = $1',
+        'SELECT id, church_id FROM telegram_channels WHERE channel_id = $1',
         [post.chat.id]
       );
 
@@ -192,6 +192,7 @@ class TelegramService {
       }
 
       const channelId = channelResult.rows[0].id;
+      const churchId = channelResult.rows[0].church_id;
 
       // Store post
       await pool.query(
@@ -215,7 +216,7 @@ class TelegramService {
       );
 
       if (channel.rows[0].auto_sync_to_announcements) {
-        await this.syncToAnnouncements(channelId, post.message_id);
+        await this.syncToAnnouncements(channelId, post.message_id, churchId);
       }
     } catch (error) {
       logger.error('handleChannelPost', error);
@@ -344,8 +345,17 @@ class TelegramService {
     }
   }
 
-  async syncToAnnouncements(channelId, messageId) {
+  async syncToAnnouncements(channelId, messageId, churchId = null) {
     try {
+      // Resolve church from the channel when the caller didn't pass it
+      if (!churchId) {
+        const channelResult = await pool.query(
+          'SELECT church_id FROM telegram_channels WHERE id = $1',
+          [channelId]
+        );
+        churchId = channelResult.rows[0]?.church_id || null;
+      }
+
       // Get post details
       const postResult = await pool.query(
         'SELECT * FROM telegram_channel_posts WHERE channel_id = $1 AND message_id = $2',
@@ -358,18 +368,20 @@ class TelegramService {
 
       const post = postResult.rows[0];
 
-      // Format links in the message text
+      // Store links as markdown — announcements render as markdown/plain text,
+      // not HTML, so <a> tags would show up as raw markup.
       const formattedContent = this.formatLinks(post.message_text || '');
 
-      // Create announcement
+      // Create announcement scoped to the channel's church
       const announcementResult = await pool.query(
-        `INSERT INTO announcements (title, content, created_by, created_at, updated_at)
-         VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `INSERT INTO announcements (title, content, created_by, church_id, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
          RETURNING id`,
         [
           `Telegram Post #${messageId}`,
           formattedContent,
           1, // System user ID
+          churchId,
         ]
       );
 
@@ -386,11 +398,10 @@ class TelegramService {
   formatLinks(text) {
     if (!text) return '';
 
-    // Convert URLs to HTML links
+    // Convert bare URLs to markdown links — announcement content is rendered
+    // as markdown/plain text, so HTML anchors would appear as raw markup.
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-
-    // Additional formatting can be added here for mentions, hashtags, etc.
+    return text.replace(urlRegex, '[$1]($1)');
   }
 
   async refreshExpiredCache() {

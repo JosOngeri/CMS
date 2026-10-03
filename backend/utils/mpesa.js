@@ -1,7 +1,8 @@
 /**
  * @audit M-Pesa Daraja helper (legacy path — see services/MpesaService.js).
- * @known HIGH: getConfig() reads mpesa_* settings with NO church filter and caches once globally —
- *        all tenants share one church's credentials; callback path differs from MpesaService.
+ * @fixed L296: getConfig(churchId) reads mpesa_* settings scoped per church
+ *        (global NULL rows as defaults, church rows override) and caches
+ *        config + OAuth tokens per church.
  */
 const axios = require('axios');
 const crypto = require('crypto');
@@ -12,24 +13,30 @@ const logger = createLogger('mpesa');
 
 class MpesaService {
   constructor() {
-    this.accessToken = null;
-    this.tokenExpiry = null;
-    this.config = null;
+    // Per-church caches: config and OAuth token are tenant-specific (L296).
+    this.configs = new Map();   // churchId -> config
+    this.tokens = new Map();    // churchId -> { token, expiry }
   }
 
-  // Get M-Pesa configuration from database
-  async getConfig() {
-    if (this.config) return this.config;
+  // Get M-Pesa configuration from database for a specific church.
+  // Global defaults (settings.church_id IS NULL) are overlaid by the church's
+  // own mpesa_* rows so each tenant can supply its own credentials.
+  async getConfig(churchId = null) {
+    const cacheKey = churchId || '__global__';
+    if (this.configs.has(cacheKey)) return this.configs.get(cacheKey);
 
     try {
-      const result = await pool.query(`
-        SELECT key, value, value_type
-        FROM settings
-        WHERE key LIKE 'mpesa_%'
-        ORDER BY key
-      `);
+      const result = await pool.query(
+        `SELECT key, value, value_type, church_id
+         FROM settings
+         WHERE key LIKE 'mpesa_%'
+           AND (church_id IS NULL OR church_id = $1)
+         ORDER BY church_id NULLS FIRST, key`,
+        [churchId]
+      );
 
       const settings = {};
+      // Later (church-specific) rows overwrite global defaults
       result.rows.forEach(row => {
         const value = this.parseValue(row.value, row.value_type);
         settings[row.key] = value;
@@ -37,7 +44,7 @@ class MpesaService {
 
       const environment = settings.mpesa_environment || 'sandbox';
 
-      this.config = {
+      const config = {
         environment,
         consumerKey: environment === 'production'
           ? settings.mpesa_production_consumer_key || process.env.MPESA_CONSUMER_KEY
@@ -63,11 +70,12 @@ class MpesaService {
         autoRetry: settings.mpesa_auto_retry !== false
       };
 
-      return this.config;
+      this.configs.set(cacheKey, config);
+      return config;
     } catch (error) {
       logger.error('getConfig', 'Error loading M-Pesa config from database:', error);
       // Fallback to environment variables
-      this.config = {
+      const config = {
         environment: process.env.MPESA_ENVIRONMENT || 'sandbox',
         consumerKey: process.env.MPESA_CONSUMER_KEY,
         consumerSecret: process.env.MPESA_CONSUMER_SECRET,
@@ -82,7 +90,8 @@ class MpesaService {
         timeout: 300,
         autoRetry: true
       };
-      return this.config;
+      this.configs.set(cacheKey, config);
+      return config;
     }
   }
 
@@ -104,16 +113,21 @@ class MpesaService {
     }
   }
 
-  // Clear cached config (useful after settings update)
-  clearConfigCache() {
-    this.config = null;
-    this.accessToken = null;
-    this.tokenExpiry = null;
+  // Clear cached config (useful after settings update). Pass churchId to
+  // clear one tenant, omit to clear all.
+  clearConfigCache(churchId = null) {
+    if (churchId) {
+      this.configs.delete(churchId);
+      this.tokens.delete(churchId);
+    } else {
+      this.configs.clear();
+      this.tokens.clear();
+    }
   }
 
   // Get current configuration (for display/admin purposes)
-  async getCurrentConfig() {
-    const config = await this.getConfig();
+  async getCurrentConfig(churchId = null) {
+    const config = await this.getConfig(churchId);
     return {
       environment: config.environment,
       shortcode: config.shortcode,
@@ -127,13 +141,14 @@ class MpesaService {
     };
   }
 
-  // Get OAuth access token
-  async getAccessToken() {
-    if (this.accessToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
-      return this.accessToken;
+  // Get OAuth access token (cached per church — credentials differ by tenant)
+  async getAccessToken(churchId = null) {
+    const cached = this.tokens.get(churchId || '__global__');
+    if (cached && Date.now() < cached.expiry) {
+      return cached.token;
     }
 
-    const config = await this.getConfig();
+    const config = await this.getConfig(churchId);
 
     try {
       const auth = Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
@@ -147,10 +162,13 @@ class MpesaService {
         }
       );
 
-      this.accessToken = response.data.access_token;
-      this.tokenExpiry = Date.now() + (response.data.expires_in * 1000) - 60000; // Refresh 1 minute before expiry
+      const token = response.data.access_token;
+      this.tokens.set(churchId || '__global__', {
+        token,
+        expiry: Date.now() + (response.data.expires_in * 1000) - 60000 // Refresh 1 minute before expiry
+      });
 
-      return this.accessToken;
+      return token;
     } catch (error) {
       logger.error('getAccessToken', 'Error getting M-Pesa access token:', error.response?.data || error.message);
       throw new Error('Failed to get M-Pesa access token');
@@ -158,20 +176,20 @@ class MpesaService {
   }
 
   // Generate password for STK push (Base64 encoded: Shortcode + Passkey + Timestamp)
-  async generatePassword() {
-    const config = await this.getConfig();
+  async generatePassword(churchId = null) {
+    const config = await this.getConfig(churchId);
     const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
     const passwordString = `${config.shortcode}${config.passkey}${timestamp}`;
     return Buffer.from(passwordString).toString('base64');
   }
 
   // Initiate STK push
-  async initiateSTKPush(phoneNumber, amount, accountReference, transactionDesc = 'Church Payment') {
+  async initiateSTKPush(phoneNumber, amount, accountReference, transactionDesc = 'Church Payment', churchId = null) {
     try {
-      const config = await this.getConfig();
-      const accessToken = await this.getAccessToken();
+      const config = await this.getConfig(churchId);
+      const accessToken = await this.getAccessToken(churchId);
       const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
-      const password = await this.generatePassword();
+      const password = await this.generatePassword(churchId);
 
       // Validate amount
       if (amount < config.minAmount) {
@@ -221,12 +239,12 @@ class MpesaService {
   }
 
   // Query STK push status
-  async querySTKStatus(checkoutRequestID) {
+  async querySTKStatus(checkoutRequestID, churchId = null) {
     try {
-      const config = await this.getConfig();
-      const accessToken = await this.getAccessToken();
+      const config = await this.getConfig(churchId);
+      const accessToken = await this.getAccessToken(churchId);
       const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14);
-      const password = await this.generatePassword();
+      const password = await this.generatePassword(churchId);
 
       const payload = {
         BusinessShortCode: config.shortcode,

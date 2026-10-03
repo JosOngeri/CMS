@@ -211,7 +211,7 @@ class TreasuryController extends BaseController {
         req.get('user-agent')
       );
 
-      sendExpenseApprovalSMS(approved, 'approved').catch(smsError => {
+      sendExpenseApprovalSMS(approved, 'approved', churchId).catch(smsError => {
         this.logger.error('Failed to send expense approval SMS', smsError);
       });
 

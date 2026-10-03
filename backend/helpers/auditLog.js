@@ -14,6 +14,7 @@ const logger = createLogger('auditLog');
  * @param {string} params.action - Action performed (e.g., 'grant_admin', 'approve_membership')
  * @param {string} params.tableName - Table affected (e.g., 'department_members', 'departments')
  * @param {UUID} params.recordId - ID of the record affected
+ * @param {UUID} [params.churchId] - Church ID for tenant scoping (migration 057 adds the column)
  * @param {UUID} [params.departmentId] - Department ID (if applicable)
  * @param {Object} [params.before] - Before state (JSON)
  * @param {Object} [params.after] - After state (JSON)
@@ -25,6 +26,7 @@ async function logAction(pool, {
   action,
   tableName,
   recordId,
+  churchId = null,
   departmentId = null,
   before = null,
   after = null,
@@ -43,11 +45,12 @@ async function logAction(pool, {
         action,
         table_name,
         record_id,
+        church_id,
         old_values,
         new_values,
         ip_address,
         user_agent
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
     `;
 
@@ -56,6 +59,7 @@ async function logAction(pool, {
       action,
       tableName,
       recordId,
+      churchId,
       before ? JSON.stringify(before) : null,
       JSON.stringify(newValues),
       ipAddress,

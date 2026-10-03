@@ -749,7 +749,8 @@ router.post('/:id/register-with-payment',
         phone_number,
         registrationFee,
         accountReference,
-        `Registration for ${event.title}`
+        `Registration for ${event.title}`,
+        req.user.church_id
       );
 
       if (!stkResult.success) {

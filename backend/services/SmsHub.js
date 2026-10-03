@@ -32,7 +32,7 @@ class SmsHub {
   }
 
   async routeToJOSms(payload) {
-    const io = serverIo || this.io;
+    const io = this.io; // injected via setIo() from server bootstrap
     if (!io) throw new Error('Socket.io not initialized in SmsHub');
 
     // Emit to the church's relay namespace

@@ -144,6 +144,7 @@ router.post('/join', authenticateToken, async (req, res) => {
           // Log the auto-approval
           await logAction(pool, {
             actorId: userId,
+            churchId: req.user?.church_id || null,
             action: 'join_department_auto_approved',
             tableName: 'department_members',
             recordId: result.user_id,
@@ -169,6 +170,7 @@ router.post('/join', authenticateToken, async (req, res) => {
           // Log the join request
           await logAction(pool, {
             actorId: userId,
+            churchId: req.user?.church_id || null,
             action: 'join_department_requested',
             tableName: 'department_members',
             recordId: result.user_id,
@@ -238,6 +240,7 @@ router.delete('/leave/:departmentId', authenticateToken, convertSlugToId, async 
     // Log the leave action
     await logAction(pool, {
       actorId: userId,
+      churchId: req.user?.church_id || null,
       action: 'leave_department',
       tableName: 'department_members',
       recordId: userId,
@@ -372,6 +375,7 @@ router.post('/:departmentId/approve/:userId', authenticateToken, convertSlugToId
     // Log the approval action
     await logAction(pool, {
       actorId: approverId,
+      churchId: req.user?.church_id || null,
       action: 'approve_membership',
       tableName: 'department_members',
       recordId: result.rows[0].user_id,
@@ -457,6 +461,7 @@ router.post('/:departmentId/reject/:userId', authenticateToken, convertSlugToId,
     // Log the rejection action
     await logAction(pool, {
       actorId: approverId,
+      churchId: req.user?.church_id || null,
       action: 'reject_membership',
       tableName: 'department_members',
       recordId: result.rows[0].user_id,

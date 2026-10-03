@@ -12,10 +12,6 @@ class RollingUpdateService {
     this.snapshotRepository = repository;
   }
 
-  setSnapshotRepository(repository) {
-    this.snapshotRepository = repository;
-  }
-
   async captureUpdate(churchId, operation, entityType, entityId, entityData = null) {
     try {
       // Validate operation type

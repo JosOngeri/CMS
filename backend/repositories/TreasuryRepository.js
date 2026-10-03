@@ -1006,8 +1006,8 @@ class TreasuryRepository extends BaseRepository {
   async createFixedAsset(data, churchId) {
     if (!churchId) throw new Error('createFixedAsset: churchId is required');
     const result = await this.pool.query(
-      'INSERT INTO fixed_assets (asset_name, asset_code, purchase_price, purchase_date, depreciation_rate, location, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, churchId]
+      'INSERT INTO fixed_assets (asset_name, asset_code, purchase_price, purchase_date, useful_life, location, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.usefulLife ?? data.depreciationRate, data.location, churchId]
     );
     return result.rows[0];
   }
@@ -1015,8 +1015,8 @@ class TreasuryRepository extends BaseRepository {
   async updateFixedAsset(id, data, churchId) {
     if (!churchId) throw new Error('updateFixedAsset: churchId is required');
     const result = await this.pool.query(
-      `UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), depreciation_rate = COALESCE($5, depreciation_rate), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9 AND church_id = $10 RETURNING *`,
-      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id, churchId]
+      `UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), useful_life = COALESCE($5, useful_life), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9 AND church_id = $10 RETURNING *`,
+      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.usefulLife ?? data.depreciationRate, data.location, data.currentValue, data.status, id, churchId]
     );
     return result.rows[0];
   }

@@ -162,13 +162,21 @@ class KopoKopoService {
   // Process webhook callback
   async processWebhook(payload, signature) {
     try {
-      // Verify webhook signature
+      // Fail closed: without a configured secret we cannot verify anything.
+      if (!this.webhookSecret) {
+        throw new Error('Webhook secret not configured');
+      }
+
+      // Verify webhook signature with a constant-time comparison
       const expectedSignature = crypto
         .createHmac('sha256', this.webhookSecret)
         .update(JSON.stringify(payload))
         .digest('hex');
 
-      if (signature !== expectedSignature) {
+      const sigBuffer = Buffer.from(String(signature || ''), 'utf8');
+      const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+      if (sigBuffer.length !== expectedBuffer.length ||
+          !crypto.timingSafeEqual(sigBuffer, expectedBuffer)) {
         throw new Error('Invalid webhook signature');
       }
 
