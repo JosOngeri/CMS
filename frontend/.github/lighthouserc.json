@@ -1,0 +1,14 @@
+{
+  "ci": {
+    "collect": {
+      "staticDistDir": "./frontend/dist",
+      "isSinglePageApplication": true,
+      "settings": {
+        "onlyCategories": ["performance", "accessibility", "best-practices"]
+      }
+    },
+    "upload": {
+      "target": "temporary-public-storage"
+    }
+  }
+}

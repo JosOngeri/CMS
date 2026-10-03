@@ -39,7 +39,8 @@ jobs:
         uploadArtifacts: true
         temporaryPublicStorage: true
         # Audit the freshly built app directly — no dev server needed.
-        staticDistDir: ./frontend/dist
+        # staticDistDir lives in the lighthouserc config, not action inputs.
+        configPath: ./frontend/.github/lighthouserc.json
         budgetPath: ./frontend/.github/lighthouse-budget.json
         
     - name: Analyze bundle size

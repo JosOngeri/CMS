@@ -954,3 +954,24 @@ Verified: node --check clean on all 4 touched files.
 | Bonus: DocumentationManager.jsx | dead docApi axios instance + accessToken interceptor removed; now uses useAuth().api (cookie + CSRF) |
 
 Verified: vite build clean (1800 modules).
+
+---
+
+## LINT ASSESSMENT — 2026-10-03
+
+`npm run lint` was non-functional in BOTH packages: ESLint v9.39.4 installed but configs are legacy `.eslintrc.*` (v9 requires `eslint.config.js`; `ESLINT_USE_FLAT_CONFIG=false` used for this run).
+
+| # | Finding | Severity |
+|---|---------|----------|
+| L1 | `controllers/content.controller.js:700` — `getScheduledContent` passes undeclared `status` (never read from `req.query`) → ReferenceError → 500 on every call | **REAL BUG** |
+| L2 | `tests/api/tests/approvals.test.js:89,184` — `createMemberToken` not defined (missing helper import) → test throws | REAL BUG (test) |
+| L3 | `services/nameMatcher.js` ~271-298 — ~23 duplicate keys in name map; second wins, earlier silently dead | ISSUE |
+| L4 | `scripts/generate-comprehensive-seed.js` — duplicate keys Deaconry/Treasurer/Church Clerk | ISSUE (script) |
+| L5 | `routes/events.routes.js` — `rsvpEvent` call omitted new required `churchId` arg → 500 on every RSVP. **FIXED during assessment** | FIXED |
+| L6 | Frontend `churchColorPalette.js` + `comprehensive.test.js` — ~48 errors: custom `no-restricted-syntax` hex-color rule fires on the palette's own definition file; needs rule exemption | CONFIG |
+| L7 | `frontend/.eslintrc.cjs` AND `.eslintrc.json` both exist (cjs wins, json dead); `useDataFetch.js` disables `react-hooks/exhaustive-deps` but plugin not registered | CONFIG |
+| L8 | `__tests__/setup.js` — `global` flagged no-undef; test env lacks node globals declaration | CONFIG |
+| L9 | Backend: 75,227 raw errors — 72,286 are `linebreak-style` (CRLF vs a Unix-authored rule on Windows checkout); ~2,600 auto-fixable cosmetic (trailing-spaces/indent/curly/quotes) | NOISE/config |
+
+Backend signal after filtering noise: 3 no-undef, 26 no-dupe-keys, 9 no-useless-escape, 26 prefer-const. Frontend total: 55 errors (mostly L6/L7 config).
+Residual: `departments.head_id` exists only in `database/{schema,complete_schema}.sql`, NOT `backend/migrations/*` — `getDepartmentsHeadedBy` (dashboard) 500s on migration-built schemas. Tied to schema-split finding.
