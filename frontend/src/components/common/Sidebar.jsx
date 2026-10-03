@@ -348,7 +348,10 @@ function Sidebar({ isOpen, setIsOpen }) {
                     {isGroup ? (
                       <button
                         type="button"
-                        className={`w-full ${itemClasses}`}
+                        // text-left: <button> defaults to center text-align,
+                        // which centers the flex-1 label span and misaligns
+                        // group labels against the left-aligned leaf links.
+                        className={`w-full text-left ${itemClasses}`}
                         onClick={() => setActiveKey(activeKey === entry.key ? null : entry.key)}
                         aria-expanded={activeKey === entry.key}
                         aria-label={entry.label}
