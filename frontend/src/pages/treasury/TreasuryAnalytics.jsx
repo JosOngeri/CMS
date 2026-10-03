@@ -171,36 +171,47 @@ const TreasuryAnalytics = () => {
       <Card>
         <div className="p-6">
           <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Income vs Expenses</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm text-[var(--color-textSecondary)]">Income</span>
-                <span className="text-sm font-semibold text-[var(--color-text)]">
-                  KES {analytics?.total_income?.toLocaleString() || 0}
-                </span>
+          {(() => {
+            // pg returns numerics as strings — parseFloat before math.
+            // Both bars normalize against the larger amount so expenses > income
+            // can't overflow past 100% and income isn't hardcoded full-width.
+            const totalIncome = parseFloat(analytics?.total_income) || 0
+            const totalExpenses = parseFloat(analytics?.total_expenses) || 0
+            const maxAmount = Math.max(totalIncome, totalExpenses)
+            const pct = (v) => (maxAmount > 0 ? `${((v / maxAmount) * 100).toFixed(0)}%` : '0%')
+            return (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm text-[var(--color-textSecondary)]">Income</span>
+                    <span className="text-sm font-semibold text-[var(--color-text)]">
+                      KES {totalIncome.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[var(--color-surface)] rounded-full h-4">
+                    <div
+                      className="bg-[var(--color-success)] h-4 rounded-full transition-all"
+                      style={{ width: pct(totalIncome) }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm text-[var(--color-textSecondary)]">Expenses</span>
+                    <span className="text-sm font-semibold text-[var(--color-text)]">
+                      KES {totalExpenses.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[var(--color-surface)] rounded-full h-4">
+                    <div
+                      className="bg-[var(--color-error)] h-4 rounded-full transition-all"
+                      style={{ width: pct(totalExpenses) }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="w-full bg-[var(--color-surface)] rounded-full h-4">
-                <div
-                  className="bg-[var(--color-success)] h-4 rounded-full transition-all"
-                  style={{ width: '100%' }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm text-[var(--color-textSecondary)]">Expenses</span>
-                <span className="text-sm font-semibold text-[var(--color-text)]">
-                  KES {analytics?.total_expenses?.toLocaleString() || 0}
-                </span>
-              </div>
-              <div className="w-full bg-[var(--color-surface)] rounded-full h-4">
-                <div
-                  className="bg-[var(--color-error)] h-4 rounded-full transition-all"
-                  style={{ width: analytics?.total_income > 0 ? `${((analytics.total_expenses / analytics.total_income) * 100).toFixed(0)}%` : '0%' }}
-                />
-              </div>
-            </div>
-          </div>
+            )
+          })()}
         </div>
       </Card>
 

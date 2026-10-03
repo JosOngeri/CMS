@@ -86,6 +86,78 @@ router.get('/available', authenticateToken, async (req, res) => {
   }
 });
 
+// Aggregate: all active subcommittees for the caller's church, grouped by
+// department on the client. Saves the N+1 of GET /:id/subcommittees per dept
+// (DepartmentHandover). Must stay before the /:departmentId routes below and
+// before departments.routes.js' /:identifier (this router mounts first).
+router.get('/subcommittees', authenticateToken, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT s.*, s.department_id,
+              u.first_name || ' ' || u.last_name AS lead_name,
+              (SELECT COUNT(*) FROM subcommittee_members sm
+                WHERE sm.subcommittee_id = s.id AND sm.is_active) AS member_count
+       FROM department_subcommittees s
+       JOIN departments d ON d.id = s.department_id
+       LEFT JOIN users u ON u.id = s.lead_user_id
+       WHERE d.church_id = $1 AND s.is_active = true AND d.is_active = true
+       ORDER BY d.name, s.name`,
+      [req.user.church_id]
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (error) {
+    logger.error('getAllSubcommittees', error);
+    res.status(500).json({ success: false, error: 'Failed to load subcommittees' });
+  }
+});
+
+// Aggregate: all department leadership rows for the caller's church.
+// Saves the N+1 of GET /:id/leadership per dept (DepartmentHeadAllocation).
+router.get('/leadership', authenticateToken, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT dl.*, u.first_name || ' ' || u.last_name AS user_name, u.email AS user_email,
+              a.first_name || ' ' || a.last_name AS appointed_by_name,
+              s.name AS subcommittee_name
+       FROM department_leadership dl
+       JOIN departments d ON d.id = dl.department_id
+       JOIN users u ON u.id = dl.user_id
+       LEFT JOIN users a ON a.id = dl.appointed_by
+       LEFT JOIN department_subcommittees s ON s.id = dl.subcommittee_id
+       WHERE d.church_id = $1
+       ORDER BY dl.department_id, dl.is_active DESC, dl.start_date DESC`,
+      [req.user.church_id]
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (error) {
+    logger.error('getAllLeadership', error);
+    res.status(500).json({ success: false, error: 'Failed to load leadership' });
+  }
+});
+
+// Aggregate: all handovers for the caller's church (DepartmentHeadAllocation).
+router.get('/handovers', authenticateToken, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT h.*, ou.first_name || ' ' || ou.last_name AS outgoing_name,
+              iu.first_name || ' ' || iu.last_name AS incoming_name,
+              s.name AS subcommittee_name
+       FROM department_handovers h
+       JOIN departments d ON d.id = h.department_id
+       LEFT JOIN users ou ON ou.id = h.outgoing_user_id
+       JOIN users iu ON iu.id = h.incoming_user_id
+       LEFT JOIN department_subcommittees s ON s.id = h.subcommittee_id
+       WHERE d.church_id = $1
+       ORDER BY h.department_id, h.created_at DESC`,
+      [req.user.church_id]
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (error) {
+    logger.error('getAllHandovers', error);
+    res.status(500).json({ success: false, error: 'Failed to load handovers' });
+  }
+});
+
 // Join departments
 router.post('/join', authenticateToken, async (req, res) => {
   try {

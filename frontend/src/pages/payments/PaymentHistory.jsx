@@ -84,8 +84,8 @@ const PaymentHistory = () => {
   }
 
   const filteredPayments = payments.filter(payment =>
-    payment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    payment.phone_number.includes(searchTerm) ||
+    String(payment.id ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    String(payment.phone_number ?? '').includes(searchTerm) ||
     payment.notes?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -95,7 +95,7 @@ const PaymentHistory = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const a = document.createElement('a')
       a.href = url
-      a.download = `receipt_${payment.id.slice(-8)}.pdf`
+      a.download = `receipt_${String(payment.id ?? '').slice(-8)}.pdf`
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -189,7 +189,7 @@ const PaymentHistory = () => {
                 {filteredPayments.map((payment) => (
                   <tr key={payment.id} className="hover:bg-[var(--color-background)]">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--color-text)]">
-                      {payment.id.slice(-8)}
+                      {String(payment.id ?? '').slice(-8)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
                       {fmtDateTime(payment.created_at)}
@@ -209,25 +209,15 @@ const PaymentHistory = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-textSecondary)]">
-                      <div className="flex items-center space-x-2">
-                        {payment.status === 'completed' && (
-                          <button
-                            onClick={() => downloadReceipt(payment)}
-                            className="flex items-center space-x-1 text-primary-600 hover:text-primary-700"
-                          >
-                            <Download className="h-4 w-4" />
-                            <span>Receipt</span>
-                          </button>
-                        )}
+                      {payment.status === 'completed' && (
                         <button
-                          onClick={() => {
-                            // Show payment details
-                          }}
-                          className="text-[var(--color-textSecondary)] hover:text-[var(--color-text)]"
+                          onClick={() => downloadReceipt(payment)}
+                          className="flex items-center space-x-1 text-[var(--color-primary)] hover:opacity-80"
                         >
-                          View
+                          <Download className="h-4 w-4" />
+                          <span>Receipt</span>
                         </button>
-                      </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -242,7 +232,7 @@ const PaymentHistory = () => {
                 key={payment.id}
                 icon={DollarSign}
                 title={`KES ${parseFloat(payment?.amount ?? 0).toLocaleString()}`}
-                subtitle={`#${payment.id.slice(-8)} · ${fmtDateTime(payment.created_at)}`}
+                subtitle={`#${String(payment.id ?? '').slice(-8)} · ${fmtDateTime(payment.created_at)}`}
                 badge={<span className={`badge ${getStatusColor(payment.status)}`}>{payment.status}</span>}
                 actions={
                   payment.status === 'completed' ? (

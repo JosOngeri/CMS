@@ -315,6 +315,7 @@ CREATE TABLE IF NOT EXISTS events (
   is_public BOOLEAN DEFAULT true,
   max_attendees INTEGER,
   poster_url TEXT,
+  category VARCHAR(50) NOT NULL DEFAULT 'service',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

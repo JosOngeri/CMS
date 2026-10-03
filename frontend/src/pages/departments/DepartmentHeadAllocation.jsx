@@ -48,28 +48,24 @@ const DepartmentHeadAllocation = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [deptRes, userRes] = await Promise.all([
+      const [deptRes, userRes, lr, hr] = await Promise.all([
         api.get('/departments'),
         api.get('/users'),
+        // Church-wide aggregates — was 2 requests per department (N+1).
+        api.get('/departments/leadership').catch(() => ({ data: { data: [] } })),
+        api.get('/departments/handovers').catch(() => ({ data: { data: [] } })),
       ]);
       const depts = deptRes.data.departments || [];
       setDepartments(depts);
       setUsers(userRes.data.users || []);
 
       const [leadershipMap, handoverMap] = [{}, {}];
-      await Promise.all(depts.map(async (d) => {
-        try {
-          const [lr, hr] = await Promise.all([
-            api.get(`/departments/${d.id}/leadership`),
-            api.get(`/departments/${d.id}/handovers`),
-          ]);
-          leadershipMap[d.id] = lr.data.data || [];
-          handoverMap[d.id] = hr.data.data || [];
-        } catch {
-          leadershipMap[d.id] = [];
-          handoverMap[d.id] = [];
-        }
-      }));
+      (lr.data.data || []).forEach((l) => {
+        (leadershipMap[l.department_id] = leadershipMap[l.department_id] || []).push(l);
+      });
+      (hr.data.data || []).forEach((h) => {
+        (handoverMap[h.department_id] = handoverMap[h.department_id] || []).push(h);
+      });
       setLeadership(leadershipMap);
       setHandovers(handoverMap);
     } catch (error) {

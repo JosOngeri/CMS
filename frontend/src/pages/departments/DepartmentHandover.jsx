@@ -55,18 +55,17 @@ const DepartmentHandover = () => {
       const depts = deptRes.data.departments || [];
       setDepartments(depts);
 
-      if (isManager) {
-        const ex = await api.get('/departments/leadership/expiring').catch(() => ({ data: { data: [] } }));
-        setExpiring(ex.data.data || []);
-      }
+      // One aggregate call each — was N+1 (a request per department).
+      const [subsRes, ex] = await Promise.all([
+        api.get('/departments/subcommittees').catch(() => ({ data: { data: [] } })),
+        isManager ? api.get('/departments/leadership/expiring').catch(() => ({ data: { data: [] } })) : Promise.resolve({ data: { data: [] } }),
+      ]);
+      if (isManager) setExpiring(ex.data.data || []);
 
       const subs = {};
-      await Promise.all(depts.map(async (d) => {
-        try {
-          const r = await api.get(`/departments/${d.id}/subcommittees`);
-          subs[d.id] = r.data.data || [];
-        } catch { subs[d.id] = []; }
-      }));
+      (subsRes.data.data || []).forEach((s) => {
+        (subs[s.department_id] = subs[s.department_id] || []).push(s);
+      });
       setSubsByDept(subs);
     } catch (e) {
       console.error(e);

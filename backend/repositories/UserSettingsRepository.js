@@ -1,8 +1,8 @@
 /**
  * @audit User settings/preferences repository (per-user scope — intentionally not church-scoped).
- * @known ISSUE: createUserPreferencesWithFields builds the INSERT column list from SET-clause
- *        strings ("field = $n") AND its placeholders collide with $1=user_id -> always fails;
- *        changePassword uses bcrypt cost 10 while helpers/security.js uses bcryptjs 12.
+ * @fixed createUserPreferencesWithFields' broken INSERT replaced by
+ *        upsertUserPreferences (INSERT ... ON CONFLICT DO UPDATE); changePassword
+ *        now uses bcryptjs cost 12, matching helpers/security.js.
  */
 const BaseRepository = require('./BaseRepository');
 const bcrypt = require('bcryptjs');
@@ -147,7 +147,7 @@ class UserSettingsRepository extends BaseRepository {
       return { error: 'Current password is incorrect', statusCode: 401 };
     }
 
-    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    const newPasswordHash = await bcrypt.hash(newPassword, 12);
     await this.updateUserPassword(userId, newPasswordHash);
 
     return { success: true };

@@ -45,7 +45,6 @@ const Events = () => {
     date: '',
     time: '',
     location: '',
-    organizer: '',
     category: 'service',
     poster: null
   })
@@ -123,6 +122,7 @@ const Events = () => {
       formDataToSend.append('event_date', `${formData.date}T${formData.time || '00:00'}:00`)
       formDataToSend.append('location', formData.location)
       formDataToSend.append('is_public', 'true')
+      formDataToSend.append('category', formData.category)
       if (formData.time) formDataToSend.append('event_time', formData.time)
 
       if (formData.poster) {
@@ -140,7 +140,7 @@ const Events = () => {
         })
         toast.success(SUCCESS_MESSAGES.EVENT_CREATED)
       }
-      setFormData({ title: '', description: '', date: '', time: '', location: '', organizer: '', category: 'service', poster: null })
+      setFormData({ title: '', description: '', date: '', time: '', location: '', category: 'service', poster: null })
       setShowForm(false)
       setEditingEvent(null)
       fetchEvents()
@@ -155,11 +155,11 @@ const Events = () => {
     setFormData({
       title: event.title,
       description: event.description,
-      date: event.date,
-      time: event.time,
+      // API returns event_date/event_time — split the timestamp back out
+      date: (event.event_date || event.date || '').slice(0, 10),
+      time: event.event_time || event.time || '',
       location: event.location,
-      organizer: event.organizer,
-      category: event.category,
+      category: event.category || 'service',
       poster: null
     })
     setShowForm(true)
@@ -339,18 +339,6 @@ const Events = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[var(--color-text)]  mb-2">
-                  Organizer
-                </label>
-                <input
-                  type="text"
-                  value={formData.organizer}
-                  onChange={(e) => setFormData({...formData, organizer: e.target.value})}
-                  className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-                  required
-                />
-              </div>
             </div>
 
             <div>
@@ -410,7 +398,6 @@ const Events = () => {
                     date: '',
                     time: '',
                     location: '',
-                    organizer: '',
                     category: 'service',
                     poster: null
                   })

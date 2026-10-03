@@ -12,13 +12,28 @@
  */
 
 import { useState, useEffect } from 'react'
-import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt } from 'lucide-react'
+import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt, X } from 'lucide-react'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
+
+// Blank form state — field names match the backend contract exactly
+// (memberId/paymentType/paymentMethodId/notes/payment_date).
+const EMPTY_FORM = () => ({
+  memberId: '',
+  amount: '',
+  paymentType: 'tithe',
+  paymentMethodId: '',
+  notes: '',
+  payment_date: new Date().toISOString().split('T')[0]
+})
 
 const PaymentManagement = () => {
   const { user, api } = useAuth()
+  const toast = useToast()
   const [payments, setPayments] = useState([])
+  const [members, setMembers] = useState([])
+  const [paymentMethodRows, setPaymentMethodRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -27,14 +42,7 @@ const PaymentManagement = () => {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingPayment, setEditingPayment] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)
-  const [formData, setFormData] = useState({
-    member_id: '',
-    amount: '',
-    payment_type: 'tithe',
-    payment_method: 'cash',
-    description: '',
-    date: new Date().toISOString().split('T')[0]
-  })
+  const [formData, setFormData] = useState(EMPTY_FORM())
 
   const canManagePayments = user?.roles?.some(role => 
     ['Super Admin', 'Pastor', 'First Elder', 'Department Head'].includes(role)
@@ -63,6 +71,7 @@ const PaymentManagement = () => {
 
   useEffect(() => {
     fetchPayments()
+    fetchFormOptions()
   }, [])
 
   const fetchPayments = async () => {
@@ -71,52 +80,72 @@ const PaymentManagement = () => {
       setPayments(response.data?.data || response.data?.payments || [])
     } catch (error) {
       console.error('Error fetching payments:', error)
+      toast.error('Failed to load payments')
     } finally {
       setLoading(false)
     }
   }
 
+  // Members + payment methods feed the form pickers — member_id references
+  // the members table and paymentMethodId the payment_methods table, so a
+  // free-text name can never be posted as an id.
+  const fetchFormOptions = async () => {
+    try {
+      const [membersRes, methodsRes] = await Promise.all([
+        api.get('/members', { params: { limit: 500 } }),
+        api.get('/payments/methods'),
+      ])
+      setMembers(membersRes.data?.data?.members || membersRes.data?.members || [])
+      setPaymentMethodRows(methodsRes.data?.data || [])
+    } catch (error) {
+      console.error('Error loading form options:', error)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     try {
+      const payload = {
+        memberId: formData.memberId || undefined,
+        amount: parseFloat(formData.amount),
+        paymentType: formData.paymentType,
+        paymentMethodId: formData.paymentMethodId || undefined,
+        notes: formData.notes,
+        payment_date: formData.payment_date,
+      }
       const response = editingPayment
-        ? await api.put(`/payments/${editingPayment.id}`, formData)
-        : await api.post('/payments', formData)
+        ? await api.put(`/payments/${editingPayment.id}`, payload)
+        : await api.post('/payments', payload)
       const result = response.data?.data || response.data?.payment
 
       if (editingPayment) {
         setPayments(payments.map(p => p.id === editingPayment.id ? result : p))
+        toast.success('Payment updated')
       } else if (result) {
         setPayments([result, ...payments])
+        toast.success('Payment recorded')
       }
 
-      // Reset form
-      setFormData({
-        member_id: '',
-        amount: '',
-        payment_type: 'tithe',
-        payment_method: 'cash',
-        description: '',
-        date: new Date().toISOString().split('T')[0]
-      })
+      setFormData(EMPTY_FORM())
       setShowCreateForm(false)
       setEditingPayment(null)
-      
+
     } catch (error) {
       console.error('Error saving payment:', error)
+      toast.error(error.response?.data?.error || 'Failed to save payment')
     }
   }
 
   const handleEdit = (payment) => {
     setEditingPayment(payment)
     setFormData({
-      member_id: payment.member_id,
+      memberId: payment.member_id || '',
       amount: payment.amount,
-      payment_type: payment.payment_type,
-      payment_method: payment.payment_method,
-      description: payment.description,
-      date: payment.date
+      paymentType: payment.payment_type || 'tithe',
+      paymentMethodId: payment.payment_method_id || '',
+      notes: payment.notes || payment.description || '',
+      payment_date: (payment.payment_date || payment.date || '').slice(0, 10)
     })
     setShowCreateForm(true)
   }
@@ -129,24 +158,25 @@ const PaymentManagement = () => {
     try {
       await api.delete(`/payments/${paymentId}`)
       setPayments(payments.filter(p => p.id !== paymentId))
-      
+      toast.success('Payment deleted')
     } catch (error) {
       console.error('Error deleting payment:', error)
+      toast.error('Failed to delete payment')
     }
   }
 
   const filteredPayments = payments.filter(payment => {
-    const matchesSearch = payment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = payment.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          payment.member_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          payment.amount?.toString().includes(searchTerm)
     
     const matchesStatus = filterStatus === 'all' || payment.status === filterStatus
-    const matchesMethod = filterMethod === 'all' || payment.payment_method === filterMethod
-    
+    const matchesMethod = filterMethod === 'all' || payment.payment_method_name === filterMethod
+
     // Filter by period
     let matchesPeriod = true
     if (filterPeriod !== 'all') {
-      const paymentDate = new Date(payment.date)
+      const paymentDate = new Date(payment.payment_date || payment.created_at)
       const now = new Date()
       
       switch (filterPeriod) {
@@ -186,7 +216,10 @@ const PaymentManagement = () => {
   }
 
   const getPaymentMethodIcon = (method) => {
-    const methodConfig = paymentMethods.find(m => m.value === method)
+    // Method names come from payment_methods.name ('M-Pesa', 'Cash', ...) —
+    // normalize to the icon keys by stripping punctuation/case.
+    const key = (method || '').toLowerCase().replace(/[^a-z]/g, '')
+    const methodConfig = paymentMethods.find(m => key.includes(m.value))
     const Icon = methodConfig?.icon || DollarSign
     return <Icon className="w-4 h-4" />
   }
@@ -298,16 +331,21 @@ const PaymentManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--color-textSecondary)] mb-2">
-                  Member Name
+                  Member
                 </label>
-                <input
-                  type="text"
-                  value={formData.member_id}
-                  onChange={(e) => setFormData({...formData, member_id: e.target.value})}
+                <select
+                  value={formData.memberId}
+                  onChange={(e) => setFormData({...formData, memberId: e.target.value})}
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
-                  placeholder="Enter member name"
                   required
-                />
+                >
+                  <option value="">Select member…</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {`${m.first_name || ''} ${m.last_name || ''}`.trim() || m.phone || m.email || m.id}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -331,8 +369,8 @@ const PaymentManagement = () => {
                   Payment Type
                 </label>
                 <select
-                  value={formData.payment_type}
-                  onChange={(e) => setFormData({...formData, payment_type: e.target.value})}
+                  value={formData.paymentType}
+                  onChange={(e) => setFormData({...formData, paymentType: e.target.value})}
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
                   {paymentTypes.map(type => (
@@ -346,12 +384,13 @@ const PaymentManagement = () => {
                   Payment Method
                 </label>
                 <select
-                  value={formData.payment_method}
-                  onChange={(e) => setFormData({...formData, payment_method: e.target.value})}
+                  value={formData.paymentMethodId}
+                  onChange={(e) => setFormData({...formData, paymentMethodId: e.target.value})}
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                 >
-                  {paymentMethods.map(method => (
-                    <option key={method.value} value={method.value}>{method.label}</option>
+                  <option value="">Select method…</option>
+                  {paymentMethodRows.map((method) => (
+                    <option key={method.id} value={method.id}>{method.name}</option>
                   ))}
                 </select>
               </div>
@@ -362,8 +401,8 @@ const PaymentManagement = () => {
                 </label>
                 <input
                   type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData({...formData, date: e.target.value})}
+                  value={formData.payment_date}
+                  onChange={(e) => setFormData({...formData, payment_date: e.target.value})}
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                   required
                 />
@@ -375,8 +414,8 @@ const PaymentManagement = () => {
                 Description
               </label>
               <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                value={formData.notes}
+                onChange={(e) => setFormData({...formData, notes: e.target.value})}
                 rows={3}
                 className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent resize-none"
                 placeholder="Enter payment description or notes"
@@ -395,14 +434,7 @@ const PaymentManagement = () => {
                 onClick={() => {
                   setShowCreateForm(false)
                   setEditingPayment(null)
-                  setFormData({
-                    member_id: '',
-                    amount: '',
-                    payment_type: 'tithe',
-                    payment_method: 'cash',
-                    description: '',
-                    date: new Date().toISOString().split('T')[0]
-                  })
+                  setFormData(EMPTY_FORM())
                 }}
                 className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
               >
@@ -446,8 +478,8 @@ const PaymentManagement = () => {
             className="px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Methods</option>
-            {paymentMethods.map(method => (
-              <option key={method.value} value={method.value}>{method.label}</option>
+            {paymentMethodRows.map(method => (
+              <option key={method.id} value={method.name}>{method.name}</option>
             ))}
           </select>
 
@@ -500,7 +532,7 @@ const PaymentManagement = () => {
               {filteredPayments.map((payment) => (
                 <tr key={payment.id} className="hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)]">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text)]">
-                    {new Date(payment.date).toLocaleDateString()}
+                    {new Date(payment.payment_date || payment.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -524,9 +556,9 @@ const PaymentManagement = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      {getPaymentMethodIcon(payment.payment_method)}
+                      {getPaymentMethodIcon((payment.payment_method_name || '').toLowerCase())}
                       <span className="text-sm text-[var(--color-text)]">
-                        {paymentMethods.find(m => m.value === payment.payment_method)?.label || payment.payment_method}
+                        {payment.payment_method_name || '—'}
                       </span>
                     </div>
                   </td>
@@ -575,7 +607,7 @@ const PaymentManagement = () => {
               key={payment.id}
               icon={Users}
               title={payment.member_name}
-              subtitle={`${paymentTypes.find(t => t.value === payment.payment_type)?.label || payment.payment_type} · ${new Date(payment.date).toLocaleDateString()}`}
+              subtitle={`${paymentTypes.find(t => t.value === payment.payment_type)?.label || payment.payment_type} · ${new Date(payment.payment_date || payment.created_at).toLocaleDateString()}`}
               badge={
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${getPaymentStatusColor(payment.status)}`}>
                   {paymentStatus.find(s => s.value === payment.status)?.label || payment.status}
@@ -594,7 +626,7 @@ const PaymentManagement = () => {
               ) : null}
             >
               <CardField label="Amount" value={`KES ${parseFloat(payment?.amount ?? 0).toLocaleString()}`} />
-              <CardField label="Method" value={paymentMethods.find(m => m.value === payment.payment_method)?.label || payment.payment_method} />
+              <CardField label="Method" value={payment.payment_method_name || '—'} />
             </MobileCard>
           ))}
         </div>
@@ -631,7 +663,7 @@ const PaymentManagement = () => {
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Date</p>
                 <p className="text-[var(--color-text)]">
-                  {new Date(selectedPayment.date).toLocaleDateString()}
+                  {new Date(selectedPayment.payment_date || selectedPayment.created_at).toLocaleDateString()}
                 </p>
               </div>
               
@@ -657,9 +689,9 @@ const PaymentManagement = () => {
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Method</p>
                 <div className="flex items-center gap-2">
-                  {getPaymentMethodIcon(selectedPayment.payment_method)}
+                  {getPaymentMethodIcon(selectedPayment.payment_method_name)}
                   <span className="text-[var(--color-text)]">
-                    {paymentMethods.find(m => m.value === selectedPayment.payment_method)?.label || selectedPayment.payment_method}
+                    {selectedPayment.payment_method_name || '—'}
                   </span>
                 </div>
               </div>
@@ -674,10 +706,10 @@ const PaymentManagement = () => {
                 </span>
               </div>
               
-              {selectedPayment.description && (
+              {selectedPayment.notes && (
                 <div>
-                  <p className="text-sm text-[var(--color-textSecondary)]">Description</p>
-                  <p className="text-[var(--color-text)]">{selectedPayment.description}</p>
+                  <p className="text-sm text-[var(--color-textSecondary)]">Notes</p>
+                  <p className="text-[var(--color-text)]">{selectedPayment.notes}</p>
                 </div>
               )}
             </div>

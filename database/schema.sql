@@ -133,6 +133,7 @@ CREATE TABLE events (
     organizer_id UUID REFERENCES users(id),
     is_public BOOLEAN DEFAULT true,
     max_attendees INTEGER,
+    category VARCHAR(50) NOT NULL DEFAULT 'service',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

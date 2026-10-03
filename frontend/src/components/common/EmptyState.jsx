@@ -1,7 +1,9 @@
 /**
  * @audit Empty-state variants (Members/Events/Gallery/etc).
- * @known ISSUE: <action>/<secondaryAction> lowercase JSX (~lines 62/73) render literal DOM elements —
- *        the passed icon component never renders; action && onAction both required silently.
+ * @fixed action/secondaryAction icon props assigned to capitalised variables
+ *        before render (lowercase JSX rendered literal DOM elements); buttons
+ *        now key off onAction/onSecondaryAction alone; invalid `size` falls
+ *        back to 'default'.
  */
 import { Users, FileText, Calendar, Building, Search, Plus, AlertCircle, Image as ImageIcon, Info, ArrowRight, BarChart3, Shield } from 'lucide-react'
 
@@ -33,8 +35,17 @@ export const EmptyState = ({
     large: 'w-16 h-16'
   }
 
+  // Unknown size props fall back to 'default' instead of producing
+  // `undefined` in the class string.
+  const safeSize = sizeClasses[size] ? size : 'default';
+  // Icon props arrive as component references — JSX requires capitalised
+  // variables, so assign them before rendering (lowercase renders a literal
+  // DOM element and the icon never appears).
+  const ActionIcon = typeof action === 'function' ? action : Plus;
+  const SecondaryActionIcon = typeof secondaryAction === 'function' ? secondaryAction : Info;
+
   return (
-    <div className={`flex flex-col items-center justify-center px-4 ${sizeClasses[size]}`}>
+    <div className={`flex flex-col items-center justify-center px-4 ${sizeClasses[safeSize]}`}>
       {/* Illustration or Icon */}
       {illustration ? (
         <div className="mb-6">
@@ -42,7 +53,7 @@ export const EmptyState = ({
         </div>
       ) : (
         <div className="p-4 rounded-full mb-4 bg-[var(--color-background)]">
-          <Icon className={`${iconSizes[size]} text-[var(--color-textSecondary)]`} />
+          <Icon className={`${iconSizes[safeSize]} text-[var(--color-textSecondary)]`} />
         </div>
       )}
 
@@ -58,24 +69,24 @@ export const EmptyState = ({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row items-center gap-3">
-        {action && onAction && (
+        {onAction && (
           <button
             onClick={onAction}
             className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
             aria-label={actionLabel}
           >
-            {typeof action === 'function' ? <action className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            <ActionIcon className="w-4 h-4" />
             {actionLabel}
           </button>
         )}
 
-        {secondaryAction && onSecondaryAction && (
+        {onSecondaryAction && (
           <button
             onClick={onSecondaryAction}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-textSecondary)] transition-colors hover:bg-[var(--color-surfaceHover)] hover:border-[var(--color-textSecondary)]"
             aria-label={secondaryActionLabel}
           >
-            {typeof secondaryAction === 'function' ? <secondaryAction className="w-4 h-4" /> : <Info className="w-4 h-4" />}
+            <SecondaryActionIcon className="w-4 h-4" />
             {secondaryActionLabel}
             <ArrowRight className="w-4 h-4" />
           </button>

@@ -975,3 +975,42 @@ Verified: vite build clean (1800 modules).
 
 Backend signal after filtering noise: 3 no-undef, 26 no-dupe-keys, 9 no-useless-escape, 26 prefer-const. Frontend total: 55 errors (mostly L6/L7 config).
 Residual: `departments.head_id` exists only in `database/{schema,complete_schema}.sql`, NOT `backend/migrations/*` — `getDepartmentsHeadedBy` (dashboard) 500s on migration-built schemas. Tied to schema-split finding.
+
+---
+
+## BATCH 10 + RE-AUDIT VERIFICATION — 2026-10-03
+
+Most Batch 3–8 re-audit rows were already remediated in earlier batches and are
+verified FIXED below (not re-worked): 548, 553, 561-569, 570 (file deleted),
+571 (upsert rewrite), 573, 575-577, 580-582, 587-589.
+
+### Re-audit rows fixed this pass
+
+| Row | Fix |
+|-----|-----|
+| L398 index.routes | `/treasury/dashboard` + `/treasury/chart-of-accounts` now mount BEFORE the two `/treasury` parents (were fallthrough-dependent). `accountingExport.controller.js` confirmed deleted — only a stale script reference remains. |
+| L571 UserSettingsRepository | changePassword bcrypt cost 10 → 12 (matches helpers/security.js); header updated (the double-broken INSERT was already replaced by upsertUserPreferences). |
+
+### Batch 10 frontend fixes
+
+| Row | Fix |
+|-----|-----|
+| L481 TreasuryAnalytics | Income bar was hardcoded 100% and expense bar could overflow past 100% when expenses > income. Both bars now normalize against `Math.max(income, expenses)`; pg numerics parseFloat'd. |
+| L500 DepartmentsList | `isAdmin` was computed from userRoles then discarded (`isAdmin: true` always passed) — now forwarded correctly. Sub-departments now render nested under their parent (children were collected but never drawn). Filter dropdown now uses SDA_CATEGORIES + a real "My Leadership" option. |
+| L509 DepartmentOverview | Dead links removed: `/departments/new` → `/departments` (create form lives there); per-dept `/settings` button removed (no such route). No-op `hover:bg-[var(--color-primary)]` → `--color-primary-600`. |
+| L510 DepartmentHandover | N+1 eliminated: one `GET /departments/subcommittees` aggregate (new backend route) instead of a request per department. |
+| L511 DepartmentHeadAllocation | N+1 eliminated: `GET /departments/leadership` + `GET /departments/handovers` aggregates (new backend routes) replace 2 requests per department. |
+| L527 PaymentHistory | `payment.id`/`.phone_number` String()-guarded (null-safe search + receipt filename); dead no-op "View" button removed; `text-primary-600/700` → `--color-primary`. |
+| L528 PaymentManagement | Member free-text input → `<select>` bound to real member ids (`GET /members`). Form payload realigned to the backend contract (`memberId/paymentType/paymentMethodId/notes/payment_date` — was member_id/payment_type/date). Method filter + list display use `payment_method_name` join. Error toasts added to every catch. Bonus: `X` icon used in the details modal was never imported (crash on open). |
+| L532 Events.jsx | `category` now persisted end-to-end: migration 058 adds `events.category`, POST/PUT accept + write it, frontend appends it to FormData. Dead free-text `organizer` input removed (organizer_id is auto-set from JWT; name displays via join). `handleEdit` now reads real `event_date`/`event_time` columns. |
+| L583 EmptyState | `<action>`/`<secondaryAction>` lowercase JSX rendered literal DOM elements — icons now assigned to capitalised vars. Buttons key off `onAction`/`onSecondaryAction` alone (icon no longer required). Invalid `size` prop → 'default' fallback. |
+
+### New backend endpoints
+
+- `GET /api/departments/subcommittees` — church-wide subcommittee list
+- `GET /api/departments/leadership` — church-wide leadership rows
+- `GET /api/departments/handovers` — church-wide handovers
+
+All three live in `department.routes.js` (mounted before `departments.routes.js`' `/:identifier`) and are church-scoped via `JOIN departments d ON d.id = ... AND d.church_id = $1`.
+
+Verified: `node --check` clean on touched backend files; `vite build` clean (1800 modules).

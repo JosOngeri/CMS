@@ -123,7 +123,7 @@ const DepartmentsList = () => {
     const userRole = userRoles[department.id];
     const isAdmin = userRole === 'Leader' || userRole === 'Assistant Leader';
     navigate(`/dashboard/departments/${department.slug}`, {
-      state: { role: userRole, isAdmin: true }
+      state: { role: userRole, isAdmin }
     });
   };
 
@@ -399,10 +399,8 @@ const DepartmentsList = () => {
           <div className="flex gap-4 items-center">
             <select value={filter} onChange={(e) => setFilter(e.target.value)} className="select w-48">
               <option value="all">All Categories</option>
-              <option value="Ministry">Ministry</option>
-              <option value="Leadership">Leadership</option>
-              <option value="Education">Education</option>
-              <option value="Youth">Youth</option>
+              <option value="leadership">My Leadership</option>
+              {SDA_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="select w-48">
               <option value="name">Sort by Name</option>
@@ -413,28 +411,46 @@ const DepartmentsList = () => {
           {/* List */}
           <div className="space-y-6">
             {Object.keys(groupedDepartments).length > 0 ? (
-              Object.entries(groupedDepartments).map(([category, { parents }]) => (
+              Object.entries(groupedDepartments).map(([category, { parents, children }]) => (
                 <div key={category}>
                   <h2 className="text-lg font-semibold mb-3">{category}</h2>
                   <div className="bg-[var(--color-surface)] rounded-lg border divide-y overflow-hidden">
-                    {parents.map((dept) => (
-                      <div key={dept.id} className="p-4 flex items-center justify-between hover:bg-[var(--color-background)]">
-                        <div className="flex items-center gap-3">
-                          {canManageDepartments && (
-                            <button onClick={() => handleSelectDepartment(dept.id)}>
-                              {selectedDepartments.includes(dept.id) ? <CheckSquare className="text-primary-600" /> : <Square className="text-[var(--color-textSecondary)]" />}
-                            </button>
-                          )}
-                          <Building className="text-primary" />
-                          <div>
-                            <h3 className="font-medium">{dept.name}</h3>
-                            <p className="text-sm text-[var(--color-textSecondary)]">{dept.description}</p>
+                    {[...parents, ...children.filter((c) => !parents.some((p) => p.id === c.parent_department_id))].map((dept) => (
+                      <div key={dept.id}>
+                        <div className="p-4 flex items-center justify-between hover:bg-[var(--color-background)]">
+                          <div className="flex items-center gap-3">
+                            {canManageDepartments && (
+                              <button onClick={() => handleSelectDepartment(dept.id)}>
+                                {selectedDepartments.includes(dept.id) ? <CheckSquare className="text-primary-600" /> : <Square className="text-[var(--color-textSecondary)]" />}
+                              </button>
+                            )}
+                            <Building className="text-primary" />
+                            <div>
+                              <h3 className="font-medium">{dept.name}</h3>
+                              <p className="text-sm text-[var(--color-textSecondary)]">{dept.description}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button onClick={() => handleDepartmentClick(dept)} className="btn btn-sm btn-primary">Open</button>
+                            {canManageDepartments && <button onClick={() => handleEdit(dept)} className="btn btn-sm btn-secondary"><Edit className="w-4 h-4" /></button>}
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleDepartmentClick(dept)} className="btn btn-sm btn-primary">Open</button>
-                          {canManageDepartments && <button onClick={() => handleEdit(dept)} className="btn btn-sm btn-secondary"><Edit className="w-4 h-4" /></button>}
-                        </div>
+                        {/* Sub-departments nested under their parent */}
+                        {children.filter((c) => c.parent_department_id === dept.id).map((child) => (
+                          <div key={child.id} className="p-4 pl-12 flex items-center justify-between hover:bg-[var(--color-background)] border-t border-[var(--color-border)]">
+                            <div className="flex items-center gap-3">
+                              <Building className="text-[var(--color-textSecondary)]" />
+                              <div>
+                                <h3 className="font-medium text-sm">{child.name}</h3>
+                                <p className="text-xs text-[var(--color-textSecondary)]">{child.description}</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button onClick={() => handleDepartmentClick(child)} className="btn btn-sm btn-primary">Open</button>
+                              {canManageDepartments && <button onClick={() => handleEdit(child)} className="btn btn-sm btn-secondary"><Edit className="w-4 h-4" /></button>}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>

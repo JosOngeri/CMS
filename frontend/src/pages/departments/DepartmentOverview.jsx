@@ -96,8 +96,8 @@ const DepartmentOverview = () => {
         </div>
         <button
           type="button"
-          onClick={() => navigate('/dashboard/departments/new')}
-          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
+          onClick={() => navigate('/dashboard/departments')}
+          className="inline-flex items-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary-600)] transition-colors text-sm"
         >
           <Plus className="w-4 h-4 mr-2" />
           New Department
@@ -234,17 +234,10 @@ const DepartmentOverview = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/dashboard/departments/${dept.slug || dept.id}`)}
-                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors text-sm"
+                className="flex-1 inline-flex items-center justify-center px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary-600)] transition-colors text-sm"
               >
                 View Dashboard
                 <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(`/dashboard/departments/${dept.slug || dept.id}/settings`)}
-                className="px-4 py-2 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background)] transition-colors text-sm"
-              >
-                Settings
               </button>
             </div>
           </div>

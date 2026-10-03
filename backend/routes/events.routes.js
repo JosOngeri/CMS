@@ -152,7 +152,8 @@ router.post('/',
     body('location').trim().notEmpty().withMessage('Event location is required'),
     body('department_id').optional().isUUID().withMessage('Valid department ID required'),
     body('max_attendees').optional().isInt({ min: 1 }).withMessage('Max attendees must be positive'),
-    body('is_public').optional().isBoolean().withMessage('Is public must be boolean')
+    body('is_public').optional().isBoolean().withMessage('Is public must be boolean'),
+    body('category').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Category must be 1-50 characters')
   ],
   async (req, res) => {
     try {
@@ -164,7 +165,7 @@ router.post('/',
         });
       }
 
-      const { title, description, event_date, location, department_id, max_attendees, is_public = true } = req.body;
+      const { title, description, event_date, location, department_id, max_attendees, is_public = true, category = 'service' } = req.body;
       const posterUrl = req.file ? `/uploads/events/${req.file.filename}` : null;
 
       if (department_id) {
@@ -178,13 +179,13 @@ router.post('/',
       }
 
       const query = `
-        INSERT INTO events (title, description, event_date, location, department_id, organizer_id, max_attendees, is_public, poster_url, church_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO events (title, description, event_date, location, department_id, organizer_id, max_attendees, is_public, poster_url, church_id, category)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *
       `;
 
       const result = await eventsRepository.query(query, [
-        title, description, event_date, location, department_id, req.user.id, max_attendees, is_public, posterUrl, req.user.church_id
+        title, description, event_date, location, department_id, req.user.id, max_attendees, is_public, posterUrl, req.user.church_id, category
       ]);
 
       res.status(201).json({
@@ -209,7 +210,8 @@ router.put('/:id',
     body('location').optional().trim().notEmpty().withMessage('Event location cannot be empty'),
     body('department_id').optional().isUUID().withMessage('Valid department ID required'),
     body('max_attendees').optional().isInt({ min: 1 }).withMessage('Max attendees must be positive'),
-    body('is_public').optional().isBoolean().withMessage('Is public must be boolean')
+    body('is_public').optional().isBoolean().withMessage('Is public must be boolean'),
+    body('category').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Category must be 1-50 characters')
   ],
   async (req, res) => {
     try {
@@ -222,7 +224,7 @@ router.put('/:id',
       }
 
       const { id } = req.params;
-      const { title, description, event_date, location, department_id, max_attendees, is_public } = req.body;
+      const { title, description, event_date, location, department_id, max_attendees, is_public, category } = req.body;
 
       // Check if event exists and user has permission
       const checkQuery = `
@@ -285,13 +287,14 @@ router.put('/:id',
             max_attendees = COALESCE($6, max_attendees),
             is_public = COALESCE($7, is_public),
             poster_url = COALESCE($8, poster_url),
+            category = COALESCE($9, category),
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = $9 AND (church_id = $10 OR church_id IS NULL)
+        WHERE id = $10 AND (church_id = $11 OR church_id IS NULL)
         RETURNING *
       `;
 
       const result = await eventsRepository.query(updateQuery, [
-        title, description, event_date, location, department_id, max_attendees, is_public, posterUrl, id, req.user.church_id
+        title, description, event_date, location, department_id, max_attendees, is_public, posterUrl, category, id, req.user.church_id
       ]);
 
       res.json({
