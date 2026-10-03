@@ -33,13 +33,13 @@ jobs:
       working-directory: ./frontend
       run: npm run build
       
+    # Audit the freshly built app directly — no dev server needed.
+    # staticDistDir lives in the lighthouserc config, not action inputs.
     - name: Run Lighthouse CI
       uses: treosh/lighthouse-ci-action@v12
       with:
         uploadArtifacts: true
         temporaryPublicStorage: true
-        # Audit the freshly built app directly — no dev server needed.
-        # staticDistDir lives in the lighthouserc config, not action inputs.
         configPath: ./frontend/.github/lighthouserc.json
         budgetPath: ./frontend/.github/lighthouse-budget.json
         
