@@ -41,13 +41,29 @@ class LoadingScreen extends StatelessWidget {
 /// notifications) deep-link into the app without a BuildContext.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Bridges authProvider → Listenable so GoRouter re-runs redirect on every
+/// auth-state change. Without this, a user landing on /loading while auth
+/// restores stays on the spinner forever — nothing re-evaluates the guard.
+class _AuthRefresh extends ChangeNotifier {
+  void ping() => notifyListeners();
+}
+
+final _authRefreshProvider = Provider<ChangeNotifier>((ref) {
+  final notifier = _AuthRefresh();
+  ref
+    ..listen(authProvider, (_, __) => notifier.ping())
+    ..onDispose(notifier.dispose);
+  return notifier;
+});
+
 // Router provider with auth guards
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/login',
+    refreshListenable: ref.watch(_authRefreshProvider),
     redirect: (context, state) {
-      final authState = ref.watch(authProvider);
+      final authState = ref.read(authProvider);
       final isLoading = authState.isLoading;
       final isAuthenticated = authState.isAuthenticated;
 
@@ -61,6 +77,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           return '/loading';
         }
         return null;
+      }
+
+      // Auth has settled — /loading is a dead-end route without this egress.
+      if (state.matchedLocation == '/loading') {
+        return isAuthenticated ? '/dashboard' : '/login';
       }
 
       // Protected routes - redirect to login if not authenticated.

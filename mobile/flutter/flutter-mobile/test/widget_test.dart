@@ -5,15 +5,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sda_church_mobile/main.dart';
 
+import 'helpers/fake_secure_storage.dart';
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(installFakeSecureStorage);
+  tearDown(removeFakeSecureStorage);
+
   testWidgets('App boots to the login screen', (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
 
     await tester.pumpWidget(
       const ProviderScope(child: SDAChurchApp()),
     );
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
+    // Auth restore is async — settle past it so the router leaves /loading.
+    await tester.pumpAndSettle();
 
     // The router redirects unauthenticated users to /login.
     expect(find.text('Welcome Back'), findsOneWidget);
