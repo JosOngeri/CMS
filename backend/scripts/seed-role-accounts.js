@@ -4,10 +4,16 @@
  * Creates (idempotent):
  *   pastor@{slug}.com     -> Pastor
  *   elder@{slug}.com      -> First Elder
+ *   elder2@{slug}.com     -> Elder
  *   treasurer@{slug}.com  -> Treasurer (role created if missing)
+ *   clerk@{slug}.com      -> Clerk
+ *   deacon@{slug}.com     -> Deacon
+ *   deaconess@{slug}.com  -> Deaconess
  *   depthead@{slug}.com   -> Department Head (assigned to first department)
+ *   admin@{slug}.com      -> Admin (church admin)
+ *   superadmin            -> Super Admin (platform-wide, one account)
  *
- * Password: right123 (same as seeded members)
+ * Password: SEED_PASSWORD env var, or a generated one printed at seed time
  *
  * Run: node scripts/seed-role-accounts.js
  */
@@ -24,6 +30,11 @@ const ROLE_ACCOUNTS = [
   { prefix: 'elder', role: 'First Elder', first: 'Church', last: 'Elder' },
   { prefix: 'treasurer', role: 'Treasurer', first: 'Church', last: 'Treasurer' },
   { prefix: 'depthead', role: 'Department Head', first: 'Department', last: 'Head' },
+  { prefix: 'admin', role: 'Admin', first: 'Church', last: 'Admin' },
+  { prefix: 'elder2', role: 'Elder', first: 'Second', last: 'Elder' },
+  { prefix: 'clerk', role: 'Clerk', first: 'Church', last: 'Clerk' },
+  { prefix: 'deacon', role: 'Deacon', first: 'Church', last: 'Deacon' },
+  { prefix: 'deaconess', role: 'Deaconess', first: 'Church', last: 'Deaconess' },
 ];
 
 async function main() {
@@ -49,7 +60,7 @@ const passwordHash = bcrypt.hashSync(seedPassword('role accounts'), 12);
 
   const roleIds = {};
   const rolesRes = await client.query(
-    `SELECT id, name FROM roles WHERE name IN ('Pastor','First Elder','Treasurer','Department Head')`
+    `SELECT id, name FROM roles WHERE name IN ('Pastor','First Elder','Treasurer','Department Head','Admin','Super Admin','Elder','Clerk','Deacon','Deaconess')`
   );
   rolesRes.rows.forEach(r => { roleIds[r.name] = r.id; });
   console.log('Roles:', roleIds);
@@ -119,6 +130,27 @@ const passwordHash = bcrypt.hashSync(seedPassword('role accounts'), 12);
         console.log(`  depthead assigned to department ${dept.rows[0].id}`);
       }
     }
+  }
+
+  // Platform-level Super Admin — only one is needed; anchored to the flagship
+  // church so church-scoped queries still resolve.
+  const flagship = await client.query(
+    `SELECT id FROM churches WHERE slug = 'kiserian-main-sda'`
+  );
+  if (flagship.rows[0] && roleIds['Super Admin']) {
+    const saRes = await client.query(
+      `INSERT INTO users (email, password_hash, first_name, last_name, username, phone_number, phone, is_active, church_id, slug, church_slug)
+       VALUES ('superadmin@kiserian-main-sda.com', $1, 'Platform', 'SuperAdmin', 'superadmin', '+254700000000', '+254700000000', true, $2, 'superadmin', 'kiserian-main-sda')
+       ON CONFLICT (username) DO UPDATE SET password_hash = EXCLUDED.password_hash, is_active = true
+       RETURNING id`,
+      [passwordHash, flagship.rows[0].id]
+    );
+    await client.query(
+      `INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)
+       ON CONFLICT (user_id, role_id) DO NOTHING`,
+      [saRes.rows[0].id, roleIds['Super Admin']]
+    );
+    console.log('  Super Admin -> superadmin@kiserian-main-sda.com');
   }
 
   await client.end();
