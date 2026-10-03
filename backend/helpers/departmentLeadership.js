@@ -5,6 +5,7 @@
  */
 const { pool } = require('../config/database');
 const { createLogger } = require('./controllerLogger');
+const { invalidateUserCache } = require('../middleware/auth');
 
 const logger = createLogger('departmentLeadership');
 
@@ -60,6 +61,7 @@ async function grantRole(userId, roleName, churchId, grantedBy) {
      ON CONFLICT (user_id, role_id) DO NOTHING`,
     [userId, churchId, grantedBy, roleName]
   );
+  invalidateUserCache(userId);
 }
 
 async function revokeRole(userId, roleName) {
@@ -69,6 +71,7 @@ async function revokeRole(userId, roleName) {
        AND role_id = (SELECT id FROM roles WHERE name = $2)`,
     [userId, roleName]
   );
+  invalidateUserCache(userId);
 }
 
 /** True if the user holds an active head/acting_head position anywhere else. */
@@ -136,6 +139,8 @@ async function grantLeadership({
     );
     if (bundle.role) await grantRole(userId, bundle.role, churchId, appointedBy);
   }
+  // department_permissions/leadership feed scoped gates — drop stale identity
+  invalidateUserCache(userId);
   return row;
 }
 
@@ -165,6 +170,8 @@ async function revokeLeadership(leadership) {
       if (!stillHolds.rows[0]) await revokeRole(leadership.user_id, bundle.role);
     }
   }
+  // Positions with role=null (e.g. secretary) still change dept permissions
+  invalidateUserCache(leadership.user_id);
 }
 
 /**

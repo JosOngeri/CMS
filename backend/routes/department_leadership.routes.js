@@ -15,7 +15,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
-const { authenticateToken, requireRole } = require('../middleware/auth');
+const { authenticateToken, requireRole, invalidateUserCache } = require('../middleware/auth');
 const { logAction } = require('../helpers/auditLog');
 const { sendNotification } = require('../helpers/notify');
 const { createLogger } = require('../helpers/controllerLogger');
@@ -479,6 +479,8 @@ router.put('/handovers/:hid/complete', authenticateToken, async (req, res) => {
         if (!(await headsElsewhere(h.outgoing_user_id, h.department_id))) {
           await revokeRole(h.outgoing_user_id, 'Department Head');
         }
+        // dept permissions were dropped even when the global role survives
+        invalidateUserCache(h.outgoing_user_id);
       }
     }
 

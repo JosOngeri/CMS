@@ -1,6 +1,6 @@
 const UserSettingsRepository = require('../repositories/UserSettingsRepository');
 const AuthRepository = require('../repositories/AuthRepository');
-const { hashPassword, comparePassword } = require('../helpers/security');
+const { hashPassword, comparePassword, validatePasswordStrength } = require('../helpers/security');
 const BaseController = require('./BaseController');
 const { createLogger } = require('../helpers/controllerLogger');
 
@@ -87,8 +87,9 @@ class UserSettingsController extends BaseController {
       return this.badRequest(res, 'Current password and new password are required');
     }
 
-    if (new_password.length < 6) {
-      return this.badRequest(res, 'New password must be at least 6 characters long');
+    const strengthCheck = validatePasswordStrength(new_password);
+    if (!strengthCheck.isValid) {
+      return this.badRequest(res, strengthCheck.message);
     }
 
     // Get current password hash

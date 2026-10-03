@@ -479,6 +479,13 @@ class AuthController extends BaseController {
         return res.status(400).json({ success: false, error: 'Current password is incorrect' });
       }
 
+      // PUT /auth/password mounts no route-level validation — enforce the
+      // strength policy here so this path can't accept weak passwords.
+      const strengthCheck = validatePasswordStrength(newPassword);
+      if (!strengthCheck.isValid) {
+        return res.status(400).json({ success: false, error: strengthCheck.message });
+      }
+
       // Hash new password
       const newPasswordHash = await hashPassword(newPassword);
 

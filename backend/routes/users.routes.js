@@ -141,6 +141,10 @@ router.put('/:id',
         return res.status(404).json({ error: 'User not found' });
       }
 
+      // is_active lives in the cached identity — an admin deactivation must
+      // take effect immediately, not after the ≤5min cache TTL
+      invalidateUserCache(id);
+
       res.json({
         message: 'User updated successfully',
         user: result

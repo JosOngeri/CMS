@@ -2,7 +2,6 @@ const BaseController = require('./BaseController');
 const { createLogger } = require('../helpers/controllerLogger');
 const activityFeedRepository = require('../repositories/ActivityFeedRepository');
 const { hasAnyRole } = require('../helpers/permissionChecker');
-const ActivityFeedService = require('../services/ActivityFeedService');
 
 /**
  * Activity Feed Controller
@@ -58,9 +57,6 @@ class ActivityFeedController extends BaseController {
 
       // Filter by activity type if specified
       const filteredActivities = await activityFeedRepository.getActivitiesByType(activities, type);
-
-      // Broadcast new activities via service (moved from controller)
-      await ActivityFeedService.broadcastActivities(filteredActivities);
 
       // Get total count for pagination
       const totalCount = await activityFeedRepository.getActivityCount(departmentId, req.user.church_id);
