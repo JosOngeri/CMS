@@ -453,7 +453,8 @@ class PaymentsController extends BaseController {
       const payments = await PaymentsRepository.getMyPayments(userId, {
         status,
         limit,
-        offset
+        offset,
+        churchId: req.user.church_id
       });
 
       res.json({ success: true, payments });
@@ -820,6 +821,11 @@ class PaymentsController extends BaseController {
   async getPaymentById(req, res) {
     try {
       const { id } = req.params;
+      // Catch-all route also receives non-UUID paths (e.g. /payments/history) —
+      // a malformed id is a 404, not a server error.
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
       const churchId = req.user.church_id;
       const payment = await PaymentsRepository.getPaymentById(id, churchId);
       if (!payment) {

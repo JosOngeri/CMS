@@ -183,16 +183,27 @@ export const AuthProvider = ({ children }) => {
   }, [api]);
 
   // Guard against missing fields from the backend.
-  const normalizeUser = (data) => ({
-    ...data,
-    // Login returns camelCase; /profile returns snake_case — expose both
-    first_name: data.first_name ?? data.firstName ?? null,
-    last_name: data.last_name ?? data.lastName ?? null,
-    church_id: data.church_id ?? data.churchId ?? null,
-    avatar_url: data.avatar_url ?? data.avatarUrl ?? null,
-    roles: data.roles || [],
-    permissions: data.permissions || [],
-  });
+  const normalizeUser = (data) => {
+    // 'Admin' is the seeded church-administrator role but gate lists across the
+    // app are written for 'Super Admin'. Keep 'Admin' in the array (labels show
+    // "Church Admin") and add 'Super Admin' so role checks pass — mirrors the
+    // same alias in backend middleware/auth.js requireRole.
+    const roles = data.roles || [];
+    const expandedRoles = roles.includes('Admin') && !roles.includes('Super Admin')
+      ? [...roles, 'Super Admin']
+      : roles;
+
+    return {
+      ...data,
+      // Login returns camelCase; /profile returns snake_case — expose both
+      first_name: data.first_name ?? data.firstName ?? null,
+      last_name: data.last_name ?? data.lastName ?? null,
+      church_id: data.church_id ?? data.churchId ?? null,
+      avatar_url: data.avatar_url ?? data.avatarUrl ?? null,
+      roles: expandedRoles,
+      permissions: data.permissions || [],
+    };
+  };
 
   useEffect(() => {
     fetchProfile();

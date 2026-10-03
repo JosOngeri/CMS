@@ -17,6 +17,7 @@
 
 export const ROLES = {
   SUPER_ADMIN: 'Super Admin',
+  ADMIN: 'Admin',
   PASTOR: 'Pastor',
   FIRST_ELDER: 'First Elder',
   TREASURER: 'Treasurer',
@@ -35,6 +36,7 @@ export const ROLES = {
 // Friendly labels shown in the UI (role badges, profile cards, etc.)
 export const ROLE_LABELS = {
   [ROLES.SUPER_ADMIN]: 'System Admin',
+  [ROLES.ADMIN]: 'Church Admin',
   [ROLES.PASTOR]: 'Pastor',
   [ROLES.FIRST_ELDER]: 'First Elder',
   [ROLES.TREASURER]: 'Treasurer',
@@ -54,6 +56,7 @@ export const ROLE_LABELS = {
 // A role in a higher group can generally see lower-group items.
 export const ADMIN_ROLES = [
   ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
   ROLES.PASTOR,
   ROLES.FIRST_ELDER,
 ];
@@ -76,6 +79,7 @@ export const LEADERSHIP_ROLES = [
 
 export const DEPARTMENT_MANAGEMENT_ROLES = [
   ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
   ROLES.PASTOR,
   ROLES.FIRST_ELDER,
   ROLES.DEPARTMENT_HEAD,
@@ -91,6 +95,7 @@ export const MEMBER_SAFE_ROLES = [
 // variant; dark-mode overrides are applied by the same classes where needed.
 export const ROLE_COLORS = {
   [ROLES.SUPER_ADMIN]: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
+  [ROLES.ADMIN]: 'bg-[var(--color-error-light)] text-[var(--color-error)]',
   [ROLES.PASTOR]: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]',
   [ROLES.FIRST_ELDER]: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
   [ROLES.TREASURER]: 'bg-[var(--color-success-light)] text-[var(--color-success)]',

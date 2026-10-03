@@ -20,19 +20,22 @@ class PaymentRepository extends BaseRepository {
 
   async create(data, churchId) {
     this._requireChurchId(churchId);
-    const { amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id } = data;
+    const { amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, user_id } = data;
 
+    // user_id/initiated_by both get the payer's user id — "My Payments" matches
+    // on user_id, and member_id alone is not enough (it points at members(id),
+    // which members don't know).
     let query = `
-      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, user_id, initiated_by)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
       RETURNING *
     `;
-    const params = [amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id || null];
+    const params = [amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id || null, user_id || null];
 
     if (churchId) {
       query = `
-        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, church_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, user_id, initiated_by, church_id)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11)
         RETURNING *
       `;
       params.push(churchId);

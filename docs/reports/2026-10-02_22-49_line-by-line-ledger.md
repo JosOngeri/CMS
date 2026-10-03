@@ -1790,3 +1790,63 @@ schema without the safety guard.
   (user action — cannot be done from the repo)
 - Compose/monitoring `:-changeme` dev defaults (L752 sibling) — acceptable for
   local dev; flagged so prod never runs them as-is
+
+---
+
+## Pass 11 — 2026-10-03 — payments↔obligations sync + orphaned 'Admin' role
+
+Found while reproducing "treasury pages just loading / payments not in
+payments" against production with the verified prod credentials.
+
+### A. Payments never appeared in "My Payments" (root cause: key mismatch)
+
+`payments.member_id` FKs to `members(id)` (migration 067), but:
+
+- `MyObligations.jsx`/`initiatePayment` never resolved the payer's member row →
+  `member_id` was always NULL on member self-payments.
+- `PaymentsRepository.getMyPayments` filtered `member_id = req.user.id` — a
+  users.id can never equal a members.id → the list was structurally empty.
+- `getPaymentForReceipt` had the same mismatch → member receipts 404'd.
+
+Fixes: `initiatePayment`/`generatePaymentLink`/`generateQRCode` now resolve the
+caller's member row (`resolveMemberId`) and stamp `user_id`/`initiated_by` on
+the payment (PaymentRepository.create). `getMyPayments` + `getPaymentForReceipt`
+match ownership via `user_id`/`initiated_by`, the user's member row, and
+obligation-tagged payments, and `getMyPayments` is now church-scoped.
+
+### B. Obligations never synced when payment completed
+
+Three completion paths existed; only `PaymentRepository.updateStatus` recalced
+`member_obligations`. The two most-used paths bypassed it:
+
+- `kopokopo.js handleSuccessfulPayment` (the real M-Pesa webhook) — now calls
+  `recalcObligation` on the completed payment's `obligation_id`;
+  `handleFailedPayment` recalcs too (reversals un-credit correctly).
+- `PaymentsRepository.updatePaymentStatus` (treasurer manual marking) — now
+  recalcs as well.
+
+### C. 'Admin' role was completely orphaned (the treasury bounce)
+
+`admin@<church>` accounts get role `'Admin'` (ChurchRepository +
+seed-role-accounts.js), but migration 038 backfilled permissions for every
+role EXCEPT it and zero `requireRole` lists or frontend role groups included
+it. Live-verified: admin profile returned `permissions: []`, and every
+FINANCE_ROLES-gated route redirected to /dashboard/overview — presented as
+"treasury pages won't load".
+
+Fixes: migration `076_admin_role_permissions.sql` grants 'Admin' the full
+catalog like 'Super Admin'; `requireRole` aliases Admin→Super Admin
+(church_id scoping still confines it); frontend `normalizeUser` expands
+Admin→+Super Admin, `ROLES.ADMIN` added to ADMIN_ROLES + DEPARTMENT_MANAGEMENT_ROLES,
+`TreasuryDashboard` uses `hasFinanceRole` helper.
+
+### D. Bonus fix
+
+`GET /api/payments/history` hit catch-all `GET /:id` → 500 on non-UUID.
+`getPaymentById` now 404s malformed ids.
+
+### E. Verification
+
+- `npm test` (fresh canonical DB incl. 076): **325 passed, 0 failed**.
+- eslint: 0 errors on all touched files.
+- Live endpoints re-probed with treasurer+admin+member tokens before/after.

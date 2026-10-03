@@ -259,7 +259,14 @@ class PaymentsRepository extends BaseRepository {
        RETURNING *`,
       params
     );
-    return result.rows[0];
+    const payment = result.rows[0];
+    // Manual completion (treasurer marks an obligation payment paid) must recalc
+    // the obligation too — same as the M-Pesa completion paths.
+    if (payment?.obligation_id) {
+      const PaymentRepository = require('./PaymentRepository');
+      await PaymentRepository.recalcObligation(payment.obligation_id).catch(() => {});
+    }
+    return payment;
   }
 
   async getPledgesWithFilters(filters) {
@@ -365,17 +372,32 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getMyPayments(userId, filters) {
-    const { status, limit = 50, offset = 0 } = filters;
+    const { status, limit = 50, offset = 0, churchId } = filters;
 
+    // payments.member_id points at members(id), not users(id) — a user id
+    // never matches it directly. Resolve ownership three ways: the account
+    // that initiated the payment, the user's member record, or an obligation
+    // assigned to the user.
     let query = `
       SELECT p.*,
              pm.name as payment_method_name
       FROM payments p
       LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
-      WHERE p.member_id = $1
+      WHERE (
+        p.user_id = $1
+        OR p.initiated_by = $1
+        OR p.member_id IN (SELECT m.id FROM members m WHERE m.user_id = $1)
+        OR p.obligation_id IN (SELECT mo.id FROM member_obligations mo WHERE mo.user_id = $1)
+      )
     `;
     const params = [userId];
     let paramCount = 1;
+
+    if (churchId) {
+      paramCount++;
+      query += ` AND (p.church_id = $${paramCount} OR p.church_id IS NULL)`;
+      params.push(churchId);
+    }
 
     if (status) {
       paramCount++;
@@ -398,8 +420,13 @@ class PaymentsRepository extends BaseRepository {
        FROM payments p
        LEFT JOIN payment_methods pm ON p.payment_method_id = pm.id
        LEFT JOIN members m ON p.member_id = m.id
-       LEFT JOIN users u ON p.member_id = u.id
-       WHERE p.id = $1 AND p.member_id = $2`,
+       LEFT JOIN users u ON p.user_id = u.id
+       WHERE p.id = $1 AND (
+         p.user_id = $2
+         OR p.initiated_by = $2
+         OR p.member_id IN (SELECT mm.id FROM members mm WHERE mm.user_id = $2)
+         OR p.obligation_id IN (SELECT mo.id FROM member_obligations mo WHERE mo.user_id = $2)
+       )`,
       [id, userId]
     );
     return result.rows[0];

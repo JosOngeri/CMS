@@ -14,6 +14,7 @@ import Breadcrumb from '../../components/common/Breadcrumb'
 import TabNavigation from '../../components/common/TabNavigation'
 import PermissionButton from '../../components/common/PermissionButton'
 import { PERMISSIONS } from '../../constants/permissions'
+import { hasFinanceRole } from '../../constants/roles'
 
 const TreasuryDashboard = () => {
   const { user, api } = useAuth()
@@ -33,9 +34,7 @@ const TreasuryDashboard = () => {
   const [budgetAlerts, setBudgetAlerts] = useState([])
   const [pendingApprovals, setPendingApprovals] = useState([])
 
-  const hasTreasuryAccess = user?.roles?.some(role => 
-    ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'].includes(role)
-  )
+  const hasTreasuryAccess = hasFinanceRole(user?.roles)
 
   useEffect(() => {
     if (hasTreasuryAccess) {

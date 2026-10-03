@@ -141,7 +141,14 @@ const requireRole = (allowedRoles) => {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
-    const hasRole = allowedRoles.some(role => req.user.roles.includes(role));
+    // 'Admin' is the seeded church-administrator role (see ChurchRepository /
+    // seed-role-accounts.js). Route allowlists are written for 'Super Admin',
+    // so treat Admin as its church-scoped equivalent — tenant scoping still
+    // confines it to its own church_id.
+    const roles = req.user.roles.includes('Admin')
+      ? [...req.user.roles, 'Super Admin']
+      : req.user.roles;
+    const hasRole = allowedRoles.some(role => roles.includes(role));
     
     if (!hasRole) {
       return res.status(403).json({ success: false, error: 'Insufficient permissions' });

@@ -23,6 +23,21 @@ class PaymentController extends BaseController {
   }
 
   /**
+   * Resolve which member record a payment belongs to. Staff flows pass an
+   * explicit memberId (members.id); a member paying for themselves gets their
+   * own member row looked up from their user account. Returns null when the
+   * user has no member record — the payment is still recorded via user_id.
+   */
+  async resolveMemberId(req, memberId) {
+    if (memberId) return memberId;
+    const r = await PaymentRepository.query(
+      `SELECT id FROM members WHERE user_id = $1 AND church_id = $2 LIMIT 1`,
+      [req.user.id, req.user.church_id]
+    );
+    return r.rows[0]?.id || null;
+  }
+
+  /**
    * Initiate M-Pesa payment via KopoKopo STK Push
    * @param {Object} req - Express request object
    * @param {Object} req.body - Request body
@@ -55,9 +70,11 @@ class PaymentController extends BaseController {
         });
       }
 
-      // Create payment record
+      // Create payment record — member_id is the members.id (explicit or the
+      // payer's own record); user_id stamps the account so My Payments finds it.
       const payment = await PaymentRepository.create({
-        member_id: memberId,
+        member_id: await this.resolveMemberId(req, memberId),
+        user_id: req.user.id,
         phone_number: phoneNumber,
         amount,
         category,
@@ -126,7 +143,8 @@ class PaymentController extends BaseController {
       const { amount, category, memberId, description, eventId } = req.body;
 
       const payment = await PaymentRepository.create({
-        member_id: memberId,
+        member_id: await this.resolveMemberId(req, memberId),
+        user_id: req.user.id,
         amount,
         category,
         description: description || `${category} payment`,
@@ -189,7 +207,8 @@ class PaymentController extends BaseController {
       const { amount, category, memberId, description, eventId } = req.body;
 
       const payment = await PaymentRepository.create({
-        member_id: memberId,
+        member_id: await this.resolveMemberId(req, memberId),
+        user_id: req.user.id,
         amount,
         category,
         description: description || `${category} payment`,

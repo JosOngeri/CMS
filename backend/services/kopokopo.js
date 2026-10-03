@@ -1,6 +1,7 @@
 const axios = require('axios');
 const crypto = require('crypto');
 const { pool } = require('../config/database');
+const PaymentRepository = require('../repositories/PaymentRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 const smsService = require('./hybridSMS');
 const emailService = require('../utils/emailService');
@@ -219,6 +220,12 @@ class KopoKopoService {
 
       const payment = result.rows[0];
       if (payment) {
+        // This path bypasses PaymentRepository.updateStatus, so recalc the
+        // tagged obligation here or it would stay 'pending' after payment.
+        if (payment.obligation_id) {
+          await PaymentRepository.recalcObligation(payment.obligation_id)
+            .catch((e) => logger.warn('handleSuccessfulPayment', 'obligation recalc failed:', e.message));
+        }
         await this.sendPaymentConfirmation(payment);
       } else {
         logger.warn('handleSuccessfulPayment', 'No pending payment matched webhook', {
@@ -238,14 +245,23 @@ class KopoKopoService {
   async handleFailedPayment(transactionData) {
     try {
       const referenceId = String(transactionData.account_reference || '').replace(/^SDA-/i, '') || null;
-      await pool.query(
+      const result = await pool.query(
         `UPDATE payments
          SET status = 'failed',
              notes = COALESCE(notes, '') || ' [FAILED: ' || $1 || ']',
              updated_at = CURRENT_TIMESTAMP
-         WHERE transaction_id = $2 OR id::text = $3`,
+         WHERE transaction_id = $2 OR id::text = $3
+         RETURNING obligation_id`,
         [transactionData.failure_reason || 'unknown', transactionData.id, referenceId]
       );
+
+      // If a completed obligation payment flips to failed (reversal), the
+      // recalc correctly reduces paid_amount again.
+      const obligationId = result.rows[0]?.obligation_id;
+      if (obligationId) {
+        await PaymentRepository.recalcObligation(obligationId)
+          .catch((e) => logger.warn('handleFailedPayment', 'obligation recalc failed:', e.message));
+      }
 
       return { processed: true };
     } catch (error) {
