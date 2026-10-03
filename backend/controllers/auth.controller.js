@@ -722,15 +722,15 @@ class AuthController extends BaseController {
       const userId = req.user.id;
       
       // Generate MFA secret
-      const secret = generateMFASecret();
-      const qrCode = await generateMFAQRCode(secret, req.user.email);
+      const secret = generateMFASecret(req.user.email);
+      const qrCode = await generateMFAQRCode(secret);
       
       // Store MFA secret (not yet verified)
-      await AuthRepository.storeMFASecret(userId, secret, false);
+      await AuthRepository.updateMFASecret(userId, secret.base32);
       
       res.json({
         success: true,
-        data: { secret, qrCode }
+        data: { secret: secret.base32, qrCode }
       });
     } catch (error) {
       this.logger.error('enableMFA', error);
@@ -751,11 +751,11 @@ class AuthController extends BaseController {
       }
       
       // Verify token
-      const isValid = await verifyMFAToken(token, mfaData.secret);
+      const isValid = verifyMFAToken(mfaData, token);
       
       if (isValid) {
         // Mark MFA as verified
-        await AuthRepository.verifyMFA(userId);
+        await AuthRepository.enableMFA(userId);
         res.json({ success: true, message: 'MFA verified successfully' });
       } else {
         res.status(400).json({ success: false, error: 'Invalid MFA token' });
@@ -771,7 +771,7 @@ class AuthController extends BaseController {
       const userId = req.user.id;
       
       // Remove MFA secret
-      await AuthRepository.removeMFASecret(userId);
+      await AuthRepository.disableMFA(userId);
       
       res.json({ success: true, message: 'MFA disabled successfully' });
     } catch (error) {
@@ -785,7 +785,7 @@ class AuthController extends BaseController {
       const userId = req.user.id;
       
       // Get audit log for user
-      const auditLog = await AuthRepository.getUserAuditLog(userId);
+      const auditLog = await AuthRepository.getAuthAuditLog(userId, 50, 0);
       
       res.json({
         success: true,

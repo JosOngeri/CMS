@@ -155,9 +155,10 @@ const verifyMFAToken = (secret, token) => {
   });
 };
 
-// Generate QR code for MFA (returns OTPAuth URL)
-const generateMFAQRCode = (secret) => {
-  return secret.otpauth_url;
+// Generate QR code for MFA (returns a data-URL image of the OTPAuth URL)
+const generateMFAQRCode = async (secret) => {
+  const QRCode = require('qrcode');
+  return QRCode.toDataURL(secret.otpauth_url);
 };
 
 // Check if password has been breached — pwnedPasswordRange returns the
