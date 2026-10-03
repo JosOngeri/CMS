@@ -199,6 +199,7 @@ export const AuthProvider = ({ children }) => {
       first_name: data.first_name ?? data.firstName ?? null,
       last_name: data.last_name ?? data.lastName ?? null,
       church_id: data.church_id ?? data.churchId ?? null,
+      church_slug: data.church_slug ?? data.churchSlug ?? null,
       avatar_url: data.avatar_url ?? data.avatarUrl ?? null,
       roles: expandedRoles,
       permissions: data.permissions || [],

@@ -35,6 +35,19 @@ export const createAppRouter = () => {
       )
     },
     {
+      // Canonical dashboard URL carries the church slug:
+      // /kiserian-main-sda/dashboard/...  The shell's ChurchSlugGuard
+      // validates it against the logged-in user's church.
+      path: '/:churchSlug/dashboard/*',
+      element: (
+        <Suspense fallback={<ShellFallback />}>
+          <DashboardShell />
+        </Suspense>
+      )
+    },
+    {
+      // Legacy unprefixed URLs — the guard inside redirects these to the
+      // slugged equivalent, so old links and bookmarks keep working.
       path: '/dashboard/*',
       element: (
         <Suspense fallback={<ShellFallback />}>

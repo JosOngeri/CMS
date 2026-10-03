@@ -131,6 +131,7 @@ class AuthController extends BaseController {
           phone: user.phone,
           avatarUrl: user.avatar_url || null,
           churchId: user.church_id,
+          churchSlug: identity.churchSlug,
           roles: identity.roles,
           // Permission strings — without them the SPA renders with
           // permissions:[] and every permission-gated nav item hides until a
@@ -386,7 +387,9 @@ class AuthController extends BaseController {
 
       res.json({
         success: true,
-        data: profile,
+        // impersonation is set by auth middleware when the session is a
+        // platform support session — the SPA shows the banner off this flag
+        data: { ...profile, impersonation: req.impersonation || null },
       });
     } catch (error) {
       this.logger.error('getProfile', error);

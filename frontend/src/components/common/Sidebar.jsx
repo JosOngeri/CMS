@@ -66,7 +66,23 @@ function Sidebar({ isOpen, setIsOpen }) {
   const { canAccessModule, isAny, isSuperAdmin } = usePermission();
   const location = useLocation();
   const pathname = location.pathname;
+  // Tenant-scoped URLs: nav targets carry /{churchSlug}/dashboard/...;
+  // relPath strips the prefix so active-route matching compares like the
+  // raw entry paths (/dashboard/...).
+  const slugPrefix = user?.church_slug ? `/${user.church_slug}` : '';
+  const relPath = slugPrefix && pathname.startsWith(slugPrefix + '/')
+    ? pathname.slice(slugPrefix.length)
+    : pathname;
   const [activeKey, setActiveKey] = useState(null);
+
+  // Prefix a nav item's path (and descendants') with the church slug —
+  // applied only to what's rendered as a Link target, never to the raw
+  // entry data used for permission checks.
+  const prefixItemPath = (item) => ({
+    ...item,
+    path: item.path ? slugPrefix + item.path : item.path,
+    children: item.children?.map(prefixItemPath),
+  });
 
   // Top-level navigation — kept under 10 entries. Entries with `sections`
   // open a second sub-sidebar panel; entries with `path` are direct links.
@@ -254,11 +270,11 @@ function Sidebar({ isOpen, setIsOpen }) {
   // page opens that group; navigating to a top-level link closes it.
   useEffect(() => {
     const match = visibleEntries.find(
-      (e) => e.sections && sectionsContainPath(e.sections, pathname)
+      (e) => e.sections && sectionsContainPath(e.sections, relPath)
     );
     setActiveKey(match?.key ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [relPath]);
 
   const handleLogout = async () => {
     await logout();
@@ -313,8 +329,8 @@ function Sidebar({ isOpen, setIsOpen }) {
               {visibleEntries.map((entry) => {
                 const Icon = entry.icon;
                 const isGroup = Boolean(entry.sections);
-                const selfActive = Boolean(entry.path) && pathname === entry.path;
-                const descendantActive = isGroup && sectionsContainPath(entry.sections, pathname);
+                const selfActive = Boolean(entry.path) && relPath === entry.path;
+                const descendantActive = isGroup && sectionsContainPath(entry.sections, relPath);
                 const classes = selfActive
                   ? 'church-gradient text-[var(--color-on-solid)] shadow-md'
                   : descendantActive || activeKey === entry.key
@@ -361,7 +377,7 @@ function Sidebar({ isOpen, setIsOpen }) {
                       </button>
                     ) : (
                       <Link
-                        to={entry.path}
+                        to={slugPrefix + entry.path}
                         className={itemClasses}
                         onClick={() => setIsOpen(false)}
                         aria-current={selfActive ? 'page' : undefined}
@@ -433,9 +449,17 @@ function Sidebar({ isOpen, setIsOpen }) {
             </div>
             {/* Panel nav — scrolls independently of the primary rail; the
                 sticky section titles inside NestedNav stay pinned while the
-                item list scrolls beneath them. */}
+                item list scrolls beneath them. Paths are slug-prefixed so
+                both the Link target and NestedNav's own active matching
+                line up with the real URL. */}
             <nav className="flex-1 min-h-0 p-4 overflow-y-auto overscroll-contain">
-              <NestedNav sections={activeEntry.sections} onNavigate={() => setIsOpen(false)} />
+              <NestedNav
+                sections={activeEntry.sections.map((section) => ({
+                  ...section,
+                  items: section.items.map(prefixItemPath),
+                }))}
+                onNavigate={() => setIsOpen(false)}
+              />
             </nav>
           </div>
         )}
