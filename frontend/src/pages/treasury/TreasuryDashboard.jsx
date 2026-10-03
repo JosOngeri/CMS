@@ -85,29 +85,6 @@ const TreasuryDashboard = () => {
     toast.success('Dashboard refreshed')
   }
 
-  const quickActions = [
-    {
-      title: 'Create Journal Entry',
-      description: 'Record financial transactions',
-      icon: Plus,
-      color: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
-      link: '/dashboard/payments/journal-entries'
-    },
-    {
-      title: 'Submit Expense',
-      description: 'Create expense request',
-      icon: DollarSign,
-      color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-      link: '/dashboard/payments/expenses'
-    },
-    {
-      title: 'Manage Budgets',
-      description: 'Budget tracking',
-      icon: BarChart3,
-      color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
-      link: '/dashboard/payments/budgets'
-    }
-  ]
 
   const treasuryTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -238,9 +215,9 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Transaction Management</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { title: 'Record Income', icon: TrendingUp, link: '/dashboard/treasury/income', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Record Income', icon: TrendingUp, link: '/dashboard/treasury/receipts', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
                     { title: 'Record Expense', icon: TrendingDown, link: '/dashboard/treasury/expenses', color: 'bg-[var(--color-error-light)] text-[var(--color-error)]' },
-                    { title: 'View History', icon: FileText, link: '/dashboard/treasury/history', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' }
+                    { title: 'View History', icon: FileText, link: '/dashboard/treasury/journal-entries', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -270,9 +247,9 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Budget Management</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
-                    { title: 'Create Budget', icon: Plus, link: '/dashboard/treasury/budgets/create', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Create Budget', icon: Plus, link: '/dashboard/treasury/budgets', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
                     { title: 'View Budgets', icon: Wallet, link: '/dashboard/treasury/budgets', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Budget Reports', icon: BarChart3, link: '/dashboard/treasury/budgets/reports', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' }
+                    { title: 'Budget Reports', icon: BarChart3, link: '/dashboard/treasury/reports', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -303,9 +280,9 @@ const TreasuryDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     { title: 'My Collections', icon: Wallet, link: '/dashboard/collections', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Payment History', icon: FileText, link: '/dashboard/payment-history', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
-                    { title: 'Payment Management', icon: DollarSign, link: '/dashboard/payment-management', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
-                    { title: 'Contribution Reports', icon: BarChart3, link: '/dashboard/payments/contributions', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
+                    { title: 'Payment History', icon: FileText, link: '/dashboard/payments/history', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Payment Management', icon: DollarSign, link: '/dashboard/payments/management', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
+                    { title: 'Contribution Reports', icon: BarChart3, link: '/dashboard/treasury/contributions', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
                   ].map((action, index) => (
                     <Link
                       key={index}
@@ -335,10 +312,10 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Financial Reports</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { title: 'Income Statement', icon: FileText, link: '/dashboard/treasury/reports/income' },
-                    { title: 'Balance Sheet', icon: BarChart3, link: '/dashboard/treasury/reports/balance' },
-                    { title: 'Budget Report', icon: Wallet, link: '/dashboard/treasury/reports/budget' },
-                    { title: 'Expense Report', icon: TrendingDown, link: '/dashboard/treasury/reports/expenses' }
+                    { title: 'Income Statement', icon: FileText, link: '/dashboard/treasury/reports' },
+                    { title: 'Balance Sheet', icon: BarChart3, link: '/dashboard/treasury/reports' },
+                    { title: 'Budget Report', icon: Wallet, link: '/dashboard/treasury/reports' },
+                    { title: 'Expense Report', icon: TrendingDown, link: '/dashboard/treasury/reports' }
                   ].map((report, index) => (
                     <Link
                       key={index}
@@ -369,10 +346,10 @@ const TreasuryDashboard = () => {
                 <h3 className="text-lg font-semibold text-[var(--color-text)]  mb-4">Treasury Settings</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { title: 'Currency Settings', icon: DollarSign, link: '/settings/treasury/currency', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
-                    { title: 'Account Settings', icon: Wallet, link: '/settings/treasury/accounts', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
-                    { title: 'Tax Settings', icon: FileText, link: '/settings/treasury/tax', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
-                    { title: 'Approval Settings', icon: CheckCircle, link: '/settings/treasury/approvals', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
+                    { title: 'Currency Settings', icon: DollarSign, link: '/dashboard/admin/settings', color: 'bg-[var(--color-success-light)] text-[var(--color-success)]' },
+                    { title: 'Account Settings', icon: Wallet, link: '/dashboard/treasury/accounts', color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]' },
+                    { title: 'Tax Settings', icon: FileText, link: '/dashboard/admin/settings', color: 'bg-[var(--color-accent-light)] text-[var(--color-accent)]' },
+                    { title: 'Approval Settings', icon: CheckCircle, link: '/dashboard/approvals', color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' }
                   ].map((setting, index) => (
                     <Link
                       key={index}

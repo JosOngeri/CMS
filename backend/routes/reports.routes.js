@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const crypto = require('crypto');
 const reportsController = require('../controllers/reports.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
@@ -43,27 +42,10 @@ router.get('/scheduled/:reportId/executions', reportsController.getReportExecuti
 // Report templates
 router.get('/templates', reportsController.getReportTemplates);
 
-// Frontend compatibility: list saved reports, generate placeholder, and download
-router.get('/', (req, res) => {
-  res.json({ success: true, reports: [] });
-});
-router.post('/', (req, res) => {
-  const { report_type, name, parameters } = req.body;
-  res.status(201).json({
-    success: true,
-    report: {
-      id: crypto.randomUUID(),
-      report_type: report_type || 'custom',
-      name: name || 'Generated Report',
-      parameters: parameters || {},
-      created_at: new Date().toISOString()
-    }
-  });
-});
-router.get('/:id/download', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Content-Disposition', `attachment; filename=report_${req.params.id}.json`);
-  res.json({ success: true, data: [] });
-});
+// Generated reports: list, create (runs the type's generator + persists a
+// reports row), download (regenerates from stored parameters per church)
+router.get('/', reportsController.listReports);
+router.post('/', requireRole(['Super Admin', 'Pastor', 'Treasurer']), reportsController.createReport);
+router.get('/:id/download', reportsController.downloadReport);
 
 module.exports = router;

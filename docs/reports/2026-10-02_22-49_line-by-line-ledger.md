@@ -1493,3 +1493,50 @@ All four were fixed in commit `21c618f` (after the line-by-line assessment above
 | B21 frontend Dockerfile | **FIXED** | `COPY --from=builder /app/dist-new /usr/share/nginx/html` (line 21) matches `vite.config.js outDir: 'dist-new'`. |
 
 **Blocker table is now empty.** Remaining open items are the ~40 mid-tier rows from the line-by-line pass (reports CSV injection, validation dead exports, migration split-brain, treasury dead links, reset-password page, etc.).
+
+### Fix pass — reports CSV, validation parity, treasury frontend (2026-10-03)
+
+**reports.controller.js — CSV + stub routes FIXED:**
+- `convertToCSV`: `\"` escaping → proper RFC 4180 `""` doubling; added formula-injection
+  protection (leading `= + - @ TAB CR` cells prefixed with `'`, per OWASP); CRLF row endings.
+- Three stub routes replaced with real handlers:
+  - `GET /` → `listReports` (real `reports` table rows, church-scoped, frontend-contract aliases)
+  - `POST /` → `createReport` (validates `report_type` allowlist → runs the real data generator →
+    persists a `reports` row; was: fake UUID + nothing stored)
+  - `GET /:id/download` → `downloadReport` (church-scoped fetch → regenerates data from stored
+    parameters → streams pdf/csv; `xlsx` degrades honestly to CSV — no xlsx lib installed)
+- New repo methods: `getReports`, `getReportById`, `createReport`, `getEventsReportData`
+  (events type previously had no generator at all).
+- `POST /` now carries `requireRole(Super Admin/Pastor/Treasurer)` — same gate as `/generate`.
+
+**middleware/validation.js:**
+- Dead exports were already removed in a prior pass. `changePassword` now mirrors
+  `validatePasswordStrength` (upper/lower/number/special) — was min-8-only, so weak
+  passwords passed route validation then failed later with a different error.
+
+**TreasuryDashboard dead links — 14 fixed:**
+- `/dashboard/payments/journal-entries|expenses|budgets` → `treasury/*` equivalents
+- `treasury/income` → `treasury/receipts`; `treasury/history` → `treasury/journal-entries`;
+  `budgets/create` + `budgets/reports` → `treasury/budgets` / `treasury/reports`
+- `payment-history`/`payment-management` → `payments/history`/`payments/management`
+- `payments/contributions` → `treasury/contributions`
+- `treasury/reports/{income,balance,budget,expenses}` → `treasury/reports` (no sub-routes exist)
+- `/settings/treasury/*` → `/dashboard/admin/settings`, `treasury/accounts`, `dashboard/approvals`
+- Bonus dead-code removal: `quickActions` array was never rendered — deleted.
+
+**Invisible-input bug FIXED (JournalEntries + RecurringPayments, 22 sites):**
+`text-[var(--color-text)] text-[var(--color-on-solid)]` — duplicate text-color utilities;
+the white-on-primary `on-solid` won → input text rendered white-on-white. Removed the
+`on-solid` class from inputs; the 4 legitimate button usages kept.
+
+**Re-verified as actually-NOT-broken:**
+- `ChartOfAccounts`/`Contributions` `===` filters — `fund_id`/`member_id` are UUIDs
+  (strings both sides of the comparison). Ledger claim was speculative; filters work.
+
+**MyPayments totals FIXED:** Postgres `numeric` returns strings — `sum + p.amount`
+concatenated ("0" + "5000" + "100" → "05000100"). Now `sum + (Number(p.amount) || 0)`;
+per-row `payment.amount.toLocaleString()` also wrapped in `Number()`.
+
+Verification: `node --check` all touched backend files; `vite build` clean;
+eslint 0 errors on all touched files. Reports.jsx download filename now derives
+extension from response Content-Type (xlsx→csv degradation names correctly).

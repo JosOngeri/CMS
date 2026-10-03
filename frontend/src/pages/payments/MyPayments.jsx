@@ -115,7 +115,7 @@ const MyPayments = () => {
             <div>
               <p className="text-sm text-[var(--color-textSecondary)]">Total Paid</p>
               <p className="text-2xl font-bold text-[var(--color-success)]">
-                KES {payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                KES {payments.filter(p => p.status === 'completed').reduce((sum, p) => sum + (Number(p.amount) || 0), 0).toLocaleString()}
               </p>
             </div>
             <DollarSign className="w-8 h-8 text-[var(--color-success)]" />
@@ -126,7 +126,7 @@ const MyPayments = () => {
             <div>
               <p className="text-sm text-[var(--color-textSecondary)]">Pending</p>
               <p className="text-2xl font-bold text-[var(--color-warning)]">
-                KES {payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                KES {payments.filter(p => p.status === 'pending').reduce((sum, p) => sum + (Number(p.amount) || 0), 0).toLocaleString()}
               </p>
             </div>
             <Clock className="w-8 h-8 text-[var(--color-warning)]" />
@@ -171,7 +171,7 @@ const MyPayments = () => {
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">KES {payment.amount.toLocaleString()}</p>
+                    <p className="font-semibold">KES {Number(payment.amount || 0).toLocaleString()}</p>
                     {payment.status === 'completed' && (
                       <button
                         onClick={() => downloadReceipt(payment.id)}

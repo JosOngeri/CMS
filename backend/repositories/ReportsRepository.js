@@ -418,6 +418,66 @@ class ReportsRepository extends BaseRepository {
     return result.rows;
   }
 
+  /**
+   * List generated reports for a church. Column aliases match the frontend
+   * Reports.jsx contract (report_name / generated_at).
+   */
+  async getReports(churchId, limit = 50) {
+    if (!churchId) throw new Error('churchId is required');
+    const result = await this.pool.query(
+      `SELECT id, name AS report_name, report_type, parameters, format,
+              created_by, church_id, created_at AS generated_at
+       FROM ${this.tableName}
+       WHERE church_id = $1
+       ORDER BY created_at DESC
+       LIMIT $2`,
+      [churchId, this.clampLimit(limit)]
+    );
+    return result.rows;
+  }
+
+  async getReportById(id, churchId) {
+    if (!churchId) throw new Error('churchId is required');
+    const result = await this.pool.query(
+      `SELECT * FROM ${this.tableName} WHERE id = $1 AND church_id = $2`,
+      [id, churchId]
+    );
+    return result.rows[0] || null;
+  }
+
+  async createReport(data) {
+    if (!data.church_id) throw new Error('church_id is required');
+    const { name, description, reportType, parameters, format, created_by, church_id } = data;
+    const result = await this.pool.query(
+      `INSERT INTO ${this.tableName} (name, description, report_type, parameters, format, created_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, name AS report_name, report_type, parameters, format,
+                 created_by, church_id, created_at AS generated_at`,
+      [name, description || null, reportType || 'custom',
+       JSON.stringify(parameters || {}), format || 'json', created_by, church_id]
+    );
+    return result.rows[0];
+  }
+
+  async getEventsReportData(startDate, endDate, churchId) {
+    if (!churchId) throw new Error('churchId is required');
+    const params = [churchId];
+    let where = 'church_id = $1';
+    if (startDate && endDate) {
+      params.push(startDate, endDate);
+      where += ' AND event_date BETWEEN $2 AND $3';
+    }
+    const result = await this.pool.query(
+      `SELECT DATE_TRUNC('month', event_date) as period,
+              COUNT(*) as total_events,
+              COUNT(*) FILTER (WHERE event_date >= CURRENT_DATE) as upcoming
+       FROM events WHERE ${where}
+       GROUP BY 1 ORDER BY period DESC`,
+      params
+    );
+    return result.rows;
+  }
+
   async saveReport(data) {
     const { name, description, dataSource, filters, columns, groupBy, sortBy, format, created_by, church_id } = data;
 

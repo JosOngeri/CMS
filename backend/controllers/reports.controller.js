@@ -494,6 +494,103 @@ class ReportsController extends BaseController {
   }
 
   /**
+   * Dispatch a report_type to its data generator. Returns null for unknown
+   * types so callers can 400. All generators are church-scoped.
+   */
+  async _generateReportData(reportType, dateRange, churchId) {
+    const start = dateRange?.start || null;
+    const end = dateRange?.end || null;
+    switch (reportType) {
+      case 'financial':
+      case 'treasury':
+        return ReportsRepository.getFinancialReportData(start, end, churchId);
+      case 'departments':
+        return ReportsRepository.getDepartmentReportData(start, end, churchId);
+      case 'attendance':
+        return ReportsRepository.getAttendanceReportData(start, end, churchId);
+      case 'membership':
+        return ReportsRepository.getMembershipGrowth(churchId, 12);
+      case 'events':
+        return ReportsRepository.getEventsReportData(start, end, churchId);
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * List generated reports for this church (frontend Reports.jsx contract:
+   * rows expose report_name, report_type, parameters, generated_at).
+   */
+  async listReports(req, res) {
+    try {
+      const reports = await ReportsRepository.getReports(req.user.church_id);
+      this.success(res, { reports });
+    } catch (error) {
+      this.logger.error('listReports', error);
+      this.error(res, 'Failed to fetch reports');
+    }
+  }
+
+  /**
+   * Generate a report: runs the type's data generator, then persists a row in
+   * `reports` so the result is listable + downloadable later.
+   * Body: { report_type, date_range: {start, end}, export_format, name? }
+   */
+  async createReport(req, res) {
+    try {
+      const { report_type, date_range, export_format, name } = req.body;
+      const data = await this._generateReportData(report_type, date_range, req.user.church_id);
+      if (data === null) return this.badRequest(res, `Unknown report type: ${report_type}`);
+
+      const report = await ReportsRepository.createReport({
+        name: name || `${report_type} report`,
+        reportType: report_type,
+        parameters: { date_range: date_range || {}, row_count: data.length },
+        format: export_format || 'json',
+        created_by: req.user.id,
+        church_id: req.user.church_id
+      });
+      this.success(res, { report }, 'Report generated', 201);
+    } catch (error) {
+      this.logger.error('createReport', error);
+      this.error(res, 'Failed to generate report');
+    }
+  }
+
+  /**
+   * Download a generated report: regenerate from the stored parameters and
+   * stream in the requested format. `xlsx` degrades to CSV — no xlsx library
+   * is installed, and the content-type is honest so clients name it .csv.
+   */
+  async downloadReport(req, res) {
+    try {
+      const report = await ReportsRepository.getReportById(req.params.id, req.user.church_id);
+      if (!report) return this.error(res, 'Report not found', 404);
+
+      const data = await this._generateReportData(
+        report.report_type, report.parameters?.date_range, req.user.church_id
+      ) || [];
+
+      const format = req.query.format === 'pdf' ? 'pdf' : 'csv';
+      const filename = `report_${report.id}.${format}`;
+      if (format === 'pdf') {
+        const pdf = this.convertToPDF(data, report.report_type);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.send(pdf);
+      } else {
+        const csv = this.convertToCSV(data);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+        res.send(csv);
+      }
+    } catch (error) {
+      this.logger.error('downloadReport', error);
+      this.error(res, 'Failed to download report');
+    }
+  }
+
+  /**
    * Convert data to CSV format
    * @param {Array} data - Data array to convert
    * @returns {string} CSV string
@@ -501,21 +598,21 @@ class ReportsController extends BaseController {
   convertToCSV(data) {
     if (!data || data.length === 0) return '';
 
+    // RFC 4180: quotes escape by doubling, not backslash (\\\" is literal junk).
+    // Cells starting with = + - @ TAB CR execute as formulas in Excel/Sheets —
+    // prefix with ' to neutralise (OWASP CSV injection guidance).
+    const cell = (v) => {
+      let s = v === null || v === undefined ? '' : String(v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
+
     const headers = Object.keys(data[0]);
-    const csvRows = [];
-
-    csvRows.push(headers.join(','));
-
+    const csvRows = [headers.map(cell).join(',')];
     for (const row of data) {
-      const values = headers.map(header => {
-        const value = row[header];
-        const escaped = ('' + (value ?? '')).replace(/"/g, '\\"');
-        return `"${escaped}"`;
-      });
-      csvRows.push(values.join(','));
+      csvRows.push(headers.map(h => cell(row[h])).join(','));
     }
-
-    return csvRows.join('\n');
+    return csvRows.join('\r\n');
   }
 
   /**

@@ -54,10 +54,12 @@ const Reports = () => {
       const response = await api.get(`/reports/${reportId}/download?format=${format}`, {
         responseType: 'blob',
       });
+      // xlsx degrades to CSV server-side — name the file by what came back
+      const ext = (response.headers['content-type'] || '').includes('pdf') ? 'pdf' : 'csv';
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `report_${reportId}.${format}`);
+      link.setAttribute('download', `report_${reportId}.${ext}`);
       document.body.appendChild(link);
       link.click();
       link.remove();
