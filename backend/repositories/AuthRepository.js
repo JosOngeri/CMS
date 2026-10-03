@@ -62,18 +62,26 @@ class AuthRepository extends BaseRepository {
     );
   }
 
+  // Reset tokens are stored as SHA-256 hashes — a DB read alone cannot
+  // reveal a usable token. Lookups accept the hash OR the legacy plaintext
+  // value so tokens minted before this change still work for their 1h window.
+  _hashResetToken(token) {
+    return require('crypto').createHash('sha256').update(token).digest('hex');
+  }
+
   async getPasswordResetToken(token) {
     const result = await this.pool.query(
-      `SELECT * FROM password_reset_tokens WHERE token = $1 AND expires_at > NOW() AND used IS NOT TRUE`,
-      [token]
+      `SELECT * FROM password_reset_tokens
+       WHERE (token = $1 OR token = $2) AND expires_at > NOW() AND used IS NOT TRUE`,
+      [this._hashResetToken(token), token]
     );
     return result.rows[0];
   }
 
   async deletePasswordResetToken(token) {
     await this.pool.query(
-      'DELETE FROM password_reset_tokens WHERE token = $1',
-      [token]
+      'DELETE FROM password_reset_tokens WHERE token = $1 OR token = $2',
+      [this._hashResetToken(token), token]
     );
   }
 
@@ -81,14 +89,14 @@ class AuthRepository extends BaseRepository {
     await this.pool.query(
       `INSERT INTO password_reset_tokens (user_id, token, expires_at)
        VALUES ($1, $2, NOW() + INTERVAL '1 hour')`,
-      [userId, token]
+      [userId, this._hashResetToken(token)]
     );
   }
 
   async markPasswordResetTokenAsUsed(token) {
     await this.pool.query(
-      'UPDATE password_reset_tokens SET used = true WHERE token = $1',
-      [token]
+      'UPDATE password_reset_tokens SET used = true WHERE token = $1 OR token = $2',
+      [this._hashResetToken(token), token]
     );
   }
 
@@ -101,10 +109,10 @@ class AuthRepository extends BaseRepository {
 
   async getUserSessions(userId) {
     const result = await this.pool.query(
-      `SELECT id, token, created_at, expires_at, 
+      `SELECT id, RIGHT(token, 6) AS token_preview, created_at, expires_at,
        CASE WHEN used = true THEN 'Revoked' ELSE 'Active' END as status
-       FROM refresh_tokens 
-       WHERE user_id = $1 
+       FROM refresh_tokens
+       WHERE user_id = $1
        ORDER BY created_at DESC`,
       [userId]
     );

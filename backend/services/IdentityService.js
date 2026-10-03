@@ -22,14 +22,16 @@ class IdentityService {
   /**
    * Get complete user identity profile
    * @param {string} userId - User UUID
+   * @param {boolean} [mfaVerified=false] - MFA state from the presented JWT;
+   *        session state does not live in the DB so callers pass the claim
    * @returns {Promise<Object>} Standardized user identity object
    */
-  async getIdentity(userId) {
+  async getIdentity(userId, mfaVerified = false) {
     try {
       // Check cache first
       const cached = identityCache.get(userId);
       if (cached && Date.now() - cached.timestamp < IDENTITY_CACHE_TTL) {
-        return cached.data;
+        return { ...cached.data, mfaVerified };
       }
 
       const userResult = await pool.query(
@@ -82,14 +84,16 @@ class IdentityService {
         roles: rolesResult.rows.map(r => r.name),
         permissions: permissionsResult.rows.map(p => p.name),
         mfaEnabled: user.mfa_enabled || false,
-        mfaVerified: false, // Will be set during authentication flow
+        mfaVerified, // Set by the caller from the JWT claim — never trusted from cache
         mfaSecret: user.mfa_secret
       };
 
       // Cache the result
       identityCache.set(userId, { data: identity, timestamp: Date.now() });
 
-      return identity;
+      // Return a copy — callers must never mutate the cached object
+      // (a mutation would poison every request for the cache TTL).
+      return { ...identity, mfaVerified };
     } catch (error) {
       logger.error('getIdentity error:', error);
       throw error;
@@ -230,19 +234,18 @@ class IdentityService {
    */
   async getDepartmentPermissions(userId, departmentId) {
     try {
+      // Real schema: department_permissions(department_id, user_id, permission, granted).
+      // Church-joined so a foreign-church dept id returns no permissions.
       const result = await pool.query(
-        `SELECT dp.permissions 
+        `SELECT dp.permission
          FROM department_permissions dp
-         JOIN user_roles ur ON dp.role_id = ur.role_id
-         WHERE dp.department_id = $1 AND ur.user_id = $2`,
+         JOIN users u ON dp.user_id = u.id
+         JOIN departments d ON dp.department_id = d.id AND d.church_id = u.church_id
+         WHERE dp.department_id = $1 AND dp.user_id = $2 AND dp.granted = true`,
         [departmentId, userId]
       );
 
-      if (result.rows.length === 0) {
-        return {};
-      }
-
-      return result.rows[0].permissions || {};
+      return result.rows.map(r => r.permission);
     } catch (error) {
       logger.error('getDepartmentPermissions error:', error);
       throw error;

@@ -81,7 +81,7 @@ const authenticateToken = async (req, res, next) => {
       logger.debug(`Cache MISS for user ${cacheKey}`);
       // Build the full, standardized user identity so downstream controllers
       // get the same shape regardless of whether they use auth.middleware or identityGuard.
-      identity = await IdentityService.getIdentity(decoded.userId);
+      identity = await IdentityService.getIdentity(decoded.userId, decoded.mfaVerified === true);
 
       // Cache the result
       if (identityCache.size >= MAX_CACHE_SIZE) {
@@ -164,7 +164,7 @@ const optionalAuth = async (req, res, next) => {
     }
 
     const decoded = verifyAccessToken(token);
-    const identity = await IdentityService.getIdentity(decoded.userId);
+    const identity = await IdentityService.getIdentity(decoded.userId, decoded.mfaVerified === true);
     req.user = buildUserIdentity(identity);
   } catch (error) {
     // Token is optional; ignore invalid/expired tokens
@@ -178,18 +178,21 @@ const requireDepartmentPermission = (permission) => {
       return res.status(401).json({ success: false, error: 'Authentication required' });
     }
 
-    const { departmentId } = req.params;
+    // Routes use both :departmentId and :id — accept either.
+    const departmentId = req.params.departmentId || req.params.id;
 
     if (!departmentId) {
       return res.status(400).json({ success: false, error: 'Department ID required' });
     }
 
     try {
-      // Check if user has department-specific permission
+      // Real schema: department_permissions(department_id, user_id, permission, granted).
+      // Church-joined so a foreign-church dept id never yields permissions.
       const permissionResult = await pool.query(
-        `SELECT dp.permissions FROM department_permissions dp
-         JOIN user_roles ur ON dp.role_id = ur.role_id
-         WHERE dp.department_id = $1 AND ur.user_id = $2`,
+        `SELECT dp.permission FROM department_permissions dp
+         JOIN users u ON dp.user_id = u.id
+         JOIN departments d ON dp.department_id = d.id AND d.church_id = u.church_id
+         WHERE dp.department_id = $1 AND dp.user_id = $2 AND dp.granted = true`,
         [departmentId, req.user.id]
       );
 
@@ -197,7 +200,7 @@ const requireDepartmentPermission = (permission) => {
         return res.status(403).json({ success: false, error: 'No department permissions found' });
       }
 
-      const permissions = permissionResult.rows[0].permissions;
+      const permissions = permissionResult.rows.map(r => r.permission);
       if (!permissions.includes(permission)) {
         return res.status(403).json({ success: false, error: 'Insufficient department permissions' });
       }

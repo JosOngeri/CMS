@@ -11,12 +11,16 @@ const {
   comparePassword,
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
   validatePasswordStrength,
   verifyMFAToken,
   generateRandomToken,
   generateMFASecret,
   generateMFAQRCode
 } = require('../helpers/security');
+const { pool } = require('../config/database');
+const { logAction } = require('../helpers/auditLog');
+const emailService = require('../utils/emailService');
 
 class AuthController extends BaseController {
   constructor() {
@@ -97,7 +101,9 @@ class AuthController extends BaseController {
       }
 
       const accessToken = generateAccessToken(user.id, identity.roles, identity.mfaVerified);
-      const refreshToken = generateRefreshToken(user.id);
+      // MFA state rides in the signed refresh token so /refresh can reissue
+      // it without trusting client input.
+      const refreshToken = generateRefreshToken(user.id, { mfaVerified: identity.mfaVerified });
 
       res.cookie('jwt', accessToken, {
         httpOnly: true,
@@ -143,12 +149,27 @@ class AuthController extends BaseController {
         is_active = true
       } = req.body;
 
-      let churchId = church_id || req.user?.church_id;
-      let churchSlug = church_slug || req.user?.church_slug;
+      // Church resolution order matters for tenant isolation:
+      // - Public (unauthenticated) registration always lands in the church the
+      //   tenantResolver resolved for this request (subdomain/default) — the
+      //   body's church_id/church_slug is ignored so a registrant cannot
+      //   self-select into another tenant.
+      // - Admins may target a specific church via the body; it falls back to
+      //   their own church, then the resolved tenant.
+      let churchId;
+      let churchSlug;
+      const isAdmin = req.user && IdentityService.hasAnyRole(req.user, ADMIN_ROLES);
+      if (isAdmin) {
+        churchId = church_id || req.user.church_id || req.church_id;
+        churchSlug = church_slug || req.user.church_slug || req.church_slug;
+      } else {
+        churchId = req.church_id;
+        churchSlug = req.church_slug;
+      }
       let userActive = is_active;
 
       // Only admins can create inactive accounts; public registration is always active
-      if (!req.user || !IdentityService.hasAnyRole(req.user, ADMIN_ROLES)) {
+      if (!isAdmin) {
         userActive = true;
       }
 
@@ -278,12 +299,23 @@ class AuthController extends BaseController {
 
       const { user_id } = tokenData;
 
+      // MFA verification state is carried in the signed refresh-token claim —
+      // never accept it from request input.
+      let mfaVerified = false;
+      try {
+        mfaVerified = verifyRefreshToken(refreshToken)?.mfaVerified === true;
+      } catch {
+        // Malformed JWT — the DB record above already proved validity, so a
+        // decode failure just means an old-format token; treat as unverified.
+      }
+
       // Get user roles
       const roles = await AuthRepository.getUserRoles(user_id);
 
-      // Generate new tokens
-      const newAccessToken = generateAccessToken(user_id, roles);
-      const newRefreshToken = generateRefreshToken(user_id);
+      // Generate new tokens — MFA claim propagates to the new access token
+      // and the rotated refresh token.
+      const newAccessToken = generateAccessToken(user_id, roles, mfaVerified);
+      const newRefreshToken = generateRefreshToken(user_id, { mfaVerified });
 
       // Mark old token as used
       await AuthRepository.markRefreshTokenAsUsed(refreshToken);
@@ -369,8 +401,15 @@ class AuthController extends BaseController {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
 
-      // Log profile update
-      await AuthRepository.logLoginAttempt(result.email, req.ip, true);
+      // Semantic audit entry — a profile update is not a login attempt
+      await logAction(pool, {
+        actorId: userId,
+        action: 'auth.profile_updated',
+        tableName: 'users',
+        recordId: userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+      });
 
       res.json({
         success: true,
@@ -433,8 +472,15 @@ class AuthController extends BaseController {
       // Update password
       await UserRepository.updatePassword(userId, newPasswordHash);
 
-      // Log password change
-      await AuthRepository.logLoginAttempt(user.email, req.ip, true);
+      // Semantic audit entry — a password change is not a login attempt
+      await logAction(pool, {
+        actorId: userId,
+        action: 'auth.password_changed',
+        tableName: 'users',
+        recordId: userId,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+      });
 
       res.json({
         success: true,
@@ -483,15 +529,24 @@ class AuthController extends BaseController {
       // Generate reset token
       const resetToken = generateRandomToken();
 
-      // Store reset token
+      // Store reset token (hashed at rest inside the repository)
       await AuthRepository.createPasswordResetToken(user.id, resetToken);
 
-      // Log password reset request
-      await AuthRepository.logLoginAttempt(email, req.ip, true);
+      // Semantic audit entry — not a login attempt
+      await logAction(pool, {
+        actorId: user.id,
+        action: 'auth.password_reset_requested',
+        tableName: 'users',
+        recordId: user.id,
+        ipAddress: req.ip,
+        userAgent: req.get('user-agent')
+      });
 
-      // Password reset tokens are stored securely and delivered by the configured
-      // notification channel; log that the token was generated without exposing it.
-      this.logger.warn({ userId: user.id }, 'Password reset token generated; email delivery not configured');
+      // Deliver the reset link by email — failures are logged, never exposed
+      // to the caller (account-enumeration safe either way).
+      emailService
+        .sendPasswordReset(email, resetToken, user.first_name)
+        .catch(err => this.logger.error('forgotPassword email', err));
 
       return ResponseHandler.success(res, null, 'If the email exists, a reset link has been sent');
     } catch (error) {

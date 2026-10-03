@@ -20,36 +20,43 @@ const comparePassword = async (password, hash) => {
   return await bcrypt.compare(password, hash);
 };
 
+// Church tokens carry iss/aud/type claims so they can never be confused with
+// platform tokens (which use their own issuer/audience — see config/platformJwt).
+const TOKEN_ISSUER = 'msabato';
+const TOKEN_AUDIENCE = 'church';
+
 // Generate access token (short-lived: 1h for security)
 const generateAccessToken = (userId, roles, mfaVerified = false, scope = null) => {
-  const payload = { userId, roles, mfaVerified };
+  const payload = { userId, roles, mfaVerified, type: 'access' };
   if (scope) {
     payload.scope = Array.isArray(scope) ? scope : [scope];
   }
   return jwt.sign(
     payload,
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+    { expiresIn: process.env.JWT_EXPIRES_IN || '1h', issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE }
   );
 };
 
-// Generate refresh token
-const generateRefreshToken = (userId) => {
+// Generate refresh token — carries mfaVerified so the MFA state survives the
+// access-token rotation without trusting client input.
+const generateRefreshToken = (userId, { mfaVerified = false } = {}) => {
   return jwt.sign(
-    { userId },
+    { userId, type: 'refresh', mfaVerified },
     process.env.REFRESH_TOKEN_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d' }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d', issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE }
   );
 };
 
-// Verify access token
+// Verify access token — iss/aud enforced: claim-less legacy tokens and
+// foreign-audience tokens are rejected (forces re-login once after deploy).
 const verifyAccessToken = (token) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
+  return jwt.verify(token, process.env.JWT_SECRET, { issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE });
 };
 
 // Verify refresh token
 const verifyRefreshToken = (token) => {
-  return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+  return jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, { issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE });
 };
 
 // Generate random token for password reset
@@ -153,14 +160,12 @@ const generateMFAQRCode = (secret) => {
   return secret.otpauth_url;
 };
 
-// Check if password has been breached
+// Check if password has been breached — pwnedPasswordRange returns the
+// numeric breach count directly (single HIBP call, no double request).
 const checkPasswordBreach = async (password) => {
   try {
-    const isBreached = await hibp.pwnedPassword(password);
-    return {
-      isBreached,
-      count: isBreached ? await hibp.pwnedPasswordRange(password) : 0,
-    };
+    const count = await hibp.pwnedPasswordRange(password);
+    return { isBreached: count > 0, count };
   } catch (error) {
     logger.error('checkPasswordBreach', 'Password breach check error:', error);
     return { isBreached: false, count: 0 };

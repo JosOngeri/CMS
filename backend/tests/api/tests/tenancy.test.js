@@ -90,7 +90,11 @@ const identity = (overrides) => ({
 });
 
 const tokenFor = (userId, roles = ['Member']) =>
-  jwt.sign({ userId, roles, mfaVerified: true }, process.env.JWT_SECRET, { expiresIn: '1h' });
+  jwt.sign(
+    { userId, roles, mfaVerified: true, type: 'access' },
+    process.env.JWT_SECRET,
+    { expiresIn: '1h', issuer: 'msabato', audience: 'church' }
+  );
 
 beforeEach(() => {
   jest.clearAllMocks();

@@ -69,7 +69,7 @@ class SmsAuthController extends BaseController {
       }, user.church_id);
 
       // Get user identity to check roles and MFA status
-      const identity = await IdentityService.getIdentity(user.id);
+      let identity = await IdentityService.getIdentity(user.id);
 
       // Check if user has admin role and MFA is enabled
       const hasAdminRole = IdentityService.hasAnyRole(identity, ADMIN_ROLES);
@@ -86,13 +86,14 @@ class SmsAuthController extends BaseController {
           return ResponseHandler.error(res, 'Invalid MFA token', 403);
         }
 
-        // Mark MFA as verified for this session
-        identity.mfaVerified = true;
+        // Mark MFA as verified for this session — returns a new identity;
+        // mutating the cached object would poison it for the cache TTL.
+        identity = IdentityService.setMFAVerified(identity);
       }
 
       // Generate SMS-scoped token
       const smsToken = generateAccessToken(user.id, identity.roles, identity.mfaVerified, 'sms');
-      const refreshToken = generateRefreshToken(user.id);
+      const refreshToken = generateRefreshToken(user.id, { mfaVerified: identity.mfaVerified });
 
       // Get church details
       const church = await ChurchRepository.findById(user.church_id);
