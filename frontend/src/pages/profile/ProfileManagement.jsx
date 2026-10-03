@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { User, Mail, Phone, Calendar, Shield, Camera, Edit2, Save, X, Lock, Key, History, Eye, EyeOff, Bell, Globe } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { User, Mail, Phone, Calendar, Shield, Camera, Edit2, Save, X, Lock, Key, History, Eye, EyeOff, Bell, Globe, Monitor, Smartphone } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import NotificationSettings from '../../components/settings/NotificationSettings'
@@ -505,6 +506,33 @@ const ProfileManagement = () => {
                 </div>
               </form>
             )}
+          </div>
+
+          {/* Account Security Features */}
+          <div className="bg-[var(--color-surface)] rounded-lg shadow-sm border border-[var(--color-border)] p-6">
+            <h3 className="text-lg font-semibold text-[var(--color-text)] mb-4">Account Security</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Link
+                to="/dashboard/profile/mfa"
+                className="flex items-start gap-3 p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors"
+              >
+                <Smartphone className="w-5 h-5 text-[var(--color-primary)] mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-[var(--color-text)]">Two-Factor Authentication</h4>
+                  <p className="text-sm text-[var(--color-textSecondary)] mt-1">Add an extra layer of security with an authenticator app</p>
+                </div>
+              </Link>
+              <Link
+                to="/dashboard/profile/sessions"
+                className="flex items-start gap-3 p-4 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors"
+              >
+                <Monitor className="w-5 h-5 text-[var(--color-primary)] mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-[var(--color-text)]">Active Sessions</h4>
+                  <p className="text-sm text-[var(--color-textSecondary)] mt-1">Review and revoke devices signed in to your account</p>
+                </div>
+              </Link>
+            </div>
           </div>
 
           {/* Security Info */}

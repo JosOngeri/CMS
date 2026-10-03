@@ -95,6 +95,8 @@ const AdminDatabase           = lazy(() => import('../pages/admin/AdminDatabase'
 const SiteSettings            = lazy(() => import('../pages/admin/SiteSettings'));
 const Profile                 = lazy(() => import('../pages/profile/Profile'));
 const ProfileManagement       = lazy(() => import('../pages/profile/ProfileManagement'));
+const MFASetup                = lazy(() => import('../pages/auth/MFASetup'));
+const Sessions                = lazy(() => import('../pages/auth/Sessions'));
 const UserManagement          = lazy(() => import('../pages/users/UserManagement'));
 const PaymentManagement       = lazy(() => import('../pages/payments/PaymentManagement'));
 const MemberDirectory         = lazy(() => import('../pages/members/MemberDirectory'));
@@ -156,6 +158,8 @@ export const dashboardRoutes = [
   { path: 'users',          element: <W C={UserManagement} roles={ADMIN_ROLES} /> },
   { path: 'profile',        element: <W C={Profile} /> },
   { path: 'profile-management', element: <W C={ProfileManagement} /> },
+  { path: 'profile/mfa',    element: <W C={MFASetup} /> },
+  { path: 'profile/sessions', element: <W C={Sessions} /> },
 
   // Treasury & Payments
   { path: 'treasury',                element: <W C={TreasuryDashboard} roles={FINANCE_ROLES} /> },
