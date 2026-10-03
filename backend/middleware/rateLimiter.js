@@ -1,7 +1,7 @@
 /**
  * express-rate-limit factories — Redis store when connected at boot, else in-memory; named limiters used by index.routes.js.
  * @exports {authLimiter, generalLimiter, strictLimiter, apiLimiter, passwordResetLimiter, platformAuthLimiter, uploadLimiter, getRateLimitStats}
- * @known Redis availability sampled once at module load (late-connecting Redis never adopted); platformAuthLimiter mount unverified — ledger.
+ * @known platformAuthLimiter mounted on /platform/auth/login (platform.routes.js).
  */
 const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
@@ -11,8 +11,8 @@ const logger = require('../config/logging');
 const isProduction = process.env.NODE_ENV === 'production';
 const isTest = process.env.NODE_ENV === 'test' || process.env.DISABLE_RATE_LIMITING === 'true';
 
-// Check if Redis is available
-const isRedisAvailable = redisCache.isConnected;
+// L410: check Redis lazily per request — it may connect after module load.
+const redisUp = () => redisCache.isConnected === true;
 
 // Create Redis store if available, otherwise use in-memory
 const createRateLimiter = (options) => {
@@ -39,14 +39,10 @@ const createRateLimiter = (options) => {
     return ip;
   };
 
-  const finalOptions = {
+  const baseOptions = {
     ...limiterOptions,
     keyGenerator: (req) => ipKeyGenerator(clientIp(req)),
     validate: { ip: false },
-    store: isRedisAvailable ? new RedisStore({
-      client: redisCache.client,
-      prefix: `ratelimit:${limiterName}:`,
-    }) : undefined,
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
@@ -66,13 +62,34 @@ const createRateLimiter = (options) => {
     }
   };
 
-  return rateLimit(finalOptions);
+  // L410: build both stores up front and dispatch per request — Redis coming
+  // online after boot now gets adopted instead of staying in-memory forever.
+  // Counters don't carry between stores; acceptable trade-off.
+  const memoryLimiter = rateLimit(baseOptions);
+  let redisLimiter = null;
+
+  return (req, res, next) => {
+    if (redisUp()) {
+      if (!redisLimiter) {
+        redisLimiter = rateLimit({
+          ...baseOptions,
+          store: new RedisStore({
+            client: redisCache.client,
+            prefix: `ratelimit:${limiterName}:`,
+          }),
+        });
+        logger.info({ limiter: limiterName }, 'Rate limiter switched to Redis store');
+      }
+      return redisLimiter(req, res, next);
+    }
+    return memoryLimiter(req, res, next);
+  };
 };
 
 // Log rate limiting mode on startup
 logger.info({
-  mode: isRedisAvailable ? 'Redis' : 'In-Memory',
-  redisConnected: isRedisAvailable
+  mode: redisUp() ? 'Redis' : 'In-Memory',
+  redisConnected: redisUp()
 }, 'Rate limiting initialized');
 
 // Auth endpoints: stricter in production
@@ -128,12 +145,12 @@ const uploadLimiter = createRateLimiter({
 const getRateLimitStats = async () => {
   try {
     const stats = {
-      mode: isRedisAvailable ? 'Redis' : 'In-Memory',
-      redisConnected: isRedisAvailable,
+      mode: redisUp() ? 'Redis' : 'In-Memory',
+      redisConnected: redisUp(),
       timestamp: new Date().toISOString()
     };
 
-    if (isRedisAvailable && redisCache.client) {
+    if (redisUp() && redisCache.client) {
       // Get count of rate limit keys in Redis
       const keys = await redisCache.client.keys('ratelimit:*');
       stats.redisKeysCount = keys.length;

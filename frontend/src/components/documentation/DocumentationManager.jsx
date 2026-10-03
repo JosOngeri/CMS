@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Book, FileText, Search, Plus, Edit, Trash2, Download, Upload } from 'lucide-react';
+import { Book, FileText, Search, Plus, Trash2, Download } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -18,8 +18,8 @@ const DocumentationManager = () => {
 
   const fetchDocuments = async () => {
     try {
-      const response = await api.get('/documentation');
-      setDocuments(response.data.documents || []);
+      const response = await api.get('/documents');
+      setDocuments(response.data.documents || response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch documents:', error);
       setDocuments([]); // Set empty array on error
@@ -31,10 +31,10 @@ const DocumentationManager = () => {
   const handleSave = async (doc) => {
     try {
       if (doc.id) {
-        await api.put(`/documentation/${doc.id}`, doc);
+        await api.put(`/documents/${doc.id}`, doc);
         toast.success('Document updated');
       } else {
-        await api.post('/documentation', doc);
+        await api.post('/documents', doc);
         toast.success('Document created');
       }
       fetchDocuments();
@@ -47,7 +47,7 @@ const DocumentationManager = () => {
     if (!window.confirm('Delete this document?')) return;
 
     try {
-      await api.delete(`/documentation/${id}`);
+      await api.delete(`/documents/${id}`);
       toast.success('Document deleted');
       fetchDocuments();
     } catch (error) {
@@ -55,9 +55,10 @@ const DocumentationManager = () => {
     }
   };
 
+  const term = searchTerm.toLowerCase();
   const filteredDocs = documents.filter(doc =>
-    doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (doc.title || '').toLowerCase().includes(term) ||
+    (doc.category || '').toLowerCase().includes(term)
   );
 
   if (loading) {
@@ -172,16 +173,24 @@ const DocumentationManager = () => {
         </div>
       </div>
 
-      {/* Export/Import */}
+      {/* Export — serializes the loaded docs as a JSON download. No import
+          endpoint exists server-side, so no Import button is shown. */}
       <div className="bg-[var(--color-surface)] border rounded-lg p-4">
         <div className="flex gap-4">
-          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] rounded-lg hover:bg-[var(--color-surface)]">
+          <button
+            onClick={() => {
+              const blob = new Blob([JSON.stringify(documents, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'documentation-export.json';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] rounded-lg hover:bg-[var(--color-background)]"
+          >
             <Download size={16} />
             Export All
-          </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] rounded-lg hover:bg-[var(--color-surface)]">
-            <Upload size={16} />
-            Import
           </button>
         </div>
       </div>

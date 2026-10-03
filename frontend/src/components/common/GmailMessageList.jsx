@@ -24,7 +24,6 @@ const GmailMessageList = ({
   onTabChange,
   onCompose,
   onRefresh,
-  onSelectAll,
   selectedItems,
   onToggleSelect,
   onToggleSelectAll,
@@ -156,12 +155,12 @@ const GmailMessageList = ({
         <div className="divide-y divide-[var(--color-border)]">
           {items.map((item, index) => {
             const isSelected = selectedItems.has(item.id);
-            const isHovered = hoveredRow === index;
+            const isHovered = hoveredRow === item.id;
 
             return (
               <div
                 key={item.id}
-                onMouseEnter={() => setHoveredRow(index)}
+                onMouseEnter={() => setHoveredRow(item.id)}
                 onMouseLeave={() => setHoveredRow(null)}
                 className={`
                   flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors
@@ -205,10 +204,10 @@ const GmailMessageList = ({
                   </p>
                 </div>
 
-                {/* Date or Actions */}
+                {/* Date or Actions — always shown on touch sizes (no hover) */}
                 <div className="w-32 flex-shrink-0 flex items-center justify-end">
                   {isHovered ? (
-                    <div className="flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-1">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -221,10 +220,26 @@ const GmailMessageList = ({
                       </button>
                     </div>
                   ) : (
-                    <span className="text-sm text-[var(--color-textSecondary)] whitespace-nowrap">
+                    <span className="hidden md:inline text-sm text-[var(--color-textSecondary)] whitespace-nowrap">
                       {fmtRelative(item.created_at || item.sent_at || item.date)}
                     </span>
                   )}
+                  <div className="flex md:hidden items-center gap-2">
+                    <span className="text-xs text-[var(--color-textSecondary)] whitespace-nowrap">
+                      {fmtRelative(item.created_at || item.sent_at || item.date)}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRowAction && onRowAction('delete', item);
+                      }}
+                      className="p-2 hover:bg-[var(--color-surface)] rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      title="Delete"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="w-4 h-4 text-[var(--color-textSecondary)]" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -236,7 +251,7 @@ const GmailMessageList = ({
       {onCompose && (
         <button
           onClick={onCompose}
-          className="fixed bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full shadow-lg hover:opacity-90 transition-opacity z-10"
+          className="fixed bottom-20 md:bottom-6 right-6 flex items-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full shadow-lg hover:opacity-90 transition-opacity z-10"
           aria-label="Compose new message"
         >
           <span className="font-medium">Compose</span>

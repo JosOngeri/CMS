@@ -1,14 +1,12 @@
-import { NavLink } from 'react-router-dom'
 import {
   Image,
-  Calendar,
   Clock,
   Heart,
   FolderOpen,
   Tag,
-  MapPin,
   Trash2,
-  Upload
+  Upload,
+  X
 } from 'lucide-react'
 
 const GalleryNavigation = ({
@@ -18,7 +16,9 @@ const GalleryNavigation = ({
   currentView = 'library',
   onViewChange,
   canUpload = false,
-  onUploadClick
+  onUploadClick,
+  mobileOpen = false,
+  onMobileClose
 }) => {
   const navItems = [
     {
@@ -56,23 +56,38 @@ const GalleryNavigation = ({
     type: 'category'
   }))
 
-  return (
-    <nav className="w-64 h-full overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)]">
-      <div className="p-4">
+  const selectView = (id) => {
+    onViewChange?.(id)
+    onMobileClose?.()
+  }
+
+  const content = (
+    <div className="p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">
             Gallery
           </h2>
-          {canUpload && (
-            <button
-              onClick={onUploadClick}
-              className="p-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
-              aria-label="Upload photos"
-            >
-              <Upload className="h-4 w-4" aria-hidden="true" />
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {canUpload && (
+              <button
+                onClick={onUploadClick}
+                className="p-2 rounded-lg transition-colors bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary-600)]"
+                aria-label="Upload photos"
+              >
+                <Upload className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+            {onMobileClose && (
+              <button
+                onClick={onMobileClose}
+                className="lg:hidden p-2 rounded-lg text-[var(--color-textSecondary)] hover:bg-[var(--color-background)]"
+                aria-label="Close gallery menu"
+              >
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Main Navigation */}
@@ -80,7 +95,7 @@ const GalleryNavigation = ({
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => onViewChange(item.id)}
+              onClick={() => selectView(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 currentView === item.id
                   ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
@@ -115,7 +130,7 @@ const GalleryNavigation = ({
               categoryItems.map((item) => (
                 <button
                   key={item.id}
-                  onClick={() => onViewChange(item.id)}
+                  onClick={() => selectView(item.id)}
                   className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                     currentView === item.id
                       ? 'bg-[var(--color-primary-light)] text-[var(--color-primary)]'
@@ -143,7 +158,7 @@ const GalleryNavigation = ({
           </h3>
           <div className="space-y-1">
             <button
-              onClick={() => onViewChange('trash')}
+              onClick={() => selectView('trash')}
               className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 currentView === 'trash'
                   ? 'bg-[var(--color-error-light)] text-[var(--color-error)]'
@@ -157,8 +172,30 @@ const GalleryNavigation = ({
             </button>
           </div>
         </div>
-      </div>
-    </nav>
+    </div>
+  )
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <nav className="hidden lg:block w-64 h-full overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)]">
+        {content}
+      </nav>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-[var(--color-overlay-50)]"
+            onClick={onMobileClose}
+            aria-hidden="true"
+          />
+          <nav className="absolute left-0 top-0 bottom-0 w-72 overflow-y-auto bg-[var(--color-surface)] border-r border-[var(--color-border)] shadow-xl">
+            {content}
+          </nav>
+        </div>
+      )}
+    </>
   )
 }
 

@@ -1394,3 +1394,39 @@ timing-safe signature compare.
 
 Regression coverage: `audit-regressions.test.js` +1 (directory projects
 roles[]/departments[]). 10/10 pass; `vite build` clean.
+
+
+---
+
+
+---
+
+## FIX PASS — 2026-10-03 (middleware L401/403/410/416 + Batch 9 components L435-461)
+
+Re-audited and remediated the middleware block and the Batch 9 component rows.
+
+| Row | Status | Resolution |
+|---|---|---|
+| L401 logging redact | Already FIXED — all flagged paths present in `redact.paths` (passwords, phone, otp, code, token, mfaSecret, new/old_value). |
+| L403 auth.js | FIXED — invalid/expired token now 401 (was 403); null-identity returns 401 instead of TypeError; `optionalAuth` shares the LRU identity cache; `requireDepartmentPermission` verified array-mapped before `.includes`. `identityGuard.js` reviewed — 401/403 split already correct. |
+| L410 rateLimiter.js | FIXED — store chosen lazily per request: both memory + Redis limiters built, dispatched on live `redisCache.isConnected`; late-connecting Redis adopted without restart. `platformAuthLimiter` verified mounted on `/platform/auth/login`. |
+| L416 validation.js | FIXED — `err.value` echo already removed; dead exports deleted (commonValidations with isInt/UUID bug, sanitizeInput wildcard-escape, validateFile, validateLength, validatePattern). Only `validate`/`validateRequest`/`validationRules` remain — verified sole imports repo-wide. |
+| L435 Header | FIXED — `user.first_name`/`last_name` (was undefined camelCase); bell links to `/dashboard/notifications` (was dead button + permanent dot); `/photo-gallery` links repointed to real `/gallery` route. |
+| L436 StatsCard | FIXED — `onKeyDown` (Enter/Space) added; role/tabIndex only when clickable; unused `useColorPalette`/`ArrowRight` imports dropped. |
+| L437 GmailMessageList | FIXED — dead `onSelectAll` prop removed; row delete action always visible on <md (was hover-only); hoveredRow keyed by item.id; FAB raised to `bottom-20` on mobile (was under bottom nav). |
+| L442 ProtectedComponent | FIXED — `RequestAccessButton` renders null without `onRequest` (was console.log-only fake). |
+| L443 ActivityFeed | FIXED — `index` dropped from keys; 44px icon buttons verified already present. |
+| L445 DocumentationManager | FIXED — `/documentation` → `/documents` (no such endpoint existed — component always 404'd empty); title/category null-guarded in filter; Export All wired to JSON download; dead Import button removed (no server endpoint). |
+| L446 CollectionTracker | FIXED — duplicated class strings split; `text-on-solid` removed from form fields; NaN-guarded amounts incl. client-side positive-amount check before POST. |
+| L448 ApplePhotoGrid | FIXED — `gap-${gap}` dynamic class (never compiled) → inline `gap` style; scroll listener moved from grid element (doesn't scroll) to window. |
+| L450 GalleryNavigation | FIXED — mobile drawer added (overlay + slide-in + close), wired via `mobileNavOpen` + SlidersHorizontal button in PhotoGalleryPage; dead imports (NavLink, Calendar, MapPin) dropped. |
+| L452 MobileDashboard | Already FIXED — file deleted in the earlier dead-code purge. |
+| L454 MinistriesCarousel | FIXED — cards no longer Link to nonexistent `/departments/:slug`; dead "View All Departments" link removed; auto-scroll pauses on hover/focus; keys use slug. |
+| L456 LiveStreamSection | FIXED — wired to real settings (`youtube_stream_url`/`facebook_stream_url`/`youtube_url`/`enable_live_stream`/`streaming_schedule`); "Watch Live" was a self-link `/#live-stream`, YouTube button was a generic search URL; section hides when nothing configured; fake always-on "Live" badge now gated on `enable_live_stream`. |
+| L457 ServiceTimes | FIXED — Add-to-Calendar now computes next occurrence of the service weekday with parsed start/end times (was today's date, all-day, wrong); keyboard activation added. |
+| L458 FeaturedPhotos | FIXED — `/gallery/album/:id` (dead route) → `/gallery`. |
+| L461 PaletteSelector | FIXED — text hex fields debounced 300ms + validated against hex regex before applying (was writing raw input into CSS vars per keystroke); color pickers unchanged (always-valid). |
+
+Verification: `vite build` clean; `node --check` on all touched middleware;
+`audit-regressions.test.js` 10/10 pass. Open-issues CSV: 19 rows removed,
+50 open remain.

@@ -1,9 +1,19 @@
+import { useRef } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useColorPalette } from '../../contexts/ColorPaletteContext';
 import { colorPalettes, defaultPalette } from '../../config/colorPalettes';
 
+const HEX_RE = /^#?[0-9a-fA-F]{6}$/;
+const normalizeHex = (v) => {
+  const trimmed = (v || '').trim();
+  return HEX_RE.test(trimmed)
+    ? (trimmed.startsWith('#') ? trimmed : `#${trimmed}`).toLowerCase()
+    : null;
+};
+
 function PaletteSelector({ selectedPalette, onSelect }) {
   const { colors, setPalette, updateColors } = useColorPalette();
+  const debounceTimers = useRef({});
 
   const handlePaletteClick = (paletteKey) => {
     // Apply immediately for preview
@@ -12,10 +22,21 @@ function PaletteSelector({ selectedPalette, onSelect }) {
     onSelect?.(palette);
   };
 
+  // Color pickers always emit valid hex — apply immediately.
   const handleColorChange = (colorKey, value) => {
     const newPalette = { ...colors, [colorKey]: value };
     updateColors(newPalette);
     onSelect?.(newPalette);
+  };
+
+  // Free-text fields: debounce + only apply when the value is a real hex color,
+  // so typing "#ff" mid-edit can't inject garbage into the CSS variables.
+  const handleColorText = (colorKey, value) => {
+    clearTimeout(debounceTimers.current[colorKey]);
+    debounceTimers.current[colorKey] = setTimeout(() => {
+      const hex = normalizeHex(value);
+      if (hex) handleColorChange(colorKey, hex);
+    }, 300);
   };
 
   const handleReset = () => {
@@ -89,8 +110,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.primary}
-                onChange={(e) => handleColorChange('primary', e.target.value)}
+                defaultValue={colors.primary}
+                key={`primary-${colors.primary}`}
+                onChange={(e) => handleColorText('primary', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -106,8 +128,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.secondary}
-                onChange={(e) => handleColorChange('secondary', e.target.value)}
+                defaultValue={colors.secondary}
+                key={`secondary-${colors.secondary}`}
+                onChange={(e) => handleColorText('secondary', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -123,8 +146,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.accent}
-                onChange={(e) => handleColorChange('accent', e.target.value)}
+                defaultValue={colors.accent}
+                key={`accent-${colors.accent}`}
+                onChange={(e) => handleColorText('accent', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -140,8 +164,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.background}
-                onChange={(e) => handleColorChange('background', e.target.value)}
+                defaultValue={colors.background}
+                key={`background-${colors.background}`}
+                onChange={(e) => handleColorText('background', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -157,8 +182,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.surface}
-                onChange={(e) => handleColorChange('surface', e.target.value)}
+                defaultValue={colors.surface}
+                key={`surface-${colors.surface}`}
+                onChange={(e) => handleColorText('surface', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -174,8 +200,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.text}
-                onChange={(e) => handleColorChange('text', e.target.value)}
+                defaultValue={colors.text}
+                key={`text-${colors.text}`}
+                onChange={(e) => handleColorText('text', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -191,8 +218,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.textSecondary}
-                onChange={(e) => handleColorChange('textSecondary', e.target.value)}
+                defaultValue={colors.textSecondary}
+                key={`textSecondary-${colors.textSecondary}`}
+                onChange={(e) => handleColorText('textSecondary', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -208,8 +236,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.border}
-                onChange={(e) => handleColorChange('border', e.target.value)}
+                defaultValue={colors.border}
+                key={`border-${colors.border}`}
+                onChange={(e) => handleColorText('border', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -225,8 +254,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.success}
-                onChange={(e) => handleColorChange('success', e.target.value)}
+                defaultValue={colors.success}
+                key={`success-${colors.success}`}
+                onChange={(e) => handleColorText('success', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -242,8 +272,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.warning}
-                onChange={(e) => handleColorChange('warning', e.target.value)}
+                defaultValue={colors.warning}
+                key={`warning-${colors.warning}`}
+                onChange={(e) => handleColorText('warning', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>
@@ -259,8 +290,9 @@ function PaletteSelector({ selectedPalette, onSelect }) {
               />
               <input
                 type="text"
-                value={colors.error}
-                onChange={(e) => handleColorChange('error', e.target.value)}
+                defaultValue={colors.error}
+                key={`error-${colors.error}`}
+                onChange={(e) => handleColorText('error', e.target.value)}
                 className="flex-1 px-3 py-2 text-sm border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
               />
             </div>

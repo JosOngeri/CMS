@@ -343,9 +343,9 @@ const ActivityFeed = ({ departmentId, api, limit = 10, showViewAll = false, onVi
             <p className="text-[var(--color-textSecondary)]">No recent activity</p>
           </div>
         ) : (
-          activities.map((activity, index) => (
-            <div 
-              key={`${activity.activity_type}-${activity.id}-${index}`} 
+          activities.map((activity) => (
+            <div
+              key={activity.id}
               className={`p-4 hover:bg-[var(--color-background)] transition-colors cursor-pointer ${needsAction(activity) ? 'bg-[var(--color-warning-light)]' : ''}`}
               onClick={() => onActivityClick?.(activity)}
             >

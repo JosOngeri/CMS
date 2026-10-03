@@ -237,11 +237,10 @@ const ApplePhotoGrid = ({
       setScrolledGroups(newScrolledGroups)
     }
 
-    const container = gridRef.current
-    if (container) {
-      container.addEventListener('scroll', handleScroll, { passive: true })
-      return () => container.removeEventListener('scroll', handleScroll)
-    }
+    // The grid itself doesn't scroll — the page does, so listen on window.
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    handleScroll()
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   if (loading) {
@@ -264,10 +263,11 @@ const ApplePhotoGrid = ({
   }
 
   return (
-    <div 
+    <div
       ref={gridRef}
-      className={`grid gap-${gap}`}
-      style={{ 
+      className="grid"
+      style={{
+        gap: `${gap * 4}px`, // gap prop is a Tailwind unit; dynamic class wouldn't be compiled
         gridTemplateColumns: `repeat(${currentCols}, minmax(0, 1fr))`,
         gridAutoFlow: 'dense'
       }}

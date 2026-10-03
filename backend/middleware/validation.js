@@ -1,10 +1,13 @@
 /**
  * express-validator rule library + validate() error formatter.
- * @exports {validate, validateRequest, commonValidations, validationRules, sanitizeInput, validateLength, validatePattern, validateFile}
- * @known commonValidations/sanitizeInput/validateFile are UNUSED dead exports containing dormant bugs (isInt-only id rejects UUIDs; wildcard escape() would corrupt passwords); validateRequest echoes err.value back to clients — ledger.
+ * @exports {validate, validateRequest, validationRules}
+ * @known Dead exports removed (L416): commonValidations (isInt-only id rejected
+ *        UUIDs), sanitizeInput (wildcard escape() would corrupt passwords),
+ *        validateFile/validateLength/validatePattern (all unused). validateRequest
+ *        never echoes err.value — failed password fields would leak back.
  */
 
-const { body, validationResult, param, query } = require('express-validator');
+const { body, validationResult, param } = require('express-validator');
 
 /**
  * Validates request and returns formatted errors if validation fails
@@ -25,159 +28,9 @@ const validateRequest = (req, res, next) => {
   next();
 };
 
-/**
- * Common validation rules for frequently used fields
- */
-const commonValidations = {
-  // ID validation
-  id: param('id')
-    .isInt({ min: 1 })
-    .withMessage('ID must be a positive integer'),
-  
-  // Email validation
-  email: body('email')
-    .trim()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid email address'),
-  
-  // Phone validation
-  phone: body('phone')
-    .optional()
-    .trim()
-    .matches(/^[+]?[1-9]\d{1,14}$/)
-    .withMessage('Invalid phone number (E.164 format)'),
-  
-  // URL validation
-  url: body('url')
-    .optional()
-    .trim()
-    .isURL()
-    .withMessage('Invalid URL'),
-  
-  // Text validation
-  text: (fieldName, minLength = 1, maxLength = 1000) => 
-    body(fieldName)
-      .trim()
-      .isLength({ min: minLength, max: maxLength })
-      .withMessage(`${fieldName} must be ${minLength}-${maxLength} characters`)
-      .escape(),
-  
-  // Number validation
-  number: (fieldName, min = 0, max = null) => {
-    const validation = body(fieldName)
-      .isNumeric()
-      .withMessage(`${fieldName} must be a number`);
-    
-    if (min !== null) {
-      validation.isFloat({ min }).withMessage(`${fieldName} must be at least ${min}`);
-    }
-    
-    if (max !== null) {
-      validation.isFloat({ max }).withMessage(`${fieldName} must be at most ${max}`);
-    }
-    
-    return validation;
-  },
-  
-  // Boolean validation
-  boolean: (fieldName) =>
-    body(fieldName)
-      .optional()
-      .isBoolean()
-      .withMessage(`${fieldName} must be true or false`),
-  
-  // Date validation
-  date: (fieldName) =>
-    body(fieldName)
-      .optional()
-      .isISO8601()
-      .withMessage(`${fieldName} must be a valid date`),
-  
-  // Enum validation
-  enum: (fieldName, values) =>
-    body(fieldName)
-      .isIn(values)
-      .withMessage(`${fieldName} must be one of: ${values.join(', ')}`),
-  
-  // Array validation
-  array: (fieldName) =>
-    body(fieldName)
-      .optional()
-      .isArray()
-      .withMessage(`${fieldName} must be an array`),
-  
-  // JSON validation
-  json: (fieldName) =>
-    body(fieldName)
-      .optional()
-      .isJSON()
-      .withMessage(`${fieldName} must be valid JSON`)
-};
-
-/**
- * Sanitization middleware to prevent XSS attacks
- * Uses express-validator's native sanitizers for robust XSS prevention
- */
-const sanitizeInput = [
-  body('*').trim().escape(),
-  query('*').trim().escape(),
-  (req, res, next) => next()
-];
-
-/**
- * Length validation helper
- */
-const validateLength = (fieldName, min, max) => {
-  return body(fieldName)
-    .trim()
-    .isLength({ min, max })
-    .withMessage(`${fieldName} must be ${min}-${max} characters`);
-};
-
-/**
- * Pattern validation helper
- */
-const validatePattern = (fieldName, pattern, message) => {
-  return body(fieldName)
-    .trim()
-    .matches(pattern)
-    .withMessage(message);
-};
-
-/**
- * File validation helper
- */
-const validateFile = (fieldName, allowedTypes, maxSize) => {
-  return (req, res, next) => {
-    if (!req.file) {
-      return next();
-    }
-    
-    // Check file size
-    if (req.file.size > maxSize) {
-      return res.status(400).json({
-        success: false,
-        error: `File size exceeds limit of ${maxSize / 1024 / 1024}MB`
-      });
-    }
-    
-    // Check file type
-    if (!allowedTypes.includes(req.file.mimetype)) {
-      return res.status(400).json({
-        success: false,
-        error: `File type not allowed. Allowed types: ${allowedTypes.join(', ')}`
-      });
-    }
-    
-    next();
-  };
-};
-
 module.exports = {
   validate: validateRequest,
   validateRequest,
-  commonValidations,
   validationRules: {
     idParam: [
       param('id').notEmpty().withMessage('ID is required')
@@ -213,9 +66,5 @@ module.exports = {
         body('role').notEmpty().withMessage('Role is required')
       ]
     }
-  },
-  sanitizeInput,
-  validateLength,
-  validatePattern,
-  validateFile
+  }
 };

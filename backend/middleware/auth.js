@@ -2,7 +2,7 @@
  * Church-user auth: Bearer/cookie JWT verification via IdentityService (5-min LRU identity cache), plus role/permission guards.
  * @exports {authenticateToken, optionalAuth, requireRole, requirePermission, requireDepartmentPermission, extractToken, buildUserIdentity, invalidateUserCache}
  * @deps helpers/security, services/IdentityService
- * @known is_active enforced via cached identity (≤5min staleness); 403 returned for invalid tokens (should be 401); requireDepartmentPermission only reads :departmentId; cached-identity mutation poisons cache — ledger.
+ * @known is_active enforced via cached identity (≤5min staleness); 401 returned for missing/invalid/expired tokens, 403 only for authenticated-but-forbidden; cached-identity mutation poisons cache — ledger.
  */
 const { pool } = require('../config/database');
 const { verifyAccessToken } = require('../helpers/security');
@@ -101,6 +101,12 @@ const authenticateToken = async (req, res, next) => {
       identityCache.set(cacheKey, { data: identity, timestamp: Date.now(), lastAccess: Date.now() });
     }
 
+    // L403: a valid JWT for a deleted/inactive-directory user yields a null
+    // identity — treat as unauthenticated, not as a generic error/403.
+    if (!identity) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
+
     req.user = buildUserIdentity(identity);
 
     // Deactivated accounts are rejected even when the JWT itself is still valid.
@@ -119,8 +125,10 @@ const authenticateToken = async (req, res, next) => {
 
     next();
   } catch (error) {
+    // L403: bad/expired/unverifiable token is an authentication failure (401),
+    // not an authorization failure (403) — clients retry login on 401.
     logger.error('authenticateToken', error);
-    return res.status(403).json({ success: false, error: 'Invalid or expired token' });
+    return res.status(401).json({ success: false, error: 'Invalid or expired token' });
   }
 };
 
@@ -164,8 +172,24 @@ const optionalAuth = async (req, res, next) => {
     }
 
     const decoded = verifyAccessToken(token);
-    const identity = await IdentityService.getIdentity(decoded.userId, decoded.mfaVerified === true);
-    req.user = buildUserIdentity(identity);
+
+    // L403: share the identity cache — public routes with a token were hitting
+    // the DB on every request while authenticateToken cached.
+    const cacheKey = decoded.userId;
+    const cached = identityCache.get(cacheKey);
+    let identity;
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      identity = cached.data;
+      cached.lastAccess = Date.now();
+    } else {
+      identity = await IdentityService.getIdentity(decoded.userId, decoded.mfaVerified === true);
+      if (identity) {
+        identityCache.set(cacheKey, { data: identity, timestamp: Date.now(), lastAccess: Date.now() });
+      }
+    }
+    if (identity) {
+      req.user = buildUserIdentity(identity);
+    }
   } catch (error) {
     // Token is optional; ignore invalid/expired tokens
   }

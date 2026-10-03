@@ -24,9 +24,14 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
   const isActive = collection.status === 'active';
 
   const getStatusColor = () => {
-    if (isCompleted) return 'bg-[var(--color-success-light)] text-[var(--color-success)] bg-[var(--color-success)] text-[var(--color-success)]';
-    if (isCancelled) return 'bg-[var(--color-error-light)] text-[var(--color-error)] bg-[var(--color-error)] text-[var(--color-error)]';
-    return 'bg-[var(--color-primary-light)] text-[var(--color-primary)] bg-[var(--color-primary)] text-[var(--color-primary-light)]';
+    if (isCompleted) return 'bg-[var(--color-success-light)] text-[var(--color-success)]';
+    if (isCancelled) return 'bg-[var(--color-error-light)] text-[var(--color-error)]';
+    return 'bg-[var(--color-primary-light)] text-[var(--color-primary)]';
+  };
+
+  const fmtAmount = (v) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n.toLocaleString('en-KE', { minimumFractionDigits: 2 }) : '0.00';
   };
 
   const getStatusIcon = () => {
@@ -51,8 +56,13 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
   const handleContribute = async (e) => {
     e.preventDefault();
     try {
+      const amount = parseFloat(contributionForm.amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        toast.error('Enter a valid amount');
+        return;
+      }
       await api.post(API_ENDPOINTS.COLLECTIONS.CONTRIBUTIONS(collection.id), {
-        amount: parseFloat(contributionForm.amount),
+        amount,
         payment_method: contributionForm.payment_method,
         notes: contributionForm.notes,
         is_anonymous: contributionForm.is_anonymous,
@@ -132,13 +142,13 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
           <div>
             <p className="text-xs text-[var(--color-textSecondary)]">Raised</p>
             <p className="text-lg font-semibold text-[var(--color-text)]">
-              KES {parseFloat(collection.current_amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+              KES {fmtAmount(collection.current_amount)}
             </p>
           </div>
           <div className="text-right">
             <p className="text-xs text-[var(--color-textSecondary)]">Target</p>
             <p className="text-lg font-semibold text-[var(--color-text)]">
-              KES {parseFloat(collection.target_amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+              KES {fmtAmount(collection.target_amount)}
             </p>
           </div>
         </div>
@@ -157,7 +167,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
         )}
         <button
           onClick={toggleContributions}
-          className="flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] text-[var(--color-text)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-background)] hover:bg-[var(--color-surface)] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
         >
           <Eye className="w-4 h-4" />
           {showContributions ? 'Hide' : 'View'} Contributions
@@ -183,7 +193,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                 step="0.01"
                 value={contributionForm.amount}
                 onChange={(e) => setContributionForm({ ...contributionForm, amount: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div>
@@ -193,7 +203,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               <select
                 value={contributionForm.payment_method}
                 onChange={(e) => setContributionForm({ ...contributionForm, payment_method: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-success)]"
               >
                 <option value="cash">Cash</option>
                 <option value="mobile_money">Mobile Money (M-Pesa)</option>
@@ -209,7 +219,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                 rows={2}
                 value={contributionForm.notes}
                 onChange={(e) => setContributionForm({ ...contributionForm, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-on-solid)] focus:ring-2 focus:ring-[var(--color-success)]"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)] focus:ring-2 focus:ring-[var(--color-success)]"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -228,7 +238,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
               <button
                 type="button"
                 onClick={() => setShowContributionForm(false)}
-                className="flex-1 px-4 py-2 border border-[var(--color-border)] text-[var(--color-text)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
+                className="flex-1 px-4 py-2 border border-[var(--color-border)] text-[var(--color-text)] rounded-lg hover:bg-[var(--color-background)] transition-colors"
               >
                 Cancel
               </button>
@@ -269,7 +279,7 @@ const CollectionTracker = ({ collection, canContribute = true, canManage = false
                     </p>
                   </div>
                   <p className="text-sm font-semibold text-[var(--color-text)]">
-                    KES {parseFloat(contribution.amount).toLocaleString('en-KE', { minimumFractionDigits: 2 })}
+                    KES {fmtAmount(contribution.amount)}
                   </p>
                 </div>
               ))}

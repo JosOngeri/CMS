@@ -46,7 +46,7 @@ const FeaturedPhotos = () => {
             {data.map((photo) => (
               <Link
                 key={photo.id}
-                to={`/gallery/album/${photo.album_id || 'default'}`}
+                to="/gallery"
                 className="relative group cursor-pointer rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow aspect-square block"
               >
                 <img

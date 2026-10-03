@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, RefreshCw, AlertCircle } from 'lucide-react'
-import { useColorPalette } from '../../contexts/ColorPaletteContext'
+import { RefreshCw, AlertCircle } from 'lucide-react'
 
 const StatsCard = ({
   title,
@@ -18,15 +17,19 @@ const StatsCard = ({
   subtitle,
   className = ''
 }) => {
-  const { colors } = useColorPalette()
-
   const cardContent = (
     <div
       className={`stat-card ${onClick || linkTo ? 'cursor-pointer hover:shadow-lg transition-shadow' : ''} ${className}`}
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      aria-label={`${title}: ${value}. ${change}. Click to view details.`}
+      onKeyDown={(e) => {
+        if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault()
+          onClick(e)
+        }
+      }}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={`${title}: ${value}${change ? `. ${change}` : ''}`}
     >
       <div className={`stat-icon ${iconColor}`}>
         {Icon && <Icon size={28} />}

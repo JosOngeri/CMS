@@ -39,7 +39,7 @@ function Header({ onMenuClick }) {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/photo-gallery?search=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/gallery?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
@@ -81,7 +81,7 @@ function Header({ onMenuClick }) {
 
         <div className="flex items-center space-x-2 md:space-x-4 ml-2 md:ml-4">
           <Link
-            to="/photo-gallery"
+            to="/gallery"
             className="p-3 md:p-2.5 text-[var(--color-textSecondary)] hover:bg-[var(--color-background)] rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Photo Gallery"
             title="Photo Gallery"
@@ -103,13 +103,14 @@ function Header({ onMenuClick }) {
           >
             {isDark ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
           </button>
-          <button
+          <Link
+            to="/dashboard/notifications"
             className="relative p-3 md:p-2.5 text-[var(--color-textSecondary)] hover:bg-[var(--color-background)] rounded-xl transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label="Notifications"
+            title="Notifications"
           >
             <Bell className="h-6 w-6" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[var(--color-error)] rounded-full border-2 border-[var(--color-surface)]"></span>
-          </button>
+          </Link>
           <div className="relative pl-2 md:pl-4 border-l border-[var(--color-border)]">
             <button
               onClick={toggleUserMenu}
@@ -122,7 +123,7 @@ function Header({ onMenuClick }) {
               <div className="hidden md:block text-left">
                 <div className="flex items-center space-x-1">
                   <p className="text-sm font-semibold text-[var(--color-text)]">
-                    {user?.firstName} {user?.lastName}
+                    {user?.first_name} {user?.last_name}
                   </p>
                 </div>
                 <p className="text-xs text-[var(--color-textSecondary)] font-medium">

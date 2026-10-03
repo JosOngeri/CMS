@@ -103,22 +103,16 @@ const PermissionBadge = ({ permission, size = 'sm' }) => {
 /**
  * RequestAccessButton - Button to request access to restricted features
  */
-const RequestAccessButton = ({ 
-  feature, 
-  onRequest, 
+const RequestAccessButton = ({
+  feature,
+  onRequest,
   variant = 'primary',
-  size = 'sm' 
+  size = 'sm'
 }) => {
-  const { user } = useAuth();
+  // No handler wired → render nothing rather than a button that only logs.
+  if (!onRequest) return null;
 
-  const handleRequest = () => {
-    if (onRequest) {
-      onRequest(feature);
-    } else {
-      // Default behavior: send request to admin
-      console.log(`Requesting access to: ${feature}`);
-    }
-  };
+  const handleRequest = () => onRequest(feature);
 
   const variantClasses = {
     primary: 'bg-[var(--color-primary)] text-[var(--color-on-solid)] hover:bg-[var(--color-primary)]',

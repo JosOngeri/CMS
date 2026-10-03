@@ -4,7 +4,6 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { useSettings } from '../../contexts/SettingsContext';
 import { 
   ChevronLeft, 
@@ -120,9 +119,11 @@ const MinistriesCarousel = () => {
   const { getSetting } = useSettings();
   const ministries = getSetting('ministries') || defaultMinistries;
   const carouselRef = useRef(null);
+  const [paused, setPaused] = useState(false);
 
-  // Auto-scroll carousel
+  // Auto-scroll carousel (pauses while the user hovers or focuses inside)
   useEffect(() => {
+    if (paused) return;
     const interval = setInterval(() => {
       if (carouselRef.current) {
         const scrollWidth = carouselRef.current.scrollWidth;
@@ -138,7 +139,7 @@ const MinistriesCarousel = () => {
     }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [paused]);
 
   const scrollCarousel = (direction) => {
     if (carouselRef.current) {
@@ -171,16 +172,20 @@ const MinistriesCarousel = () => {
           
           <div
             ref={carouselRef}
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocus={() => setPaused(true)}
+            onBlur={() => setPaused(false)}
             className="flex flex-row overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide px-12"
           >
             {ministries.map((ministry, index) => {
               const Icon = iconMap[ministry.icon] || HelpCircle;
               const gradient = categoryColors[ministry.category] || 'from-[var(--color-textSecondary)] to-[var(--color-text)]';
               return (
-                <Link
-                  key={index}
-                  to={`/departments/${ministry.slug}`}
-                  className="flex-shrink-0 w-72 bg-gradient-to-br from-[var(--color-background)] to-[var(--color-surface)] rounded-2xl p-6 border border-[var(--color-border)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 snap-start group block"
+                // No public /departments/:slug route exists — plain card, not a link.
+                <div
+                  key={ministry.slug || index}
+                  className="flex-shrink-0 w-72 bg-gradient-to-br from-[var(--color-background)] to-[var(--color-surface)] rounded-2xl p-6 border border-[var(--color-border)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 snap-start group"
                 >
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4`}>
                     <Icon className="h-7 w-7 text-[var(--color-on-solid)]" />
@@ -193,7 +198,7 @@ const MinistriesCarousel = () => {
                     </span>
                     <ArrowRight className="h-4 w-4 text-[var(--color-primary)] opacity-100 md:opacity-0 group-focus-within:opacity-100 md:group-hover:opacity-100 transition-opacity" />
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
@@ -207,17 +212,6 @@ const MinistriesCarousel = () => {
           </button>
         </div>
 
-        {/* View All Departments Link */}
-        <div className="text-center mt-12">
-          <Link
-            to="/departments"
-            className="inline-flex items-center gap-2 text-[var(--color-primary)] hover:text-[var(--color-primary)] font-semibold transition-colors group"
-            aria-label="View all departments"
-          >
-            <span>View All Departments</span>
-            <ArrowRight className="h-5 w-5 group-hover:translate-x-1 group-focus-within:translate-x-1 transition-transform" aria-hidden="true" />
-          </Link>
-        </div>
       </div>
     </section>
   );

@@ -56,6 +56,7 @@ const PhotoGalleryPage = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   
   // Check if user is admin
   const isAdmin = user?.roles?.some(role => 
@@ -271,8 +272,8 @@ const PhotoGalleryPage = () => {
       <section className="py-8">
         <div className="container mx-auto px-4">
           <div className="flex gap-6">
-            {/* Sidebar Navigation */}
-            <div className="hidden lg:block flex-shrink-0">
+            {/* Sidebar Navigation (desktop sidebar + mobile drawer) */}
+            <div className="flex-shrink-0">
               <div className="sticky top-20">
                 <GalleryNavigation
                   photoCount={totalCount}
@@ -281,6 +282,8 @@ const PhotoGalleryPage = () => {
                   currentView={currentView}
                   onViewChange={handleViewChange}
                   canUpload={false}
+                  mobileOpen={mobileNavOpen}
+                  onMobileClose={() => setMobileNavOpen(false)}
                 />
               </div>
             </div>
@@ -305,6 +308,14 @@ const PhotoGalleryPage = () => {
 
                   {/* Filters */}
                   <div className="flex items-center space-x-2">
+                    {/* Mobile gallery menu */}
+                    <button
+                      onClick={() => setMobileNavOpen(true)}
+                      className="lg:hidden p-2.5 text-[var(--color-textSecondary)] hover:bg-[var(--color-background)] rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label="Open gallery menu"
+                    >
+                      <SlidersHorizontal className="h-5 w-5" />
+                    </button>
                     {/* Category Filter */}
                     <select
                       aria-label="Filter photos by category"
