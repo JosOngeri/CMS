@@ -72,18 +72,35 @@ jobs:
     - name: Run unit tests
       working-directory: ./backend
       run: npm test -- __tests__/unit/
+      # setup-test-db.js + config/database.js read process.env directly —
+      # .env.test above is never loaded, so pass the credentials explicitly.
+      env: &backend-test-env
+        TEST_DB_HOST: localhost
+        TEST_DB_PORT: 5432
+        TEST_DB_USER: testuser
+        TEST_DB_PASSWORD: testpass
+        TEST_DB_NAME: kmaincms_test
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: testuser
+        DB_PASSWORD: testpass
+        DB_NAME: kmaincms_test
+        NODE_ENV: test
     
     - name: Run integration tests
       working-directory: ./backend
       run: npm test -- tests/integration/
+      env: *backend-test-env
     
     - name: Run E2E tests
       working-directory: ./backend
       run: npm test -- tests/e2e/
+      env: *backend-test-env
     
     - name: Generate coverage report
       working-directory: ./backend
       run: npm run test:coverage
+      env: *backend-test-env
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3

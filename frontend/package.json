@@ -13,9 +13,9 @@
     "test": "vitest",
     "test:accessibility": "vitest run src/components/dashboard/__tests__/comprehensive-accessibility.test.jsx",
     "test:a11y": "npm run test:accessibility",
-    "test:contrast": "vitest run src/components/dashboard/__tests__/ --grep 'contrast'",
-    "test:aria": "vitest run src/components/dashboard/__tests__/ --grep 'aria'",
-    "test:keyboard": "vitest run src/components/dashboard/__tests__/ --grep 'keyboard'",
+    "test:contrast": "vitest run src/components/dashboard/__tests__/ -t 'contrast'",
+    "test:aria": "vitest run src/components/dashboard/__tests__/ -t 'aria'",
+    "test:keyboard": "vitest run src/components/dashboard/__tests__/ -t 'keyboard'",
     "test:e2e": "playwright open",
     "test:e2e:headless": "playwright test"
   },
