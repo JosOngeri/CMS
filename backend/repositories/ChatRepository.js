@@ -36,33 +36,52 @@ class ChatRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getMessagesByRoomId(roomId, limit = 50, offset = 0) {
+  async getMessagesByRoomId(roomId, limit = 50, offset = 0, churchId = null) {
+    const params = [roomId, limit, offset];
+    // When churchId is supplied, enforce it via the chat_rooms join so a
+    // caller can't read another tenant's messages with a bare room id.
+    const tenantJoin = churchId
+      ? 'JOIN chat_rooms r ON m.room_id = r.id AND r.church_id = $4'
+      : '';
+    if (churchId) params.push(churchId);
     const query = `
       SELECT m.*, u.first_name, u.last_name
       FROM chat_messages m
+      ${tenantJoin}
       LEFT JOIN users u ON m.sender_id = u.id
       WHERE m.room_id = $1
       ORDER BY m.created_at DESC
       LIMIT $2 OFFSET $3
     `;
-    const result = await this.pool.query(query, [roomId, limit, offset]);
+    const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async createMessage(messageData) {
+  async createMessage(messageData, churchId = null) {
     const { room_id, sender_id, content, message_type, metadata } = messageData;
+    // Sanitize: metadata must be a plain object; never stringify arbitrary
+    // input (circular refs throw, non-objects pollute the column).
+    let safeMetadata = '{}';
+    if (metadata && typeof metadata === 'object' && !Array.isArray(metadata)) {
+      try {
+        safeMetadata = JSON.stringify(metadata);
+      } catch {
+        safeMetadata = '{}';
+      }
+    }
+    const params = [room_id, sender_id, content, message_type, safeMetadata];
+    // Same tenant gate as createContribution: the INSERT only proceeds when
+    // the target room belongs to the caller's church.
+    const tenantGuard = churchId
+      ? ' WHERE EXISTS (SELECT 1 FROM chat_rooms WHERE id = $1 AND church_id = $6)'
+      : '';
+    if (churchId) params.push(churchId);
     const query = `
       INSERT INTO chat_messages (room_id, sender_id, content, message_type, metadata)
-      VALUES ($1, $2, $3, $4, $5)
+      SELECT $1, $2, $3, $4, $5${tenantGuard}
       RETURNING *
     `;
-    const result = await this.pool.query(query, [
-      room_id,
-      sender_id,
-      content,
-      message_type,
-      JSON.stringify(metadata)
-    ]);
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 }

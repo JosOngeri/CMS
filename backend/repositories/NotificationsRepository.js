@@ -192,17 +192,16 @@ class NotificationsRepository extends BaseRepository {
     if (!Array.isArray(userIds) || userIds.length === 0) return [];
     // Only notify members of this church — foreign IDs are dropped, not sent
     const validIds = await this.filterUsersByChurch(userIds, churchId);
-    const results = [];
-    for (const userId of validIds) {
-      const result = await this.pool.query(
-        `INSERT INTO notifications (user_id, type_id, title, message, church_id)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING *`,
-        [userId, typeId, title, message, churchId]
-      );
-      results.push(result.rows[0]);
-    }
-    return results;
+    if (validIds.length === 0) return [];
+    // Single round-trip: unnest expands the id array into one multi-row INSERT
+    const result = await this.pool.query(
+      `INSERT INTO notifications (user_id, type_id, title, message, church_id)
+       SELECT uid, $2, $3, $4, $5
+       FROM unnest($1::uuid[]) AS uid
+       RETURNING *`,
+      [validIds, typeId, title, message, churchId]
+    );
+    return result.rows;
   }
 
   async getNotificationTemplates(churchId) {

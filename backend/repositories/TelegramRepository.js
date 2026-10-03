@@ -65,35 +65,33 @@ class TelegramRepository extends BaseRepository {
   // channelId/churchId accepted for signature compatibility but not needed
   async getChannelSettings(channelId, churchId = null) {
     void channelId; void churchId;
-    let query = `SELECT * FROM telegram_settings WHERE id = 1`;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $2`;
-      params.push(churchId);
-    }
-
-    const result = await this.pool.query(query, params);
+    const result = await this.pool.query('SELECT * FROM telegram_settings WHERE id = 1');
     return result.rows[0];
   }
 
   async getChannelStats(channelId, churchId = null) {
     const params = [channelId];
-    // Old code appended "AND church_id" to a FROM-less SELECT — invalid SQL.
-    // Scope via the channel's church instead.
+    // Scope via the channel's church; post counts share a single scan.
     let scope = '';
     if (churchId) {
-      scope = ` AND EXISTS (SELECT 1 FROM telegram_channels tc WHERE tc.id = $1 AND tc.church_id = $2)`;
+      scope = ` AND tc.church_id = $2`;
       params.push(churchId);
     }
     const query = `
-      SELECT * FROM (
+      SELECT p.total_posts, p.posts_30_days, v.total_views
+      FROM (
         SELECT
-          (SELECT COUNT(*) FROM telegram_channel_posts WHERE channel_id = $1) as total_posts,
-          (SELECT COUNT(*) FROM telegram_channel_posts WHERE channel_id = $1 AND post_date >= CURRENT_DATE - INTERVAL '30 days') as posts_30_days,
-          (SELECT COUNT(*) FROM telegram_post_views WHERE channel_id = $1) as total_views
-      ) stats
-      WHERE EXISTS (SELECT 1 FROM telegram_channels tc WHERE tc.id = $1)${scope}
+          COUNT(*) as total_posts,
+          COUNT(*) FILTER (WHERE post_date >= CURRENT_DATE - INTERVAL '30 days') as posts_30_days
+        FROM telegram_channel_posts
+        WHERE channel_id = $1
+      ) p
+      CROSS JOIN (
+        SELECT COUNT(*) as total_views
+        FROM telegram_post_views
+        WHERE channel_id = $1
+      ) v
+      WHERE EXISTS (SELECT 1 FROM telegram_channels tc WHERE tc.id = $1${scope})
     `;
     const result = await this.pool.query(query, params);
     return result.rows[0];

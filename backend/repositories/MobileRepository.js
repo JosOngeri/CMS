@@ -19,7 +19,7 @@ class MobileRepository extends BaseRepository {
   }
 
   async getPendingApprovalsCount(userId, churchId = null) {
-    let query = `SELECT COUNT(*) as count FROM approval_requests WHERE status = $1 AND COALESCE(requester_id, requested_by) = $2`;
+    let query = `SELECT COUNT(*) as count FROM approval_requests WHERE status = $1 AND requester_id = $2`;
     const params = ['pending', userId];
 
     if (churchId) {
@@ -370,25 +370,27 @@ class MobileRepository extends BaseRepository {
               continue;
             }
 
-            // Update existing
+            // Update existing — server clock owns updated_at (never trust the
+            // client timestamp for "last updated" bookkeeping)
             await this.pool.query(
               `UPDATE members SET
                 first_name = $1,
                 last_name = $2,
                 email = $3,
                 phone = $4,
-                updated_at = $5,
-                last_synced_by = $6
-              WHERE id = $7 AND church_id = $8`,
-              [change.firstName, change.lastName, change.email, change.phone, change.updatedAt, userId, change.id, churchId]
+                updated_at = CURRENT_TIMESTAMP,
+                last_synced_by = $5
+              WHERE id = $6 AND church_id = $7`,
+              [change.firstName, change.lastName, change.email, change.phone, userId, change.id, churchId]
             );
             processed.push(change.id);
           } else {
-            // Create new
+            // Create new — created_at mirrors the client's record, but
+            // updated_at is stamped by the server
             await this.pool.query(
               `INSERT INTO members (id, first_name, last_name, email, phone, church_id, created_at, updated_at, is_active, last_synced_by)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, true, $9)`,
-              [change.id, change.firstName, change.lastName, change.email, change.phone, churchId, change.createdAt, change.updatedAt, userId]
+               VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, true, $8)`,
+              [change.id, change.firstName, change.lastName, change.email, change.phone, churchId, change.createdAt, userId]
             );
             processed.push(change.id);
           }

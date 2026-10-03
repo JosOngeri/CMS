@@ -52,17 +52,17 @@ class ActivityFeedController extends BaseController {
       const limitNum = parseInt(limit);
       const offsetNum = parseInt(offset);
 
-      // Get activities from repository
-      const activities = await activityFeedRepository.getActivityFeed(departmentId, req.user.church_id, limitNum, offsetNum);
+      // Type filtering happens in SQL before LIMIT so pagination stays correct
+      const activities = await activityFeedRepository.getActivityFeed(
+        departmentId, req.user.church_id, limitNum, offsetNum, type
+      );
 
-      // Filter by activity type if specified
-      const filteredActivities = await activityFeedRepository.getActivitiesByType(activities, type);
-
-      // Get total count for pagination
-      const totalCount = await activityFeedRepository.getActivityCount(departmentId, req.user.church_id);
+      const totalCount = await activityFeedRepository.getActivityCount(
+        departmentId, req.user.church_id, type
+      );
 
       this.success(res, {
-        data: filteredActivities,
+        data: activities,
         pagination: {
           total: totalCount,
           limit: limitNum,

@@ -9,7 +9,7 @@ class CommentsRepository extends BaseRepository {
     const result = await this.pool.query(
       `SELECT
         c.*,
-        u.first_name || ' ' || u.last_name as user_name,
+        COALESCE(NULLIF(TRIM(u.first_name || ' ' || u.last_name), ''), u.email) as user_name,
         u.email as user_email
        FROM comments c
        LEFT JOIN users u ON c.user_id = u.id
@@ -35,7 +35,7 @@ class CommentsRepository extends BaseRepository {
     const result = await this.pool.query(
       `SELECT
         c.*,
-        u.first_name || ' ' || u.last_name as user_name,
+        COALESCE(NULLIF(TRIM(u.first_name || ' ' || u.last_name), ''), u.email) as user_name,
         u.email as user_email
        FROM comments c
        LEFT JOIN users u ON c.user_id = u.id

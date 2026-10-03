@@ -311,15 +311,9 @@ class CollectionController extends BaseController {
         return ResponseHandler.notFound(res, 'Collection not found');
       }
 
-      // Update collection current amount
-      await CollectionRepository.updateCollectionCurrentAmount(id, amount);
-
-      // Check if target reached
-      const updatedCollection = await CollectionRepository.getCollectionAmounts(id);
-
-      if (updatedCollection.current_amount >= updatedCollection.target_amount) {
-        await CollectionRepository.updateCollectionStatus(id, 'completed');
-      }
+      // Update collection current amount and flip status to 'completed'
+      // when the target is reached — single atomic statement.
+      await CollectionRepository.addToCollectionCurrentAmount(id, amount, req.user.church_id);
 
       return ResponseHandler.success(res, { contribution }, 'Contribution added successfully', 201);
     } catch (error) {
@@ -396,14 +390,8 @@ class CollectionController extends BaseController {
       const amount = contribution.amount;
 
       await CollectionRepository.deleteContribution(contributionId, req.user.church_id);
-      await CollectionRepository.subtractFromCollectionCurrentAmount(id, amount);
-
-      const collectionStatus = await CollectionRepository.getCollectionStatusAndAmounts(id);
-
-      if (collectionStatus.status === 'completed' &&
-          collectionStatus.current_amount < collectionStatus.target_amount) {
-        await CollectionRepository.updateCollectionStatus(id, 'active');
-      }
+      // Atomic subtract + status flip (completed→active when below target).
+      await CollectionRepository.subtractFromCollectionCurrentAmount(id, amount, req.user.church_id);
 
       return ResponseHandler.success(res, null, 'Contribution deleted successfully');
     } catch (error) {

@@ -21,14 +21,22 @@ class SmsRepository extends BaseRepository {
     return result.rows;
   }
 
+  // Campaign stats come from one GROUP BY scan over sms_logs joined to the
+  // campaign rows — the old code ran 2 correlated subqueries per row.
   async getCampaigns(churchId) {
     const result = await this.pool.query(
       `SELECT c.*, t.name as template_name,
-       (SELECT COUNT(*) FROM sms_logs WHERE campaign_id = c.id) as sent_count,
-       (SELECT ROUND(COUNT(CASE WHEN status = 'delivered' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1)
-        FROM sms_logs WHERE campaign_id = c.id) as delivery_rate
+        COALESCE(ls.sent_count, 0) as sent_count,
+        COALESCE(ls.delivery_rate, 0) as delivery_rate
        FROM sms_campaigns c
        LEFT JOIN sms_templates t ON c.template_id = t.id
+       LEFT JOIN (
+         SELECT campaign_id,
+                COUNT(*) as sent_count,
+                ROUND(COUNT(*) FILTER (WHERE status = 'delivered') * 100.0 / NULLIF(COUNT(*), 0), 1) as delivery_rate
+         FROM sms_logs
+         GROUP BY campaign_id
+       ) ls ON ls.campaign_id = c.id
        WHERE c.church_id = $1
        ORDER BY c.created_at DESC`,
       [churchId]
@@ -195,18 +203,8 @@ class SmsRepository extends BaseRepository {
   }
 
   async getCampaignsWithStats(churchId) {
-    const result = await this.pool.query(
-      `SELECT c.*, t.name as template_name,
-       (SELECT COUNT(*) FROM sms_logs WHERE campaign_id = c.id) as sent_count,
-       (SELECT ROUND(COUNT(CASE WHEN status = 'delivered' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1)
-        FROM sms_logs WHERE campaign_id = c.id) as delivery_rate
-       FROM sms_campaigns c
-       LEFT JOIN sms_templates t ON c.template_id = t.id
-       WHERE c.church_id = $1
-       ORDER BY c.created_at DESC`,
-      [churchId]
-    );
-    return result.rows;
+    // Same consolidated aggregate as getCampaigns — kept for caller compat.
+    return this.getCampaigns(churchId);
   }
 
   async getAnalyticsWithTopRecipients(churchId, limit = 10) {

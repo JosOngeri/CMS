@@ -95,15 +95,22 @@ class MembersRepository extends BaseRepository {
   }
 
   async getWithContactsAndGroups(memberId, churchId = null) {
+    // Focused LATERAL joins — one aggregate per relation, no row fan-out.
+    // Junction is member_group_memberships -> member_groups (schema 003).
     let query = `
-      SELECT m.*,
-        (SELECT json_agg(json_build_object('id', c.id, 'type', c.contact_type, 'value', c.contact_value))
-         FROM member_contacts c WHERE c.member_id = m.id) as contacts,
-        (SELECT json_agg(json_build_object('id', g.id, 'name', g.name))
-         FROM member_groups mg
-         JOIN groups g ON mg.group_id = g.id
-         WHERE mg.member_id = m.id) as groups
+      SELECT m.*, c.contacts, g.groups
       FROM members m
+      LEFT JOIN LATERAL (
+        SELECT json_agg(json_build_object('id', c.id, 'type', c.contact_type, 'value', c.contact_value)) as contacts
+        FROM member_contacts c
+        WHERE c.member_id = m.id
+      ) c ON true
+      LEFT JOIN LATERAL (
+        SELECT json_agg(json_build_object('id', g.id, 'name', g.name)) as groups
+        FROM member_group_memberships mg
+        JOIN member_groups g ON mg.group_id = g.id
+        WHERE mg.member_id = m.id
+      ) g ON true
       WHERE m.id = $1
     `;
     const params = [memberId];

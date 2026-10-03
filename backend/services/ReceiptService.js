@@ -14,9 +14,9 @@ class ReceiptService {
    */
   async generateReceiptNumber(churchId) {
     const prefix = 'KMC';
-    // Get sequential number for today
-    const count = await ManualPaymentRepository.getTodayPaymentCount(churchId);
-    return numberingService.generateDailySequenceNumber(prefix, count + 1);
+    // Atomic per-church daily sequence — no count-then-insert race
+    const seq = await ManualPaymentRepository.getNextReceiptSequence(churchId);
+    return numberingService.generateDailySequenceNumber(prefix, seq);
   }
 
   /**

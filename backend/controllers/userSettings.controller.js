@@ -55,7 +55,7 @@ class UserSettingsController extends BaseController {
     // Single upsert — field allowlist + column/placeholder construction live
     // in the repository (ledger L147/L571: the old SET-string-as-column INSERT
     // could never succeed and raced under concurrent requests).
-    const preferences = await UserSettingsRepository.upsertUserPreferences(userId, req.body);
+    const preferences = await UserSettingsRepository.upsertUserPreferences(userId, req.body, req.user.church_id);
 
     if (!preferences) {
       return this.badRequest(res, 'No valid fields to update');
@@ -138,8 +138,8 @@ class UserSettingsController extends BaseController {
     const limit = parseInt(req.query.limit) || 20;
     const offset = parseInt(req.query.offset) || 0;
 
-    const activities = await UserSettingsRepository.getActivityFeed(userId, limit, offset);
-    const total = await UserSettingsRepository.getActivityFeedCount(userId);
+    const activities = await UserSettingsRepository.getActivityFeed(userId, limit, offset, req.user.church_id);
+    const total = await UserSettingsRepository.getActivityFeedCount(userId, req.user.church_id);
 
     this.success(res, { activities, total, limit, offset });
   } catch (error) {

@@ -173,7 +173,7 @@ class ContentController extends BaseController {
       const { title, content, contentType, categoryId, status, publishedAt, expiresAt, priority, seoTitle, seoDescription, ogImage, tags } = req.body;
       const userId = req.user.id;
 
-      const current = await ContentRepository.findContentItemById(id);
+      const current = await ContentRepository.findContentItemById(id, req.user.church_id);
       if (!current) {
         return this.notFound(res, 'Content not found');
       }
@@ -196,7 +196,7 @@ class ContentController extends BaseController {
         seoTitle,
         seoDescription,
         ogImage
-      });
+      }, req.user.church_id);
 
       if (tags !== undefined) {
         await ContentRepository.deleteContentItemTags(id);
@@ -206,13 +206,12 @@ class ContentController extends BaseController {
       }
 
       if (content && content !== current.content) {
-        const nextRev = await ContentRepository.getMaxRevisionNumber(id) + 1;
+        // revisionNumber omitted — ContentRepository derives MAX+1 atomically
         await ContentRepository.createUpdateRevision({
           contentItemId: id,
           title: title || current.title,
           content,
-          authorId: userId,
-          revisionNumber: nextRev
+          authorId: userId
         });
       }
 
@@ -227,7 +226,7 @@ class ContentController extends BaseController {
     try {
       const { id } = req.params;
 
-      await ContentRepository.deleteContentItem(id);
+      await ContentRepository.deleteContentItem(id, req.user.church_id);
 
       this.success(res, { message: 'Content deleted successfully' });
     } catch (error) {
@@ -250,7 +249,7 @@ class ContentController extends BaseController {
       const { id } = req.params;
       const userId = req.user.id;
 
-      const published = await ContentRepository.publishContentItem(id);
+      const published = await ContentRepository.publishContentItem(id, req.user.church_id);
 
       if (!published) {
         return this.notFound(res, 'Content not found');
@@ -305,20 +304,18 @@ class ContentController extends BaseController {
         return this.notFound(res, 'Revision not found');
       }
 
-      const currentRev = await ContentRepository.getMaxRevisionNumber(id);
-
       await ContentRepository.update(id, {
         title: revision.title,
         content: revision.content,
         updated_at: new Date().toISOString()
       });
 
+      // revisionNumber omitted — ContentRepository derives MAX+1 atomically
       await ContentRepository.createRollbackRevision({
         contentItemId: id,
         title: revision.title,
         content: revision.content,
         authorId: userId,
-        revisionNumber: currentRev + 1,
         targetRevisionNumber: revision.revision_number
       });
 

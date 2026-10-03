@@ -6,6 +6,7 @@ class RecurringPaymentsRepository extends BaseRepository {
   }
 
   async getAllWithDetails(filters = {}) {
+    if (!filters.church_id) throw new Error('getAllWithDetails: filters.church_id is required');
     let query = `
       SELECT rp.*,
              m.first_name || ' ' || m.last_name as member_name,
@@ -15,16 +16,10 @@ class RecurringPaymentsRepository extends BaseRepository {
       LEFT JOIN users m ON rp.member_id = m.id
       LEFT JOIN projects pr ON rp.project_id = pr.id
       LEFT JOIN funds f ON rp.fund_id = f.id
-      WHERE 1=1
+      WHERE rp.church_id = $1
     `;
-    const params = [];
-    let paramCount = 0;
-
-    if (filters.church_id) {
-      paramCount++;
-      query += ` AND rp.church_id = $${paramCount}`;
-      params.push(filters.church_id);
-    }
+    const params = [filters.church_id];
+    let paramCount = 1;
 
     if (filters.status) {
       paramCount++;
@@ -72,6 +67,7 @@ class RecurringPaymentsRepository extends BaseRepository {
       recurring_number, member_id, project_id, fund_id, amount, frequency,
       start_date, end_date, next_payment_date, payment_method, auto_charge, notes, created_by, church_id
     } = paymentData;
+    if (!church_id) throw new Error('createRecurringPayment: church_id is required');
 
     const query = `
       INSERT INTO recurring_payments (recurring_number, member_id, project_id, fund_id, amount, frequency, start_date, end_date, next_payment_date, payment_method, auto_charge, notes, created_by, church_id)
@@ -92,13 +88,33 @@ class RecurringPaymentsRepository extends BaseRepository {
       payment_method, auto_charge, status, notes
     } = paymentData;
 
+    // next_payment_date recalculation lives here (repository hook): when the
+    // caller changes frequency or start_date without supplying an explicit
+    // next_payment_date, it's derived in the same statement — no extra
+    // getStartDateAndFrequency round-trip. Mirrors
+    // SchedulingService.calculateNextPaymentDate.
     const query = `
       UPDATE recurring_payments
       SET amount = COALESCE($1, amount),
           frequency = COALESCE($2, frequency),
           start_date = COALESCE($3, start_date),
           end_date = COALESCE($4, end_date),
-          next_payment_date = COALESCE($5, next_payment_date),
+          next_payment_date = COALESCE(
+            $5,
+            CASE
+              WHEN $2 IS NOT NULL OR $3 IS NOT NULL THEN
+                (COALESCE($3, start_date))::date + (
+                  CASE COALESCE($2, frequency)
+                    WHEN 'weekly' THEN INTERVAL '7 days'
+                    WHEN 'bi_weekly' THEN INTERVAL '14 days'
+                    WHEN 'quarterly' THEN INTERVAL '3 months'
+                    WHEN 'semi_annual' THEN INTERVAL '6 months'
+                    WHEN 'annual' THEN INTERVAL '1 year'
+                    ELSE INTERVAL '1 month'
+                  END)
+              ELSE next_payment_date
+            END
+          ),
           payment_method = COALESCE($6, payment_method),
           auto_charge = COALESCE($7, auto_charge),
           status = COALESCE($8, status),

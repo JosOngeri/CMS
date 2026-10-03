@@ -145,32 +145,19 @@ class DepartmentRepository extends BaseRepository {
   }
 
   async getRecentActivity(churchId) {
+    // Reads the unified department_activity_feed view (migration 070) instead
+    // of an inline UNION ALL — same rows, tenant column carried on the view.
     const result = await this.pool.query(`
       SELECT
-        d.name as department_name,
-        d.category,
-        'communication' as type,
-        dc.title,
-        dc.sent_at as date,
-        CONCAT(u.first_name, ' ', u.last_name) as author
-      FROM department_communications dc
-      JOIN departments d ON dc.department_id = d.id
-      JOIN users u ON dc.sender_id = u.id
-      WHERE dc.sent_at >= CURRENT_DATE - INTERVAL '7 days'
-      ${churchId ? `AND d.church_id = $1` : ''}
-      UNION ALL
-      SELECT
-        d.name as department_name,
-        d.category,
-        'meeting' as type,
-        dm.title,
-        dm.meeting_date as date,
-        CONCAT(u.first_name, ' ', u.last_name) as author
-      FROM department_meetings dm
-      JOIN departments d ON dm.department_id = d.id
-      JOIN users u ON dm.organizer_id = u.id
-      WHERE dm.meeting_date >= CURRENT_DATE - INTERVAL '7 days'
-      ${churchId ? `AND d.church_id = $1` : ''}
+        department_name,
+        category,
+        type,
+        title,
+        date,
+        author
+      FROM department_activity_feed
+      WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+      ${churchId ? `AND church_id = $1` : ''}
       ORDER BY date DESC
       LIMIT 20
     `, churchId ? [churchId] : []);

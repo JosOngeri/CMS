@@ -520,53 +520,89 @@ Cluster 04 (Backend Middleware & Security) focused on security robustness, perfo
 
 ---
 
-### Cluster 05: Backend Repositories (Core)
+### Cluster 05: Backend Repositories (Core) ✅ FIXED (2 scoped — see report)
 **Prompt:** Audit for data access layer efficiency, query optimization, and architectural integrity. Focus on: (1) Identifying N+1 query patterns and recommending JOIN-based solutions; (2) Checking for fat repository bloat (50+ methods) and recommending splitting into specialized repositories; (3) Ensuring all analytics queries enforce proper church_id isolation to prevent data leakage; (4) Validating that base repositories implement mandatory tenant filtering to prevent bypassing multi-tenant safety; (5) Checking for expensive nested subqueries and recommending CTEs or materialized views; (6) Ensuring repositories don't contain business logic that should be in services; (7) Verifying proper use of indexes for frequently accessed columns; (8) Checking for redundant code across similar repositories (e.g., Members vs Users) and recommending consolidation; (9) Ensuring proper error handling for database failures; (10) Validating that repositories implement proper connection pooling and timeout handling.
-- `.\backend\repositories\ApprovalsRepository.js` 
+- `.\backend\repositories\ApprovalsRepository.js` ✅ ALREADY RESOLVED
   - Gaps: `getApprovalAnalytics` lacks `church_id` filter (leakage risk); manual string interpolation for sorting columns.
-  - Remedy: Enforce `church_id` isolation in all analytics; use a whitelist for allowed sort columns.
-- `.\backend\repositories\base.repository.js` 
+  - Remedy: Verified — `getApprovalAnalytics` already filters `church_id = $1`; `getAll` already allowlists sort columns (`allowedSortColumns`). No change needed.
+- `.\backend\repositories\base.repository.js` ⚠️ SCOPED
   - Gaps: Redundant; duplicated with `BaseRepository.js` but uses a different architecture (Pool vs Client injection).
-  - Remedy: DELETE and migrate all usages to the standardized `BaseRepository.js`.
-- `.\backend\repositories\BaseRepository.js` 
+  - Remedy: Deferred — deletion requires migrating 5 treasury-module repositories (`account`, `budget`, `expense`, `fund`, `journalEntry`) whose APIs are incompatible with `BaseRepository.js` (pool injection, options-object `findAll`, `transaction(callback)`, `queryOne`, `buildQuery` consumers). Exceeds the per-cluster side-effect limit; tracked as a standalone migration task.
+- `.\backend\repositories\BaseRepository.js` ✅ FIXED
   - Gaps: Multi-tenant `church_id` is optional in core methods (security risk); lacks mandatory pagination; string-interpolated table names.
-  - Remedy: Enforce `church_id` in constructor or core methods; implement standardized limit/offset; use parameterized table references if possible.
-- `.\backend\repositories\DashboardRepository.js` 
+  - Remedy: `tableName` validated against a strict identifier pattern at construction; new `_enforceChurchScope` makes churchId MANDATORY whenever the table has a `church_id` column (throws otherwise) and no-ops on global tables; `findAll` accepts `{limit, offset}` via `clampLimit`.
+- `.\backend\repositories\DashboardRepository.js` ✅ FIXED
   - Gaps: `getSummary` executes 4 complex sub-queries via `Promise.all` which is inefficient; `getUserActivityLevel` uses a potentially expensive 4-way LEFT JOIN.
-  - Remedy: Refactor `getSummary` to use a single query with CTEs; use materialized views for activity levels.
-- `.\backend\repositories\DepartmentCategoriesRepository.js` 
+  - Remedy: `getSummary` refactored to one round-trip WITH-CTE query (same output shape); `getUserActivityLevel` replaced the fan-out join with three scoped COUNT(DISTINCT) subqueries. Materialized view deliberately skipped — per-user point query is index-assisted; a mat view would need refresh scheduling infrastructure that does not exist yet.
+- `.\backend\repositories\DepartmentCategoriesRepository.js` ✅ FIXED
   - Gaps: Missing `church_id` isolation (categories appear to be global but should likely be tenant-specific).
-  - Remedy: Add `church_id` column to table and filters to repository.
-- `.\backend\repositories\DepartmentFeaturesRepository.js` 
+  - Remedy: migration `070` adds `church_id` + index (NULL = global/shared, same convention as approval_workflows); all methods accept churchId — reads see global+tenant rows, mutations are scoped to the caller's church; `department-categories.routes.js` now passes `req.user.church_id`.
+- `.\backend\repositories\DepartmentFeaturesRepository.js` ✅ FIXED
   - Gaps: `getDepartmentFeatures` uses a standard JOIN instead of checking against a global feature master list.
-  - Remedy: Ensure features can be enabled/disabled at the church level before being allocated to departments.
-- `.\backend\repositories\DepartmentRepository.js` 
+  - Remedy: `allocateFeatureToDepartment` now rejects features that are not globally available (NULL church_id) or enabled for the caller's church; `getDepartmentFeatures` also filters `df.is_active` and church availability.
+- `.\backend\repositories\DepartmentRepository.js` ✅ PARTIAL
   - Gaps: Overlaps with `DepartmentsRepository.js`; `getRecentActivity` uses a heavy `UNION ALL` across communications and meetings.
-  - Remedy: Consolidate into a single repository; optimize activity query using a unified `activities` view.
-- `.\backend\repositories\DepartmentsRepository.js` 
+  - Remedy: `getRecentActivity` now reads the new `department_activity_feed` view (migration 070). Full repository consolidation deferred — ~44 methods with signature collisions (e.g. two `getMeetings` with different signatures) across 3 consumer files; tracked separately.
+- `.\backend\repositories\DepartmentsRepository.js` ✅ FIXED
   - Gaps: `getAllWithStats` has a high N+1 risk: 3 correlated subqueries per department row.
-  - Remedy: Refactor to `LEFT JOIN` and `GROUP BY` to fetch counts in a single pass.
-- `.\backend\repositories\MemberGivingRepository.js` 
+  - Remedy: Refactored to `LEFT JOIN` + `COUNT(DISTINCT)` + `GROUP BY d.id` — single pass, no fan-out inflation.
+- `.\backend\repositories\MemberGivingRepository.js` ✅ ALREADY RESOLVED
   - Gaps: Performs year-math and date-formatting (`TO_CHAR`) in SQL, which is fine, but lacks index hints for large giving history tables.
-  - Remedy: Ensure composite indexes exist on `(member_id, payment_date, status)`.
-- `.\backend\repositories\MembersRepository.js` 
+  - Remedy: File already removed in the Phase C dead-code purge (see `../_archive/dead-code/`); the index concern is moot for the live tree.
+- `.\backend\repositories\MembersRepository.js` ✅ FIXED
   - Gaps: `getWithContactsAndGroups` uses nested `json_agg` subqueries which can lag on large member lists.
-  - Remedy: Optimize with focused JOINs and ensure `church_id` is indexed on the junction tables.
-- `.\backend\repositories\TreasuryDashboardRepository.js` 
+  - Remedy: Rewritten with focused `LEFT JOIN LATERAL` aggregates; corrected junction tables to `member_group_memberships` → `member_groups` (the old `groups` join referenced a non-existent table); migration 070 adds member/group indexes on the junction.
+- `.\backend\repositories\TreasuryDashboardRepository.js` ✅ FIXED
   - Gaps: `getDashboardStats` uses 4 individual `SELECT` sub-queries in the main select clause (Performance bottleneck).
-  - Remedy: Refactor to use a single scan with filtered aggregations.
-- `.\backend\repositories\TreasuryRepository.js` 
+  - Remedy: Single scan with `FILTER`ed aggregates over transactions + one accounts CTE cross-joined (2 scans total instead of 4).
+- `.\backend\repositories\TreasuryRepository.js` ⚠️ SCOPED
   - Gaps: "Fat Repository" bloat (700+ lines); handles unrelated entities like Vendors, Pledges, and Fixed Assets in one file.
-  - Remedy: Split into specialized repos (`VendorsRepository`, `PledgesRepository`, etc.) following SRP.
-- `.\backend\repositories\UserRepository.js` 
+  - Remedy: Split deferred — file is now 1085 lines/~58 methods with 71 call sites in `treasury.controller.js`; carving out Vendors/Pledges/Projects/Campaigns/FixedAssets/Reconciliations repos means new module boundaries + rewiring that controller, exceeding the per-cluster side-effect limit. NOTE: specialized `VendorsRepository`/`RecurringPaymentsRepository` already exist for their own controllers, and TreasuryRepository's `updateVendor` uses a DIFFERENT column set (`name` vs `vendor_name`) — possible latent schema bug, flagged for review.
+- `.\backend\repositories\UserRepository.js` ✅ FIXED
   - Gaps: `getMemberDirectory` re-implements complex filtering; redundant activity history fetching logic. Overlaps with `UsersRepository.js`.
-  - Remedy: Consolidate into a single repository; use shared QueryBuilder for directory filtering.
-- `.\backend\repositories\UserSettingsRepository.js` 
+  - Remedy: `UsersRepository.js` already consolidated away (dead-code archive); `getMemberDirectory` data/count queries now share one internal `buildDirectoryQuery` filter builder (no QueryBuilder utility exists in the codebase — that part of the remedy was skipped as a missing dependency); `getUserActivityHistory` delegates to `UserSettingsRepository.getActivityFeed`, mapped to the legacy shape.
+- `.\backend\repositories\UserSettingsRepository.js` ✅ FIXED
   - Gaps: Redundant password hashing logic hints; lacks church context for activity feeds.
-  - Remedy: Ensure all preference updates are audited; add tenant isolation to activity feeds.
-- `.\backend\repositories\UsersRepository.js` 
+  - Remedy: `upsertUserPreferences` writes an audit_log row via `helpers/auditLog.logAction` (accepts optional churchId; controller passes it) and legacy update paths now stamp `updated_at`; `getActivityFeed`/`getActivityFeedCount` accept churchId and tenant-filter every branch (gallery_favorites via `gallery_photos` join — it has no church_id column).
+- `.\backend\repositories\UsersRepository.js` ✅ ALREADY RESOLVED
   - Gaps: Duplicated logic with `UserRepository.js`; contains manual role-update loops which are not atomic.
-  - Remedy: Consolidate with `UserRepository.js`; use a single transaction for user + role updates.
+  - Remedy: File already removed in the Phase C dead-code purge — single-repository consolidation is done; `UserRepository.assignRolesByNames` remains the live role-assignment path.
+
+---
+
+**Cluster 05 Remediation Report**
+
+**Audit Date:** 2026-09-30 (regenerated)
+**Remediation Date:** 2026-10-XX
+**Status:** ✅ COMPLETE (2 items intentionally scoped — see notes)
+
+**Files Remediated:** 15/15 entries (9 edited, 4 verified already-resolved, 2 scope-deferred)
+
+**Schema Migration Created:**
+`backend/migrations/070_cluster05_tenant_isolation_and_indexes.sql` — adds `department_categories.church_id` + index; `member_group_memberships` member/group indexes; `department_activity_feed` view. **Must be run before deploying the repo changes** (DepartmentRepository.getRecentActivity and DepartmentCategoriesRepository depend on it).
+
+**Changes Made This Session:**
+1. **BaseRepository.js** — IDENT-validated tableName; `_enforceChurchScope` makes churchId mandatory on tenant tables (throws on omission — callers passing null now fail loudly instead of silently scanning globally); `findAll` gained `{limit, offset}` options via `clampLimit`
+2. **DashboardRepository.js** — `getSummary` → single WITH-CTE query; `getUserActivityLevel` → scoped subqueries (mat view deferred)
+3. **DepartmentsRepository.js** — `getAllWithStats` N+1 → LEFT JOIN + GROUP BY single pass
+4. **DepartmentRepository.js** — `getRecentActivity` → `department_activity_feed` view
+5. **DepartmentCategoriesRepository.js + routes** — full tenant isolation (global NULL + tenant-scoped)
+6. **DepartmentFeaturesRepository.js** — church-level feature gate before allocation; master-list filter on read
+7. **MembersRepository.js** — LATERAL aggregate joins; fixed broken junction references (`member_group_memberships`/`member_groups`, not `member_groups`/`groups`)
+8. **TreasuryDashboardRepository.js** — `getDashboardStats` single-scan FILTERed aggregation
+9. **UserRepository.js** — deduplicated directory filter building; `getUserActivityHistory` delegates to UserSettingsRepository
+10. **UserSettingsRepository.js + userSettings.controller.js** — audited preference upserts (audit_log via `logAction`); tenant-scoped activity feed + count
+
+**Scope-Deferred (safety rule — >3 side-effect files or structural change):**
+- `base.repository.js` deletion — requires rewriting 5 treasury-module repositories to a different base-class API
+- `TreasuryRepository.js` split — ~58 methods / 71 controller call sites / new repo boundaries; note divergent `vendors` column usage (`name` vs `vendor_name`) flagged as possible latent bug
+- `DepartmentRepository.js` full merge into `DepartmentsRepository.js` — signature collisions across 3 consumers
+- `getUserActivityLevel` materialized view — no refresh/scheduling infrastructure exists
+
+**Risk Level:** MEDIUM — tenant enforcement now throws instead of silently passing null churchId; deploy requires migration 070  
+**Production Impact:** `department-categories` mutations restricted to caller's church; `DepartmentRepository.getRecentActivity` requires the view; BaseRepository callers omitting churchId on tenant tables will now error (by design)
+
+---
 
 ### Cluster 06: Backend Repositories (Specialized)
 **Prompt:** Audit for domain-specific data access patterns, performance optimization, and data integrity. Focus on: (1) Ensuring specialized repositories implement domain-specific validation rules; (2) Checking that analytics repositories use efficient aggregation strategies (materialized views, CTEs); (3) Validating that activity feed repositories implement proper pagination and filtering; (4) Ensuring chat repositories handle real-time data consistency properly; (5) Checking that content repositories implement proper versioning and publishing workflows; (6) Verifying that custom report repositories sanitize user-generated SQL to prevent injection; (7) Ensuring budget repositories enforce actual vs projected spending validation; (8) Checking that collection repositories handle both digital and physical collection methods; (9) Validating that audit log repositories implement immutable logging patterns; (10) Ensuring all specialized repositories follow the same base repository patterns for consistency.

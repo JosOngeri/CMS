@@ -39,39 +39,34 @@ class EventsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getWithCreatorDetails(eventId, churchId = null) {
-    let query = `
+  async getWithCreatorDetails(eventId, churchId) {
+    if (!churchId) throw new Error('EventsRepository.getWithCreatorDetails: churchId required');
+    const query = `
       SELECT e.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM events e
       LEFT JOIN users u ON e.created_by = u.id
       WHERE e.id = $1
+      AND e.church_id = $2
     `;
-    const params = [eventId];
-
-    if (churchId) {
-      query += ` AND e.church_id = $2`;
-      params.push(churchId);
-    }
+    const params = [eventId, churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async getEventAttendees(eventId, churchId = null) {
-    let query = `
+  async getEventAttendees(eventId, churchId) {
+    if (!churchId) throw new Error('EventsRepository.getEventAttendees: churchId required');
+    // Tenant scope via the parent event — works whether or not
+    // event_attendees carries its own church_id column.
+    const query = `
       SELECT ea.*, m.first_name, m.last_name, m.email
       FROM event_attendees ea
       LEFT JOIN members m ON ea.member_id = m.id
       WHERE ea.event_id = $1
+      AND EXISTS (SELECT 1 FROM events e WHERE e.id = ea.event_id AND e.church_id = $2)
+      ORDER BY ea.registered_at DESC
     `;
-    const params = [eventId];
-
-    if (churchId) {
-      query += ` AND ea.church_id = $2`;
-      params.push(churchId);
-    }
-
-    query += ` ORDER BY ea.registered_at DESC`;
+    const params = [eventId, churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows;

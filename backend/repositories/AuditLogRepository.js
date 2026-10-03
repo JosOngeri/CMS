@@ -18,6 +18,10 @@ class AuditLogRepository extends BaseRepository {
       churchId
     } = filters;
 
+    // Audit rows are tenant-scoped — refusing to run unscoped prevents
+    // cross-tenant log reads when the caller forgets the filter.
+    if (!churchId) throw new Error('AuditLogRepository.getAuditLogs: churchId required');
+
     let query = `
       SELECT
         al.id,
@@ -34,16 +38,10 @@ class AuditLogRepository extends BaseRepository {
         u.email
       FROM ${this.tableName} al
       LEFT JOIN users u ON al.user_id = u.id
-      WHERE 1=1
+      WHERE al.church_id = $1
     `;
-    const params = [];
-    let paramIndex = 1;
-
-    if (churchId) {
-      query += ` AND al.church_id = $${paramIndex}`;
-      params.push(churchId);
-      paramIndex++;
-    }
+    const params = [churchId];
+    let paramIndex = 2;
 
     if (userId) {
       query += ` AND al.user_id = $${paramIndex}`;

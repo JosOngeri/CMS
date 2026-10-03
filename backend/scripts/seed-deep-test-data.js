@@ -662,8 +662,8 @@ async function main() {
         const exists = await q(`SELECT 1 FROM approval_requests WHERE title=$1 AND church_id=$2`, [`${title} (${ch.slug})`, ch.id]);
         if (exists.rows.length) continue;
         await q(
-          `INSERT INTO approval_requests (church_id, title, description, request_type, entity_type, status, priority, amount, requested_by, requester_id, requested_at)
-           VALUES ($1,$2,$3,$4,$5,'pending',$6,$7,$8,$8,$9)`,
+          `INSERT INTO approval_requests (church_id, title, description, request_type, entity_type, status, priority, amount, requester_id, requested_at)
+           VALUES ($1,$2,$3,$4,$5,'pending',$6,$7,$8,$9)`,
           [ch.id, `${title} (${ch.slug})`, `${title} — requires review by church leadership`, type, entity, pri,
            amount || null, pick(ch.users).id, daysAgo(ri(0, 14))]);
       }

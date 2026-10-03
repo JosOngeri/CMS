@@ -300,7 +300,7 @@ class ApprovalsController extends BaseController {
       [data.budget_id, approval.id]
     );
     await sendNotification(pool, {
-      recipientId: approval.requester_id || approval.requested_by,
+      recipientId: approval.requester_id,
       type: 'approval_approved',
       title: 'Budget approved',
       body: `Your department budget of KES ${Number(approval.amount || 0).toLocaleString()} is approved — you can now allocate it to members.`,
@@ -350,7 +350,7 @@ class ApprovalsController extends BaseController {
     }
 
     await sendNotification(pool, {
-      recipientId: approval.requester_id || approval.requested_by,
+      recipientId: approval.requester_id,
       type: 'approval_approved',
       title: 'Spend request approved',
       body: `Your spend request of KES ${amount.toLocaleString()} has been approved and posted.`,

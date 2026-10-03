@@ -5,22 +5,17 @@ class AnnouncementsRepository extends BaseRepository {
     super('announcements');
   }
 
-  async getRecent(churchId = null, limit = 10) {
-    let query = `
+  async getRecent(churchId, limit = 10) {
+    if (!churchId) throw new Error('AnnouncementsRepository.getRecent: churchId required');
+    const query = `
       SELECT a.*, u.first_name || ' ' || u.last_name as author_name
       FROM ${this.tableName} a
       LEFT JOIN users u ON a.author_id = u.id
       WHERE a.is_public = true
+      AND a.church_id = $1
+      ORDER BY a.created_at DESC LIMIT $2
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND a.church_id = $1`;
-      params.push(churchId);
-    }
-
-    query += ` ORDER BY a.created_at DESC LIMIT $${params.length + 1}`;
-    params.push(limit);
+    const params = [churchId, limit];
 
     const result = await this.pool.query(query, params);
     return result.rows;
@@ -41,21 +36,18 @@ class AnnouncementsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getWithAuthorDetails(announcementId, churchId = null) {
-    let query = `
+  async getWithAuthorDetails(announcementId, churchId) {
+    if (!churchId) throw new Error('AnnouncementsRepository.getWithAuthorDetails: churchId required');
+    const query = `
       SELECT a.*, u.first_name, u.last_name, u.email,
              d.name as department_name
       FROM announcements a
       LEFT JOIN users u ON a.author_id = u.id
       LEFT JOIN departments d ON a.department_id = d.id
       WHERE a.id = $1
+      AND a.church_id = $2
     `;
-    const params = [announcementId];
-
-    if (churchId) {
-      query += ` AND a.church_id = $2`;
-      params.push(churchId);
-    }
+    const params = [announcementId, churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];

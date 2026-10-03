@@ -245,7 +245,7 @@ const seedTestApproval = (overrides = {}) => ({
   description:    'Test approval description',
   type:           'content',
   status:         'pending',
-  requested_by:   TEST_UUIDS.member,
+  requester_id:   TEST_UUIDS.member,
   created_at:     new Date().toISOString(),
   updated_at:     new Date().toISOString(),
   ...overrides,

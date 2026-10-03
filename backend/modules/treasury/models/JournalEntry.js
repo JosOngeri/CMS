@@ -115,8 +115,11 @@ class JournalEntry {
    */
   isBalanced() {
     this.calculateTotals();
-    const tolerance = Number.EPSILON * 100;
-    return Math.abs(this.total_debits - this.total_credits) < tolerance;
+    // Integer-cent comparison — money columns are DECIMAL(…,2), so cent
+    // equality is exact and immune to binary float epsilon drift.
+    const debitCents = Math.round(this.total_debits * 100);
+    const creditCents = Math.round(this.total_credits * 100);
+    return debitCents === creditCents;
   }
 
   /**

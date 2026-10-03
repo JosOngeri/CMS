@@ -1,4 +1,5 @@
 const BaseRepository = require('./BaseRepository');
+const AuditLogRepository = require('./AuditLogRepository');
 const { encrypt, decrypt } = require('../utils/secretBox');
 
 /**
@@ -52,13 +53,18 @@ class SMSProviderRepository extends BaseRepository {
    * @param {string} id - Provider ID
    * @returns {Promise<object>} SMS provider
    */
-  async findById(id) {
-    const query = `
+  async findById(id, churchId = null) {
+    let query = `
       SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, created_at
       FROM sms_providers
       WHERE id = $1
     `;
-    const result = await this.pool.query(query, [id]);
+    const params = [id];
+    if (churchId) {
+      query += ` AND church_id = $2`;
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return this._decryptRow(result.rows[0] || null);
   }
 
@@ -101,7 +107,7 @@ class SMSProviderRepository extends BaseRepository {
    * @param {object} data - Update data
    * @returns {Promise<object>} Updated provider
    */
-  async update(id, data) {
+  async update(id, data, churchId = null, actorId = null) {
     const updates = [];
     const values = [];
     let paramCount = 1;
@@ -136,15 +142,39 @@ class SMSProviderRepository extends BaseRepository {
     }
 
     values.push(id);
+    let whereClause = `id = $${paramCount++}`;
+    if (churchId) {
+      whereClause += ` AND church_id = $${paramCount}`;
+      values.push(churchId);
+    }
     const query = `
       UPDATE sms_providers
       SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $${paramCount}
+      WHERE ${whereClause}
       RETURNING *
     `;
 
     const result = await this.pool.query(query, values);
-    return this._decryptRow(result.rows[0]);
+    const row = result.rows[0];
+
+    // api_key rotations are security-sensitive — write an audit trail entry.
+    // Never log the key itself, just the fact that it changed.
+    if (row && data.api_key) {
+      try {
+        await AuditLogRepository.create({
+          action: 'SMS_PROVIDER_API_KEY_UPDATED',
+          entity_type: 'sms_provider',
+          entity_id: id,
+          user_id: actorId,
+          church_id: churchId || row.church_id,
+          details: { provider_name: row.name }
+        });
+      } catch (auditErr) {
+        // Audit failure must not roll back the provider update.
+      }
+    }
+
+    return this._decryptRow(row);
   }
 
   /**
@@ -153,15 +183,20 @@ class SMSProviderRepository extends BaseRepository {
    * @param {number} balance - New balance
    * @returns {Promise<object>} Updated provider
    */
-  async updateBalance(id, balance) {
-    const query = `
+  async updateBalance(id, balance, churchId = null) {
+    let query = `
       UPDATE sms_providers
       SET balance = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
-      RETURNING *
     `;
+    const params = [balance, id];
+    if (churchId) {
+      query += ` AND church_id = $3`;
+      params.push(churchId);
+    }
+    query += ` RETURNING *`;
 
-    const result = await this.pool.query(query, [balance, id]);
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
@@ -170,9 +205,14 @@ class SMSProviderRepository extends BaseRepository {
    * @param {string} id - Provider ID
    * @returns {Promise<boolean>} Success status
    */
-  async delete(id) {
-    const query = 'DELETE FROM sms_providers WHERE id = $1';
-    const result = await this.pool.query(query, [id]);
+  async delete(id, churchId = null) {
+    let query = 'DELETE FROM sms_providers WHERE id = $1';
+    const params = [id];
+    if (churchId) {
+      query += ` AND church_id = $2`;
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rowCount > 0;
   }
 

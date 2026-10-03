@@ -5,85 +5,48 @@ class ActivityFeedRepository extends BaseRepository {
     super('activity_feed');
   }
 
-  async getActivityFeed(departmentId, churchId, limit = 20, offset = 0) {
-    let activityQuery = `
-      SELECT 
-        'announcement' as activity_type,
-        a.id,
-        a.title,
-        a.content as description,
-        a.created_at,
-        CONCAT(u.first_name, ' ', u.last_name) as actor_name,
-        u.id as actor_id,
-        a.priority,
-        'announcement' as sub_type
-      FROM announcements a
-      JOIN users u ON a.author_id = u.id
-      WHERE a.department_id = $1 AND a.church_id = $2
-      UNION ALL
-      SELECT 
-        'event_created' as activity_type,
-        e.id,
-        e.title,
-        e.description,
-        e.created_at,
-        CONCAT(u.first_name, ' ', u.last_name) as actor_name,
-        u.id as actor_id,
-        NULL as priority,
-        'event' as sub_type
-      FROM events e
-      JOIN users u ON e.organizer_id = u.id
-      WHERE e.department_id = $1 AND e.church_id = $2
-      UNION ALL
-      SELECT 
-        'member_joined' as activity_type,
-        dm.user_id as id,
-        CONCAT(u.first_name, ' ', u.last_name) as title,
-        'Joined the department' as description,
-        dm.joined_at as created_at,
-        CONCAT(u.first_name, ' ', u.last_name) as actor_name,
-        u.id as actor_id,
-        NULL as priority,
-        'member' as sub_type
-      FROM department_members dm
-      JOIN users u ON dm.user_id = u.id
-      WHERE dm.department_id = $1 AND dm.church_id = $2 AND dm.is_active = true
-      UNION ALL
-      SELECT 
-        'approval_requested' as activity_type,
-        ar.id,
-        ar.title,
-        ar.description,
-        ar.created_at,
-        CONCAT(u.first_name, ' ', u.last_name) as actor_name,
-        u.id as actor_id,
-        ar.priority,
-        'approval' as sub_type
-      FROM approval_requests ar
-      JOIN users u ON ar.requester_id = u.id
-      WHERE ar.department_id = $1 AND ar.church_id = $2
-      ORDER BY created_at DESC LIMIT $3 OFFSET $4
-    `;
+  // Reads the unified activity_feed view (migration 074). activity_type is
+  // allowlisted so the caller's ?type= filter applies in SQL *before*
+  // pagination — the old post-LIMIT in-memory filter dropped matching rows
+  // that fell on later pages.
+  static ACTIVITY_TYPES = new Set(['announcement', 'event_created', 'member_joined', 'approval_requested']);
 
-    const result = await this.pool.query(activityQuery, [departmentId, churchId, limit, offset]);
+  async getActivityFeed(departmentId, churchId, limit = 20, offset = 0, type = null) {
+    const params = [departmentId, churchId];
+    let typeFilter = '';
+    if (type && type !== 'all') {
+      if (!ActivityFeedRepository.ACTIVITY_TYPES.has(type)) return [];
+      typeFilter = ' AND activity_type = $3';
+      params.push(type);
+    }
+    params.push(this.clampLimit(limit), Math.max(0, offset || 0));
+
+    const result = await this.pool.query(
+      `SELECT activity_type, id, title, description, created_at,
+              actor_name, actor_id, priority, sub_type
+       FROM activity_feed
+       WHERE department_id = $1 AND church_id = $2${typeFilter}
+       ORDER BY created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
     return result.rows;
   }
 
-  async getActivityCount(departmentId, churchId) {
-    let countQuery = `
-      SELECT COUNT(*) as total
-      FROM (
-        SELECT id FROM announcements WHERE department_id = $1 AND church_id = $2
-        UNION ALL
-        SELECT id FROM events WHERE department_id = $1 AND church_id = $2
-        UNION ALL
-        SELECT user_id FROM department_members WHERE department_id = $1 AND church_id = $2 AND is_active = true
-        UNION ALL
-        SELECT id FROM approval_requests WHERE department_id = $1 AND church_id = $2
-      ) as all_activities
-    `;
+  async getActivityCount(departmentId, churchId, type = null) {
+    const params = [departmentId, churchId];
+    let typeFilter = '';
+    if (type && type !== 'all') {
+      if (!ActivityFeedRepository.ACTIVITY_TYPES.has(type)) return 0;
+      typeFilter = ' AND activity_type = $3';
+      params.push(type);
+    }
 
-    const result = await this.pool.query(countQuery, [departmentId, churchId]);
+    const result = await this.pool.query(
+      `SELECT COUNT(*) as total FROM activity_feed
+       WHERE department_id = $1 AND church_id = $2${typeFilter}`,
+      params
+    );
     return parseInt(result.rows[0].total);
   }
 

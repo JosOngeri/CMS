@@ -53,7 +53,7 @@ class ChatController extends BaseController {
       if (!room) {
         return ResponseHandler.notFound(res, 'Room not found');
       }
-      const messages = await ChatRepository.getMessagesByRoomId(roomId, limit, offset);
+      const messages = await ChatRepository.getMessagesByRoomId(roomId, limit, offset, churchId);
       return ResponseHandler.success(res, { messages: messages.reverse() });
     } catch (error) {
       return ResponseHandler.error(res, 'Failed to fetch messages');
@@ -76,7 +76,7 @@ class ChatController extends BaseController {
         content: content,
         message_type: type,
         metadata: metadata
-      });
+      }, churchId);
 
       // Broadcast via MessagingService (church-namespaced to match join_room)
       MessagingService.sendChatMessage(roomId, message, {

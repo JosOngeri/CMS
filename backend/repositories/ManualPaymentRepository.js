@@ -47,7 +47,26 @@ class ManualPaymentRepository extends BaseRepository {
   }
 
   /**
+   * Atomic daily receipt sequence — a single upsert increments the per-church
+   * per-day counter, so concurrent requests can never read the same count
+   * (replaces the getTodayPaymentCount + 1 race). Requires
+   * payment_receipt_counters (migration 072).
+   */
+  async getNextReceiptSequence(churchId) {
+    const result = await this.pool.query(
+      `INSERT INTO payment_receipt_counters (church_id, receipt_date, seq)
+       VALUES ($1, CURRENT_DATE, 1)
+       ON CONFLICT (church_id, receipt_date)
+       DO UPDATE SET seq = payment_receipt_counters.seq + 1
+       RETURNING seq`,
+      [churchId]
+    );
+    return parseInt(result.rows[0].seq);
+  }
+
+  /**
    * Get sequential number for today's payments
+   * @deprecated racy for receipt numbering — use getNextReceiptSequence
    */
   async getTodayPaymentCount(churchId) {
     const result = await this.pool.query(

@@ -171,7 +171,8 @@ class ContentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateContentItem(id, data) {
+  async updateContentItem(id, data, churchId) {
+    if (!churchId) throw new Error('ContentRepository.updateContentItem: churchId required');
     const result = await this.pool.query(
       `UPDATE content_items
        SET title = COALESCE($1, title),
@@ -187,35 +188,37 @@ class ContentRepository extends BaseRepository {
            seo_description = COALESCE($11, seo_description),
            og_image = COALESCE($12, og_image),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $13
+       WHERE id = $13 AND church_id = $14
        RETURNING *`,
       [
         data.title, data.slug, data.content, data.contentType, data.categoryId, data.status,
         data.publishedAt, data.expiresAt, data.priority, data.seoTitle, data.seoDescription,
-        data.ogImage, id
+        data.ogImage, id, churchId
       ]
     );
     return result.rows[0];
   }
 
-  async update(id, data) {
+  async update(id, data, churchId) {
     // Alias for updateContentItem for consistency with BaseRepository
-    return this.updateContentItem(id, data);
+    return this.updateContentItem(id, data, churchId);
   }
 
-  async deleteContentItem(id) {
-    await this.pool.query('DELETE FROM content_items WHERE id = $1', [id]);
+  async deleteContentItem(id, churchId) {
+    if (!churchId) throw new Error('ContentRepository.deleteContentItem: churchId required');
+    await this.pool.query('DELETE FROM content_items WHERE id = $1 AND church_id = $2', [id, churchId]);
   }
 
-  async publishContentItem(id) {
+  async publishContentItem(id, churchId) {
+    if (!churchId) throw new Error('ContentRepository.publishContentItem: churchId required');
     const result = await this.pool.query(
       `UPDATE content_items
        SET status = 'published',
            published_at = CURRENT_TIMESTAMP,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $1
+       WHERE id = $1 AND church_id = $2
        RETURNING *`,
-      [id]
+      [id, churchId]
     );
     return result.rows[0];
   }
@@ -284,9 +287,16 @@ class ContentRepository extends BaseRepository {
   }
 
   async createRevision(data) {
+    // Revision numbering is centralized here: when the caller doesn't pass an
+    // explicit number the next one is derived atomically (MAX+1 inside the
+    // INSERT) instead of a separate getMaxRevisionNumber read-then-write.
     const result = await this.pool.query(
       `INSERT INTO content_revisions (content_item_id, title, content, author_id, revision_number, change_summary)
-       VALUES ($1, $2, $3, $4, $5, $6)
+       VALUES ($1, $2, $3, $4,
+               COALESCE($5, (SELECT COALESCE(MAX(revision_number), 0) + 1
+                             FROM content_revisions
+                             WHERE content_item_id = $1)),
+               $6)
        RETURNING *`,
       [
         data.contentItemId, data.title, data.content, data.authorId, data.revisionNumber,

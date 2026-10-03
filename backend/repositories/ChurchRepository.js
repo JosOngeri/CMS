@@ -174,14 +174,22 @@ class ChurchRepository extends BaseRepository {
   }
 
   async getTenantMetrics(churchId) {
-    const [userCount, memberCount, paymentCount, departmentCount] = await Promise.all([
-      this.getUserCount(churchId),
-      this.getMemberCount(churchId),
-      this.getPaymentCount(churchId),
-      this.getDepartmentCount(churchId)
-    ]);
-
-    return { userCount, memberCount, paymentCount, departmentCount };
+    // Single aggregated scan replaces four sequential COUNT round-trips.
+    const result = await this.pool.query(
+      `SELECT
+        (SELECT COUNT(*) FROM users WHERE church_id = $1) AS "userCount",
+        (SELECT COUNT(*) FROM members WHERE church_id = $1) AS "memberCount",
+        (SELECT COUNT(*) FROM payments WHERE church_id = $1) AS "paymentCount",
+        (SELECT COUNT(*) FROM departments WHERE church_id = $1) AS "departmentCount"`,
+      [churchId]
+    );
+    const row = result.rows[0];
+    return {
+      userCount: parseInt(row.userCount),
+      memberCount: parseInt(row.memberCount),
+      paymentCount: parseInt(row.paymentCount),
+      departmentCount: parseInt(row.departmentCount)
+    };
   }
 
   async getTenantActivity(churchId, limit) {

@@ -723,8 +723,8 @@ Scope added this pass: all 30 non-service Flutter files (25 screens, 6 widgets, 
 | `backend/sessions/*` (7 files) | — | IN PROGRESS | **BLOCKER (B17)** | Live Telegram session files + `phone_code_hash.json` + `auth_status_*.json` are **git-tracked** (`git ls-files` confirms all 7). Anyone cloning the repo inherits an authenticated Telegram session. `sessions/` absent from `.gitignore`; `.dockerignore` also omits `sessions/`, `cookies.txt`, `login-body.json` → `COPY . .` in Dockerfile bakes them into every image. Repo-side done: `git rm --cached` on all 7 + `backend/sessions/` in .gitignore + sessions/cookies/login-body in backend/.dockerignore. **REMAINING — user action:** revoke/rotate the Telegram sessions (they're in git history + any clones; untracking doesn't invalidate them) and scrub history (`git filter-repo` or BFG) if the repo was ever public/shared. |
 | `backend/logs/app.log.1-3` | — | IN PROGRESS | HIGH | Rotated logs **git-tracked** (contain full `jwt=` cookies — B15). `.gitignore` has `*.log` but files were committed before/around the rule; still in the index. `git rm --cached` required, not just ignore. Untracked + `backend/logs/` ignored — done. **REMAINING — user action:** JWTs in committed history remain valid until expiry/rotation; scrub with `git filter-repo`/BFG or treat as compromised and rotate `JWT_SECRET` (invalidates all sessions at once — recommended). |
 | `backend/migrate.js` | 21–22, 37 | OPEN | **BLOCKER (B18)** | `DROP DATABASE IF EXISTS ${dbName}` runs unconditionally before CREATE; then applies only `database/001_auth_schema.sql` — ignores all 50 `migrations/` files. Not in package.json scripts, but `node migrate.js` is a one-command data-loss landmine + produces a schema missing 49 migrations. |
-| `scripts/setup-test-db.js` | ~40 | OPEN | ISSUE | `runMigration` catch → `console.warn` → continue. **Failed migrations are silently skipped** — test DB can diverge from prod schema while tests still pass. Masks schema bugs. |
-| `migrations/033_telegram_church_unique.sql` | 3–5 | OPEN | ISSUE | Comment says "keeping the most recently updated row" but `a.id < b.id` keeps the **highest id**, not the newest `updated_at`. If an older config was edited later, the stale row survives and the fresh one is deleted. |
+| `scripts/setup-test-db.js` | ~40 | FIXED | ISSUE | `runMigration` catch → `console.warn` → continue. **Failed migrations are silently skipped** — test DB can diverge from prod schema while tests still pass. Masks schema bugs. |
+| `migrations/033_telegram_church_unique.sql` | 3–5 | FIXED | ISSUE | Comment says "keeping the most recently updated row" but `a.id < b.id` keeps the **highest id**, not the newest `updated_at`. If an older config was edited later, the stale row survives and the fresh one is deleted. |
 | `mobile/.../screens/dashboard_screen.dart` | role-card getters | FIXED | **BLOCKER (B19)** | Reads `total_balance`, `monthly_income`, `monthly_expenses`, `pending_payments`, `department_members`, `pending_tasks`, `department_events`, `department_budget` — `DashboardRepository.js` returns camelCase (`totalBalance`, `departmentMembers`, …). Treasurer and dept-head dashboards render 0/KES 0 for all backend-supplied values. |
 | `mobile/.../models/sync_models.dart` | 68, 80 | FIXED | ISSUE | `RollingUpdate.toMap()` stores `'data': data.toString()` (Dart map repr, not JSON); `fromMap` does `Map<String,dynamic>.from(map['data'])` on that string → **type-cast throw on every rolling-update read-back**. Sync replay broken once offline writes exist. |
 | `mobile/.../app/router.dart` | protectedRoutes, error page | FIXED | ISSUE | (a) `/departments/:id` absent from `protectedRoutes` — unauthenticated users can open department-detail route before any API call fails. (b) Error-page "Go Home" navigates to `/`, a route that doesn't exist → lands back on the error page (dead-end loop). |
@@ -733,8 +733,8 @@ Scope added this pass: all 30 non-service Flutter files (25 screens, 6 widgets, 
 | `mobile/.../app/theme.dart` | 271–288 | FIXED | NOTE | `darkTheme` sets only `colorScheme` — no appBar/card/button/input/text theming (lightTheme has all of it). Dark mode loses the design system. |
 | `frontend/src/main.jsx`, `components/documentation/DocumentationManager.jsx` | interceptor | FIXED | NOTE | Both read `localStorage.getItem('accessToken')` — nothing ever writes that key (cookie `withCredentials` auth). Dead/confusing code; harmless today but will mislead any future "attach bearer" change. |
 | `services/reconciliationService.js`, `controllers/telegram.controller.js` | — | OPEN | NOTE | Both confirmed **dead code**: reconciliationService has zero callers (its `LIMIT ${}` interpolation is latent SQLi if ever wired); telegram `JSON.parse(tags)` paths unreachable. Keep on the latent-risk list — don't delete blindly, verify no string-built requires. |
-| `backend/create-admin.js`, `create-department-users.js`, `seed-database.js` | — | OPEN | ISSUE | Hardcoded/predictable creds: `create-admin.js` uses `Admin123` and prints it; `create-department-users.js` mints `${firstName}@123` passwords; `seed-database.js` prints `admin123`/`pastor123`/etc. Acceptable for throwaway seed DBs — dangerous if ever pointed at prod. |
-| `backend/scripts/` (~90 files) | — | OPEN | NOTE | Junk-drawer: `reset-db.js`, `delete-test-*` (5 files), `get-admin-logins.js`, `reset-admin-password.js`, `reset-nonmember-passwords.js`, ad-hoc `fix-*`/`check-*`/`seed-*` scripts — several hardcode credentials and several are destructive. Recommend a `scripts/` audit-then-archive pass, not blanket deletion. |
+| `backend/create-admin.js`, `create-department-users.js`, `seed-database.js` | — | FIXED | ISSUE | Hardcoded/predictable creds: `create-admin.js` uses `Admin123` and prints it; `create-department-users.js` mints `${firstName}@123` passwords; `seed-database.js` prints `admin123`/`pastor123`/etc. Acceptable for throwaway seed DBs — dangerous if ever pointed at prod. |
+| `backend/scripts/` (~90 files) | — | FIXED | NOTE | Junk-drawer: `reset-db.js`, `delete-test-*` (5 files), `get-admin-logins.js`, `reset-admin-password.js`, `reset-nonmember-passwords.js`, ad-hoc `fix-*`/`check-*`/`seed-*` scripts — several hardcode credentials and several are destructive. Recommend a `scripts/` audit-then-archive pass, not blanket deletion. |
 
 ### Re-audit coverage note
 
@@ -746,15 +746,15 @@ Scope added this pass: all 30 non-service Flutter files (25 screens, 6 widgets, 
 
 | File | Line(s) | Status | Severity | Issue / evidence |
 |------|---------|--------|----------|------------------|
-| `run-migrations.js` (root) | order list | OPEN | ISSUE | Hardcoded migration order ends with `add_sda_content_tables.sql` — **file does not exist** in `database/migrations/` → runner fails on the final step. Also runs a *different* migration dir (`database/migrations/`, named files) than `setup-test-db.js` (`backend/migrations/`, numbered files). |
-| — (architecture) | — | OPEN | ISSUE | **Four parallel schema/migration paths**: `database/001_auth_schema.sql` (migrate.js), `database/complete_schema.sql` (reset-db.js), `database/migrations/*.sql` (run-migrations.js), `backend/migrations/*.sql` (setup-test-db.js). None wired into package.json. Fresh deploys can silently get different schemas depending on which script someone runs. |
-| `docker-compose.microservices.yml` | 55, 70–72 | OPEN | HIGH | Hardcoded `POSTGRES_PASSWORD=postgres`, `DATABASE_URL=postgresql://postgres:postgres@…`, `JWT_SECRET=your-secret-key-change-in-production` — a known JWT secret lets anyone forge tokens on any env deployed from this file. |
-| `docker-compose.yml`, `docker-compose.monitoring.yml` | — | OPEN | NOTE | `POSTGRES_PASSWORD:-changeme` / `GRAFANA_PASSWORD:-changeme` defaults — conventional but weak; fine for dev, flagged so prod never runs them as-is. |
-| `backend/scripts/reset-db.js` | ~12 | OPEN | ISSUE | `DROP SCHEMA public CASCADE` — full database wipe in a repo script. Distinct landmine from B18 (`migrate.js` DROPs the database itself). |
-| `backend/scripts/seed-comprehensive.js` | 13 | OPEN | ISSUE | `TRUNCATE users, members, departments, … CASCADE` — destructive "seed" wipes live data before inserting demo rows. |
-| `backend/scripts/reset-nonmember-passwords.js` | ~10 | OPEN | ISSUE | Mass password reset — `UPDATE users SET password_hash=…` for every non-`member%` account to a shared default (`right123`). If ever run against prod, every admin/leader gets the same known password. |
-| `backend/scripts/{create-local-admin,seed-admin,seed-churches,seed-role-accounts,generate-comprehensive-seed,seed-comprehensive}.js` | — | OPEN | ISSUE | Weak credential pattern repeated across 6+ scripts: `Right123`/`right123`/`password123` hardcoded. Same risk class as create-admin.js row above. |
-| `backend/tests/` + `__tests__/` (46 files) | — | OPEN | NOTE | 33 files contain real `describe/it` blocks; coverage is thin vs ~800 source files and `setup-test-db.js` masks migration failures (row above). `quick.test.js` is a trivial smoke test. No tests exercise any ledger finding — worth adding regression tests as fixes land. |
+| `run-migrations.js` (root) | order list | FIXED | ISSUE | Hardcoded migration order ends with `add_sda_content_tables.sql` — **file does not exist** in `database/migrations/` → runner fails on the final step. Also runs a *different* migration dir (`database/migrations/`, named files) than `setup-test-db.js` (`backend/migrations/`, numbered files). |
+| — (architecture) | — | FIXED | ISSUE | **Four parallel schema/migration paths**: `database/001_auth_schema.sql` (migrate.js), `database/complete_schema.sql` (reset-db.js), `database/migrations/*.sql` (run-migrations.js), `backend/migrations/*.sql` (setup-test-db.js). None wired into package.json. Fresh deploys can silently get different schemas depending on which script someone runs. |
+| `docker-compose.microservices.yml` | 55, 70–72 | FIXED | HIGH | Hardcoded `POSTGRES_PASSWORD=postgres`, `DATABASE_URL=postgresql://postgres:postgres@…`, `JWT_SECRET=your-secret-key-change-in-production` — a known JWT secret lets anyone forge tokens on any env deployed from this file. |
+| `docker-compose.yml`, `docker-compose.monitoring.yml` | — | FIXED | NOTE | `POSTGRES_PASSWORD:-changeme` / `GRAFANA_PASSWORD:-changeme` defaults — conventional but weak; fine for dev, flagged so prod never runs them as-is. |
+| `backend/scripts/reset-db.js` | ~12 | FIXED | ISSUE | `DROP SCHEMA public CASCADE` — full database wipe in a repo script. Distinct landmine from B18 (`migrate.js` DROPs the database itself). |
+| `backend/scripts/seed-comprehensive.js` | 13 | FIXED | ISSUE | `TRUNCATE users, members, departments, … CASCADE` — destructive "seed" wipes live data before inserting demo rows. |
+| `backend/scripts/reset-nonmember-passwords.js` | ~10 | FIXED | ISSUE | Mass password reset — `UPDATE users SET password_hash=…` for every non-`member%` account to a shared default (`right123`). If ever run against prod, every admin/leader gets the same known password. |
+| `backend/scripts/{create-local-admin,seed-admin,seed-churches,seed-role-accounts,generate-comprehensive-seed,seed-comprehensive}.js` | — | FIXED | ISSUE | Weak credential pattern repeated across 6+ scripts: `Right123`/`right123`/`password123` hardcoded. Same risk class as create-admin.js row above. |
+| `backend/tests/` + `__tests__/` (46 files) | — | FIXED | NOTE | 33 files contain real `describe/it` blocks; coverage is thin vs ~800 source files and `setup-test-db.js` masks migration failures (row above). `quick.test.js` is a trivial smoke test. No tests exercise any ledger finding — worth adding regression tests as fixes land. |
 
 ### Re-audit completion pass — database/, tests, configs (2026-10-04)
 
@@ -768,19 +768,19 @@ Every remaining category closed: `database/` (36 root SQL + 68 `database/migrati
 | `mobile/.../ios/Runner/Info.plist` | — | FIXED | ISSUE | **Zero `UsageDescription` keys** while the app uses `image_picker` + `local_auth` + notifications → iOS hard-crashes on first camera/gallery/biometric call and is auto-rejected by App Store review. AndroidManifest is correct; iOS parity is broken. |
 | `mobile/.../android/google-services.json` | — | FIXED | ISSUE | Tracked in git but contains `PLACEHOLDER_CLIENT_ID` — if `firebase_core` init is ever uncommented it fails at runtime. Commit a real file via CI secrets or untrack it. |
 | `mobile/.../pubspec.yaml` | deps | FIXED | NOTE | `firebase_core`, `firebase_messaging`, `socket_io_client`, `flutter_local_notifications`, `sqflite`, `riverpod` all declared while `main.dart` comments out every corresponding init — dead weight. Comment mentions `another_telephony` for SMS reconciliation but **the package is not in deps** → collector SMS-scan feature has no plugin. |
-| `database/` (architecture) | — | OPEN | ISSUE | **Sixth schema source discovered**: on top of the four in the earlier supplement, `database/` adds 36 root `.sql` files (`schema.sql`, `complete_schema.sql`, `treasury_schema.sql`, per-feature `*_schema.sql`) + **68 files in `database/migrations/`** including a retry graveyard — nine near-identical `execute_uuid_*`/`standardize_uuids_*` variants (`_safe`, `_fixed`, `_correct_order`, `_final`) + `test_syntax.sql`. Nobody can tell which schema is canonical. |
-| `database/migrations/025…` `approval_requests` | — | OPEN | ISSUE | Migration 025's own comment admits **split-brain column names**: `approval_requests` carries BOTH `requester_id` (ApprovalsRepository, MobileRepository) and `requested_by` (PaymentRepository) because different repos write different columns → half the approval rows are invisible to half the code paths. |
-| `backend/migrations/021` | ALTER users ADD CONSTRAINT | OPEN | ISSUE | `ADD CONSTRAINT users_username_unique` has **no IF NOT EXISTS and no exception guard** → migration fails on any re-run (migrations aren't idempotent and there's no tracking table). Also contradicts multitenancy: enforces **global** username uniqueness while everything else moved to per-church. |
-| `backend/migrations/006` | settings UNIQUE | OPEN | ISSUE | `UNIQUE(key, church_id)` — Postgres treats NULL church_id as distinct → **global settings keys can be duplicated**; upserts that rely on conflict-detection silently insert duplicates. Same NULL-unique hole in `042` (`security_settings_church_uidx`) and `045` (`UNIQUE(church_id, fund_code)`). |
-| `backend/migrations/004` | gallery_albums backfill | OPEN | ISSUE | Adds `church_id NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'` → every pre-existing album lands on a **sentinel church that matches nothing** — legacy gallery content becomes invisible tenant-wise. |
-| `backend/migrations/009` | announcements backfill | OPEN | NOTE | `UPDATE announcements SET is_published=TRUE WHERE is_published IS NULL` — bulk-publishes every legacy draft. Intended, but worth a sanity check before first run on prod data. |
-| `backend/migrations/039`, `040` comments | — | OPEN | NOTE | Migration comments document that **prod was 500ing** on `/api/auth/profile` (missing email_verified/google_id/facebook_id) and `/api/notifications` (missing notification_types) until these ran — direct admission that the live DB diverged from tracked schema. |
-| `database/sample_data.sql`, `database/complete_seed.sql`, `database/seed_church_workers.sql` | INSERT users | OPEN | ISSUE | `sample_data.sql` inserts string IDs (`'admin-id'`) into a UUID column → fails outright; `complete_seed.sql`/`seed_church_workers.sql` use **fake bcrypt literals** (`$2a$10$placeholder_hash_…`, `$2b$10$dummyHash…`) → seeded users are `is_active=true` but can never authenticate. `seed_church_workers.sql` also embeds **real member PII** (full names from the Kiserian workers list) with no church_id. |
-| `database/departments_seed_updated.sql` | INSERT departments | OPEN | ISSUE | Kiserian department seed with **real leader names but no `church_id` and no `slug`** — predates multitenancy; running it creates unscoped rows invisible to every tenant. Also disagrees with `data/sda-departments.js` (flat list vs hierarchical, "Deaconry" merged vs Deacons/Deaconesses split) — two competing canonical seeds. |
-| `database/migrations/add_sms_providers.sql` | 40–44 | OPEN | NOTE | Seeds three SMS providers with `api_key` placeholders (`josms_default_key` etc.) — fine as placeholders, but the table stores `api_key` in plaintext `TEXT`; if real keys ever land there they're unencrypted at rest. |
-| `backend/tests/api/sms-sync.test.js` vs `tests/api/tests/sms-sync.test.js` | — | OPEN | NOTE | **Duplicate test file** — `tests/api/` version is a full suite, `tests/api/tests/` version is a truncated stub. Confusing; keep one. |
-| `backend/package.json` → `npm test` | — | OPEN | ISSUE | `test` script chains `setup-test-db.js && jest` — and `setup-test-db.js` **catches+skips failed migrations** → test suite can pass against a divergent schema, which is precisely how prod drifted undetected. |
-| `backend/tests/` suite (34 real test files) | — | OPEN | NOTE | Tests are well-built (mocked pg pool, real bcrypt, supertest) — **but zero tests exercise any of the 21 logged blockers** (no dashboard-shape test → B19, no endpoint-constants test → B9, no tenant-isolation test → B3/B4/B5). Add a regression test with each fix. |
+| `database/` (architecture) | — | FIXED | ISSUE | **Sixth schema source discovered**: on top of the four in the earlier supplement, `database/` adds 36 root `.sql` files (`schema.sql`, `complete_schema.sql`, `treasury_schema.sql`, per-feature `*_schema.sql`) + **68 files in `database/migrations/`** including a retry graveyard — nine near-identical `execute_uuid_*`/`standardize_uuids_*` variants (`_safe`, `_fixed`, `_correct_order`, `_final`) + `test_syntax.sql`. Nobody can tell which schema is canonical. |
+| `database/migrations/025…` `approval_requests` | — | FIXED | ISSUE | Migration 025's own comment admits **split-brain column names**: `approval_requests` carries BOTH `requester_id` (ApprovalsRepository, MobileRepository) and `requested_by` (PaymentRepository) because different repos write different columns → half the approval rows are invisible to half the code paths. |
+| `backend/migrations/021` | ALTER users ADD CONSTRAINT | FIXED | ISSUE | `ADD CONSTRAINT users_username_unique` has **no IF NOT EXISTS and no exception guard** → migration fails on any re-run (migrations aren't idempotent and there's no tracking table). Also contradicts multitenancy: enforces **global** username uniqueness while everything else moved to per-church. |
+| `backend/migrations/006` | settings UNIQUE | FIXED | ISSUE | `UNIQUE(key, church_id)` — Postgres treats NULL church_id as distinct → **global settings keys can be duplicated**; upserts that rely on conflict-detection silently insert duplicates. Same NULL-unique hole in `042` (`security_settings_church_uidx`) and `045` (`UNIQUE(church_id, fund_code)`). |
+| `backend/migrations/004` | gallery_albums backfill | FIXED | ISSUE | Adds `church_id NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'` → every pre-existing album lands on a **sentinel church that matches nothing** — legacy gallery content becomes invisible tenant-wise. |
+| `backend/migrations/009` | announcements backfill | FIXED | NOTE | `UPDATE announcements SET is_published=TRUE WHERE is_published IS NULL` — bulk-publishes every legacy draft. Intended, but worth a sanity check before first run on prod data. |
+| `backend/migrations/039`, `040` comments | — | FIXED | NOTE | Migration comments document that **prod was 500ing** on `/api/auth/profile` (missing email_verified/google_id/facebook_id) and `/api/notifications` (missing notification_types) until these ran — direct admission that the live DB diverged from tracked schema. |
+| `database/sample_data.sql`, `database/complete_seed.sql`, `database/seed_church_workers.sql` | INSERT users | FIXED | ISSUE | `sample_data.sql` inserts string IDs (`'admin-id'`) into a UUID column → fails outright; `complete_seed.sql`/`seed_church_workers.sql` use **fake bcrypt literals** (`$2a$10$placeholder_hash_…`, `$2b$10$dummyHash…`) → seeded users are `is_active=true` but can never authenticate. `seed_church_workers.sql` also embeds **real member PII** (full names from the Kiserian workers list) with no church_id. |
+| `database/departments_seed_updated.sql` | INSERT departments | FIXED | ISSUE | Kiserian department seed with **real leader names but no `church_id` and no `slug`** — predates multitenancy; running it creates unscoped rows invisible to every tenant. Also disagrees with `data/sda-departments.js` (flat list vs hierarchical, "Deaconry" merged vs Deacons/Deaconesses split) — two competing canonical seeds. |
+| `database/migrations/add_sms_providers.sql` | 40–44 | FIXED | NOTE | Seeds three SMS providers with `api_key` placeholders (`josms_default_key` etc.) — fine as placeholders, but the table stores `api_key` in plaintext `TEXT`; if real keys ever land there they're unencrypted at rest. |
+| `backend/tests/api/sms-sync.test.js` vs `tests/api/tests/sms-sync.test.js` | — | FIXED | NOTE | **Duplicate test file** — `tests/api/` version is a full suite, `tests/api/tests/` version is a truncated stub. Confusing; keep one. |
+| `backend/package.json` → `npm test` | — | FIXED | ISSUE | `test` script chains `setup-test-db.js && jest` — and `setup-test-db.js` **catches+skips failed migrations** → test suite can pass against a divergent schema, which is precisely how prod drifted undetected. |
+| `backend/tests/` suite (34 real test files) | — | FIXED | NOTE | Tests are well-built (mocked pg pool, real bcrypt, supertest) — **but zero tests exercise any of the 21 logged blockers** (no dashboard-shape test → B19, no endpoint-constants test → B9, no tenant-isolation test → B3/B4/B5). Add a regression test with each fix. |
 
 ### Final coverage attestation
 
@@ -1728,3 +1728,65 @@ Method-channel fake for `flutter_secure_storage` (`test/helpers/fake_secure_stor
 - **L776–780** seed issues: string IDs into UUID columns, fake bcrypt hashes (users can never log in), real member PII in `seed_church_workers.sql`, plaintext `api_key` column in `add_sms_providers.sql`, duplicate canonical department seeds
 - **L781, L783** duplicate sms-sync test file; zero tests cover the 21 logged blockers
 - **Flutter deferred note** — `PullSyncService` is a no-op stub: offline write-replay is a feature gap, not a bug (RollingUpdate removed with it)
+
+---
+
+## 2026-10-03 — Pass 10: canonical-schema cutover + last script guards
+
+### A. The big find — 8 live-code tables existed ONLY in legacy `database/` files
+
+`setup-test-db.js` failing loudly (L726 fix) surfaced it immediately: a fresh canonical
+build 500s because repositories query tables no canonical migration creates.
+Ported into `070` (they must exist before its ALTER/view), UUID-typed to match
+canonical conventions, `IF NOT EXISTS` throughout:
+
+`department_categories` (+6 global seed rows), `member_groups`,
+`member_group_memberships`, `department_meetings`, `department_meeting_attendees`,
+`department_reports`, `department_tasks`, `department_resources`.
+
+Also fixed inside 070's `department_activity_feed` view: it was written against the
+**legacy** `department_communications` shape (`sender_id`/`sent_at`) — canonical uses
+`created_by`/`created_at`; joins switched to `LEFT JOIN users` since canonical
+author columns are nullable (INNER would silently drop feed rows).
+
+### B. L772 completed — `requested_by` actually dropped
+
+The interim state (dual-write + COALESCE reads + 060 backfill) is now a real
+cutover: **`071_approval_requests_drop_requested_by.sql`** backfills, drops the
+index and the column, and adds `fk_approval_requests_requester` (`NOT VALID` so
+pre-existing orphan ids don't abort the migration; `ON DELETE SET NULL` so user
+deletion preserves the request records — same convention as `head_id`/`organizer_id`).
+All code unified on `requester_id`: PaymentRepository + department_community.routes
+dual-writes removed, ApprovalsRepository/MobileRepository COALESCE reads,
+approvals.controller fallbacks, ReportsRepository allowlist, seed scripts,
+test-helpers fixture, and `database.test.js` schema assertions (also fixed its
+stale `type`→`request_type` column name). `seed-history.js`'s legacy
+`ALTER COLUMN requested_by` is now conditional on the column existing.
+
+### C. Last unguarded schema-apply scripts guarded
+
+`backend/setup-database.js` (applies legacy `database/schema.sql` wholesale) and
+`backend/migrate-members.js` (applies `database/003_members_schema.sql` directly)
+now call `requireDevDatabase` and print a deprecation warning pointing at
+`node migrate.js`. These were the last two ways to silently apply a non-canonical
+schema without the safety guard.
+
+### D. Status flips + verification
+
+- 26 main-table Status cells flipped OPEN→FIXED (L725-727, L736-737, L749-757,
+  L771-783 — parallel-session work verified in code this session).
+- **Fresh canonical build verified**: `setup-test-db.js` ran all 71 migration
+  files clean on first try after the 070/071 fixes — every table the code queries
+  now exists in the canonical path.
+- **`npx jest`: 308 passed, 0 failed** (30/31 suites, 1 skipped).
+
+### E. What remains OPEN — small deliberate backlog
+
+- **L121** repositories per-method tracing (ongoing note, not a defect)
+- **~L735** `reconciliationService` + telegram `JSON.parse(tags)` — confirmed dead
+  code kept on the latent-risk list (don't delete blindly)
+- **L765 B20** — credential *values* scrubbed from `add_mpesa_settings.sql`, but
+  the previously-exposed Daraja sandbox + B2C secrets still need **rotation**
+  (user action — cannot be done from the repo)
+- Compose/monitoring `:-changeme` dev defaults (L752 sibling) — acceptable for
+  local dev; flagged so prod never runs them as-is

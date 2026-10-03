@@ -7,19 +7,43 @@ class DashboardRepository extends BaseRepository {
   }
 
   async getSummary(churchId) {
-    // Get real-time statistics from actual tables instead of summaries table
-    const [memberCount, eventCount, financialSummary, announcementCount] = await Promise.all([
-      this.getMemberCount(churchId),
-      this.getEventCount(churchId),
-      this.getFinancialSummary(churchId),
-      this.getAnnouncementCount(churchId)
-    ]);
+    // Single round-trip — one CTE per source replaces four parallel queries.
+    const result = await this.pool.query(
+      `WITH member_stats AS (
+         SELECT COUNT(*) AS total_members
+         FROM members
+         WHERE membership_status = 'active' AND church_id = $1
+       ),
+       event_stats AS (
+         SELECT COUNT(*) AS upcoming_events_count
+         FROM events
+         WHERE event_date >= CURRENT_DATE AND church_id = $1
+       ),
+       financial_stats AS (
+         SELECT SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS total_income
+         FROM transactions
+         WHERE status = 'approved' AND church_id = $1
+       ),
+       announcement_stats AS (
+         SELECT COUNT(*) AS recent_announcements_count
+         FROM announcements
+         WHERE is_public = true AND church_id = $1
+       )
+       SELECT
+         member_stats.total_members,
+         event_stats.upcoming_events_count,
+         financial_stats.total_income,
+         announcement_stats.recent_announcements_count
+       FROM member_stats, event_stats, financial_stats, announcement_stats`,
+      [churchId]
+    );
 
+    const row = result.rows[0] || {};
     return {
-      total_members: memberCount,
-      upcoming_events_count: eventCount,
-      total_revenue: financialSummary?.total_income || 0,
-      recent_announcements_count: announcementCount
+      total_members: parseInt(row.total_members) || 0,
+      upcoming_events_count: parseInt(row.upcoming_events_count) || 0,
+      total_revenue: row.total_income || 0,
+      recent_announcements_count: parseInt(row.recent_announcements_count) || 0
     };
   }
 
@@ -221,19 +245,30 @@ class DashboardRepository extends BaseRepository {
   }
 
   async getUserActivityLevel(userId, churchId) {
+    // Three scoped count subqueries replace the 4-way LEFT JOIN — the join
+    // fanned out attendance x payment x announcement rows for no benefit.
     const query = `
       SELECT
         (
-          COUNT(DISTINCT CASE WHEN e.event_date >= CURRENT_DATE - INTERVAL '30 days' THEN e.id END) +
-          COUNT(DISTINCT CASE WHEN p.created_at >= CURRENT_DATE - INTERVAL '30 days' AND p.status = 'completed' THEN p.id END) +
-          COUNT(DISTINCT CASE WHEN a.created_at >= CURRENT_DATE - INTERVAL '30 days' THEN a.id END)
+          (SELECT COUNT(DISTINCT e.id)
+           FROM event_attendance ea
+           JOIN events e ON ea.event_id = e.id
+           WHERE ea.member_id = $1
+             AND e.event_date >= CURRENT_DATE - INTERVAL '30 days'
+             AND e.church_id = $2) +
+          (SELECT COUNT(DISTINCT p.id)
+           FROM payments p
+           WHERE p.member_id = $1
+             AND p.created_at >= CURRENT_DATE - INTERVAL '30 days'
+             AND p.status = 'completed'
+             AND p.church_id = $2) +
+          (SELECT COUNT(DISTINCT a.id)
+           FROM announcements a
+           WHERE a.author_id = $1
+             AND a.created_at >= CURRENT_DATE - INTERVAL '30 days'
+             AND a.church_id = $2)
         ) as activity_count
-      FROM users u
-      LEFT JOIN event_attendance ea ON u.id = ea.member_id
-      LEFT JOIN events e ON ea.event_id = e.id
-      LEFT JOIN payments p ON u.id = p.member_id
-      LEFT JOIN announcements a ON u.id = a.author_id
-      WHERE u.id = $1 AND u.church_id = $2
+      WHERE EXISTS (SELECT 1 FROM users u WHERE u.id = $1 AND u.church_id = $2)
     `;
     const params = [userId, churchId];
 

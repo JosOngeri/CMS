@@ -374,22 +374,31 @@ class GalleryRepository extends BaseRepository {
 
   async searchPhotos(searchPattern, limit, offset, churchId) {
     if (!churchId) throw new Error('searchPhotos: churchId is required');
+    // FTS replaces DISTINCT + ILIKE '%q%' fan-out — plainto_tsquery safely
+    // parses arbitrary input; strip the caller's legacy % wrappers.
+    const term = String(searchPattern).replace(/%/g, '').trim();
+    if (!term) return [];
     const result = await this.pool.query(
-      `SELECT DISTINCT gp.*,
+      `SELECT gp.*,
               u.first_name || ' ' || u.last_name as uploaded_by_name,
               ga.title as album_title
        FROM gallery_photos gp
        LEFT JOIN users u ON gp.uploaded_by = u.id
        LEFT JOIN gallery_albums ga ON gp.album_id = ga.id
-       LEFT JOIN photo_tag_assignments pta ON gp.id = pta.photo_id
-       LEFT JOIN photo_tags pt ON pta.tag_id = pt.id
        WHERE gp.church_id = $4
-         AND (gp.title ILIKE $1
-          OR gp.description ILIKE $1
-          OR pt.name ILIKE $1)
+         AND (
+           to_tsvector('english', COALESCE(gp.title, '') || ' ' || COALESCE(gp.description, ''))
+             @@ plainto_tsquery('english', $1)
+           OR EXISTS (
+             SELECT 1 FROM photo_tag_assignments pta
+             JOIN photo_tags pt ON pta.tag_id = pt.id
+             WHERE pta.photo_id = gp.id
+               AND to_tsvector('english', pt.name) @@ plainto_tsquery('english', $1)
+           )
+         )
        ORDER BY gp.uploaded_at DESC
        LIMIT $2 OFFSET $3`,
-      [searchPattern, limit, offset, churchId]
+      [term, limit, offset, churchId]
     );
     return result.rows;
   }

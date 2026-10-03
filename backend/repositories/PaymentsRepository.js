@@ -266,13 +266,14 @@ class PaymentsRepository extends BaseRepository {
     const { memberId, status, pledgeType, churchId } = filters;
     if (!churchId) throw new Error('getPledgesWithFilters: churchId is required');
 
+    // amount_paid is cached on the pledge row (migration 074 trigger keeps it
+    // in sync) — no per-fetch SUM over pledge_payments.
     let query = `
       SELECT p.*,
              m.first_name || ' ' || m.last_name as member_name,
-             COALESCE(SUM(pp.amount), 0) as amount_paid
+             COALESCE(p.amount_paid, 0) as amount_paid
       FROM pledges p
       LEFT JOIN members m ON p.member_id = m.id
-      LEFT JOIN pledge_payments pp ON p.id = pp.pledge_id
       WHERE p.church_id = $1
     `;
     const params = [churchId];
@@ -296,7 +297,7 @@ class PaymentsRepository extends BaseRepository {
       params.push(pledgeType);
     }
 
-    query += ' GROUP BY p.id, m.first_name, m.last_name ORDER BY p.created_at DESC';
+    query += ' ORDER BY p.created_at DESC';
 
     const result = await this.pool.query(query, params);
     return result.rows;

@@ -15,9 +15,13 @@ class PaletteRepository extends BaseRepository {
     `;
     const params = [];
 
+    // Tenant isolation: scoped callers see only their church's palettes;
+    // unscoped callers (e.g. system email branding) see only global palettes.
     if (churchId) {
       query += ` WHERE cp.church_id = $1`;
       params.push(churchId);
+    } else {
+      query += ` WHERE cp.church_id IS NULL`;
     }
 
     query += ` ORDER BY cp.is_default DESC, cp.display_name ASC`;
@@ -40,6 +44,9 @@ class PaletteRepository extends BaseRepository {
     if (churchId) {
       query += ` AND cp.church_id = $2`;
       params.push(churchId);
+    } else {
+      // Unscoped reads can only open global palettes — never a tenant's
+      query += ` AND cp.church_id IS NULL`;
     }
 
     const result = await this.pool.query(query, params);
@@ -113,13 +120,16 @@ class PaletteRepository extends BaseRepository {
 
       const palette = paletteResult.rows[0];
 
-      // Insert colors in bulk
+      // Insert colors in bulk — upsert so a duplicate (palette_id, color_key)
+      // can never produce the duplicate-key json_object_agg hazard
       if (colors && Object.keys(colors).length > 0) {
         const colorEntries = Object.entries(colors);
         for (const [colorKey, colorValue] of colorEntries) {
           await client.query(
             `INSERT INTO color_palette_colors (palette_id, color_key, color_value)
-             VALUES ($1, $2, $3)`,
+             VALUES ($1, $2, $3)
+             ON CONFLICT (palette_id, color_key)
+             DO UPDATE SET color_value = EXCLUDED.color_value`,
             [palette.id, colorKey, colorValue]
           );
         }
@@ -139,7 +149,10 @@ class PaletteRepository extends BaseRepository {
   async addColor(paletteId, colorKey, colorValue) {
     const result = await this.pool.query(
       `INSERT INTO color_palette_colors (palette_id, color_key, color_value)
-       VALUES ($1, $2, $3)`,
+       VALUES ($1, $2, $3)
+       ON CONFLICT (palette_id, color_key)
+       DO UPDATE SET color_value = EXCLUDED.color_value
+       RETURNING *`,
       [paletteId, colorKey, colorValue]
     );
     return result.rows[0];

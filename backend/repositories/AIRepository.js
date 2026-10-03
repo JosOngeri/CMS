@@ -5,9 +5,19 @@ class AIRepository extends BaseRepository {
     super('ai_usage_logs');
   }
 
-  async checkAIRateLimit(churchId, endpoint, limit) {
+  async checkAIRateLimit(churchId, endpoint, limit = 100) {
+    // Standardized in-repository: single upsert replaces the
+    // check_ai_rate_limit() stored procedure (still defined in migration 066)
+    // so the rate limiter works in environments where the function is absent.
     const result = await this.pool.query(
-      'SELECT * FROM check_ai_rate_limit($1, $2, $3)',
+      `INSERT INTO ai_rate_limits (church_id, endpoint, window_start, request_count, max_requests, reset_at)
+       VALUES ($1, $2, date_trunc('hour', CURRENT_TIMESTAMP), 1, $3,
+               date_trunc('hour', CURRENT_TIMESTAMP) + INTERVAL '1 hour')
+       ON CONFLICT (church_id, endpoint, window_start)
+       DO UPDATE SET request_count = ai_rate_limits.request_count + 1
+       RETURNING (request_count <= $3) AS allowed,
+                 ($3 - request_count) AS remaining,
+                 reset_at`,
       [churchId, endpoint, limit]
     );
     return result.rows[0];

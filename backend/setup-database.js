@@ -1,5 +1,13 @@
 const fs = require('fs').promises;
 const { pool } = require('./config/database');
+const { requireDevDatabase } = require('./scripts/_scriptSafety');
+
+// LEGACY PATH — applies database/schema.sql wholesale, bypassing the
+// canonical migration runner (backend/migrate.js → backend/migrations/*).
+// Prefer `node migrate.js` — tracked, idempotent, applies ALL migrations.
+requireDevDatabase('setup-database.js');
+console.warn('WARNING: setup-database.js applies a legacy full-schema file. ' +
+  'Prefer `node migrate.js` (canonical path, backend/migrations/*).');
 
 async function setupDatabase() {
   try {

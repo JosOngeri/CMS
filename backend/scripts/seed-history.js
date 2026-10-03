@@ -120,7 +120,13 @@ async function main() {
     ALTER TABLE approval_requests ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP;
     ALTER TABLE approval_requests ADD COLUMN IF NOT EXISTS rejected_at TIMESTAMP;
     ALTER TABLE approval_requests ALTER COLUMN entity_id DROP NOT NULL;
-    ALTER TABLE approval_requests ALTER COLUMN requested_by DROP NOT NULL;
+    -- requested_by was retired by migration 071; alter only if still present
+    DO $fix$ BEGIN
+      IF EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_name='approval_requests' AND column_name='requested_by') THEN
+        ALTER TABLE approval_requests ALTER COLUMN requested_by DROP NOT NULL;
+      END IF;
+    END $fix$;
   `);
 
   for (const slug of CHURCHES) {

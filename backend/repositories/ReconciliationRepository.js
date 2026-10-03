@@ -7,6 +7,7 @@ class ReconciliationRepository extends BaseRepository {
 
   async pushTransaction(transactionData) {
     const { church_id, transaction_code, sender_name, amount, source_type } = transactionData;
+    if (!church_id) throw new Error('pushTransaction: church_id is required');
     const query = `
       INSERT INTO reconciliation_queue
       (id, church_id, transaction_code, sender_name, amount, source_type)

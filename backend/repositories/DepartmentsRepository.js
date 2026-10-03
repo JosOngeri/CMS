@@ -18,12 +18,20 @@ class DepartmentsRepository extends BaseRepository {
   }
 
   async getAllWithStats(churchId = null) {
+    // Single pass — LEFT JOIN + GROUP BY replaces three correlated subqueries
+    // per department row (N+1). COUNT(DISTINCT) neutralises join fan-out.
     let query = `
       SELECT d.*,
-       (SELECT COUNT(*) FROM department_members dm WHERE dm.department_id = d.id AND dm.is_active = true) as member_count,
-       (SELECT COUNT(*) FROM department_communications dc WHERE dc.department_id = d.id AND dc.sent_at >= CURRENT_DATE - INTERVAL '30 days') as recent_communications,
-       (SELECT COUNT(*) FROM department_meetings dm WHERE dm.department_id = d.id AND dm.meeting_date >= CURRENT_DATE - INTERVAL '30 days') as recent_meetings
+       COUNT(DISTINCT dmem.id) as member_count,
+       COUNT(DISTINCT dc.id) as recent_communications,
+       COUNT(DISTINCT dmeet.id) as recent_meetings
       FROM departments d
+      LEFT JOIN department_members dmem
+        ON dmem.department_id = d.id AND dmem.is_active = true
+      LEFT JOIN department_communications dc
+        ON dc.department_id = d.id AND dc.sent_at >= CURRENT_DATE - INTERVAL '30 days'
+      LEFT JOIN department_meetings dmeet
+        ON dmeet.department_id = d.id AND dmeet.meeting_date >= CURRENT_DATE - INTERVAL '30 days'
       WHERE d.is_active = true
     `;
     const params = [];
@@ -33,7 +41,7 @@ class DepartmentsRepository extends BaseRepository {
       params.push(churchId);
     }
 
-    query += ` ORDER BY d.name`;
+    query += ` GROUP BY d.id ORDER BY d.name`;
 
     const result = await this.pool.query(query, params);
     return result.rows;

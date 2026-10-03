@@ -6,15 +6,30 @@ class ChartOfAccountsRepository extends BaseRepository {
   }
 
   async getAllWithHierarchy(churchId = null) {
+    // Pre-aggregated derived tables replace three per-row correlated
+    // subqueries — single pass, no join fan-out on the SUMs.
     let query = `
       SELECT coa.*,
              parent.account_name as parent_name,
              parent.account_code as parent_code,
-             (SELECT COUNT(*) FROM chart_of_accounts WHERE parent_id = coa.id) as child_count,
-             (SELECT COALESCE(SUM(jel.debit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = coa.id) as total_debit,
-             (SELECT COALESCE(SUM(jel.credit_amount), 0) FROM journal_entry_lines jel JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted' WHERE jel.account_id = coa.id) as total_credit
+             COALESCE(cc.child_count, 0) as child_count,
+             COALESCE(bal.total_debit, 0) as total_debit,
+             COALESCE(bal.total_credit, 0) as total_credit
       FROM ${this.tableName} coa
       LEFT JOIN chart_of_accounts parent ON coa.parent_id = parent.id
+      LEFT JOIN (
+        SELECT parent_id, COUNT(*) as child_count
+        FROM chart_of_accounts
+        GROUP BY parent_id
+      ) cc ON cc.parent_id = coa.id
+      LEFT JOIN (
+        SELECT jel.account_id,
+               SUM(jel.debit_amount) as total_debit,
+               SUM(jel.credit_amount) as total_credit
+        FROM journal_entry_lines jel
+        JOIN journal_entries je ON jel.journal_entry_id = je.id AND je.status = 'posted'
+        GROUP BY jel.account_id
+      ) bal ON bal.account_id = coa.id
       WHERE 1=1
     `;
     const params = [];

@@ -18,6 +18,33 @@ CREATE TABLE IF NOT EXISTS notification_templates (
   UNIQUE(name, church_id)
 );
 
+-- Pre-existing legacy notification_templates tables (subject/body/channel
+-- shape, e.g. older prod DBs) skip the CREATE above — ALTER them up to the
+-- canonical column set so the indexes and inserts below work everywhere.
+-- Columns are added nullable because legacy tables may hold rows.
+ALTER TABLE notification_templates
+  ADD COLUMN IF NOT EXISTS type_id VARCHAR(50),
+  ADD COLUMN IF NOT EXISTS title TEXT,
+  ADD COLUMN IF NOT EXISTS message TEXT,
+  ADD COLUMN IF NOT EXISTS action_url TEXT,
+  ADD COLUMN IF NOT EXISTS church_id UUID REFERENCES churches(id) ON DELETE SET NULL;
+
+-- Legacy NOT NULL columns the canonical inserts don't populate must not
+-- block them. Conditional DO block — ALTER COLUMN IF EXISTS isn't portable
+-- across the PG versions in use.
+DO $$
+DECLARE col TEXT;
+BEGIN
+  FOREACH col IN ARRAY ARRAY['subject','body','channel','created_by'] LOOP
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_name = 'notification_templates' AND column_name = col AND is_nullable = 'NO'
+    ) THEN
+      EXECUTE format('ALTER TABLE notification_templates ALTER COLUMN %I DROP NOT NULL', col);
+    END IF;
+  END LOOP;
+END $$;
+
 CREATE TABLE IF NOT EXISTS notification_delivery (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   notification_id UUID REFERENCES notifications(id) ON DELETE CASCADE,
@@ -42,4 +69,6 @@ INSERT INTO notification_templates (name, type_id, title, message, action_url, v
   ('approval_approved', 'approval', 'Approval Granted', 'Your request for {{documentTitle}} has been approved', '/approvals/{{documentId}}', '["documentTitle", "documentId"]'),
   ('approval_progress', 'approval', 'Approval Progress', 'Approval {{votesReceived}}/{{requiredApprovals}} for {{documentTitle}}', '/approvals/{{documentId}}', '["documentTitle", "documentId", "votesReceived", "requiredApprovals"]'),
   ('approval_rejected', 'approval', 'Approval Rejected', 'Your request for {{documentTitle}} was rejected', '/approvals/{{documentId}}', '["documentTitle", "documentId"]')
-ON CONFLICT (name, church_id) DO NOTHING;
+-- No column list: dedupes against whatever unique constraint the table has
+-- (canonical UNIQUE(name, church_id) or legacy UNIQUE(name)).
+ON CONFLICT DO NOTHING;

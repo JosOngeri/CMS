@@ -319,10 +319,8 @@ class PaymentRepository extends BaseRepository {
   async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId) {
     this._requireChurchId(churchId);
     const query = `
-      -- L772: canonical requester column is requester_id (ApprovalsRepository /
-      -- MobileRepository); requested_by is a legacy alias kept for compat.
-      INSERT INTO approval_requests (request_type, module, amount, description, requester_id, requested_by, status, metadata, church_id)
-      VALUES ($1, $2, $3, $4, $5, $5, 'pending', $6, $7)
+      INSERT INTO approval_requests (request_type, module, amount, description, requester_id, status, metadata, church_id)
+      VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7)
       RETURNING id
     `;
     const result = await this.pool.query(query, [requestType, module, amount, description, userId, JSON.stringify(metadata), churchId]);

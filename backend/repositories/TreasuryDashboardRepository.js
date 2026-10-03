@@ -6,25 +6,33 @@ class TreasuryDashboardRepository extends BaseRepository {
   }
 
   async getDashboardStats(churchId = null) {
-    let query = `
-      SELECT
-        (SELECT COALESCE(SUM(amount), 0) FROM accounts WHERE is_active = true) as total_balance,
-        (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE transaction_type = 'income' AND transaction_date >= CURRENT_DATE - INTERVAL '30 days') as income_30_days,
-        (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE transaction_type = 'expense' AND transaction_date >= CURRENT_DATE - INTERVAL '30 days') as expense_30_days,
-        (SELECT COUNT(*) FROM transactions WHERE transaction_date >= CURRENT_DATE - INTERVAL '30 days') as transactions_30_days
-    `;
-    const params = [];
-
-    if (churchId) {
-      query = `
+    // Single scan per source: FILTERed aggregates over transactions replace
+    // three separate subqueries; the accounts sum is one CTE cross-joined in.
+    const churchFilter = churchId ? 'AND church_id = $1' : '';
+    const params = churchId ? [churchId] : [];
+    const query = `
+      WITH tx AS (
         SELECT
-          (SELECT COALESCE(SUM(amount), 0) FROM accounts WHERE is_active = true AND church_id = $1) as total_balance,
-          (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE transaction_type = 'income' AND transaction_date >= CURRENT_DATE - INTERVAL '30 days' AND church_id = $1) as income_30_days,
-          (SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE transaction_type = 'expense' AND transaction_date >= CURRENT_DATE - INTERVAL '30 days' AND church_id = $1) as expense_30_days,
-          (SELECT COUNT(*) FROM transactions WHERE transaction_date >= CURRENT_DATE - INTERVAL '30 days' AND church_id = $1) as transactions_30_days
-      `;
-      params.push(churchId);
-    }
+          COALESCE(SUM(amount) FILTER (WHERE transaction_type = 'income'), 0) AS income_30_days,
+          COALESCE(SUM(amount) FILTER (WHERE transaction_type = 'expense'), 0) AS expense_30_days,
+          COUNT(*) AS transactions_30_days
+        FROM transactions
+        WHERE transaction_date >= CURRENT_DATE - INTERVAL '30 days'
+        ${churchFilter}
+      ),
+      acct AS (
+        SELECT COALESCE(SUM(amount), 0) AS total_balance
+        FROM accounts
+        WHERE is_active = true
+        ${churchFilter}
+      )
+      SELECT
+        acct.total_balance,
+        tx.income_30_days,
+        tx.expense_30_days,
+        tx.transactions_30_days
+      FROM tx CROSS JOIN acct
+    `;
 
     const result = await this.pool.query(query, params);
     return result.rows[0];

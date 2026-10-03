@@ -151,14 +151,9 @@ class AnalyticsRepository extends BaseRepository {
         COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, date_of_birth)) BETWEEN 51 AND 65 THEN 1 END) as age_51_65,
         COUNT(CASE WHEN EXTRACT(YEAR FROM AGE(CURRENT_DATE, date_of_birth)) > 65 THEN 1 END) as age_65_plus
       FROM members
-      WHERE 1=1
+      WHERE church_id = $1
     `;
-    const params = [];
-
-    if (churchId) {
-      query += ` AND church_id = $1`;
-      params.push(churchId);
-    }
+    const params = [churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];
@@ -173,12 +168,11 @@ class AnalyticsRepository extends BaseRepository {
         COUNT(*) as total_activities
       FROM member_activities
       WHERE activity_date >= CURRENT_DATE - INTERVAL '1 day' * $1
-        ${churchId ? 'AND church_id = $2' : ''}
+        AND church_id = $2
       GROUP BY DATE(activity_date)
       ORDER BY date DESC
     `;
-    const params = [days];
-    if (churchId) params.push(churchId);
+    const params = [days, churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows;

@@ -194,7 +194,7 @@ dbDesc('Schema – documents table columns', () => {
 // approval_requests table columns
 // =============================================================================
 dbDesc('Schema – approval_requests table columns', () => {
-  const REQUIRED_COLUMNS = ['id', 'title', 'description', 'type', 'status', 'requested_by', 'approved_by', 'rejected_by'];
+  const REQUIRED_COLUMNS = ['id', 'title', 'description', 'request_type', 'status', 'requester_id', 'approved_by', 'rejected_by'];
 
   for (const col of REQUIRED_COLUMNS) {
     dbIt(`approval_requests.${col} column exists`, async () => {
@@ -218,8 +218,8 @@ dbDesc('Schema – foreign key relationships', () => {
     expect(exists).toBe(true);
   });
 
-  dbIt('approval_requests.requested_by → users.id', async () => {
-    const exists = await fkExists('approval_requests', 'requested_by', 'users');
+  dbIt('approval_requests.requester_id → users.id', async () => {
+    const exists = await fkExists('approval_requests', 'requester_id', 'users');
     expect(exists).toBe(true);
   });
 
@@ -257,8 +257,8 @@ dbDesc('Data integrity – no orphaned records', () => {
     const { rows } = await pool.query(`
       SELECT COUNT(*) AS orphan_count
       FROM approval_requests ar
-      LEFT JOIN users u ON u.id = ar.requested_by
-      WHERE u.id IS NULL
+      LEFT JOIN users u ON u.id = ar.requester_id
+      WHERE ar.requester_id IS NOT NULL AND u.id IS NULL
     `);
     expect(Number(rows[0].orphan_count)).toBe(0);
   });

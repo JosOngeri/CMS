@@ -6,6 +6,7 @@ class ProjectsRepository extends BaseRepository {
   }
 
   async getAllWithDetails(filters = {}) {
+    if (!filters.church_id) throw new Error('getAllWithDetails: filters.church_id is required');
     let query = `
       SELECT p.*,
              d.name as department_name,
@@ -15,16 +16,10 @@ class ProjectsRepository extends BaseRepository {
       LEFT JOIN departments d ON p.department_id = d.id
       LEFT JOIN funds f ON p.fund_id = f.id
       LEFT JOIN users u ON p.assigned_to = u.id
-      WHERE 1=1
+      WHERE p.church_id = $1
     `;
-    const params = [];
-    let paramCount = 0;
-
-    if (filters.church_id) {
-      paramCount++;
-      query += ` AND p.church_id = $${paramCount}`;
-      params.push(filters.church_id);
-    }
+    const params = [filters.church_id];
+    let paramCount = 1;
 
     if (filters.status) {
       paramCount++;
@@ -225,19 +220,33 @@ class ProjectsRepository extends BaseRepository {
 
   async getProjectAnalytics(projectId, churchId) {
     if (!churchId) throw new Error('getProjectAnalytics: churchId is required');
+    // Pre-aggregated derived tables — joining contributions and milestones
+    // directly would cross-product the rows and inflate SUM/COUNT.
     const query = `
       SELECT
         p.*,
-        COALESCE(SUM(pc.amount), 0) as total_contributions,
-        COUNT(DISTINCT pc.contributor_id) as unique_contributors,
-        COUNT(pm.id) as total_milestones,
-        COUNT(CASE WHEN pm.status = 'completed' THEN 1 END) as completed_milestones,
-        COUNT(CASE WHEN pm.status = 'pending' THEN 1 END) as pending_milestones
+        COALESCE(cont.total_contributions, 0) as total_contributions,
+        COALESCE(cont.unique_contributors, 0) as unique_contributors,
+        COALESCE(ms.total_milestones, 0) as total_milestones,
+        COALESCE(ms.completed_milestones, 0) as completed_milestones,
+        COALESCE(ms.pending_milestones, 0) as pending_milestones
       FROM projects p
-      LEFT JOIN project_contributions pc ON p.id = pc.project_id
-      LEFT JOIN project_milestones pm ON p.id = pm.project_id
+      LEFT JOIN (
+        SELECT project_id,
+               SUM(amount) as total_contributions,
+               COUNT(DISTINCT contributor_id) as unique_contributors
+        FROM project_contributions
+        GROUP BY project_id
+      ) cont ON cont.project_id = p.id
+      LEFT JOIN (
+        SELECT project_id,
+               COUNT(*) as total_milestones,
+               COUNT(*) FILTER (WHERE status = 'completed') as completed_milestones,
+               COUNT(*) FILTER (WHERE status = 'pending') as pending_milestones
+        FROM project_milestones
+        GROUP BY project_id
+      ) ms ON ms.project_id = p.id
       WHERE p.id = $1 AND p.church_id = $2
-      GROUP BY p.id
     `;
     const result = await this.pool.query(query, [projectId, churchId]);
     return result.rows[0];

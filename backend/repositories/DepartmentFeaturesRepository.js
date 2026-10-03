@@ -52,6 +52,8 @@ class DepartmentFeaturesRepository extends BaseRepository {
        JOIN department_feature_settings dfs ON df.id = dfs.feature_id
        JOIN departments d ON dfs.department_id = d.id AND d.church_id = $2
        WHERE dfs.department_id = $1 AND dfs.is_enabled = true
+         AND df.is_active = true
+         AND (df.church_id IS NULL OR df.church_id = $2)
        ORDER BY df.category, df.name`,
       [departmentId, churchId]
     );
@@ -59,6 +61,19 @@ class DepartmentFeaturesRepository extends BaseRepository {
   }
 
   async allocateFeatureToDepartment(departmentId, featureId, config = {}, churchId = null) {
+    // Church-level gate: the feature must be globally available (NULL
+    // church_id) or explicitly enabled for this church before it can be
+    // allocated to a department.
+    const featureGate = await this.pool.query(
+      `SELECT 1 FROM ${this.tableName}
+       WHERE id = $1 AND is_active = true
+         AND (church_id IS NULL OR church_id = $2)`,
+      [featureId, churchId]
+    );
+    if (featureGate.rowCount === 0) {
+      throw new Error('Feature is not enabled for this church');
+    }
+
     const result = await this.pool.query(
       `INSERT INTO department_feature_settings (department_id, feature_id, is_enabled, config, church_id)
        VALUES ($1, $2, true, $3, $4)

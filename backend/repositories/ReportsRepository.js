@@ -520,7 +520,7 @@ class ReportsRepository extends BaseRepository {
       from: 'approval_requests WHERE 1=1',
       scopeColumn: 'church_id',
       columns: new Set([
-        'id', 'entity_type', 'entity_id', 'requested_by', 'status', 'church_id',
+        'id', 'entity_type', 'entity_id', 'status', 'church_id',
         'created_at', 'updated_at', 'requester_id', 'title', 'description',
         'priority', 'approver_id', 'module', 'amount', 'requested_at',
         'approved_at', 'rejected_at', 'request_type', 'department_id'

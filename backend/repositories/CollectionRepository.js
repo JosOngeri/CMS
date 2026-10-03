@@ -141,20 +141,44 @@ class CollectionRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateCollectionCurrentAmount(collectionId, amount) {
-    const query = 'UPDATE event_collections SET current_amount = current_amount + $1 WHERE id = $2';
-    await this.pool.query(query, [amount, collectionId]);
+  /** @deprecated unscoped + racy — use addToCollectionCurrentAmount */
+  async updateCollectionCurrentAmount(collectionId, amount, churchId = null) {
+    const query = `UPDATE event_collections SET current_amount = current_amount + $1 WHERE id = $2${churchId ? ' AND church_id = $3' : ''}`;
+    await this.pool.query(query, churchId ? [amount, collectionId, churchId] : [amount, collectionId]);
   }
 
-  async getCollectionAmounts(collectionId) {
-    const query = 'SELECT current_amount, target_amount FROM event_collections WHERE id = $1';
-    const result = await this.pool.query(query, [collectionId]);
+  // Atomic variant: adds to current_amount and flips status to 'completed'
+  // when the target is reached in a single statement — eliminates the
+  // read-check-write race between updateCollectionCurrentAmount and
+  // updateCollectionStatus.
+  async addToCollectionCurrentAmount(collectionId, amount, churchId) {
+    if (!churchId) throw new Error('addToCollectionCurrentAmount: churchId is required');
+    const query = `
+      UPDATE event_collections
+      SET current_amount = current_amount + $1,
+          status = CASE
+            WHEN current_amount + $1 >= target_amount THEN 'completed'
+            ELSE status
+          END,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND church_id = $3
+      RETURNING current_amount, target_amount, status
+    `;
+    const result = await this.pool.query(query, [amount, collectionId, churchId]);
     return result.rows[0];
   }
 
-  async updateCollectionStatus(collectionId, status) {
-    const query = 'UPDATE event_collections SET status = $1 WHERE id = $2';
-    await this.pool.query(query, [status, collectionId]);
+  /** @deprecated unscoped — kept for compatibility; use getCollectionStatusAndAmounts */
+  async getCollectionAmounts(collectionId, churchId = null) {
+    const query = `SELECT current_amount, target_amount FROM event_collections WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    const result = await this.pool.query(query, churchId ? [collectionId, churchId] : [collectionId]);
+    return result.rows[0];
+  }
+
+  /** @deprecated unscoped — use updateCollectionStatusWithTimestamp */
+  async updateCollectionStatus(collectionId, status, churchId = null) {
+    const query = `UPDATE event_collections SET status = $1 WHERE id = $2${churchId ? ' AND church_id = $3' : ''}`;
+    await this.pool.query(query, churchId ? [status, collectionId, churchId] : [status, collectionId]);
   }
 
   async updateCollectionStatusWithTimestamp(collectionId, status, churchId = null) {
@@ -197,14 +221,29 @@ class CollectionRepository extends BaseRepository {
     await this.pool.query(query, churchId ? [contributionId, churchId] : [contributionId]);
   }
 
-  async subtractFromCollectionCurrentAmount(collectionId, amount) {
-    const query = 'UPDATE event_collections SET current_amount = current_amount - $1 WHERE id = $2';
-    await this.pool.query(query, [amount, collectionId]);
+  // Atomic mirror of addToCollectionCurrentAmount: subtracts and flips a
+  // 'completed' collection back to 'active' when it drops below target —
+  // one statement, tenant-scoped.
+  async subtractFromCollectionCurrentAmount(collectionId, amount, churchId) {
+    if (!churchId) throw new Error('subtractFromCollectionCurrentAmount: churchId is required');
+    const query = `
+      UPDATE event_collections
+      SET current_amount = GREATEST(current_amount - $1, 0),
+          status = CASE
+            WHEN status = 'completed' AND current_amount - $1 < target_amount THEN 'active'
+            ELSE status
+          END,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND church_id = $3
+      RETURNING current_amount, target_amount, status
+    `;
+    const result = await this.pool.query(query, [amount, collectionId, churchId]);
+    return result.rows[0];
   }
 
-  async getCollectionStatusAndAmounts(collectionId) {
-    const query = 'SELECT current_amount, target_amount, status FROM event_collections WHERE id = $1';
-    const result = await this.pool.query(query, [collectionId]);
+  async getCollectionStatusAndAmounts(collectionId, churchId = null) {
+    const query = `SELECT current_amount, target_amount, status FROM event_collections WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`;
+    const result = await this.pool.query(query, churchId ? [collectionId, churchId] : [collectionId]);
     return result.rows[0];
   }
 

@@ -7,16 +7,28 @@ class GalleryAlbumsRepository extends BaseRepository {
 
   async getAllWithDetails(filters = {}, churchId) {
     if (!churchId) throw new Error('getAllWithDetails: churchId is required');
+    // Pre-aggregated derived tables replace two per-row correlated
+    // subqueries (photo_count, sub_album_count) — single pass.
     let query = `
       SELECT ga.*,
              gc.name as category_name,
              gc.color as category_color,
              u.first_name || ' ' || u.last_name as created_by_name,
-             (SELECT COUNT(*) FROM album_photos WHERE album_id = ga.id) as photo_count,
-             (SELECT COUNT(*) FROM gallery_albums WHERE parent_id = ga.id) as sub_album_count
+             COALESCE(pc.photo_count, 0) as photo_count,
+             COALESCE(sc.sub_album_count, 0) as sub_album_count
       FROM gallery_albums ga
       LEFT JOIN gallery_categories gc ON ga.category_id = gc.id
       LEFT JOIN users u ON ga.created_by = u.id
+      LEFT JOIN (
+        SELECT album_id, COUNT(*) as photo_count
+        FROM album_photos
+        GROUP BY album_id
+      ) pc ON pc.album_id = ga.id
+      LEFT JOIN (
+        SELECT parent_id, COUNT(*) as sub_album_count
+        FROM gallery_albums
+        GROUP BY parent_id
+      ) sc ON sc.parent_id = ga.id
       WHERE 1=1
     `;
     const params = [];

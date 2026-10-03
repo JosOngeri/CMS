@@ -112,24 +112,13 @@ class RecurringPaymentsController extends BaseController {
         }]);
       }
 
-      // Recalculate next payment date if frequency or start date changed
-      let nextPaymentDate = null;
-      if (frequency || start_date) {
-        const current = await RecurringPaymentsRepository.getStartDateAndFrequency(id, churchId);
-        if (current) {
-          nextPaymentDate = SchedulingService.calculateNextPaymentDate(
-            start_date || current.start_date, 
-            frequency || current.frequency
-          );
-        }
-      }
-
+      // next_payment_date is recalculated inside updateRecurringPayment when
+      // frequency or start_date changes — no separate lookup needed.
       const payment = await RecurringPaymentsRepository.updateRecurringPayment(id, {
         amount,
         frequency,
         start_date,
         end_date,
-        next_payment_date: nextPaymentDate,
         payment_method,
         auto_charge,
         status,

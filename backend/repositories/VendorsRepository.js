@@ -7,16 +7,11 @@ class VendorsRepository extends BaseRepository {
 
   async getAllVendors(filters = {}) {
     const { is_active, search, church_id } = filters;
+    if (!church_id) throw new Error('VendorsRepository.getAllVendors: church_id required');
 
-    let query = `SELECT * FROM ${this.tableName} WHERE 1=1`;
-    const params = [];
-    let paramCount = 0;
-
-    if (church_id) {
-      paramCount++;
-      query += ` AND church_id = $${paramCount}`;
-      params.push(church_id);
-    }
+    let query = `SELECT * FROM ${this.tableName} WHERE church_id = $1`;
+    const params = [church_id];
+    let paramCount = 1;
 
     if (is_active !== undefined) {
       paramCount++;
@@ -55,28 +50,21 @@ class VendorsRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  // Updatable vendor columns; undefined keys are dropped before delegating to
+  // BaseRepository.update (structured, column-allowlisted, tenant-scoped).
+  static UPDATABLE_COLUMNS = [
+    'vendor_name', 'contact_person', 'phone', 'email', 'address',
+    'city', 'country', 'tax_id', 'payment_terms', 'is_active'
+  ];
+
   async updateVendor(id, data, churchId) {
     if (!churchId) throw new Error('VendorsRepository.updateVendor: churchId required');
-    const { vendor_name, contact_person, phone, email, address, city, country, tax_id, payment_terms, is_active } = data;
-
-    const result = await this.pool.query(
-      `UPDATE vendors
-       SET vendor_name = COALESCE($1, vendor_name),
-           contact_person = COALESCE($2, contact_person),
-           phone = COALESCE($3, phone),
-           email = COALESCE($4, email),
-           address = COALESCE($5, address),
-           city = COALESCE($6, city),
-           country = COALESCE($7, country),
-           tax_id = COALESCE($8, tax_id),
-           payment_terms = COALESCE($9, payment_terms),
-           is_active = COALESCE($10, is_active),
-           updated_at = CURRENT_TIMESTAMP
-       WHERE id = $11 AND church_id = $12
-       RETURNING *`,
-      [vendor_name, contact_person, phone, email, address, city, country, tax_id, payment_terms, is_active, id, churchId]
-    );
-    return result.rows[0] || null;
+    const updates = {};
+    for (const key of VendorsRepository.UPDATABLE_COLUMNS) {
+      if (data[key] !== undefined) updates[key] = data[key];
+    }
+    updates.updated_at = new Date();
+    return this.update(id, updates, churchId);
   }
 
   async getVendorTransactionCount(id, churchId) {

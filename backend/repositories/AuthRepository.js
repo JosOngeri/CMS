@@ -6,8 +6,13 @@ class AuthRepository extends BaseRepository {
   }
 
   async getRefreshToken(token) {
+    // Join users to verify the token's tenant still matches the owning user's
+    // church (NULL church_id = legacy token predating migration 007 — accepted).
     const result = await this.pool.query(
-      `SELECT rt.user_id, rt.expires_at FROM refresh_tokens rt
+      `SELECT rt.user_id, rt.expires_at, u.church_id
+       FROM refresh_tokens rt
+       JOIN users u ON rt.user_id = u.id
+         AND (rt.church_id IS NULL OR rt.church_id = u.church_id)
        WHERE rt.token = $1 AND rt.expires_at > NOW() AND rt.used = false`,
       [token]
     );
@@ -40,8 +45,9 @@ class AuthRepository extends BaseRepository {
 
   async createRefreshToken(userId, token) {
     await this.pool.query(
-      `INSERT INTO refresh_tokens (user_id, token, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '30 days')`,
+      `INSERT INTO refresh_tokens (user_id, token, expires_at, church_id)
+       VALUES ($1, $2, NOW() + INTERVAL '30 days',
+               (SELECT church_id FROM users WHERE id = $1))`,
       [userId, token]
     );
   }
@@ -71,8 +77,11 @@ class AuthRepository extends BaseRepository {
 
   async getPasswordResetToken(token) {
     const result = await this.pool.query(
-      `SELECT * FROM password_reset_tokens
-       WHERE (token = $1 OR token = $2) AND expires_at > NOW() AND used IS NOT TRUE`,
+      `SELECT prt.*, u.church_id AS user_church_id
+       FROM password_reset_tokens prt
+       JOIN users u ON prt.user_id = u.id
+         AND (prt.church_id IS NULL OR prt.church_id = u.church_id)
+       WHERE (prt.token = $1 OR prt.token = $2) AND prt.expires_at > NOW() AND prt.used IS NOT TRUE`,
       [this._hashResetToken(token), token]
     );
     return result.rows[0];
@@ -87,8 +96,9 @@ class AuthRepository extends BaseRepository {
 
   async createPasswordResetToken(userId, token) {
     await this.pool.query(
-      `INSERT INTO password_reset_tokens (user_id, token, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '1 hour')`,
+      `INSERT INTO password_reset_tokens (user_id, token, expires_at, church_id)
+       VALUES ($1, $2, NOW() + INTERVAL '1 hour',
+               (SELECT church_id FROM users WHERE id = $1))`,
       [userId, this._hashResetToken(token)]
     );
   }

@@ -17,9 +17,14 @@ class GatewayController extends BaseController {
     const churchId = req.user.church_id;
 
     try {
-      await gatewayRepository.registerDevice({
+      const result = await gatewayRepository.registerDevice({
         deviceId, churchId, model, batteryLevel, signalStrength
       });
+
+      // rowCount 0 = the device id is already registered to another church
+      if (result.rowCount === 0) {
+        return this.forbidden(res, 'Device is already registered to a different church');
+      }
 
       this.success(res, null, 'Device registered successfully');
     } catch (error) {

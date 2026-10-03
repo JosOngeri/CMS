@@ -10,7 +10,7 @@ const logger = createLogger('department-categories.routes');
 // Get all categories
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const result = await departmentCategoriesRepository.getAllActive();
+    const result = await departmentCategoriesRepository.getAllActive(req.user.church_id);
     res.json({ categories: result });
   } catch (error) {
     logger.error('getCategories', error);
@@ -22,7 +22,7 @@ router.get('/', authenticateToken, async (req, res) => {
 router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await departmentCategoriesRepository.getById(id);
+    const result = await departmentCategoriesRepository.getById(id, req.user.church_id);
 
     if (!result) {
       return res.status(404).json({ error: 'Category not found' });
@@ -44,7 +44,7 @@ router.post('/',
     try {
       const { name, description, color } = req.body;
 
-      const result = await departmentCategoriesRepository.create({ name, description, color });
+      const result = await departmentCategoriesRepository.create({ name, description, color }, req.user.church_id);
 
       res.status(201).json({
         message: 'Category created successfully',
@@ -70,7 +70,7 @@ router.put('/:id',
       const { id } = req.params;
       const { name, description, color, is_active } = req.body;
 
-      const result = await departmentCategoriesRepository.update(id, { name, description, color, is_active });
+      const result = await departmentCategoriesRepository.update(id, { name, description, color, is_active }, req.user.church_id);
 
       if (!result) {
         return res.status(404).json({ error: 'Category not found' });
@@ -99,13 +99,13 @@ router.delete('/:id',
       const { id } = req.params;
 
       // Get category name first
-      const category = await departmentCategoriesRepository.getById(id);
+      const category = await departmentCategoriesRepository.getById(id, req.user.church_id);
       if (!category) {
         return res.status(404).json({ error: 'Category not found' });
       }
 
       // Check if category is in use
-      const usageCount = await departmentCategoriesRepository.checkCategoryUsage(category.name);
+      const usageCount = await departmentCategoriesRepository.checkCategoryUsage(category.name, req.user.church_id);
 
       if (usageCount > 0) {
         return res.status(400).json({ 
@@ -113,7 +113,7 @@ router.delete('/:id',
         });
       }
 
-      await departmentCategoriesRepository.delete(id);
+      await departmentCategoriesRepository.delete(id, req.user.church_id);
 
       res.json({ message: 'Category deleted successfully' });
     } catch (error) {

@@ -338,9 +338,9 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
     const r = await departmentCommunityRepository.query(
       `INSERT INTO approval_requests
          (title, description, request_type, request_data, entity_type, entity_id,
-          requester_id, requested_by, approver_id, department_id, module,
+          requester_id, approver_id, department_id, module,
           amount, priority, status, church_id, requested_at)
-       VALUES ($1,$2,'department_spend',$3,'department',$4,$5,$5,$6,$7,'department',
+       VALUES ($1,$2,'department_spend',$3,'department',$4,$5,$6,$7,'department',
                $8,'normal','pending',$9,CURRENT_TIMESTAMP)
        RETURNING *`,
       [
