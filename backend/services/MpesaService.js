@@ -335,12 +335,15 @@ class MpesaService {
   validateSignature(signature, payload) {
     try {
       const secret = process.env.MPESA_CALLBACK_SECRET;
+      if (!secret) return false; // fail closed — never verify against an empty key
       const expectedSignature = crypto
         .createHmac('sha256', secret)
         .update(payload)
         .digest('base64');
-      
-      return signature === expectedSignature;
+
+      const a = Buffer.from(String(signature));
+      const b = Buffer.from(expectedSignature);
+      return a.length === b.length && crypto.timingSafeEqual(a, b);
     } catch (error) {
       logger.error('Signature Validation Error:', error.message);
       return false;

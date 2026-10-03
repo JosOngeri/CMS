@@ -1340,3 +1340,45 @@ current source — not trusted from CSV or prose statuses. User's second-sweep f
 | L781 | FIXED | Truncated `tests/api/tests/sms-sync.test.js` stub deleted; full `tests/api/sms-sync.test.js` kept (all stub-only cases verified covered). |
 | L782 | FIXED | `setup-test-db.js` aborts on real migration errors (benign already-exists codes tolerated); exported for testability; `npm test` chain unchanged. |
 | L783 | FIXED | New `tests/unit/audit-regressions.test.js` — 9 tests pinning migration failure handling, dashboard camelCase shape, requester_id writes, tenant isolation, frontend port/outDir consistency, secretBox round-trip. |
+
+## Verification pass — Batch 5 routes (L209–L268) — all verified closed
+
+Re-audited every flagged route file against its finding. All were already
+fixed in prior remediation passes; one residual hardened this pass.
+
+| Row | Verified state |
+|---|---|
+| L209 treasury | `router.use(authenticateToken, requireRole(...))` + TreasurySecurityMiddleware stack + per-route role gates; controller passes churchId into scoped repo calls (e.g. `approveTransaction(id, userId, churchId)`). |
+| L212 payments | All refund/status/mutation routes role-gated; member-initiation guard only permits own-payment STK flow. |
+| L216 users | No `x-tenant-church-id` references remain; church derived from JWT. |
+| L219 mpesa | `stk-push` uses `req.user.church_id` (body ignored); `/history/:churchId` camelCase claim + Super Admin bypass intact; callback signature now `timingSafeEqual` + explicit fail-closed when `MPESA_CALLBACK_SECRET` unset. |
+| L220 galleryAlbums | All mutation routes role-gated (Super Admin/Pastor/Department Head). |
+| L221 dashboard | Per-endpoint requireRole on system-health/financial-stats/financial-health/transactions/ministry-health/department-*. |
+| L222 approvals | `DELETE /:id` calls real `deleteById`; `/execute` + `/step` role-gated. |
+| L223 content | Static routes (`/scheduled`, `/check-duplicate`, `/export`, `/import`, `/analytics`) above `/:id`; slug lookup scoped. |
+| L224 palette | `/default` before `/:id` — no longer shadowed. |
+| L225 manualPayment | Receipt reads gated to Super Admin/Pastor/Treasurer. |
+| L226 sms | Read endpoints gated by SMS_READERS role group. |
+| L227 telegramAuth | startVerification/verify-auth/auth-methods all Super Admin+Pastor. |
+| L229 chartOfAccounts | `router.use(requireRole(FINANCE_ROLES))`. |
+| L230 notifications | create/push/bulk/templates/logs gated to NOTIFY_ADMINS. |
+| L233 reconciliation | `verifyTransaction` scoped by `req.user.church_id`. |
+| L234 fieldPermissions | `setFieldPermissions` = Super Admin only. |
+| L235 mobile | `/auth/login` intentionally precedes the `authenticateToken` wall (commented); `sync/reset` Super Admin gated. |
+| L236 smsAuth | `church.api_key` no longer returned. |
+| L237 smsSync | `filterDataByUser` fails closed (returns `{}` on error). |
+| L238 gallery | Public endpoints resolve tenant via `req.church_id`, 400 when unresolvable; repo calls scoped. |
+| L239 documents | `getVersionHistory(documentId, churchId)` scoped. |
+| L241 settings | `GET /maintenance/mode` stays public by design (frontend needs it for the maintenance banner); writes are Super Admin gated. Accepted. |
+| L242 projects | Controller scoped (church_id on repo calls). |
+| L243 comments | `isOwner` checks present on update/delete. |
+| L255 fixedAssets | Route + controller files removed; surface consolidated under treasury module. |
+| L259 userSettings | INSERT-builder bug fixed per L147/L571 comment trail. |
+| L261 health | `/db`, `/redis`, `/memory` behind Super Admin; `/` remains public liveness. |
+| L263 logs | `strictLimiter` on `/client-error` ingestion. |
+| L264 departments | Both routers still mounted, but `departments.routes.js` is now church-scoped on every raw-SQL path — divergent-scoping blocker resolved. |
+| L265–268 | `payment.routes.js`, `vendors.routes.js`, `pledges.routes.js`, `recurringPayments.routes.js` deleted (dead files). |
+
+Open-issues CSV: rows were not present (already removed when fixed in prior
+passes) — no changes needed. Net new code this pass: MpesaService
+timing-safe signature compare.
