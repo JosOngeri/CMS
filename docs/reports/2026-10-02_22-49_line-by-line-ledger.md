@@ -1540,3 +1540,31 @@ per-row `payment.amount.toLocaleString()` also wrapped in `Number()`.
 Verification: `node --check` all touched backend files; `vite build` clean;
 eslint 0 errors on all touched files. Reports.jsx download filename now derives
 extension from response Content-Type (xlsx→csv degradation names correctly).
+
+### Fix pass — middleware re-verify, split-brain, reset-password page (2026-10-03)
+
+**Verified already-FIXED (user commits 6f0877f/21c618f, code re-checked):**
+- `middleware/auth.js` — expired/invalid tokens return **401** (lines 128-131
+  document the 401-not-403 rationale); 403 only for authenticated-but-forbidden.
+- `middleware/rateLimiter.js` — Redis is now polled **per request** (`redisUp()`
+  at dispatch time); the Redis limiter is built lazily on first use after
+  connect, so Redis coming online post-boot gets adopted (lines 14-86).
+- `Header.jsx` — name renders via `normalizeUser` (firstName→first_name
+  fallback at AuthContext:189-190); `/photo-gallery` link already → `/gallery`.
+- `approval_requests` **requester_id/requested_by split-brain CLOSED** —
+  migration 060 backfills both directions; all writes populate requester_id
+  (canonical); PaymentRepository + department_community write both; reads use
+  COALESCE/|| fallbacks. Remaining requested_by refs are documented compat.
+
+**Newly fixed this pass:**
+- `auth.controller.resetPassword` accepted any `newPassword` (no strength
+  check — a reset link bypassed policy). Now `validatePasswordStrength` runs
+  before hashing, same as registration (returns `.message` with all errors).
+- **ResetPassword page created** (`pages/auth/ResetPassword.jsx`) + mounted in
+  AuthShell at `/auth/reset-password` — the reset email's target URL
+  (`FRONTEND_URL/auth/reset-password?token=`) dead-ended with no page. Reads
+  token from query params, client-mirrors the strength rules, confirm-password
+  check, missing-token + success states, matches ForgotPassword conventions.
+
+Verification: `node --check` auth.controller; eslint 0 errors (ResetPassword
+lints fully clean); `vite build` ✓ (bundled into AuthShell chunk).

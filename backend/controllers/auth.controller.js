@@ -570,6 +570,16 @@ class AuthController extends BaseController {
     try {
       const { token, newPassword } = req.body;
 
+      // Same policy as registration/change — a reset link must not allow a
+      // weaker password than the normal flows enforce.
+      if (!newPassword) {
+        return res.status(400).json({ success: false, error: 'New password is required' });
+      }
+      const strength = validatePasswordStrength(newPassword);
+      if (!strength.isValid) {
+        return res.status(400).json({ success: false, error: strength.message });
+      }
+
       // Check if token is valid
       const tokenData = await AuthRepository.getPasswordResetToken(token);
 
