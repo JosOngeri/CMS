@@ -78,13 +78,45 @@ class UserSettingsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createUserPreferencesWithFields(userId, updates, values) {
-    const query = `
-      INSERT INTO user_preferences (user_id, ${updates.join(', ')})
-      VALUES ($1, ${updates.map((_, i) => `$${i + 2}`).join(', ')})
-      RETURNING *
-    `;
-    const result = await this.pool.query(query, [userId, ...values]);
+  /**
+   * Upsert user preferences in one statement — the previous update-then-insert
+   * path was double-broken (SET-clause strings used as column names + colliding
+   * placeholders) and raced under concurrent requests (ledger L147/L571).
+   * @param {string} userId
+   * @param {Object} preferenceData - field → value; non-allowlisted keys dropped
+   * @returns {Promise<Object| null>} upserted row or null when nothing to set
+   */
+  async upsertUserPreferences(userId, preferenceData) {
+    const allowedFields = [
+      'email_notifications', 'sms_notifications', 'announcement_notifications',
+      'event_notifications', 'department_notifications', 'payment_notifications',
+      'reminder_notifications', 'profile_visibility', 'show_email', 'show_phone',
+      'show_departments', 'allow_messages', 'show_activity', 'theme', 'language', 'timezone'
+    ];
+
+    const fields = [];
+    const values = [];
+    for (const field of allowedFields) {
+      if (preferenceData[field] !== undefined) {
+        fields.push(field);
+        values.push(preferenceData[field]);
+      }
+    }
+
+    if (fields.length === 0) return null;
+
+    const cols = fields.join(', ');
+    const valuePlaceholders = fields.map((_, i) => `$${i + 2}`).join(', ');
+    const updateSet = fields.map((f, i) => `${f} = $${i + 2}`).join(', ');
+
+    const result = await this.pool.query(
+      `INSERT INTO user_preferences (user_id, ${cols})
+       VALUES ($1, ${valuePlaceholders})
+       ON CONFLICT (user_id)
+       DO UPDATE SET ${updateSet}, updated_at = NOW()
+       RETURNING *`,
+      [userId, ...values]
+    );
     return result.rows[0];
   }
 

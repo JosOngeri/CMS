@@ -74,28 +74,29 @@ class PaletteRepository extends BaseRepository {
     return result.rows;
   }
 
-  async findByName(name) {
+  async findByName(name, churchId) {
     const result = await this.pool.query(
-      'SELECT id FROM color_palettes WHERE name = $1',
-      [name]
+      'SELECT id FROM color_palettes WHERE name = $1 AND church_id = $2',
+      [name, churchId]
     );
     return result.rows[0];
   }
 
   async createPalette(data) {
-    const { name, display_name, description, created_by } = data;
+    const { name, display_name, description, created_by, church_id } = data;
 
     const result = await this.pool.query(
-      `INSERT INTO color_palettes (name, display_name, description, is_system, is_default, created_by)
-       VALUES ($1, $2, $3, false, false, $4)
+      `INSERT INTO color_palettes (name, display_name, description, is_system, is_default, created_by, church_id)
+       VALUES ($1, $2, $3, false, false, $4, $5)
        RETURNING *`,
-      [name, display_name, description, created_by]
+      [name, display_name, description, created_by, church_id]
     );
     return result.rows[0];
   }
 
   async createPaletteWithColors(data) {
-    const { name, display_name, description, colors, created_by } = data;
+    const { name, display_name, description, colors, created_by, church_id } = data;
+    if (!church_id) throw new Error('createPaletteWithColors: church_id required');
 
     // Start transaction
     const client = await this.pool.connect();
@@ -104,10 +105,10 @@ class PaletteRepository extends BaseRepository {
 
       // Insert palette
       const paletteResult = await client.query(
-        `INSERT INTO color_palettes (name, display_name, description, is_system, is_default, created_by)
-         VALUES ($1, $2, $3, false, false, $4)
+        `INSERT INTO color_palettes (name, display_name, description, is_system, is_default, created_by, church_id)
+         VALUES ($1, $2, $3, false, false, $4, $5)
          RETURNING *`,
-        [name, display_name, description, created_by]
+        [name, display_name, description, created_by, church_id]
       );
 
       const palette = paletteResult.rows[0];
@@ -144,15 +145,19 @@ class PaletteRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findById(id) {
-    const result = await this.pool.query(
-      'SELECT * FROM color_palettes WHERE id = $1',
-      [id]
-    );
+  async findById(id, churchId) {
+    let query = 'SELECT * FROM color_palettes WHERE id = $1';
+    const params = [id];
+    if (churchId) {
+      query += ' AND church_id = $2';
+      params.push(churchId);
+    }
+    const result = await this.pool.query(query, params);
     return result.rows[0];
   }
 
-  async updatePalette(id, data) {
+  async updatePalette(id, data, churchId) {
+    if (!churchId) throw new Error('updatePalette: churchId required');
     const { display_name, description } = data;
 
     const result = await this.pool.query(
@@ -160,13 +165,14 @@ class PaletteRepository extends BaseRepository {
        SET display_name = COALESCE($1, display_name),
            description = COALESCE($2, description),
            updated_at = NOW()
-       WHERE id = $3`,
-      [display_name, description, id]
+       WHERE id = $3 AND church_id = $4`,
+      [display_name, description, id, churchId]
     );
     return result.rows[0];
   }
 
-  async updatePaletteWithColors(id, data) {
+  async updatePaletteWithColors(id, data, churchId) {
+    if (!churchId) throw new Error('updatePaletteWithColors: churchId required');
     const { display_name, description, colors } = data;
 
     // Start transaction
@@ -174,15 +180,18 @@ class PaletteRepository extends BaseRepository {
     try {
       await client.query('BEGIN');
 
-      // Update palette
-      await client.query(
+      // Update palette — scoped so a church can never mutate another's palette
+      const upd = await client.query(
         `UPDATE color_palettes
          SET display_name = COALESCE($1, display_name),
              description = COALESCE($2, description),
              updated_at = NOW()
-         WHERE id = $3`,
-        [display_name, description, id]
+         WHERE id = $3 AND church_id = $4`,
+        [display_name, description, id, churchId]
       );
+      if (upd.rowCount === 0) {
+        throw new Error('Palette not found in this church');
+      }
 
       // Update colors if provided
       if (colors) {
@@ -220,25 +229,27 @@ class PaletteRepository extends BaseRepository {
     return result.rowCount;
   }
 
-  async deletePalette(id) {
+  async deletePalette(id, churchId) {
     const result = await this.pool.query(
-      'DELETE FROM color_palettes WHERE id = $1',
-      [id]
+      'DELETE FROM color_palettes WHERE id = $1 AND church_id = $2',
+      [id, churchId]
     );
     return result.rowCount > 0;
   }
 
-  async resetAllDefaults() {
+  async resetAllDefaults(churchId) {
+    if (!churchId) throw new Error('resetAllDefaults: churchId required');
     const result = await this.pool.query(
-      'UPDATE color_palettes SET is_default = false'
+      'UPDATE color_palettes SET is_default = false WHERE church_id = $1',
+      [churchId]
     );
     return result.rowCount;
   }
 
-  async setDefault(id) {
+  async setDefault(id, churchId) {
     const result = await this.pool.query(
-      'UPDATE color_palettes SET is_default = true WHERE id = $1',
-      [id]
+      'UPDATE color_palettes SET is_default = true WHERE id = $1 AND church_id = $2',
+      [id, churchId]
     );
     return result.rows[0];
   }

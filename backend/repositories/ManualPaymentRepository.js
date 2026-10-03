@@ -205,10 +205,11 @@ class ManualPaymentRepository extends BaseRepository {
     const result = await this.pool.query(
       `UPDATE payments SET member_id = $1
        WHERE id = $2 AND church_id = $3
-         AND EXISTS (SELECT 1 FROM members m WHERE m.id = $1 AND m.church_id = $3)`,
+         AND EXISTS (SELECT 1 FROM members m WHERE m.id = $1 AND m.church_id = $3)
+       RETURNING id`,
       [memberId, paymentId, churchId]
     );
-    return result.rows[0];
+    return result.rows[0] || null;
   }
 
   /**

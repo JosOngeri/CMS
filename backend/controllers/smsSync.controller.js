@@ -43,15 +43,11 @@ class SmsSyncController extends BaseController {
 
       const { since_date } = req.query;
 
-      // Get snapshot for the church
-      let snapshot;
-      if (since_date) {
-        // For delta requests, we would need to implement delta generation
-        // For now, return the latest snapshot
-        snapshot = await this.snapshotService.getLatestSnapshot(churchId);
-      } else {
-        snapshot = await this.snapshotService.getLatestSnapshot(churchId);
-      }
+      // Delta generation is not implemented — since_date is acknowledged but
+      // always returns a FULL snapshot. snapshot_type tells the client not to
+      // treat the payload as incremental.
+      const snapshot = await this.snapshotService.getLatestSnapshot(churchId);
+      const requestedDelta = Boolean(since_date);
 
       if (!snapshot) {
         return ResponseHandler.error(res, 'No snapshot found for this church', 404);
@@ -71,6 +67,8 @@ class SmsSyncController extends BaseController {
         snapshot_date: snapshot.snapshot_date,
         file_size: snapshot.file_size,
         data: userFilteredData,
+        snapshot_type: 'full',
+        delta_requested: requestedDelta,
         record_counts: {
           contacts: userFilteredData?.contacts?.length || 0,
           groups: userFilteredData?.groups?.length || 0,
@@ -116,7 +114,8 @@ class SmsSyncController extends BaseController {
       };
     } catch (error) {
       this.logger.error('Error filtering data by user:', error);
-      return data; // Return original data if filtering fails
+      // Fail closed — an unfiltered payload would leak other users' data
+      return {};
     }
   }
 

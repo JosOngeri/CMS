@@ -123,20 +123,11 @@ class ChurchController extends BaseController {
         }
       }
 
-      const { queryParts, values, paramCount } = ChurchService.buildUpdateQuery({ name, slug, settings });
+      const { queryParts, values } = ChurchService.buildUpdateQuery({ name, slug, settings });
 
       if (queryParts.length === 0) {
         return this.badRequest(res, 'No valid fields to update');
       }
-
-      values.push(id);
-
-      const query = `
-        UPDATE churches
-        SET ${queryParts.join(', ')}, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $${paramCount}
-        RETURNING *
-      `;
 
       const church = await ChurchRepository.updateChurch(id, queryParts, values);
 

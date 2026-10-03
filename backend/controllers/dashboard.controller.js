@@ -181,8 +181,18 @@ class DashboardController extends BaseController {
   async getDepartmentStats(req, res) {
     try {
       const churchId = req.user.church_id;
-      const departmentId = req.user.department_id;
-      const stats = await DashboardRepository.getDepartmentStats(departmentId, churchId);
+      const userId = req.user.id;
+
+      // req.user.department_id never existed — users map to departments
+      // many-to-many via department_members, and headship via
+      // departments.head_id. Resolve the departments this user heads.
+      const headed = await DashboardRepository.getDepartmentsHeadedBy(userId, churchId);
+      if (headed.length === 0) {
+        return this.success(res, []);
+      }
+      const stats = await Promise.all(
+        headed.map(d => DashboardRepository.getDepartmentStats(d.id, churchId))
+      );
       this.success(res, stats);
     } catch (error) {
       this.logger.error('getDepartmentStats', error);

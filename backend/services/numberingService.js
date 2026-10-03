@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 /**
  * Numbering Service
  * Centralized generation of human-readable business document numbers
@@ -6,17 +8,20 @@
 class NumberingService {
   /**
    * Generate a random-suffix document number.
-   * Pattern: {PREFIX}-{YYYY}-{NNNN} (year optional)
+   * Pattern: {PREFIX}-{YYYY}-{XXXXXX} (year optional)
+   * Suffix is a 6-char base36 crypto-random (~2.2B space) — Math.random's
+   * 10k space collided regularly under volume. Inserts should still rely on
+   * the unique constraint + retry as the final guarantee.
    * @param {string} prefix - Document prefix (e.g. 'PLEDGE', 'REC', 'VND')
    * @param {Object} [options]
    * @param {boolean} [options.includeYear=true] - Include the current year segment
    * @returns {string} Generated document number
    */
   generateNumber(prefix, { includeYear = true } = {}) {
-    const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+    const suffix = crypto.randomInt(0, 36 ** 6).toString(36).toUpperCase().padStart(6, '0');
     return includeYear
-      ? `${prefix}-${new Date().getFullYear()}-${random}`
-      : `${prefix}-${random}`;
+      ? `${prefix}-${new Date().getFullYear()}-${suffix}`
+      : `${prefix}-${suffix}`;
   }
 
   generatePledgeNumber() {

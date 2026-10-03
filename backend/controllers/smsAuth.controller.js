@@ -11,7 +11,6 @@ const {
   generateRefreshToken,
   verifyMFAToken
 } = require('../helpers/security');
-const crypto = require('crypto');
 
 class SmsAuthController extends BaseController {
   constructor() {
@@ -102,9 +101,6 @@ class SmsAuthController extends BaseController {
         return ResponseHandler.error(res, 'Church is not active', 403);
       }
 
-      // Generate encrypted database connection key
-      const databaseConnectionKey = this.generateDatabaseConnectionKey(user.church_id, church.slug);
-
       // Prepare sync configuration
       const syncConfig = {
         sync_endpoint_url: `${process.env.API_BASE_URL || 'http://localhost:3000'}/api/sms/sync`,
@@ -121,9 +117,7 @@ class SmsAuthController extends BaseController {
           id: church.id,
           slug: church.slug,
           name: church.name,
-          api_key: church.api_key,
-          is_active: church.is_active,
-          database_connection_key: databaseConnectionKey
+          is_active: church.is_active
         },
         sync_config: syncConfig,
         user: {
@@ -184,7 +178,6 @@ class SmsAuthController extends BaseController {
           id: church.id,
           slug: church.slug,
           name: church.name,
-          api_key: church.api_key,
           is_active: church.is_active
         },
         sms_config: smsConfig
@@ -195,22 +188,6 @@ class SmsAuthController extends BaseController {
     }
   }
 
-  generateDatabaseConnectionKey(churchId, churchSlug) {
-    // Generate an encrypted database connection key
-    // In production, this should use proper encryption with a key from environment variables
-    const keyData = {
-      church_id: churchId,
-      church_slug: churchSlug,
-      timestamp: Date.now(),
-      version: '1.0'
-    };
-
-    const keyString = JSON.stringify(keyData);
-    const hash = crypto.createHash('sha256').update(keyString).digest('hex');
-    
-    // In production, use proper encryption like AES-256
-    return `enc_${hash.substring(0, 32)}`;
-  }
 }
 
 module.exports = new SmsAuthController();

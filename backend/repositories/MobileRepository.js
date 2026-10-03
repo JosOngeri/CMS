@@ -267,7 +267,21 @@ class MobileRepository extends BaseRepository {
     return result.rows;
   }
 
-  async rsvpEvent(eventId, userId, status) {
+  async rsvpEvent(eventId, userId, status, churchId) {
+    if (!churchId) throw new Error('rsvpEvent: churchId is required');
+
+    // Event must belong to the caller's church — otherwise RSVP writes
+    // attendance rows into another tenant's event (ledger L144)
+    const evt = await this.pool.query(
+      'SELECT id FROM events WHERE id = $1 AND church_id = $2',
+      [eventId, churchId]
+    );
+    if (evt.rows.length === 0) {
+      const err = new Error('Event not found');
+      err.status = 404;
+      throw err;
+    }
+
     if (status === 'not_attending' || status === 'cancelled') {
       await this.pool.query(
         'DELETE FROM event_attendance WHERE event_id = $1 AND member_id = $2',

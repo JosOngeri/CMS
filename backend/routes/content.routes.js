@@ -31,7 +31,7 @@ router.post('/', requireRole(['Super Admin', 'Pastor', 'First Elder']), contentV
   contentController.createContent(req, res, next);
 });
 
-router.get('/:id', contentController.getContentBySlug);
+router.get('/:id', contentController.getContentById);
 router.put('/:id', requireRole(['Super Admin', 'Pastor', 'First Elder']), contentValidation, (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -48,29 +48,30 @@ router.get('/:id/revisions', contentController.getRevisions);
 router.post('/:id/rollback/:revisionId', requireRole(['Super Admin', 'Pastor']), contentController.rollbackToRevision);
 
 // Collaboration
+const CONTENT_EDITORS = ['Super Admin', 'Pastor', 'First Elder'];
 router.get('/:id/collaborators', contentController.getContentCollaborators);
-router.post('/:id/collaborators', contentController.addContentCollaborator);
-router.delete('/:id/collaborators/:userId', contentController.removeContentCollaborator);
+router.post('/:id/collaborators', requireRole(CONTENT_EDITORS), contentController.addContentCollaborator);
+router.delete('/:id/collaborators/:userId', requireRole(CONTENT_EDITORS), contentController.removeContentCollaborator);
 
 // Comments
 router.get('/:id/comments', contentController.getContentComments);
 router.post('/:id/comments', contentController.addContentComment);
 
-// Locking
-router.post('/:id/lock', contentController.lockContent);
-router.delete('/:id/lock', contentController.unlockContent);
+// Locking — write ops need editor role
+router.post('/:id/lock', requireRole(CONTENT_EDITORS), contentController.lockContent);
+router.delete('/:id/lock', requireRole(CONTENT_EDITORS), contentController.unlockContent);
 router.get('/:id/lock-status', contentController.getContentLockStatus);
 
 // Scheduled Publishing
-router.post('/:id/schedule', contentController.schedulePublish);
-router.post('/:id/unpublish', contentController.unpublishContent);
+router.post('/:id/schedule', requireRole(CONTENT_EDITORS), contentController.schedulePublish);
+router.post('/:id/unpublish', requireRole(CONTENT_EDITORS), contentController.unpublishContent);
 router.get('/scheduled', contentController.getScheduledContent);
 
 // Website Settings
 router.put('/website-settings', requireRole(['Super Admin', 'Pastor']), contentController.updateWebsiteSettings);
 
 // Auto-save and Analytics
-router.post('/:id/auto-save', contentController.autoSaveContent);
+router.post('/:id/auto-save', requireRole(CONTENT_EDITORS), contentController.autoSaveContent);
 router.get('/check-duplicate', contentController.checkDuplicateContent);
 router.get('/export', requireRole(['Super Admin', 'Pastor']), contentController.exportContent);
 router.post('/import', requireRole(['Super Admin', 'Pastor']), contentController.importContent);

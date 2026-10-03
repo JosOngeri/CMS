@@ -127,20 +127,29 @@ class ContentRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getBySlugWithDetails(slug) {
+  async getBySlugWithDetails(slug, churchId = null) {
+    const params = [slug];
+    let scope = '';
+    if (churchId) {
+      scope = ' AND ci.church_id = $2';
+      params.push(churchId);
+    }
     const result = await this.pool.query(
       `SELECT ci.*, cc.name as category_name, u.first_name || ' ' || u.last_name as author_name
        FROM content_items ci
        LEFT JOIN content_categories cc ON ci.category_id = cc.id
        LEFT JOIN users u ON ci.author_id = u.id
-       WHERE ci.slug = $1 AND ci.status = 'published'`,
-      [slug]
+       WHERE ci.slug = $1 AND ci.status = 'published'${scope}`,
+      params
     );
     return result.rows[0];
   }
 
-  async findContentItemById(id) {
-    const result = await this.pool.query('SELECT * FROM content_items WHERE id = $1', [id]);
+  async findContentItemById(id, churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM content_items WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
+      churchId ? [id, churchId] : [id]
+    );
     return result.rows[0];
   }
 
@@ -215,12 +224,13 @@ class ContentRepository extends BaseRepository {
   // Tags
   // ---------------------------------------------------------------------------
 
-  async getTagsByContentItemId(contentItemId) {
+  async getTagsByContentItemId(contentItemId, churchId = null) {
     const result = await this.pool.query(
       `SELECT t.* FROM content_tags t
        JOIN content_item_tags cit ON t.id = cit.tag_id
-       WHERE cit.content_item_id = $1`,
-      [contentItemId]
+       ${churchId ? 'JOIN content_items ci ON cit.content_item_id = ci.id' : ''}
+       WHERE cit.content_item_id = $1${churchId ? ' AND ci.church_id = $2' : ''}`,
+      churchId ? [contentItemId, churchId] : [contentItemId]
     );
     return result.rows;
   }
@@ -236,8 +246,11 @@ class ContentRepository extends BaseRepository {
     await this.pool.query('DELETE FROM content_item_tags WHERE content_item_id = $1', [contentItemId]);
   }
 
-  async getTagsOrdered() {
-    const result = await this.pool.query('SELECT * FROM content_tags ORDER BY name');
+  async getTagsOrdered(churchId = null) {
+    const result = await this.pool.query(
+      `SELECT * FROM content_tags ${churchId ? 'WHERE church_id = $1 ' : ''}ORDER BY name`,
+      churchId ? [churchId] : []
+    );
     return result.rows;
   }
 
@@ -411,50 +424,77 @@ class ContentRepository extends BaseRepository {
   // Content locks
   // ---------------------------------------------------------------------------
 
-  async getActiveContentLock(contentItemId) {
+  // content_locks has no church_id — scope through the parent content_items row
+  _lockScope(churchId) {
+    return churchId
+      ? ` AND EXISTS (SELECT 1 FROM content_items ci WHERE ci.id = cl.content_item_id AND ci.church_id = $2)`
+      : '';
+  }
+
+  async getActiveContentLock(contentItemId, churchId = null) {
     const result = await this.pool.query(
-      'SELECT * FROM content_locks WHERE content_item_id = $1 AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)',
-      [contentItemId]
+      `SELECT cl.* FROM content_locks cl WHERE cl.content_item_id = $1 AND (cl.expires_at IS NULL OR cl.expires_at > CURRENT_TIMESTAMP)${this._lockScope(churchId)}`,
+      churchId ? [contentItemId, churchId] : [contentItemId]
     );
     return result.rows[0];
   }
 
-  async getContentLockByContentItemId(contentItemId) {
-    const result = await this.pool.query('SELECT * FROM content_locks WHERE content_item_id = $1', [contentItemId]);
-    return result.rows[0];
-  }
-
-  async upsertContentLock(contentItemId, userId, expiresAt) {
+  async getContentLockByContentItemId(contentItemId, churchId = null) {
     const result = await this.pool.query(
-      `INSERT INTO content_locks (content_item_id, user_id, expires_at)
-       VALUES ($1, $2, $3)
-       ON CONFLICT (content_item_id) DO UPDATE SET
-         user_id = EXCLUDED.user_id,
-         locked_at = CURRENT_TIMESTAMP,
-         expires_at = EXCLUDED.expires_at
-       RETURNING *`,
-      [contentItemId, userId, expiresAt]
+      `SELECT cl.* FROM content_locks cl WHERE cl.content_item_id = $1${this._lockScope(churchId)}`,
+      churchId ? [contentItemId, churchId] : [contentItemId]
     );
     return result.rows[0];
   }
 
-  async deleteContentLock(contentItemId) {
-    await this.pool.query('DELETE FROM content_locks WHERE content_item_id = $1', [contentItemId]);
+  async upsertContentLock(contentItemId, userId, expiresAt, churchId = null) {
+    // INSERT..SELECT..WHERE EXISTS blocks locking items owned by other churches
+    const result = churchId
+      ? await this.pool.query(
+          `INSERT INTO content_locks (content_item_id, user_id, expires_at)
+           SELECT $1, $2, $3
+           WHERE EXISTS (SELECT 1 FROM content_items ci WHERE ci.id = $1 AND ci.church_id = $4)
+           ON CONFLICT (content_item_id) DO UPDATE SET
+             user_id = EXCLUDED.user_id,
+             locked_at = CURRENT_TIMESTAMP,
+             expires_at = EXCLUDED.expires_at
+           RETURNING *`,
+          [contentItemId, userId, expiresAt, churchId]
+        )
+      : await this.pool.query(
+          `INSERT INTO content_locks (content_item_id, user_id, expires_at)
+           VALUES ($1, $2, $3)
+           ON CONFLICT (content_item_id) DO UPDATE SET
+             user_id = EXCLUDED.user_id,
+             locked_at = CURRENT_TIMESTAMP,
+             expires_at = EXCLUDED.expires_at
+           RETURNING *`,
+          [contentItemId, userId, expiresAt]
+        );
+    return result.rows[0];
+  }
+
+  async deleteContentLock(contentItemId, churchId = null) {
+    await this.pool.query(
+      `DELETE FROM content_locks cl WHERE cl.content_item_id = $1${this._lockScope(churchId)}`,
+      churchId ? [contentItemId, churchId] : [contentItemId]
+    );
   }
 
   // ---------------------------------------------------------------------------
   // Scheduling
   // ---------------------------------------------------------------------------
 
-  async schedulePublish(id, scheduledPublishAt, scheduledUnpublishAt) {
+  async schedulePublish(id, scheduledPublishAt, scheduledUnpublishAt, churchId) {
+    if (!churchId) throw new Error('schedulePublish: churchId required');
     const result = await this.pool.query(
-      `UPDATE content_items 
+      `UPDATE content_items
        SET scheduled_publish_at = COALESCE($1, scheduled_publish_at),
            scheduled_unpublish_at = COALESCE($2, scheduled_unpublish_at),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3
+       WHERE id = $3 AND church_id = $4
        RETURNING *`,
-      [scheduledPublishAt, scheduledUnpublishAt, id]
+      [scheduledPublishAt, scheduledUnpublishAt, id, churchId]
     );
     return result.rows[0];
   }
@@ -620,14 +660,14 @@ class ContentRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getContentLockStatus(contentItemId) {
+  async getContentLockStatus(contentItemId, churchId = null) {
     const result = await this.pool.query(
       `SELECT cl.*, u.first_name, u.last_name
        FROM content_locks cl
        LEFT JOIN users u ON cl.user_id = u.id
        WHERE cl.content_item_id = $1
-       AND (cl.expires_at IS NULL OR cl.expires_at > CURRENT_TIMESTAMP)`,
-      [contentItemId]
+       AND (cl.expires_at IS NULL OR cl.expires_at > CURRENT_TIMESTAMP)${this._lockScope(churchId)}`,
+      churchId ? [contentItemId, churchId] : [contentItemId]
     );
     return result.rows[0];
   }

@@ -100,9 +100,10 @@ class PaletteController extends BaseController {
     try {
       const { name, display_name, description, colors } = req.body;
       const userId = req.user.id;
+      const churchId = req.user.church_id;
 
-      // Check if palette name already exists
-      const existing = await PaletteRepository.findByName(name);
+      // Check if palette name already exists in this church
+      const existing = await PaletteRepository.findByName(name, churchId);
 
       if (existing) {
         return this.error(res, 'Palette with this name already exists', 400);
@@ -114,7 +115,8 @@ class PaletteController extends BaseController {
         display_name,
         description,
         colors,
-        created_by: userId
+        created_by: userId,
+        church_id: churchId
       });
 
       return this.success(res, palette, 'Palette created successfully', 201);
@@ -140,9 +142,10 @@ class PaletteController extends BaseController {
     try {
       const { id } = req.params;
       const { display_name, description, colors } = req.body;
+      const churchId = req.user.church_id;
 
-      // Get palette
-      const palette = await PaletteRepository.findById(id);
+      // Get palette — scoped so another church's palette reads as not-found
+      const palette = await PaletteRepository.findById(id, churchId);
 
       if (!palette) {
         return this.notFound(res, 'Palette not found');
@@ -158,7 +161,7 @@ class PaletteController extends BaseController {
         display_name,
         description,
         colors
-      });
+      }, churchId);
 
       return this.success(res, null, 'Palette updated successfully');
     } catch (error) {
@@ -178,9 +181,10 @@ class PaletteController extends BaseController {
   async deletePalette(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
 
-      // Get palette
-      const palette = await PaletteRepository.findById(id);
+      // Get palette — church-scoped
+      const palette = await PaletteRepository.findById(id, churchId);
 
       if (!palette) {
         return this.notFound(res, 'Palette not found');
@@ -192,7 +196,7 @@ class PaletteController extends BaseController {
       }
 
       // Delete colors and palette
-      await PaletteRepository.deletePalette(id);
+      await PaletteRepository.deletePalette(id, churchId);
 
       return this.success(res, null, 'Palette deleted successfully');
     } catch (error) {
@@ -212,12 +216,14 @@ class PaletteController extends BaseController {
   async setDefaultPalette(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
 
-      // Reset all palettes to non-default
-      await PaletteRepository.resetAllDefaults();
+      // Reset THIS church's palettes only — the unscoped version used to
+      // clear every tenant's default flag (ledger L143)
+      await PaletteRepository.resetAllDefaults(churchId);
 
-      // Set selected palette as default
-      await PaletteRepository.setDefault(id);
+      // Set selected palette as default (scoped)
+      await PaletteRepository.setDefault(id, churchId);
 
       return this.success(res, null, 'Default palette set successfully');
     } catch (error) {
@@ -261,6 +267,13 @@ class PaletteController extends BaseController {
     try {
       const { id } = req.params;
       const userId = req.user.id;
+      const churchId = req.user.church_id;
+
+      // Palette must belong to the user's church — no cross-tenant applies
+      const palette = await PaletteRepository.findById(id, churchId);
+      if (!palette) {
+        return this.notFound(res, 'Palette not found');
+      }
 
       // Update user preference
       await PaletteRepository.setUserPreference(userId, id);

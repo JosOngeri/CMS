@@ -225,8 +225,12 @@ class ManualPaymentController extends BaseController {
         return ResponseHandler.success(res, { matched: false, matches: [] });
       }
 
-      // Update payment with matched member
-      await ManualPaymentRepository.updatePaymentMember(paymentId, bestMatch.id, churchId);
+      // Update payment with matched member — null means the payment is not
+      // in this church (or the member isn't), so fail rather than claim a match
+      const updated = await ManualPaymentRepository.updatePaymentMember(paymentId, bestMatch.id, churchId);
+      if (!updated) {
+        return ResponseHandler.error(res, 'Payment not found in this church', 404);
+      }
 
       return ResponseHandler.success(res, {
         matched: true,

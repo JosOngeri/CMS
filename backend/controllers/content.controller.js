@@ -50,17 +50,41 @@ class ContentController extends BaseController {
    * @param {Object} res - Express response object
    * @returns {Promise<void>}
    */
+  /**
+   * Get content by ID (authenticated, church-scoped)
+   * The /:id route previously pointed at getContentBySlug — every by-id
+   * fetch went through the slug lookup (ledger L157)
+   */
+  async getContentById(req, res) {
+    try {
+      const { id } = req.params;
+      const churchId = req.user.church_id;
+
+      const content = await ContentRepository.findContentItemById(id, churchId);
+      if (!content) {
+        return this.notFound(res, 'Content not found');
+      }
+      const tags = await ContentRepository.getTagsByContentItemId(content.id, churchId);
+      this.success(res, { data: { ...content, tags } });
+    } catch (error) {
+      this.logger.error('getContentById', error);
+      this.error(res, 'Failed to fetch content');
+    }
+  }
+
   async getContentBySlug(req, res) {
     try {
       const { slug } = req.params;
+      // Authenticated requests → user's church; public → resolved tenant
+      const churchId = req.user?.church_id ?? req.church_id;
 
-      const content = await ContentRepository.getBySlugWithDetails(slug);
+      const content = await ContentRepository.getBySlugWithDetails(slug, churchId);
 
       if (!content) {
         return this.notFound(res, 'Content not found');
       }
 
-      const tags = await ContentRepository.getTagsByContentItemId(content.id);
+      const tags = await ContentRepository.getTagsByContentItemId(content.id, churchId);
 
       this.success(res, { data: { ...content, tags } });
     } catch (error) {
@@ -330,7 +354,7 @@ class ContentController extends BaseController {
    */
   async getTags(req, res) {
     try {
-      const tags = await ContentRepository.getTagsOrdered();
+      const tags = await ContentRepository.getTagsOrdered(req.user?.church_id ?? req.church_id);
 
       this.success(res, { data: tags });
     } catch (error) {
@@ -530,21 +554,21 @@ class ContentController extends BaseController {
    */
   async lockContent(req, res) {
     try {
-      const { contentId } = req.params;
+      // Route is /:id/lock — param name is `id` (the old `contentId` read
+      // always produced undefined → locking never worked; ledger L157)
+      const contentId = req.params.id || req.params.contentId;
       const { expiresIn } = req.body;
+      const churchId = req.user.church_id;
 
-      const existingLock = await ContentRepository.getActiveContentLock(contentId);
+      const existingLock = await ContentRepository.getActiveContentLock(contentId, churchId);
 
-      if (existingLock) {
-        const lock = existingLock.rows[0];
-        if (lock.user_id !== req.user.id) {
-          return this.conflict(res, 'Content is already locked by another user');
-        }
+      if (existingLock && existingLock.user_id !== req.user.id) {
+        return this.conflict(res, 'Content is already locked by another user');
       }
 
       const expiresAt = expiresIn ? new Date(Date.now() + expiresIn * 60 * 1000) : null;
 
-      const lock = await ContentRepository.upsertContentLock(contentId, req.user.id, expiresAt);
+      const lock = await ContentRepository.upsertContentLock(contentId, req.user.id, expiresAt, churchId);
 
       this.success(res, { data: lock });
     } catch (error) {
@@ -564,9 +588,10 @@ class ContentController extends BaseController {
    */
   async unlockContent(req, res) {
     try {
-      const { contentId } = req.params;
+      const contentId = req.params.id || req.params.contentId;
+      const churchId = req.user.church_id;
 
-      const existingLock = await ContentRepository.getContentLockByContentItemId(contentId);
+      const existingLock = await ContentRepository.getContentLockByContentItemId(contentId, churchId);
 
       if (existingLock) {
         if (existingLock.user_id !== req.user.id) {
@@ -574,7 +599,7 @@ class ContentController extends BaseController {
         }
       }
 
-      await ContentRepository.deleteContentLock(contentId);
+      await ContentRepository.deleteContentLock(contentId, churchId);
 
       this.success(res, { message: 'Content unlocked successfully' });
     } catch (error) {
@@ -593,9 +618,9 @@ class ContentController extends BaseController {
    */
   async getContentLockStatus(req, res) {
     try {
-      const { contentId } = req.params;
+      const contentId = req.params.id || req.params.contentId;
 
-      const lockStatus = await ContentRepository.getContentLockStatus(contentId);
+      const lockStatus = await ContentRepository.getContentLockStatus(contentId, req.user.church_id);
 
       if (!lockStatus) {
         return this.success(res, { locked: false });
@@ -624,7 +649,7 @@ class ContentController extends BaseController {
       const { id } = req.params;
       const { scheduled_publish_at, scheduled_unpublish_at } = req.body;
 
-      const scheduled = await ContentRepository.schedulePublish(id, scheduled_publish_at, scheduled_unpublish_at);
+      const scheduled = await ContentRepository.schedulePublish(id, scheduled_publish_at, scheduled_unpublish_at, req.user.church_id);
 
       if (!scheduled) {
         return this.notFound(res, 'Content not found');

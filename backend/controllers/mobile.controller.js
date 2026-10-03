@@ -165,7 +165,7 @@ class MobileController extends BaseController {
         return res.status(400).json({ success: false, error: 'Invalid RSVP status' });
       }
 
-      const rsvp = await MobileRepository.rsvpEvent(id, userId, status);
+      const rsvp = await MobileRepository.rsvpEvent(id, userId, status, req.user.church_id);
 
       this.success(res, { data: rsvp }, 'RSVP recorded successfully');
     } catch (error) {

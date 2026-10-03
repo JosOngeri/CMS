@@ -229,6 +229,9 @@ class NotificationsController extends BaseController {
         data: notification
       });
     } catch (error) {
+      if (error.message === 'Target user does not belong to this church') {
+        return res.status(403).json({ success: false, error: 'Cannot notify a user outside your church' });
+      }
       this.logger.error('createNotification', error);
       res.status(500).json({ success: false, error: 'Failed to create notification' });
     }
@@ -248,13 +251,12 @@ class NotificationsController extends BaseController {
   async sendPushNotification(req, res) {
     try {
       const { userId, title, body, data } = req.body;
+      const churchId = req.user.church_id;
 
-      // In a real implementation, this would integrate with FCM, APNS, or Web Push
-      // For now, we'll simulate it and log the notification
-      this.logger.info('sendPushNotification', { userId, title, body, data });
+      this.logger.info('sendPushNotification', { userId, title, churchId });
 
-      // Create notification record
-      await NotificationsRepository.createPushNotification(userId, title, body, data);
+      // Notification record — repo validates the target belongs to this church
+      await NotificationsRepository.createPushNotification(userId, title, body, data, churchId);
 
       res.json({ success: true, message: 'Push notification sent' });
     } catch (error) {
@@ -277,8 +279,10 @@ class NotificationsController extends BaseController {
   async sendBulkNotifications(req, res) {
     try {
       const { userIds, title, message, typeId } = req.body;
+      const churchId = req.user.church_id;
 
-      const results = await NotificationsRepository.createBulkNotifications(userIds, typeId, title, message);
+      // Foreign-church IDs are silently dropped by the repo — report real count
+      const results = await NotificationsRepository.createBulkNotifications(userIds, typeId, title, message, churchId);
 
       res.json({
         success: true,
@@ -299,7 +303,7 @@ class NotificationsController extends BaseController {
    */
   async getNotificationTemplates(req, res) {
     try {
-      const templates = await NotificationsRepository.getNotificationTemplates();
+      const templates = await NotificationsRepository.getNotificationTemplates(req.user.church_id);
 
       res.json({ success: true, data: templates });
     } catch (error) {
@@ -330,7 +334,8 @@ class NotificationsController extends BaseController {
         subject,
         body,
         channel,
-        created_by: userId
+        created_by: userId,
+        church_id: req.user.church_id
       });
 
       res.json({ success: true, data: template });
@@ -359,7 +364,7 @@ class NotificationsController extends BaseController {
       const template = await NotificationsRepository.updateTemplate(templateId, {
         subject,
         body
-      });
+      }, req.user.church_id);
 
       if (!template) {
         return res.status(404).json({ success: false, error: 'Template not found' });
@@ -384,7 +389,7 @@ class NotificationsController extends BaseController {
     try {
       const { templateId } = req.params;
 
-      const template = await NotificationsRepository.deleteTemplate(templateId);
+      const template = await NotificationsRepository.deleteTemplate(templateId, req.user.church_id);
 
       if (!template) {
         return res.status(404).json({ success: false, error: 'Template not found' });
@@ -415,7 +420,8 @@ class NotificationsController extends BaseController {
         typeId,
         startDate,
         endDate,
-        limit: 100
+        limit: 100,
+        churchId: req.user.church_id
       });
 
       res.json({ success: true, data: logs });

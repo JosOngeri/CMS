@@ -125,24 +125,40 @@ class NotificationsRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  /**
+   * Filter a list of user IDs down to members of the given church.
+   * Used to validate notification targets — arbitrary userIds from the
+   * request body must not be able to reach another tenant (ledger L142).
+   * @param {string[]} userIds
+   * @param {string} churchId
+   * @returns {Promise<string[]>} IDs that belong to the church
+   */
+  async filterUsersByChurch(userIds, churchId) {
+    if (!churchId) throw new Error('filterUsersByChurch: churchId required');
+    if (!Array.isArray(userIds) || userIds.length === 0) return [];
+    const result = await this.pool.query(
+      'SELECT id FROM users WHERE church_id = $1 AND id = ANY($2::uuid[])',
+      [churchId, userIds]
+    );
+    return result.rows.map(r => r.id);
+  }
+
   async createNotification(data, churchId = null) {
+    if (!churchId) throw new Error('createNotification: churchId required');
     const { user_id, type_id, title, message, action_url, metadata } = data;
 
-    let query = `
-      INSERT INTO notifications (user_id, type_id, title, message, action_url, metadata)
-      VALUES ($1, $2, $3, $4, $5, $6)
+    // Target must be a member of this church — no cross-tenant notifications
+    const valid = await this.filterUsersByChurch([user_id], churchId);
+    if (valid.length === 0) {
+      throw new Error('Target user does not belong to this church');
+    }
+
+    const query = `
+      INSERT INTO notifications (user_id, type_id, title, message, action_url, metadata, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
-    const params = [user_id, type_id, title, message, action_url, JSON.stringify(metadata || {})];
-
-    if (churchId) {
-      query = `
-        INSERT INTO notifications (user_id, type_id, title, message, action_url, metadata, church_id)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
-        RETURNING *
-      `;
-      params.push(churchId);
-    }
+    const params = [user_id, type_id, title, message, action_url, JSON.stringify(metadata || {}), churchId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];
@@ -156,48 +172,62 @@ class NotificationsRepository extends BaseRepository {
     return result.rowCount > 0;
   }
 
-  async createPushNotification(userId, title, message, metadata = {}) {
+  async createPushNotification(userId, title, message, metadata = {}, churchId = null) {
+    if (!churchId) throw new Error('createPushNotification: churchId required');
+    const valid = await this.filterUsersByChurch([userId], churchId);
+    if (valid.length === 0) {
+      throw new Error('Target user does not belong to this church');
+    }
     const result = await this.pool.query(
-      `INSERT INTO notifications (user_id, title, message, metadata, is_push)
-       VALUES ($1, $2, $3, $4, true)
+      `INSERT INTO notifications (user_id, title, message, metadata, is_push, church_id)
+       VALUES ($1, $2, $3, $4, true, $5)
        RETURNING *`,
-      [userId, title, message, JSON.stringify(metadata)]
+      [userId, title, message, JSON.stringify(metadata), churchId]
     );
     return result.rows[0];
   }
 
-  async createBulkNotifications(userIds, typeId, title, message) {
+  async createBulkNotifications(userIds, typeId, title, message, churchId = null) {
+    if (!churchId) throw new Error('createBulkNotifications: churchId required');
+    if (!Array.isArray(userIds) || userIds.length === 0) return [];
+    // Only notify members of this church — foreign IDs are dropped, not sent
+    const validIds = await this.filterUsersByChurch(userIds, churchId);
     const results = [];
-    for (const userId of userIds) {
+    for (const userId of validIds) {
       const result = await this.pool.query(
-        `INSERT INTO notifications (user_id, type_id, title, message)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO notifications (user_id, type_id, title, message, church_id)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING *`,
-        [userId, typeId, title, message]
+        [userId, typeId, title, message, churchId]
       );
       results.push(result.rows[0]);
     }
     return results;
   }
 
-  async getNotificationTemplates() {
-    const result = await this.pool.query('SELECT * FROM notification_templates ORDER BY name');
+  async getNotificationTemplates(churchId) {
+    // Global templates (church_id NULL) plus this church's own
+    const result = await this.pool.query(
+      'SELECT * FROM notification_templates WHERE church_id = $1 OR church_id IS NULL ORDER BY name',
+      [churchId]
+    );
     return result.rows;
   }
 
   async createTemplate(data) {
-    const { name, subject, body, channel, created_by } = data;
+    const { name, subject, body, channel, created_by, church_id } = data;
 
     const result = await this.pool.query(
-      `INSERT INTO notification_templates (name, subject, body, channel, created_by)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO notification_templates (name, subject, body, channel, created_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
-      [name, subject, body, channel, created_by]
+      [name, subject, body, channel, created_by, church_id]
     );
     return result.rows[0];
   }
 
-  async updateTemplate(templateId, data) {
+  async updateTemplate(templateId, data, churchId) {
+    if (!churchId) throw new Error('updateTemplate: churchId required');
     const { subject, body } = data;
 
     const result = await this.pool.query(
@@ -205,23 +235,24 @@ class NotificationsRepository extends BaseRepository {
        SET subject = COALESCE($1, subject),
            body = COALESCE($2, body),
            updated_at = NOW()
-       WHERE id = $3
+       WHERE id = $3 AND church_id = $4
        RETURNING *`,
-      [subject, body, templateId]
+      [subject, body, templateId, churchId]
     );
     return result.rows[0];
   }
 
-  async deleteTemplate(templateId) {
+  async deleteTemplate(templateId, churchId) {
+    if (!churchId) throw new Error('deleteTemplate: churchId required');
     const result = await this.pool.query(
-      'DELETE FROM notification_templates WHERE id = $1 RETURNING *',
-      [templateId]
+      'DELETE FROM notification_templates WHERE id = $1 AND church_id = $2 RETURNING *',
+      [templateId, churchId]
     );
     return result.rows[0];
   }
 
   async getNotificationLog(filters = {}) {
-    const { userId, typeId, startDate, endDate, limit = 100 } = filters;
+    const { userId, typeId, startDate, endDate, limit = 100, churchId } = filters;
 
     let query = `
       SELECT nl.*, u.first_name || ' ' || u.last_name as user_name, nt.name as type_name
@@ -232,6 +263,13 @@ class NotificationsRepository extends BaseRepository {
     `;
     const params = [];
     let paramCount = 1;
+
+    // Tenant scope — logs only for users of this church (via the join;
+    // notification_logs itself may not carry church_id)
+    if (churchId) {
+      query += ` AND u.church_id = $${paramCount++}`;
+      params.push(churchId);
+    }
 
     if (userId) {
       query += ` AND nl.user_id = $${paramCount++}`;

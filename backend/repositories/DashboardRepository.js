@@ -448,6 +448,19 @@ class DashboardRepository extends BaseRepository {
     };
   }
 
+  /**
+   * Departments headed by a user — the real headship link
+   * (req.user.department_id never existed; ledger L149)
+   */
+  async getDepartmentsHeadedBy(userId, churchId) {
+    const result = await this.pool.query(
+      `SELECT id, name FROM departments
+       WHERE head_id = $1 AND church_id = $2 AND is_active = true`,
+      [userId, churchId]
+    );
+    return result.rows;
+  }
+
   // Department-specific stats for Department Head
   async getDepartmentStats(departmentId, churchId = null) {
     const params = [];
