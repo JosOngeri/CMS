@@ -15,9 +15,9 @@ router.post('/initiate', paymentController.initiatePayment);
 router.post('/payment-link', paymentController.generatePaymentLink);
 router.post('/qr-code', paymentController.generateQRCode);
 router.get('/status/:paymentId', paymentController.checkPaymentStatus);
-router.get('/history/:memberId', paymentController.getPaymentHistory);
-router.get('/all', paymentController.getAllPayments);
-router.post('/refund/:paymentId', paymentController.refundPayment);
+router.get('/history/:memberId', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentController.getPaymentHistory);
+router.get('/all', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentController.getAllPayments);
+router.post('/refund/:paymentId', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentController.refundPayment);
 
 // Payment Methods
 router.get('/methods', paymentsController.getPaymentMethods);
@@ -67,14 +67,14 @@ router.get('/analytics', paymentsController.getPaymentAnalytics);
 router.get('/trends', paymentsController.getPaymentTrends);
 
 // Refunds
-router.get('/refunds', paymentsController.getRefunds);
-router.post('/:paymentId/refund', paymentsController.refundPayment);
+router.get('/refunds', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.getRefunds);
+router.post('/:paymentId/refund', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.refundPayment);
 router.post('/refunds/:refundId/approve', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.approveRefund);
 router.post('/refunds/:refundId/reject', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.rejectRefund);
 
 // Payment verification
 router.post('/:paymentId/verify', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.verifyPayment);
-router.post('/:paymentId/cancel', paymentsController.cancelPayment);
+router.post('/:paymentId/cancel', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.cancelPayment);
 
 // Parameterised routes last to avoid shadowing static paths
 router.get('/:id/receipt', paymentsController.downloadReceipt);

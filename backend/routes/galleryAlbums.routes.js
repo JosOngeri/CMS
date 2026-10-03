@@ -22,15 +22,15 @@ router.put('/:id/advanced', requireRole(['Super Admin', 'Pastor', 'Department He
 router.delete('/:id/advanced', requireRole(['Super Admin', 'Pastor']), galleryController.deleteAlbumAdvanced);
 
 // Add photos to album
-router.post('/:id/photos', galleryController.addPhotosToAlbum);
+router.post('/:id/photos', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.addPhotosToAlbum);
 
 // Remove photo from album
-router.delete('/:id/photos/:photoId', galleryController.removePhotoFromAlbum);
+router.delete('/:id/photos/:photoId', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.removePhotoFromAlbum);
 
 // Update photo order
-router.put('/:id/photos/order', galleryController.updatePhotoOrder);
+router.put('/:id/photos/order', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.updatePhotoOrder);
 
 // Set cover photo
-router.put('/:id/cover', galleryController.setCoverPhoto);
+router.put('/:id/cover', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.setCoverPhoto);
 
 module.exports = router;

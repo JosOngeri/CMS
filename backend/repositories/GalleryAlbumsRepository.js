@@ -5,7 +5,8 @@ class GalleryAlbumsRepository extends BaseRepository {
     super('gallery_albums');
   }
 
-  async getAllWithDetails(filters = {}, churchId = null) {
+  async getAllWithDetails(filters = {}, churchId) {
+    if (!churchId) throw new Error('getAllWithDetails: churchId is required');
     let query = `
       SELECT ga.*,
              gc.name as category_name,
@@ -45,7 +46,8 @@ class GalleryAlbumsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getAlbumWithPhotos(albumId, churchId = null) {
+  async getAlbumWithPhotos(albumId, churchId) {
+    if (!churchId) throw new Error('getAlbumWithPhotos: churchId is required');
     let query = `
       SELECT ga.*,
              gc.name as category_name,
@@ -120,11 +122,12 @@ class GalleryAlbumsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createAlbum(albumData) {
+  async createAlbum(albumData, churchId) {
+    if (!churchId) throw new Error('createAlbum: churchId is required');
     const { title, description, category_id, parent_id, is_public, created_by } = albumData;
     const query = `
-      INSERT INTO gallery_albums (title, description, category_id, parent_id, is_public, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO gallery_albums (title, description, category_id, parent_id, is_public, created_by, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
     const result = await this.pool.query(query, [
@@ -133,12 +136,14 @@ class GalleryAlbumsRepository extends BaseRepository {
       category_id,
       parent_id || null,
       is_public !== undefined ? is_public : true,
-      created_by
+      created_by,
+      churchId
     ]);
     return result.rows[0];
   }
 
-  async updateAlbum(id, albumData) {
+  async updateAlbum(id, albumData, churchId) {
+    if (!churchId) throw new Error('updateAlbum: churchId is required');
     const { title, description, category_id, parent_id, cover_photo_id, is_public } = albumData;
     const query = `
       UPDATE gallery_albums
@@ -149,7 +154,7 @@ class GalleryAlbumsRepository extends BaseRepository {
           cover_photo_id = COALESCE($5, cover_photo_id),
           is_public = COALESCE($6, is_public),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $7
+      WHERE id = $7 AND church_id = $8
       RETURNING *
     `;
     const result = await this.pool.query(query, [
@@ -159,47 +164,61 @@ class GalleryAlbumsRepository extends BaseRepository {
       parent_id,
       cover_photo_id,
       is_public,
-      id
+      id,
+      churchId
     ]);
     return result.rows[0];
   }
 
-  async countSubAlbums(parentId) {
-    const query = 'SELECT COUNT(*) as count FROM gallery_albums WHERE parent_id = $1';
-    const result = await this.pool.query(query, [parentId]);
+  async countSubAlbums(parentId, churchId) {
+    if (!churchId) throw new Error('countSubAlbums: churchId is required');
+    const query = 'SELECT COUNT(*) as count FROM gallery_albums WHERE parent_id = $1 AND church_id = $2';
+    const result = await this.pool.query(query, [parentId, churchId]);
     return parseInt(result.rows[0].count);
   }
 
-  async addPhotoToAlbum(albumId, photoId) {
+  async addPhotoToAlbum(albumId, photoId, churchId) {
+    if (!churchId) throw new Error('addPhotoToAlbum: churchId is required');
     const query = `
       INSERT INTO album_photos (album_id, photo_id, sort_order)
-      VALUES ($1, $2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM album_photos WHERE album_id = $1))
+      SELECT $1, $2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM album_photos WHERE album_id = $1)
+      WHERE EXISTS (SELECT 1 FROM gallery_albums WHERE id = $1 AND church_id = $3)
+        AND EXISTS (SELECT 1 FROM gallery_photos WHERE id = $2 AND church_id = $3)
       ON CONFLICT (album_id, photo_id) DO NOTHING
       RETURNING *
     `;
-    const result = await this.pool.query(query, [albumId, photoId]);
+    const result = await this.pool.query(query, [albumId, photoId, churchId]);
     return result.rows[0];
   }
 
-  async removePhotoFromAlbum(albumId, photoId) {
-    const query = 'DELETE FROM album_photos WHERE album_id = $1 AND photo_id = $2';
-    await this.pool.query(query, [albumId, photoId]);
+  async removePhotoFromAlbum(albumId, photoId, churchId) {
+    if (!churchId) throw new Error('removePhotoFromAlbum: churchId is required');
+    const query = `DELETE FROM album_photos WHERE album_id = $1 AND photo_id = $2
+      AND EXISTS (SELECT 1 FROM gallery_albums WHERE id = $1 AND church_id = $3)`;
+    await this.pool.query(query, [albumId, photoId, churchId]);
   }
 
-  async updatePhotoOrder(albumId, photoId, sortOrder) {
-    const query = 'UPDATE album_photos SET sort_order = $1 WHERE album_id = $2 AND photo_id = $3';
-    await this.pool.query(query, [sortOrder, albumId, photoId]);
+  async updatePhotoOrder(albumId, photoId, sortOrder, churchId) {
+    if (!churchId) throw new Error('updatePhotoOrder: churchId is required');
+    const query = `UPDATE album_photos SET sort_order = $1 WHERE album_id = $2 AND photo_id = $3
+      AND EXISTS (SELECT 1 FROM gallery_albums WHERE id = $2 AND church_id = $4)`;
+    await this.pool.query(query, [sortOrder, albumId, photoId, churchId]);
   }
 
-  async setCoverPhoto(albumId, photoId) {
-    const query = 'UPDATE gallery_albums SET cover_photo_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const result = await this.pool.query(query, [photoId, albumId]);
+  async setCoverPhoto(albumId, photoId, churchId) {
+    if (!churchId) throw new Error('setCoverPhoto: churchId is required');
+    const query = `UPDATE gallery_albums SET cover_photo_id = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND church_id = $3
+        AND EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $3)
+      RETURNING *`;
+    const result = await this.pool.query(query, [photoId, albumId, churchId]);
     return result.rows[0];
   }
 
-  async delete(id) {
-    const query = 'DELETE FROM gallery_albums WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM gallery_albums WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 }

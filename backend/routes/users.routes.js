@@ -32,8 +32,8 @@ const convertUserSlugToId = async (req, res, next) => {
       return next();
     }
 
-    // Look up user by slug
-    const result = await userRepository.findBySlug(id);
+    // Look up user by slug (same church only — a foreign slug must not resolve)
+    const result = await userRepository.findBySlug(id, req.user.church_id);
     
     if (!result) {
       return res.status(404).json({
@@ -57,9 +57,9 @@ const convertUserSlugToId = async (req, res, next) => {
 router.get('/directory', authenticateToken, async (req, res) => {
   try {
     const { page = 1, limit = 50, role, department } = req.query;
-    
-    // Get church_id from request context or use default
-    const churchId = req.user.church_id || req.headers['x-tenant-church-id'] || null;
+
+    // Tenant comes from the verified JWT only — never from request headers
+    const churchId = req.user.church_id;
 
     const result = await userRepository.getMemberDirectory({ page, limit, role, department }, churchId);
 
@@ -74,9 +74,9 @@ router.get('/directory', authenticateToken, async (req, res) => {
 router.get('/', authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder']), async (req, res) => {
   try {
     const { page = 1, limit = 50, role, department } = req.query;
-    
-    // Get church_id from request context or use default
-    const churchId = req.user.church_id || req.headers['x-tenant-church-id'] || null;
+
+    // Tenant comes from the verified JWT only — never from request headers
+    const churchId = req.user.church_id;
 
     const result = await userRepository.getAllUsers({ page, limit, role, department }, churchId);
 
@@ -98,7 +98,7 @@ router.get('/:id', authenticateToken, convertUserSlugToId, async (req, res) => {
       return res.status(403).json({ error: 'Permission denied' });
     }
 
-    const user = await userRepository.getUserWithDepartments(id);
+    const user = await userRepository.getUserWithDepartments(id, req.user.church_id);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -122,15 +122,20 @@ router.put('/:id',
   async (req, res) => {
     try {
       const id = req.userId;
-      const { first_name, last_name, phone, email, is_active } = req.body;
+      const { first_name, last_name, phone, email } = req.body;
 
       // Users can only update their own profile unless they're admin
-      if (req.user.id !== id && !req.user.roles.some(role =>
-          ['Super Admin', 'Pastor', 'First Elder'].includes(role))) {
+      const isAdmin = req.user.roles.some(role =>
+          ['Super Admin', 'Pastor', 'First Elder'].includes(role));
+      if (req.user.id !== id && !isAdmin) {
         return res.status(403).json({ error: 'Permission denied' });
       }
 
-      const result = await userRepository.updateUserProfile(id, { first_name, last_name, phone, email, is_active });
+      // is_active can only be changed by an admin on another user's account —
+      // never on your own (self-deactivation/reactivation bypass)
+      const is_active = (isAdmin && req.user.id !== id) ? req.body.is_active : undefined;
+
+      const result = await userRepository.updateUserProfile(id, { first_name, last_name, phone, email, is_active }, req.user.church_id);
 
       if (!result) {
         return res.status(404).json({ error: 'User not found' });
@@ -168,7 +173,7 @@ router.post('/:id/roles',
       const id = req.userId;
       const { role_id } = req.body;
 
-      const result = await userRepository.assignRole(id, role_id);
+      const result = await userRepository.assignRole(id, role_id, req.user.church_id);
 
       if (!result) {
         return res.status(400).json({ error: 'User already has this role' });
@@ -197,7 +202,7 @@ router.delete('/:id/roles/:roleId',
       const id = req.userId;
       const { roleId } = req.params;
 
-      const result = await userRepository.removeRole(id, roleId);
+      const result = await userRepository.removeRole(id, roleId, req.user.church_id);
 
       if (!result) {
         return res.status(404).json({ error: 'Role assignment not found' });
@@ -222,7 +227,7 @@ router.patch('/:id/deactivate',
     try {
       const id = req.userId || req.params.id;
 
-      const result = await userRepository.deactivateUser(id);
+      const result = await userRepository.deactivateUser(id, req.user.church_id);
 
       if (!result) {
         return res.status(404).json({ error: 'User not found' });
@@ -310,7 +315,7 @@ router.delete('/:id', authenticateToken, requireRole(['Super Admin']), async (re
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    const result = await userRepository.softDeleteUser(id);
+    const result = await userRepository.softDeleteUser(id, req.user.church_id);
 
     if (!result) {
       return res.status(404).json({ error: 'User not found' });

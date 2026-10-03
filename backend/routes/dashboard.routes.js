@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 const dashboardController = require('../controllers/dashboard.controller');
 
 // Get dashboard overview (aggregated stats)
@@ -22,27 +22,43 @@ router.get('/personal-status', authenticateToken, dashboardController.getPersona
 router.get('/personal-activity', authenticateToken, dashboardController.getPersonalActivity.bind(dashboardController));
 
 // System Health (Super Admin)
-router.get('/system-health', authenticateToken, dashboardController.getSystemHealth.bind(dashboardController));
+router.get('/system-health', authenticateToken,
+  requireRole(['Super Admin']),
+  dashboardController.getSystemHealth.bind(dashboardController));
 
 // Department Stats (Department Head)
-router.get('/department-stats', authenticateToken, dashboardController.getDepartmentStats.bind(dashboardController));
+router.get('/department-stats', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'First Elder', 'Department Head']),
+  dashboardController.getDepartmentStats.bind(dashboardController));
 
 // Ministry Health (Pastor)
-router.get('/ministry-health', authenticateToken, dashboardController.getMinistryHealth.bind(dashboardController));
+router.get('/ministry-health', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'First Elder']),
+  dashboardController.getMinistryHealth.bind(dashboardController));
 
 // Financial Stats (Treasurer)
-router.get('/financial-stats', authenticateToken, dashboardController.getFinancialStats.bind(dashboardController));
+router.get('/financial-stats', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'Treasurer']),
+  dashboardController.getFinancialStats.bind(dashboardController));
 
 // Financial Health (Treasurer)
-router.get('/financial-health', authenticateToken, dashboardController.getFinancialHealth.bind(dashboardController));
+router.get('/financial-health', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'Treasurer']),
+  dashboardController.getFinancialHealth.bind(dashboardController));
 
 // Transactions (Treasurer)
-router.get('/transactions', authenticateToken, dashboardController.getTransactions.bind(dashboardController));
+router.get('/transactions', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'Treasurer']),
+  dashboardController.getTransactions.bind(dashboardController));
 
 // Department Health (Department Head) - Phase 21.1
-router.get('/department-health', authenticateToken, dashboardController.getDepartmentHealth.bind(dashboardController));
+router.get('/department-health', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'First Elder', 'Department Head']),
+  dashboardController.getDepartmentHealth.bind(dashboardController));
 
 // Department Activity (Department Head) - Phase 21.1
-router.get('/department-activity', authenticateToken, dashboardController.getDepartmentActivity.bind(dashboardController));
+router.get('/department-activity', authenticateToken,
+  requireRole(['Super Admin', 'Pastor', 'First Elder', 'Department Head']),
+  dashboardController.getDepartmentActivity.bind(dashboardController));
 
 module.exports = router;

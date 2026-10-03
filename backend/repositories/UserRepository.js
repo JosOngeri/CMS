@@ -93,10 +93,10 @@ class UserRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findBySlug(slug) {
+  async findBySlug(slug, churchId) {
     const result = await this.pool.query(
-      'SELECT id FROM users WHERE slug = $1',
-      [slug]
+      'SELECT id FROM users WHERE slug = $1 AND church_id = $2',
+      [slug, churchId]
     );
     return result.rows[0];
   }
@@ -439,10 +439,10 @@ class UserRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async softDeleteUser(id) {
+  async softDeleteUser(id, churchId) {
     const result = await this.pool.query(
-      'UPDATE users SET is_active = false, deleted_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING id',
-      [id]
+      'UPDATE users SET is_active = false, deleted_at = CURRENT_TIMESTAMP WHERE id = $1 AND church_id = $2 RETURNING id',
+      [id, churchId]
     );
     return result.rows[0];
   }

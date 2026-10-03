@@ -2,41 +2,32 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 const packageJson = require(path.join(__dirname, '../../package.json'));
+const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// Overall health check endpoint
+// Overall health check — public but minimal: status + DB connectivity only.
+// Memory, version, and pool internals stay behind admin auth (recon aid).
 router.get('/', async (req, res) => {
   try {
-    // Check database connection
     const { pool } = require('../config/database');
     await pool.query('SELECT 1');
-    
-    // Get memory usage (Phase 7)
-    const memoryUsage = process.memoryUsage();
-    const memoryUsedMB = (memoryUsage.heapUsed / 1024 / 1024).toFixed(2);
-    const memoryTotalMB = (memoryUsage.heapTotal / 1024 / 1024).toFixed(2);
-    
+
     res.json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      version: packageJson.version,
       database: 'connected',
-      api: 'SDA Church Kiserian Main API',
-      memory: {
-        heapUsed: `${memoryUsedMB}MB`,
-        heapTotal: `${memoryTotalMB}MB`,
-        rss: `${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`
-      }
+      api: 'SDA Church Kiserian Main API'
     });
   } catch (error) {
     res.status(500).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: error.message,
       database: 'disconnected'
     });
   }
 });
+
+// Detailed diagnostics require a Super Admin token
+router.use(authenticateToken, requireRole(['Super Admin']));
 
 // Database health check endpoint (Phase 7)
 router.get('/db', async (req, res) => {

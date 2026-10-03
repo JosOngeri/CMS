@@ -26,7 +26,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getFilteredTransactions(filters = {}, churchId = null) {
+  async getFilteredTransactions(filters = {}, churchId) {
+    if (!churchId) throw new Error('getFilteredTransactions: churchId is required');
     let query = `
       SELECT t.*,
              COALESCE(ic.name, ec.name) as category_name,
@@ -178,7 +179,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findAccountById(id, churchId = null) {
+  async findAccountById(id, churchId) {
+    if (!churchId) throw new Error('findAccountById: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM church_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -194,7 +196,8 @@ class TreasuryRepository extends BaseRepository {
   // Transaction management
   // ---------------------------------------------------------------------------
 
-  async createTransaction(data, churchId = null) {
+  async createTransaction(data, churchId) {
+    if (!churchId) throw new Error('createTransaction: churchId is required');
     const result = await this.pool.query(
       `INSERT INTO transactions (transaction_type, category_id, account_id, amount, description, reference_number, transaction_date, recorded_by, payment_method, church_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -215,7 +218,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findTransactionById(id, churchId = null) {
+  async findTransactionById(id, churchId) {
+    if (!churchId) throw new Error('findTransactionById: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM transactions WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -223,7 +227,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async approveTransaction(id, userId, churchId = null) {
+  async approveTransaction(id, userId, churchId) {
+    if (!churchId) throw new Error('approveTransaction: churchId is required');
     const result = await this.pool.query(
       `UPDATE transactions
        SET status = 'approved',
@@ -236,7 +241,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async rejectTransaction(id, userId, reason, churchId = null) {
+  async rejectTransaction(id, userId, reason, churchId) {
+    if (!churchId) throw new Error('rejectTransaction: churchId is required');
     const result = await this.pool.query(
       `UPDATE transactions
        SET status = 'rejected',
@@ -254,7 +260,8 @@ class TreasuryRepository extends BaseRepository {
   // Budget management
   // ---------------------------------------------------------------------------
 
-  async getBudgets(fiscalYear = null, status = null, churchId = null) {
+  async getBudgets(fiscalYear = null, status = null, churchId) {
+    if (!churchId) throw new Error('getBudgets: churchId is required');
     let query = 'SELECT * FROM budgets WHERE 1=1';
     const params = [];
     let paramCount = 0;
@@ -283,7 +290,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createBudget(data, churchId = null) {
+  async createBudget(data, churchId) {
+    if (!churchId) throw new Error('createBudget: churchId is required');
     const result = await this.pool.query(
       `INSERT INTO budgets (name, fiscal_year, start_date, end_date, total_income_budget, total_expense_budget, created_by, church_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
@@ -302,7 +310,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async findBudgetById(id, churchId = null) {
+  async findBudgetById(id, churchId) {
+    if (!churchId) throw new Error('findBudgetById: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM budgets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -310,7 +319,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getBudgetItems(budgetId, churchId = null) {
+  async getBudgetItems(budgetId, churchId) {
+    if (!churchId) throw new Error('getBudgetItems: churchId is required');
     const result = await this.pool.query(
       `SELECT bi.*,
          COALESCE(ic.name, ec.name) as category_name
@@ -324,7 +334,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createBudgetItem(data, churchId = null) {
+  async createBudgetItem(data, churchId) {
+    if (!churchId) throw new Error('createBudgetItem: churchId is required');
     const result = await this.pool.query(
       `INSERT INTO budget_items (budget_id, category_id, category_type, amount, notes, church_id)
        SELECT $1, $2, $3, $4, $5, $6
@@ -338,7 +349,8 @@ class TreasuryRepository extends BaseRepository {
   // NOTE: updateBudgetItem/deleteBudgetItem were duplicated — the CRUD-section
   // definitions (below) are the live ones and are church-scoped there.
 
-  async getBudgetAlerts(churchId = null) {
+  async getBudgetAlerts(churchId) {
+    if (!churchId) throw new Error('getBudgetAlerts: churchId is required');
     const result = await this.pool.query(
       `SELECT b.*,
               (SELECT SUM(amount) FROM budget_items WHERE budget_id = b.id AND category_type = 'expense') as total_expense,
@@ -357,7 +369,8 @@ class TreasuryRepository extends BaseRepository {
   // Vendors
   // ---------------------------------------------------------------------------
 
-  async updateVendor(id, data, churchId = null) {
+  async updateVendor(id, data, churchId) {
+    if (!churchId) throw new Error('updateVendor: churchId is required');
     const result = await this.pool.query(
       `UPDATE vendors SET name = $1, contact_person = $2, email = $3, phone = $4, address = $5 WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
       churchId ? [data.name, data.contactPerson, data.email, data.phone, data.address, id, churchId]
@@ -366,7 +379,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteVendor(id, churchId = null) {
+  async deleteVendor(id, churchId) {
+    if (!churchId) throw new Error('deleteVendor: churchId is required');
     await this.pool.query(
       `DELETE FROM vendors WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -377,7 +391,8 @@ class TreasuryRepository extends BaseRepository {
   // Analytics
   // ---------------------------------------------------------------------------
 
-  async getAnalytics(dateFrom = null, dateTo = null, churchId = null) {
+  async getAnalytics(dateFrom = null, dateTo = null, churchId) {
+    if (!churchId) throw new Error('getAnalytics: churchId is required');
     const result = await this.pool.query(
       `SELECT transaction_type, SUM(amount) as total, COUNT(*) as count
        FROM transactions
@@ -395,7 +410,8 @@ class TreasuryRepository extends BaseRepository {
   // Recurring payments
   // ---------------------------------------------------------------------------
 
-  async updateRecurringPayment(id, data, churchId = null) {
+  async updateRecurringPayment(id, data, churchId) {
+    if (!churchId) throw new Error('updateRecurringPayment: churchId is required');
     const result = await this.pool.query(
       `UPDATE recurring_payments SET name = $1, amount = $2, frequency = $3, start_date = $4, description = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.name, data.amount, data.frequency, data.startDate, data.description, data.status, id, churchId]
@@ -404,7 +420,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteRecurringPayment(id, churchId = null) {
+  async deleteRecurringPayment(id, churchId) {
+    if (!churchId) throw new Error('deleteRecurringPayment: churchId is required');
     await this.pool.query(
       `DELETE FROM recurring_payments WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -485,7 +502,8 @@ class TreasuryRepository extends BaseRepository {
   // Projects
   // ---------------------------------------------------------------------------
 
-  async getProjects(churchId = null) {
+  async getProjects(churchId) {
+    if (!churchId) throw new Error('getProjects: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM projects${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
       churchId ? [churchId] : []
@@ -493,7 +511,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createProject(data, churchId = null) {
+  async createProject(data, churchId) {
+    if (!churchId) throw new Error('createProject: churchId is required');
     const result = await this.pool.query(
       'INSERT INTO projects (name, description, budget, start_date, end_date, status, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [data.name, data.description, data.budget, data.startDate, data.endDate, data.status || 'active', churchId]
@@ -501,7 +520,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateProject(id, data, churchId = null) {
+  async updateProject(id, data, churchId) {
+    if (!churchId) throw new Error('updateProject: churchId is required');
     const result = await this.pool.query(
       `UPDATE projects SET name = $1, description = $2, budget = $3, start_date = $4, end_date = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id, churchId]
@@ -510,7 +530,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteProject(id, churchId = null) {
+  async deleteProject(id, churchId) {
+    if (!churchId) throw new Error('deleteProject: churchId is required');
     await this.pool.query(
       `DELETE FROM projects WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -521,7 +542,8 @@ class TreasuryRepository extends BaseRepository {
   // Pledges
   // ---------------------------------------------------------------------------
 
-  async getPledges(churchId = null) {
+  async getPledges(churchId) {
+    if (!churchId) throw new Error('getPledges: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM pledges${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
       churchId ? [churchId] : []
@@ -529,7 +551,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createPledge(data, churchId = null) {
+  async createPledge(data, churchId) {
+    if (!churchId) throw new Error('createPledge: churchId is required');
     const result = await this.pool.query(
       'INSERT INTO pledges (member_id, amount, pledge_type, start_date, end_date, frequency, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [data.memberId, data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, churchId]
@@ -537,7 +560,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updatePledge(id, data, churchId = null) {
+  async updatePledge(id, data, churchId) {
+    if (!churchId) throw new Error('updatePledge: churchId is required');
     const result = await this.pool.query(
       `UPDATE pledges SET amount = $1, pledge_type = $2, start_date = $3, end_date = $4, frequency = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.amount, data.pledgeType, data.startDate, data.endDate, data.frequency, data.status, id, churchId]
@@ -546,7 +570,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deletePledge(id, churchId = null) {
+  async deletePledge(id, churchId) {
+    if (!churchId) throw new Error('deletePledge: churchId is required');
     await this.pool.query(
       `DELETE FROM pledges WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -557,7 +582,8 @@ class TreasuryRepository extends BaseRepository {
   // Pledge campaigns
   // ---------------------------------------------------------------------------
 
-  async getCampaigns(churchId = null) {
+  async getCampaigns(churchId) {
+    if (!churchId) throw new Error('getCampaigns: churchId is required');
     const result = await this.pool.query(
       `SELECT * FROM pledge_campaigns${churchId ? ' WHERE church_id = $1' : ''} ORDER BY created_at DESC`,
       churchId ? [churchId] : []
@@ -565,7 +591,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createCampaign(data, churchId = null) {
+  async createCampaign(data, churchId) {
+    if (!churchId) throw new Error('createCampaign: churchId is required');
     const result = await this.pool.query(
       'INSERT INTO pledge_campaigns (name, description, target_amount, start_date, end_date, church_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
       [data.name, data.description, data.targetAmount, data.startDate, data.endDate, churchId]
@@ -577,7 +604,8 @@ class TreasuryRepository extends BaseRepository {
   // Budget alerts
   // ---------------------------------------------------------------------------
 
-  async getBudgetAlertsDetailed(churchId = null) {
+  async getBudgetAlertsDetailed(churchId) {
+    if (!churchId) throw new Error('getBudgetAlertsDetailed: churchId is required');
     const result = await this.pool.query(
       `SELECT b.name as budget_name, bi.category_name, bi.amount as budgeted,
        COALESCE(SUM(t.amount), 0) as spent,
@@ -603,7 +631,8 @@ class TreasuryRepository extends BaseRepository {
   // Financial Reporting
   // ---------------------------------------------------------------------------
 
-  async getTrialBalance(asOfDate = null, churchId = null) {
+  async getTrialBalance(asOfDate = null, churchId) {
+    if (!churchId) throw new Error('getTrialBalance: churchId is required');
     let query = `
       SELECT
         coa.account_code,
@@ -647,7 +676,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getIncomeStatementAccounts(accountType, startDate, endDate, churchId = null) {
+  async getIncomeStatementAccounts(accountType, startDate, endDate, churchId) {
+    if (!churchId) throw new Error('getIncomeStatementAccounts: churchId is required');
     let query = `
       SELECT
         coa.account_code,
@@ -679,7 +709,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getBalanceSheetAccounts(accountType, asOfDate = null, churchId = null) {
+  async getBalanceSheetAccounts(accountType, asOfDate = null, churchId) {
+    if (!churchId) throw new Error('getBalanceSheetAccounts: churchId is required');
     let query = `
       SELECT
         coa.account_code,
@@ -718,7 +749,8 @@ class TreasuryRepository extends BaseRepository {
   // Account CRUD
   // ---------------------------------------------------------------------------
 
-  async updateAccount(id, data, churchId = null) {
+  async updateAccount(id, data, churchId) {
+    if (!churchId) throw new Error('updateAccount: churchId is required');
     const result = await this.pool.query(
       `UPDATE church_accounts SET account_name = COALESCE($1, account_name), account_number = COALESCE($2, account_number), bank_name = COALESCE($3, bank_name), account_type = COALESCE($4, account_type), balance = COALESCE($5, balance), currency = COALESCE($6, currency) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.accountName, data.accountNumber, data.bankName, data.accountType, data.balance, data.currency, id, churchId]
@@ -727,7 +759,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteAccount(id, churchId = null) {
+  async deleteAccount(id, churchId) {
+    if (!churchId) throw new Error('deleteAccount: churchId is required');
     await this.pool.query(
       `DELETE FROM church_accounts WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -738,7 +771,8 @@ class TreasuryRepository extends BaseRepository {
   // Transaction CRUD
   // ---------------------------------------------------------------------------
 
-  async updateTransaction(id, data, churchId = null) {
+  async updateTransaction(id, data, churchId) {
+    if (!churchId) throw new Error('updateTransaction: churchId is required');
     const result = await this.pool.query(
       `UPDATE transactions SET amount = COALESCE($1, amount), description = COALESCE($2, description), category_id = COALESCE($3, category_id), account_id = COALESCE($4, account_id), status = COALESCE($5, status), transaction_date = COALESCE($6, transaction_date) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.amount, data.description, data.categoryId, data.accountId, data.status, data.transactionDate, id, churchId]
@@ -747,7 +781,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteTransaction(id, churchId = null) {
+  async deleteTransaction(id, churchId) {
+    if (!churchId) throw new Error('deleteTransaction: churchId is required');
     await this.pool.query(
       `DELETE FROM transactions WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -758,7 +793,8 @@ class TreasuryRepository extends BaseRepository {
   // Budget CRUD
   // ---------------------------------------------------------------------------
 
-  async updateBudget(id, data, churchId = null) {
+  async updateBudget(id, data, churchId) {
+    if (!churchId) throw new Error('updateBudget: churchId is required');
     const result = await this.pool.query(
       `UPDATE budgets SET budget_name = COALESCE($1, budget_name), fiscal_year = COALESCE($2, fiscal_year), fund_id = COALESCE($3, fund_id), account_id = COALESCE($4, account_id), budgeted_amount = COALESCE($5, budgeted_amount), actual_amount = COALESCE($6, actual_amount), status = COALESCE($7, status) WHERE id = $8${churchId ? ' AND church_id = $9' : ''} RETURNING *`,
       churchId ? [data.budgetName, data.fiscalYear, data.fundId, data.accountId, data.budgetedAmount, data.actualAmount, data.status, id, churchId]
@@ -767,14 +803,16 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteBudget(id, churchId = null) {
+  async deleteBudget(id, churchId) {
+    if (!churchId) throw new Error('deleteBudget: churchId is required');
     await this.pool.query(
       `DELETE FROM budgets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
     );
   }
 
-  async updateBudgetItem(id, data, churchId = null) {
+  async updateBudgetItem(id, data, churchId) {
+    if (!churchId) throw new Error('updateBudgetItem: churchId is required');
     const result = await this.pool.query(
       `UPDATE budget_items SET item_name = COALESCE($1, item_name), budgeted_amount = COALESCE($2, budgeted_amount), actual_amount = COALESCE($3, actual_amount), description = COALESCE($4, description) WHERE id = $5${churchId ? ' AND church_id = $6' : ''} RETURNING *`,
       churchId ? [data.itemName, data.budgetedAmount, data.actualAmount, data.description, id, churchId]
@@ -783,7 +821,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteBudgetItem(id, churchId = null) {
+  async deleteBudgetItem(id, churchId) {
+    if (!churchId) throw new Error('deleteBudgetItem: churchId is required');
     await this.pool.query(
       `DELETE FROM budget_items WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -794,7 +833,8 @@ class TreasuryRepository extends BaseRepository {
   // Fund CRUD
   // ---------------------------------------------------------------------------
 
-  async getFunds(churchId = null) {
+  async getFunds(churchId) {
+    if (!churchId) throw new Error('getFunds: churchId is required');
     let query = 'SELECT * FROM funds WHERE 1=1';
     const params = [];
     if (churchId) {
@@ -805,7 +845,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createFund(data, churchId = null) {
+  async createFund(data, churchId) {
+    if (!churchId) throw new Error('createFund: churchId is required');
     const result = await this.pool.query(
       'INSERT INTO funds (fund_name, fund_code, description, fund_type, church_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
       [data.fundName, data.fundCode, data.description, data.fundType, churchId]
@@ -813,7 +854,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateFund(id, data, churchId = null) {
+  async updateFund(id, data, churchId) {
+    if (!churchId) throw new Error('updateFund: churchId is required');
     const result = await this.pool.query(
       `UPDATE funds SET fund_name = COALESCE($1, fund_name), fund_code = COALESCE($2, fund_code), description = COALESCE($3, description), fund_type = COALESCE($4, fund_type), is_active = COALESCE($5, is_active) WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
       churchId ? [data.fundName, data.fundCode, data.description, data.fundType, data.isActive, id, churchId]
@@ -822,7 +864,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteFund(id, churchId = null) {
+  async deleteFund(id, churchId) {
+    if (!churchId) throw new Error('deleteFund: churchId is required');
     await this.pool.query(
       `DELETE FROM funds WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -833,7 +876,8 @@ class TreasuryRepository extends BaseRepository {
   // Cash Flow Statement
   // ---------------------------------------------------------------------------
 
-  async getCashFlowStatement(churchId = null, startDate = null, endDate = null) {
+  async getCashFlowStatement(churchId, startDate = null, endDate = null) {
+    if (!churchId) throw new Error('getCashFlowStatement: churchId is required');
     let query = `
       SELECT
         'Operating Activities' as section,
@@ -885,7 +929,8 @@ class TreasuryRepository extends BaseRepository {
   // Fund Balance Report
   // ---------------------------------------------------------------------------
 
-  async getFundBalance(churchId = null, startDate = null, endDate = null) {
+  async getFundBalance(churchId, startDate = null, endDate = null) {
+    if (!churchId) throw new Error('getFundBalance: churchId is required');
     let query = `
       SELECT
         f.id,
@@ -930,7 +975,8 @@ class TreasuryRepository extends BaseRepository {
   // Campaign CRUD
   // ---------------------------------------------------------------------------
 
-  async updateCampaign(id, data, churchId = null) {
+  async updateCampaign(id, data, churchId) {
+    if (!churchId) throw new Error('updateCampaign: churchId is required');
     const result = await this.pool.query(
       `UPDATE pledge_campaigns SET name = COALESCE($1, name), description = COALESCE($2, description), target_amount = COALESCE($3, target_amount), start_date = COALESCE($4, start_date), end_date = COALESCE($5, end_date), status = COALESCE($6, status) WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
       churchId ? [data.campaignName, data.description, data.goalAmount, data.startDate, data.endDate, data.status, id, churchId]
@@ -939,7 +985,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteCampaign(id, churchId = null) {
+  async deleteCampaign(id, churchId) {
+    if (!churchId) throw new Error('deleteCampaign: churchId is required');
     await this.pool.query(
       `DELETE FROM pledge_campaigns WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
@@ -986,7 +1033,8 @@ class TreasuryRepository extends BaseRepository {
   // Bank Reconciliations CRUD
   // ---------------------------------------------------------------------------
 
-  async getReconciliations(churchId = null) {
+  async getReconciliations(churchId) {
+    if (!churchId) throw new Error('getReconciliations: churchId is required');
     let query = `
       SELECT r.*, ca.account_name
       FROM bank_reconciliations r
@@ -1003,7 +1051,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createReconciliation(data, churchId = null) {
+  async createReconciliation(data, churchId) {
+    if (!churchId) throw new Error('createReconciliation: churchId is required');
     const result = await this.pool.query(
       `INSERT INTO bank_reconciliations (account_id, statement_date, statement_balance, book_balance, notes, church_id)
        SELECT $1, $2, $3, $4, $5, $6
@@ -1014,7 +1063,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateReconciliation(id, data, churchId = null) {
+  async updateReconciliation(id, data, churchId) {
+    if (!churchId) throw new Error('updateReconciliation: churchId is required');
     const result = await this.pool.query(
       `UPDATE bank_reconciliations SET statement_date = COALESCE($1, statement_date), statement_balance = COALESCE($2, statement_balance), book_balance = COALESCE($3, book_balance), notes = COALESCE($4, notes), status = COALESCE($5, status) WHERE id = $6${churchId ? ' AND church_id = $7' : ''} RETURNING *`,
       churchId ? [data.statementDate, data.statementBalance, data.bookBalance, data.notes, data.status, id, churchId]
@@ -1023,7 +1073,8 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deleteReconciliation(id, churchId = null) {
+  async deleteReconciliation(id, churchId) {
+    if (!churchId) throw new Error('deleteReconciliation: churchId is required');
     await this.pool.query(
       `DELETE FROM bank_reconciliations WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]

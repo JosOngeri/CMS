@@ -320,7 +320,7 @@ router.put('/:identifier',
       }
 
       // Get current state before update
-      const beforeState = await departmentsRepository.query('SELECT * FROM departments WHERE id = $1', [id]);
+      const beforeState = await departmentsRepository.query('SELECT * FROM departments WHERE id = $1 AND church_id = $2', [id, req.user.church_id]);
 
       // Generate new slug if name changed and slug not provided
       let newSlug = slug;
@@ -627,7 +627,7 @@ router.delete('/:id',
     try {
       const { id } = req.params;
 
-      const result = await departmentsRepository.query('DELETE FROM departments WHERE id = $1 RETURNING *', [id]);
+      const result = await departmentsRepository.query('DELETE FROM departments WHERE id = $1 AND church_id = $2 RETURNING *', [id, req.user.church_id]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Department not found' });

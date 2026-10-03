@@ -5,7 +5,8 @@ class GalleryRepository extends BaseRepository {
     super('gallery_photos');
   }
 
-  async getRecent(churchId = null, limit = 20, approvedOnly = false) {
+  async getRecent(churchId, limit = 20, approvedOnly = false) {
+    if (!churchId) throw new Error('getRecent: churchId is required');
     let query = `
       SELECT gp.*, ga.title as album_name
       FROM ${this.tableName} gp
@@ -30,7 +31,8 @@ class GalleryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getById(id, churchId = null) {
+  async getById(id, churchId) {
+    if (!churchId) throw new Error('getById: churchId is required');
     let query = `
       SELECT gp.*, ga.title as album_name
       FROM ${this.tableName} gp
@@ -202,66 +204,80 @@ class GalleryRepository extends BaseRepository {
     await this.pool.query('DELETE FROM gallery_albums WHERE id = $1 AND church_id = $2', [id, churchId]);
   }
 
-  async uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId) {
+  async uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId, churchId) {
+    if (!churchId) throw new Error('uploadPhoto: churchId is required');
     const result = await this.pool.query(
-      `INSERT INTO gallery_photos (album_id, title, description, file_url, thumbnail_url, file_size, file_type, width, height, telegram_file_id, telegram_file_unique_id, uploaded_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `INSERT INTO gallery_photos (album_id, title, description, file_url, thumbnail_url, file_size, file_type, width, height, telegram_file_id, telegram_file_unique_id, uploaded_by, church_id)
+       SELECT $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+       WHERE EXISTS (SELECT 1 FROM gallery_albums WHERE id = $1 AND church_id = $13)
        RETURNING *`,
-      [albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId]
+      [albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId, churchId]
     );
     return result.rows[0];
   }
 
-  async updatePhoto(id, title, description, isFeatured, orderIndex) {
+  async updatePhoto(id, title, description, isFeatured, orderIndex, churchId) {
+    if (!churchId) throw new Error('updatePhoto: churchId is required');
     const result = await this.pool.query(
       `UPDATE gallery_photos
        SET title = COALESCE($1, title),
            description = COALESCE($2, description),
            is_featured = COALESCE($3, is_featured),
            order_index = COALESCE($4, order_index)
-       WHERE id = $5
+       WHERE id = $5 AND church_id = $6
        RETURNING *`,
-      [title, description, isFeatured, orderIndex, id]
+      [title, description, isFeatured, orderIndex, id, churchId]
     );
     return result.rows[0];
   }
 
-  async deletePhoto(id) {
-    await this.pool.query('DELETE FROM gallery_photos WHERE id = $1', [id]);
+  async deletePhoto(id, churchId) {
+    if (!churchId) throw new Error('deletePhoto: churchId is required');
+    await this.pool.query('DELETE FROM gallery_photos WHERE id = $1 AND church_id = $2', [id, churchId]);
   }
 
-  async addTagToPhoto(photoId, tagId) {
+  async addTagToPhoto(photoId, tagId, churchId) {
+    if (!churchId) throw new Error('addTagToPhoto: churchId is required');
     await this.pool.query(
-      'INSERT INTO photo_tag_assignments (photo_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-      [photoId, tagId]
+      `INSERT INTO photo_tag_assignments (photo_id, tag_id)
+       SELECT $1, $2
+       WHERE EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $3)
+         AND EXISTS (SELECT 1 FROM gallery_tags WHERE id = $2 AND church_id = $3)
+       ON CONFLICT DO NOTHING`,
+      [photoId, tagId, churchId]
     );
   }
 
-  async removeTagFromPhoto(photoId, tagId) {
+  async removeTagFromPhoto(photoId, tagId, churchId) {
+    if (!churchId) throw new Error('removeTagFromPhoto: churchId is required');
     await this.pool.query(
-      'DELETE FROM photo_tag_assignments WHERE photo_id = $1 AND tag_id = $2',
-      [photoId, tagId]
+      `DELETE FROM photo_tag_assignments WHERE photo_id = $1 AND tag_id = $2
+       AND EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $3)`,
+      [photoId, tagId, churchId]
     );
   }
 
-  async getComments(photoId) {
+  async getComments(photoId, churchId) {
+    if (!churchId) throw new Error('getComments: churchId is required');
     const result = await this.pool.query(
       `SELECT gc.*, u.first_name || ' ' || u.last_name as author_name
        FROM gallery_comments gc
        JOIN users u ON gc.user_id = u.id
-       WHERE gc.photo_id = $1
+       WHERE gc.photo_id = $1 AND gc.church_id = $2
        ORDER BY gc.created_at DESC`,
-      [photoId]
+      [photoId, churchId]
     );
     return result.rows;
   }
 
-  async addComment(photoId, userId, comment) {
+  async addComment(photoId, userId, comment, churchId) {
+    if (!churchId) throw new Error('addComment: churchId is required');
     const result = await this.pool.query(
-      `INSERT INTO gallery_comments (photo_id, user_id, comment)
-       VALUES ($1, $2, $3)
+      `INSERT INTO gallery_comments (photo_id, user_id, comment, church_id)
+       SELECT $1, $2, $3, $4
+       WHERE EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $4)
        RETURNING *`,
-      [photoId, userId, comment]
+      [photoId, userId, comment, churchId]
     );
     return result.rows[0];
   }
@@ -356,9 +372,10 @@ class GalleryRepository extends BaseRepository {
     return result.rows.map(r => r.label);
   }
 
-  async searchPhotos(searchPattern, limit, offset) {
+  async searchPhotos(searchPattern, limit, offset, churchId) {
+    if (!churchId) throw new Error('searchPhotos: churchId is required');
     const result = await this.pool.query(
-      `SELECT DISTINCT gp.*, 
+      `SELECT DISTINCT gp.*,
               u.first_name || ' ' || u.last_name as uploaded_by_name,
               ga.title as album_title
        FROM gallery_photos gp
@@ -366,20 +383,22 @@ class GalleryRepository extends BaseRepository {
        LEFT JOIN gallery_albums ga ON gp.album_id = ga.id
        LEFT JOIN photo_tag_assignments pta ON gp.id = pta.photo_id
        LEFT JOIN photo_tags pt ON pta.tag_id = pt.id
-       WHERE gp.title ILIKE $1
+       WHERE gp.church_id = $4
+         AND (gp.title ILIKE $1
           OR gp.description ILIKE $1
-          OR pt.name ILIKE $1
+          OR pt.name ILIKE $1)
        ORDER BY gp.uploaded_at DESC
        LIMIT $2 OFFSET $3`,
-      [searchPattern, limit, offset]
+      [searchPattern, limit, offset, churchId]
     );
     return result.rows;
   }
 
-  async filterPhotosByTags(tagIds, limit, offset) {
+  async filterPhotosByTags(tagIds, limit, offset, churchId) {
+    if (!churchId) throw new Error('filterPhotosByTags: churchId is required');
     const placeholders = tagIds.map((_, i) => `$${i + 1}`).join(',');
     const query = `
-      SELECT DISTINCT gp.*, 
+      SELECT DISTINCT gp.*,
               u.first_name || ' ' || u.last_name as uploaded_by_name,
               ga.title as album_title,
               array_agg(DISTINCT pt.name) as tag_names
@@ -388,29 +407,30 @@ class GalleryRepository extends BaseRepository {
        LEFT JOIN gallery_albums ga ON gp.album_id = ga.id
        JOIN photo_tag_assignments pta ON gp.id = pta.photo_id
        JOIN photo_tags pt ON pta.tag_id = pt.id
-       WHERE pta.tag_id IN (${placeholders})
+       WHERE pta.tag_id IN (${placeholders}) AND gp.church_id = $${tagIds.length + 1}
        GROUP BY gp.id, u.first_name, u.last_name, ga.title
        ORDER BY gp.uploaded_at DESC
-       LIMIT $${tagIds.length + 1} OFFSET $${tagIds.length + 2}
+       LIMIT $${tagIds.length + 2} OFFSET $${tagIds.length + 3}
     `;
-    
-    const params = [...tagIds, limit, offset];
+
+    const params = [...tagIds, churchId, limit, offset];
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
-  async filterPhotosByDate(startDate, endDate, limit, offset) {
+  async filterPhotosByDate(startDate, endDate, limit, offset, churchId) {
+    if (!churchId) throw new Error('filterPhotosByDate: churchId is required');
     let query = `
-      SELECT gp.*, 
+      SELECT gp.*,
              u.first_name || ' ' || u.last_name as uploaded_by_name,
              ga.title as album_title
       FROM gallery_photos gp
       LEFT JOIN users u ON gp.uploaded_by = u.id
       LEFT JOIN gallery_albums ga ON gp.album_id = ga.id
-      WHERE 1=1
+      WHERE gp.church_id = $1
     `;
-    const params = [];
-    let paramCount = 0;
+    const params = [churchId];
+    let paramCount = 1;
 
     if (startDate) {
       paramCount++;
@@ -431,55 +451,48 @@ class GalleryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async updatePhotoMetadata(photoId, camera, location, iso, aperture, shutter_speed) {
+  async updatePhotoMetadata(photoId, camera, location, iso, aperture, shutter_speed, churchId) {
+    if (!churchId) throw new Error('updatePhotoMetadata: churchId is required');
     const result = await this.pool.query(
-      `UPDATE gallery_photos 
+      `UPDATE gallery_photos
        SET camera = COALESCE($1, camera),
            location = COALESCE($2, location),
            iso = COALESCE($3, iso),
            aperture = COALESCE($4, aperture),
            shutter_speed = COALESCE($5, shutter_speed),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $6
+       WHERE id = $6 AND church_id = $7
        RETURNING *`,
-      [camera, location, iso, aperture, shutter_speed, photoId]
+      [camera, location, iso, aperture, shutter_speed, photoId, churchId]
     );
     return result.rows[0];
   }
 
-  async updatePhotoPrivacy(photoId, is_private, allowed_roles) {
+  async updatePhotoPrivacy(photoId, is_private, allowed_roles, churchId) {
+    if (!churchId) throw new Error('updatePhotoPrivacy: churchId is required');
     const result = await this.pool.query(
-      `UPDATE gallery_photos 
+      `UPDATE gallery_photos
        SET is_private = COALESCE($1, is_private),
            allowed_roles = COALESCE($2, allowed_roles),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $3
+       WHERE id = $3 AND church_id = $4
        RETURNING *`,
-      [is_private, allowed_roles, photoId]
+      [is_private, allowed_roles, photoId, churchId]
     );
     return result.rows[0];
   }
 
-  async getPhotoAnalytics(photoId) {
-    const viewResult = await this.pool.query(
-      'SELECT COUNT(*) as count FROM gallery_photo_views WHERE photo_id = $1',
-      [photoId]
-    );
-
-    const downloadResult = await this.pool.query(
-      'SELECT COUNT(*) as count FROM gallery_photo_downloads WHERE photo_id = $1',
-      [photoId]
-    );
-
-    const commentResult = await this.pool.query(
-      'SELECT COUNT(*) as count FROM gallery_comments WHERE photo_id = $1',
-      [photoId]
-    );
-
-    const shareResult = await this.pool.query(
-      'SELECT COUNT(*) as count FROM gallery_photo_shares WHERE photo_id = $1',
-      [photoId]
-    );
+  async getPhotoAnalytics(photoId, churchId) {
+    if (!churchId) throw new Error('getPhotoAnalytics: churchId is required');
+    // All counts scoped through the photo's own church so a foreign-church
+    // photoId returns zeros instead of that church's engagement stats.
+    const scope = 'AND EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $2)';
+    const [viewResult, downloadResult, commentResult, shareResult] = await Promise.all([
+      this.pool.query(`SELECT COUNT(*) as count FROM gallery_photo_views WHERE photo_id = $1 ${scope}`, [photoId, churchId]),
+      this.pool.query(`SELECT COUNT(*) as count FROM gallery_photo_downloads WHERE photo_id = $1 ${scope}`, [photoId, churchId]),
+      this.pool.query(`SELECT COUNT(*) as count FROM gallery_comments WHERE photo_id = $1 ${scope}`, [photoId, churchId]),
+      this.pool.query(`SELECT COUNT(*) as count FROM gallery_photo_shares WHERE photo_id = $1 ${scope}`, [photoId, churchId]),
+    ]);
 
     return {
       views: parseInt(viewResult.rows[0].count),
@@ -489,19 +502,23 @@ class GalleryRepository extends BaseRepository {
     };
   }
 
-  async recordPhotoDownload(photoId, userId) {
+  async recordPhotoDownload(photoId, userId, churchId) {
+    if (!churchId) throw new Error('recordPhotoDownload: churchId is required');
     await this.pool.query(
       `INSERT INTO gallery_photo_downloads (photo_id, user_id, downloaded_at)
-       VALUES ($1, $2, CURRENT_TIMESTAMP)`,
-      [photoId, userId]
+       SELECT $1, $2, CURRENT_TIMESTAMP
+       WHERE EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $3)`,
+      [photoId, userId, churchId]
     );
   }
 
-  async sharePhoto(photoId, userId, platform, recipient) {
+  async sharePhoto(photoId, userId, platform, recipient, churchId) {
+    if (!churchId) throw new Error('sharePhoto: churchId is required');
     await this.pool.query(
       `INSERT INTO gallery_photo_shares (photo_id, user_id, platform, recipient, shared_at)
-       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)`,
-      [photoId, userId, platform, recipient]
+       SELECT $1, $2, $3, $4, CURRENT_TIMESTAMP
+       WHERE EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $5)`,
+      [photoId, userId, platform, recipient, churchId]
     );
   }
 

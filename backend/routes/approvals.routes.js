@@ -24,7 +24,7 @@ router.get('/analytics', approvalsController.getApprovalAnalytics);
 router.get('/pending-count', approvalsController.getPendingCount);
 
 // Workflow execution
-router.post('/execute', approvalsController.executeWorkflow);
+router.post('/execute', requireRole(['Super Admin', 'Pastor', 'Department Head', 'Treasurer']), approvalsController.executeWorkflow);
 
 // Approvals CRUD (parameterised routes last)
 router.get('/', approvalsController.getApprovals);
@@ -34,7 +34,7 @@ router.put('/:id/reject', requireRole(['Super Admin', 'Pastor', 'Department Head
 router.post('/:id/reject', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.rejectRequest);
 router.delete('/:id', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.deleteApproval);
 router.put('/:id/delegate', requireRole(['Super Admin', 'Pastor', 'Department Head']), approvalsController.delegateRequest);
-router.put('/:approvalId/step', approvalsController.processWorkflowStep);
+router.put('/:approvalId/step', requireRole(['Super Admin', 'Pastor', 'Department Head', 'Treasurer']), approvalsController.processWorkflowStep);
 router.get('/:approvalId/status', approvalsController.getWorkflowStatus);
 
 module.exports = router;

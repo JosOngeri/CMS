@@ -204,7 +204,11 @@ class GalleryController extends BaseController {
       const { title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId } = req.body;
       const userId = req.user.id;
 
-      const photo = await GalleryRepository.uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId);
+      const photo = await GalleryRepository.uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId, req.user.church_id);
+
+      if (!photo) {
+        return this.notFound(res, 'Album not found');
+      }
 
       if (telegramFileId && telegramFileUniqueId) {
         await galleryCache.cachePhoto(albumId, telegramFileId, telegramFileUniqueId, fileUrl, thumbnailUrl);
@@ -235,7 +239,7 @@ class GalleryController extends BaseController {
       const { id } = req.params;
       const { title, description, isFeatured, orderIndex } = req.body;
 
-      const photo = await GalleryRepository.updatePhoto(id, title, description, isFeatured, orderIndex);
+      const photo = await GalleryRepository.updatePhoto(id, title, description, isFeatured, orderIndex, req.user.church_id);
 
       if (!photo) {
         return this.notFound(res, 'Photo not found');
@@ -260,7 +264,7 @@ class GalleryController extends BaseController {
     try {
       const { id } = req.params;
 
-      await GalleryRepository.deletePhoto(id);
+      await GalleryRepository.deletePhoto(id, req.user.church_id);
 
       this.success(res, { message: 'Photo deleted successfully' });
     } catch (error) {
@@ -300,7 +304,7 @@ class GalleryController extends BaseController {
     try {
       const { photoId, tagId } = req.body;
 
-      await GalleryRepository.addTagToPhoto(photoId, tagId);
+      await GalleryRepository.addTagToPhoto(photoId, tagId, req.user.church_id);
 
       this.success(res, { message: 'Tag added successfully' });
     } catch (error) {
@@ -322,7 +326,7 @@ class GalleryController extends BaseController {
     try {
       const { photoId, tagId } = req.params;
 
-      await GalleryRepository.removeTagFromPhoto(photoId, tagId);
+      await GalleryRepository.removeTagFromPhoto(photoId, tagId, req.user.church_id);
 
       this.success(res, { message: 'Tag removed successfully' });
     } catch (error) {
@@ -343,7 +347,7 @@ class GalleryController extends BaseController {
     try {
       const { photoId } = req.params;
 
-      const comments = await GalleryRepository.getComments(photoId);
+      const comments = await GalleryRepository.getComments(photoId, req.user.church_id);
 
       this.success(res, { data: comments });
     } catch (error) {
@@ -369,7 +373,7 @@ class GalleryController extends BaseController {
       const { comment } = req.body;
       const userId = req.user.id;
 
-      const newComment = await GalleryRepository.addComment(photoId, userId, comment);
+      const newComment = await GalleryRepository.addComment(photoId, userId, comment, req.user.church_id);
 
       this.created(res, { message: 'Comment added successfully', data: newComment });
     } catch (error) {
@@ -388,7 +392,10 @@ class GalleryController extends BaseController {
    */
   async getPublicPhotos(req, res) {
     try {
-      const churchId = req.user?.church_id || req.query.church_id || null;
+      // Tenant comes from the authenticated JWT or the resolved tenant
+      // (tenantResolver host/slug) — never from a client-supplied param.
+      const churchId = req.user?.church_id || req.church_id || null;
+      if (!churchId) return this.badRequest(res, 'Unable to resolve church context');
       const limit = Math.min(parseInt(req.query.limit) || 6, 50);
       const canViewAll = (req.user?.roles || []).some(r => ['Super Admin', 'Pastor', 'Department Head'].includes(r));
       const photos = await GalleryRepository.getRecent(churchId, limit, !canViewAll);
@@ -416,7 +423,8 @@ class GalleryController extends BaseController {
         return this.notFound(res, 'Image not found');
       }
 
-      const churchId = req.user?.church_id || req.query.church_id || null;
+      const churchId = req.user?.church_id || req.church_id || null;
+      if (!churchId) return this.badRequest(res, 'Unable to resolve church context');
       const photo = await GalleryRepository.getById(id, churchId);
 
       if (!photo) {
@@ -446,7 +454,8 @@ class GalleryController extends BaseController {
    */
   async getPublicPhotosPaginated(req, res) {
     try {
-      const churchId = req.user?.church_id || req.query.church_id || null;
+      const churchId = req.user?.church_id || req.church_id || null;
+      if (!churchId) return this.badRequest(res, 'Unable to resolve church context');
       const { cursor, limit = 20 } = req.query;
       const canViewAll = (req.user?.roles || []).some(r => ['Super Admin', 'Pastor', 'Department Head'].includes(r));
       const extraWhere = canViewAll ? 'church_id = $2' : `church_id = $2 AND (status = 'approved' OR status IS NULL)`;
@@ -491,7 +500,9 @@ class GalleryController extends BaseController {
       }
 
       const searchPattern = `%${search}%`;
-      const photos = await GalleryRepository.searchPhotos(searchPattern, limit, offset);
+      const churchId = req.user?.church_id || req.church_id || null;
+      if (!churchId) return this.badRequest(res, 'Unable to resolve church context');
+      const photos = await GalleryRepository.searchPhotos(searchPattern, limit, offset, churchId);
 
       this.success(res, { photos });
     } catch (error) {
@@ -519,7 +530,7 @@ class GalleryController extends BaseController {
       }
 
       const tagIds = tags.split(',').map(tag => tag.trim());
-      const photos = await GalleryRepository.filterPhotosByTags(tagIds, limit, offset);
+      const photos = await GalleryRepository.filterPhotosByTags(tagIds, limit, offset, req.user.church_id);
 
       this.success(res, { data: photos });
     } catch (error) {
@@ -543,7 +554,7 @@ class GalleryController extends BaseController {
     try {
       const { start_date, end_date, limit = 20, offset = 0 } = req.query;
 
-      const photos = await GalleryRepository.filterPhotosByDate(start_date, end_date, limit, offset);
+      const photos = await GalleryRepository.filterPhotosByDate(start_date, end_date, limit, offset, req.user.church_id);
 
       this.success(res, { data: photos });
     } catch (error) {
@@ -571,7 +582,7 @@ class GalleryController extends BaseController {
       const { photoId } = req.params;
       const { camera, location, iso, aperture, shutter_speed } = req.body;
 
-      const photo = await GalleryRepository.updatePhotoMetadata(photoId, camera, location, iso, aperture, shutter_speed);
+      const photo = await GalleryRepository.updatePhotoMetadata(photoId, camera, location, iso, aperture, shutter_speed, req.user.church_id);
 
       if (!photo) {
         return this.notFound(res, 'Photo not found');
@@ -600,7 +611,7 @@ class GalleryController extends BaseController {
       const { photoId } = req.params;
       const { is_private, allowed_roles } = req.body;
 
-      const photo = await GalleryRepository.updatePhotoPrivacy(photoId, is_private, allowed_roles);
+      const photo = await GalleryRepository.updatePhotoPrivacy(photoId, is_private, allowed_roles, req.user.church_id);
 
       if (!photo) {
         return this.notFound(res, 'Photo not found');
@@ -625,7 +636,7 @@ class GalleryController extends BaseController {
     try {
       const { photoId } = req.params;
 
-      const analytics = await GalleryRepository.getPhotoAnalytics(photoId);
+      const analytics = await GalleryRepository.getPhotoAnalytics(photoId, req.user.church_id);
 
       this.success(res, { data: analytics });
     } catch (error) {
@@ -648,7 +659,7 @@ class GalleryController extends BaseController {
       const { photoId } = req.params;
       const userId = req.user ? req.user.id : null;
 
-      await GalleryRepository.recordPhotoDownload(photoId, userId);
+      await GalleryRepository.recordPhotoDownload(photoId, userId, req.user.church_id);
 
       this.success(res, { message: 'Download recorded' });
     } catch (error) {
@@ -675,7 +686,7 @@ class GalleryController extends BaseController {
       const { platform, recipient } = req.body;
       const userId = req.user ? req.user.id : null;
 
-      await GalleryRepository.sharePhoto(photoId, userId, platform, recipient);
+      await GalleryRepository.sharePhoto(photoId, userId, platform, recipient, req.user.church_id);
 
       this.success(res, { message: 'Photo shared successfully' });
     } catch (error) {
@@ -782,7 +793,7 @@ class GalleryController extends BaseController {
         parent_id,
         is_public,
         created_by: req.user.id
-      });
+      }, req.user.church_id);
 
       this.created(res, { data: album });
     } catch (error) {
@@ -818,7 +829,7 @@ class GalleryController extends BaseController {
         parent_id,
         cover_photo_id,
         is_public
-      });
+      }, req.user.church_id);
 
       if (!album) {
         return this.notFound(res, 'Album not found');
@@ -843,13 +854,13 @@ class GalleryController extends BaseController {
     try {
       const { id } = req.params;
 
-      const subAlbumCount = await GalleryAlbumsRepository.countSubAlbums(id);
+      const subAlbumCount = await GalleryAlbumsRepository.countSubAlbums(id, req.user.church_id);
 
       if (subAlbumCount > 0) {
         return this.badRequest(res, 'Cannot delete album with sub-albums. Delete sub-albums first.');
       }
 
-      const album = await GalleryAlbumsRepository.delete(id);
+      const album = await GalleryAlbumsRepository.delete(id, req.user.church_id);
 
       if (!album) {
         return this.notFound(res, 'Album not found');
@@ -884,7 +895,7 @@ class GalleryController extends BaseController {
       let addedCount = 0;
       for (const photoId of photo_ids) {
         try {
-          await GalleryAlbumsRepository.addPhotoToAlbum(id, photoId);
+          await GalleryAlbumsRepository.addPhotoToAlbum(id, photoId, req.user.church_id);
           addedCount++;
         } catch (error) {
           continue;
@@ -911,7 +922,7 @@ class GalleryController extends BaseController {
     try {
       const { id, photoId } = req.params;
 
-      await GalleryAlbumsRepository.removePhotoFromAlbum(id, photoId);
+      await GalleryAlbumsRepository.removePhotoFromAlbum(id, photoId, req.user.church_id);
 
       this.success(res, { message: 'Photo removed from album successfully' });
     } catch (error) {
@@ -940,7 +951,7 @@ class GalleryController extends BaseController {
       }
 
       for (const item of photo_orders) {
-        await GalleryAlbumsRepository.updatePhotoOrder(id, item.photo_id, item.sort_order);
+        await GalleryAlbumsRepository.updatePhotoOrder(id, item.photo_id, item.sort_order, req.user.church_id);
       }
 
       this.success(res, { message: 'Photo order updated successfully' });
@@ -965,7 +976,7 @@ class GalleryController extends BaseController {
       const { id } = req.params;
       const { photo_id } = req.body;
 
-      const album = await GalleryAlbumsRepository.setCoverPhoto(id, photo_id);
+      const album = await GalleryAlbumsRepository.setCoverPhoto(id, photo_id, req.user.church_id);
 
       if (!album) {
         return this.notFound(res, 'Album not found');

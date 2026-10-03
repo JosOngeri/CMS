@@ -3,8 +3,8 @@ const router = express.Router();
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const telegramAuthController = require('../controllers/telegramAuth.controller');
 
-// Get all auth methods
-router.get('/auth-methods', authenticateToken, telegramAuthController.getAuthMethods);
+// Get all auth methods — config exposes apiId/session metadata
+router.get('/auth-methods', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.getAuthMethods);
 
 // Create auth method
 router.post('/auth-methods', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.createAuthMethod);
@@ -19,12 +19,13 @@ router.delete('/auth-methods/:id', authenticateToken, requireRole(['Super Admin'
 router.put('/auth-methods/:id/set-default', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.setDefault);
 
 // Test connection
-router.post('/auth-methods/:id/test', authenticateToken, telegramAuthController.testConnection);
+router.post('/auth-methods/:id/test', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.testConnection);
 
-// Start verification
-router.post('/start-auth', authenticateToken, telegramAuthController.startVerification);
+// Start verification — verifyCode writes the session into the church's auth
+// method, so only church admins may bind a Telegram identity
+router.post('/start-auth', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.startVerification);
 
 // Verify code
-router.post('/verify-auth', authenticateToken, telegramAuthController.verifyCode);
+router.post('/verify-auth', authenticateToken, requireRole(['Super Admin', 'Pastor']), telegramAuthController.verifyCode);
 
 module.exports = router;

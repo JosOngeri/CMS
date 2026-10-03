@@ -3,7 +3,13 @@ const router = express.Router();
 const mobileController = require('../controllers/mobile.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
-// All routes require authentication
+// Authentication for mobile — MUST be public: login/refresh are how a client
+// obtains the token the routes below require. Registering them after
+// router.use(authenticateToken) would make first-time login impossible.
+router.post('/auth/login', mobileController.mobileLogin);
+router.post('/auth/refresh', mobileController.refreshAuthToken);
+
+// All routes below require authentication
 router.use(authenticateToken);
 
 // Mobile dashboard
@@ -55,9 +61,7 @@ router.get('/campaigns/mobile', mobileController.getMobileCampaigns);
 router.get('/analytics/unified', mobileController.getUnifiedAnalytics);
 router.get('/analytics/sms', mobileController.getSmsAnalytics);
 
-// Authentication for mobile
-router.post('/auth/login', mobileController.mobileLogin);
-router.post('/auth/refresh', mobileController.refreshAuthToken);
+// Logout requires an authenticated session
 router.post('/auth/logout', mobileController.mobileLogout);
 
 // Sync status management

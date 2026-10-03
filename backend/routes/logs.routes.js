@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { createLogger } = require('../helpers/controllerLogger');
+const { strictLimiter } = require('../middleware/rateLimiter');
 const logger = createLogger('client-errors');
 
 // Client-side error reports from the React ErrorBoundary.
-// Authenticated or not — a crash screen shouldn't block reporting.
-router.post('/client-error', (req, res) => {
+// Authenticated or not — a crash screen shouldn't block reporting — but the
+// endpoint is rate-limited so it can't be used for log flooding.
+router.post('/client-error', strictLimiter, (req, res) => {
   const { error, stack, componentStack, url, userAgent } = req.body || {};
 
   logger.error('CLIENT ERROR', {

@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const chartOfAccountsController = require('../controllers/chartOfAccounts.controller');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 
 // All routes require authentication
 router.use(authenticateToken);
+
+// Finance configuration — church chart of accounts is not member-readable
+const FINANCE_ROLES = ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'];
+router.use(requireRole(FINANCE_ROLES));
 
 // Get all chart of accounts with hierarchy
 router.get('/', chartOfAccountsController.getAllAccounts);

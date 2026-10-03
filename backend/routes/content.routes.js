@@ -21,6 +21,13 @@ router.use(authenticateToken);
 router.get('/categories-list', contentController.getCategories);
 router.get('/tags-list', contentController.getTags);
 
+// Static GET routes must come before /:id or they are shadowed
+router.get('/scheduled', contentController.getScheduledContent);
+router.get('/check-duplicate', contentController.checkDuplicateContent);
+router.get('/export', requireRole(['Super Admin', 'Pastor']), contentController.exportContent);
+router.post('/import', requireRole(['Super Admin', 'Pastor']), contentController.importContent);
+router.get('/analytics', contentController.getContentAnalytics);
+
 // Content CRUD
 router.get('/', contentController.getAllContent);
 router.post('/', requireRole(['Super Admin', 'Pastor', 'First Elder']), contentValidation, (req, res, next) => {
@@ -65,16 +72,11 @@ router.get('/:id/lock-status', contentController.getContentLockStatus);
 // Scheduled Publishing
 router.post('/:id/schedule', requireRole(CONTENT_EDITORS), contentController.schedulePublish);
 router.post('/:id/unpublish', requireRole(CONTENT_EDITORS), contentController.unpublishContent);
-router.get('/scheduled', contentController.getScheduledContent);
 
 // Website Settings
 router.put('/website-settings', requireRole(['Super Admin', 'Pastor']), contentController.updateWebsiteSettings);
 
-// Auto-save and Analytics
+// Auto-save
 router.post('/:id/auto-save', requireRole(CONTENT_EDITORS), contentController.autoSaveContent);
-router.get('/check-duplicate', contentController.checkDuplicateContent);
-router.get('/export', requireRole(['Super Admin', 'Pastor']), contentController.exportContent);
-router.post('/import', requireRole(['Super Admin', 'Pastor']), contentController.importContent);
-router.get('/analytics', contentController.getContentAnalytics);
 
 module.exports = router;

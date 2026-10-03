@@ -13,11 +13,11 @@ router.post('/', hasRole(['Super Admin', 'Pastor', 'Treasurer']), manualPaymentC
 // Get manual payments
 router.get('/', hasRole(['Super Admin', 'Pastor', 'Treasurer']), manualPaymentController.getManualPayments);
 
-// Get payment by receipt number
-router.get('/receipt/:receiptNumber', manualPaymentController.getPaymentByReceipt);
+// Get payment by receipt number — receipts expose member PII + amounts
+router.get('/receipt/:receiptNumber', hasRole(['Super Admin', 'Pastor', 'Treasurer']), manualPaymentController.getPaymentByReceipt);
 
 // Generate virtual receipt
-router.get('/receipt/:receiptNumber/generate', manualPaymentController.generateVirtualReceipt);
+router.get('/receipt/:receiptNumber/generate', hasRole(['Super Admin', 'Pastor', 'Treasurer']), manualPaymentController.generateVirtualReceipt);
 
 // Update manual payment
 router.put('/:id', hasRole(['Super Admin', 'Pastor', 'Treasurer']), manualPaymentController.updateManualPayment);
