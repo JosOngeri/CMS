@@ -75,7 +75,7 @@ INSERT INTO settings (key, value, value_type, category, label, description, is_p
   
   -- Feature Flags
   ('FEATURE_SETTINGS_USE_ALTERNATIVE', 'false', 'boolean', 'feature-flags', 'Settings Alternative UI', 'Use alternative settings interface', false, false)
-ON CONFLICT (key) DO NOTHING;
+ON CONFLICT (key, church_id) DO NOTHING;
 
 -- Create a function to update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()

@@ -13,13 +13,23 @@ jest.mock('../../../config/database', () => ({
   query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
 }));
 
+jest.mock('../../../services/IdentityService', () => ({
+  getIdentity: jest.fn(),
+  invalidateIdentityCache: jest.fn(),
+}));
+
 const request  = require('supertest');
-const app      = require('../../../server');
+const app      = require('../../../app');
 const db       = require('../../../config/database');
-const { createAdminToken, createMemberToken, seedTestDocument } = require('../setup/test-helpers');
+const IdentityService = require('../../../services/IdentityService');
+const { createAdminToken, createMemberToken, seedTestDocument, identityFor } = require('../setup/test-helpers');
 
 beforeEach(() => {
   jest.clearAllMocks();
+  IdentityService.getIdentity.mockImplementation((userId) => {
+    const identity = identityFor(userId);
+    return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
+  });
   db.query.mockReset();
   db.pool.query.mockReset();
   db.pool.query.mockResolvedValue({ rows: [], rowCount: 0 });

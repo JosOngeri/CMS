@@ -90,7 +90,10 @@ function csrfTokenMiddleware(req, res, next) {
   // present the request could be cookie-authenticated, so CSRF still applies.
   const authHeader = req.headers.authorization || '';
   const hasSessionCookie = !!(req.cookies && req.cookies.jwt);
-  if (authHeader.startsWith('Bearer ') && !hasSessionCookie) {
+  // x-auth-token clients are header-authenticated like Bearer — not
+  // cookie sessions — so CSRF does not apply to them either.
+  const isHeaderAuthed = authHeader.startsWith('Bearer ') || !!req.headers['x-auth-token'];
+  if (isHeaderAuthed && !hasSessionCookie) {
     return next();
   }
 

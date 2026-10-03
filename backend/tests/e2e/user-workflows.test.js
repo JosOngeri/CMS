@@ -16,7 +16,7 @@ describe('E2E User Workflows', () => {
 
   beforeAll(async () => {
     // Import app after database is ready
-    app = require('../../server');
+    app = require('../../server').app;
     
     // Clean up test data
     await pool.query("DELETE FROM users WHERE email LIKE 'test-%'");

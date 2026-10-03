@@ -3,6 +3,8 @@ Numbered SQL migrations applied in order.
 ## Files
 | File | Purpose |
 |---|---|
+| `001_churches_table.sql` | Core tenancy table — `churches` was only ever created by the legacy `database/migrations/add_tenancy_core.sql`; fresh builds died on the first FK reference. |
+| `002_00_base_schema.sql` | Base application schema — `users`, `roles`, `departments`, `announcements`, `payments`, `sms_*`, `events` (union of legacy `database/schema.sql` + `001_auth_schema.sql`). Sorts before the other `002_*` files. |
 | `002_create_accounts.sql` | — |
 | `002_department_features.sql` | — |
 | `003_add_snapshot_tables.sql` | Snapshot and Rolling Update tables migration |

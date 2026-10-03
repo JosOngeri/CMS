@@ -5,7 +5,10 @@
 -- Add 'used' column to refresh_tokens table if it doesn't exist
 DO $$
 BEGIN
-    IF NOT EXISTS (
+    IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_name = 'refresh_tokens'
+    ) AND NOT EXISTS (
         SELECT 1 FROM information_schema.columns
         WHERE table_name = 'refresh_tokens' AND column_name = 'used'
     ) THEN

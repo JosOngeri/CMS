@@ -35,12 +35,18 @@ jest.mock('../../../utils/emailService.js', () => ({
 }));
 
 // -- Imports -------------------------------------------------------------------
+jest.mock('../../../services/IdentityService', () => ({
+  getIdentity: jest.fn(),
+  invalidateIdentityCache: jest.fn(),
+}));
+
 const request  = require('supertest');
 const bcrypt   = require('bcryptjs');
-const app      = require('../../../server');
+const app      = require('../../../app');
 const db       = require('../../../config/database');
 const { sendEmail } = require('../../../utils/emailService');
-const { createAdminToken, createMemberToken, seedTestUser, TEST_UUIDS } = require('../../setup/test-helpers');
+const IdentityService = require('../../../services/IdentityService');
+const { createAdminToken, createMemberToken, seedTestUser, TEST_UUIDS, identityFor } = require('../setup/test-helpers');
 
 // -- Pre-compute a real bcrypt hash so bcrypt.compare works correctly ----------
 // Cost factor 4 = very fast (~5ms) while still being real bcrypt
@@ -65,6 +71,10 @@ const mockUserRow = (overrides = {}) =>
 
 beforeEach(() => {
   jest.clearAllMocks();
+  IdentityService.getIdentity.mockImplementation((userId) => {
+    const identity = identityFor(userId);
+    return identity ? Promise.resolve(identity) : Promise.reject(new Error('User not found'));
+  });
   db.query.mockReset();
   db.pool.query.mockReset();
   // Restore default stubs after resetAllMocks

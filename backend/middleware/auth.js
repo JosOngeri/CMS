@@ -25,7 +25,10 @@ const extractToken = (req) => {
   const authHeader = req.headers['authorization'];
   const headerToken = authHeader && authHeader.split(' ')[1];
   const cookieToken = req.cookies?.jwt;
-  return headerToken || cookieToken;
+  // x-auth-token is in the CORS allowlist for legacy/API clients; it goes
+  // through the same verification as Bearer — this is only how it's carried.
+  const legacyHeader = req.headers['x-auth-token'];
+  return headerToken || cookieToken || legacyHeader;
 };
 
 /**

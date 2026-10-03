@@ -11,6 +11,12 @@ process.env.DB_NAME = process.env.TEST_DB_NAME || 'msabato_test';
 process.env.DB_USER = process.env.TEST_DB_USER || process.env.DB_USER || 'postgres';
 process.env.DB_PASSWORD = process.env.TEST_DB_PASSWORD || process.env.DB_PASSWORD || 'postgres';
 
+// Test tokens must verify against the SAME secret the app uses. Without this
+// the app falls back to .env's JWT_SECRET and every signed test token 401s.
+// Set before any test file requires the app; dotenv won't override it.
+process.env.JWT_SECRET = 'test-jwt-secret-for-msabato-testing';
+process.env.REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'test-refresh-secret-key';
+
 // Disable rate limiting for tests
 process.env.DISABLE_RATE_LIMITING = 'true';
 

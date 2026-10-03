@@ -19,29 +19,30 @@ jest.mock('../../../config/database', () => ({
 }));
 
 const request = require('supertest');
-const app     = require('../../../server');
+const app     = require('../../../app');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Health Check – GET /health', () => {
+describe('Health Check – GET /api/health', () => {
   it('returns HTTP 200', async () => {
-    const res = await request(app).get('/health');
+    const res = await request(app).get('/api/health');
     expect(res.status).toBe(200);
   });
 
-  it('returns JSON body { status: "ok", message: "Msabato CMS API is running" }', async () => {
-    const res = await request(app).get('/health');
-    expect(res.body).toEqual({ status: 'ok', message: 'Msabato CMS API is running' });
+  it('returns JSON body with status + database fields', async () => {
+    const res = await request(app).get('/api/health');
+    expect(res.body).toMatchObject({ status: 'healthy', database: 'connected' });
+    expect(res.body.timestamp).toBeDefined();
   });
 
   it('responds with Content-Type application/json', async () => {
-    const res = await request(app).get('/health');
+    const res = await request(app).get('/api/health');
     expect(res.headers['content-type']).toMatch(/application\/json/);
   });
 
   it('does NOT require an auth token', async () => {
     // Health check is public – no x-auth-token header supplied
-    const res = await request(app).get('/health');
+    const res = await request(app).get('/api/health');
     expect(res.status).not.toBe(401);
     expect(res.status).not.toBe(403);
   });

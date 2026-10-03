@@ -36,8 +36,28 @@ WHERE n.type_id IS NULL AND n.type = nt.name;
 
 CREATE INDEX IF NOT EXISTS idx_notifications_type_id ON notifications(type_id);
 
--- notification_logs joins type_id too
+-- notification_logs joins type_id too. The table was only ever created by
+-- legacy `database/migrations/add_notifications_advanced_features.sql`, so
+-- create it here first (fresh DBs), then add type_id.
+CREATE TABLE IF NOT EXISTS notification_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  notification_type VARCHAR(50),
+  channel VARCHAR(50),
+  status VARCHAR(20) DEFAULT 'sent',
+  title VARCHAR(255),
+  message TEXT,
+  error_message TEXT,
+  metadata JSONB,
+  church_id UUID,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 ALTER TABLE notification_logs ADD COLUMN IF NOT EXISTS type_id UUID;
+
+CREATE INDEX IF NOT EXISTS idx_notification_logs_user ON notification_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_notification_logs_status ON notification_logs(status);
+CREATE INDEX IF NOT EXISTS idx_notification_logs_created ON notification_logs(created_at);
 
 -- Per-user channel preferences
 CREATE TABLE IF NOT EXISTS notification_preferences (
