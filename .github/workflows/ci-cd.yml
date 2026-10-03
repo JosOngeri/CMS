@@ -129,12 +129,13 @@ jobs:
     
     - name: Test Docker image
       run: |
-        # host.docker.internal lets the container reach the job's Postgres
-        # service on the runner's port 5432.
-        docker run -d -p 5005:5005 \
-          --add-host=host.docker.internal:host-gateway \
+        # --network host lets the container reach the job's Postgres service
+        # on localhost AND keeps DB_HOST=localhost, because config/database.js
+        # force-enables SSL for non-localhost hosts in production mode (the CI
+        # postgres service has no TLS).
+        docker run -d --network host \
           -e NODE_ENV=production \
-          -e DB_HOST=host.docker.internal \
+          -e DB_HOST=localhost \
           -e DB_PORT=5432 \
           -e DB_NAME=kmaincms \
           -e DB_USER=postgres \
