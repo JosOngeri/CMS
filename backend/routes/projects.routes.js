@@ -29,7 +29,7 @@ router.delete('/:id/milestones/:milestoneId', requireRole(['Super Admin', 'Pasto
 
 // Project contributions
 router.get('/:id/contributions', projectsController.getProjectContributions);
-router.post('/:id/contributions', projectsController.addContribution);
+router.post('/:id/contributions', requireRole(['Super Admin', 'Pastor', 'Treasurer', 'Department Head']), projectsController.addContribution);
 
 // Project analytics
 router.get('/:id/analytics', projectsController.getProjectAnalytics);

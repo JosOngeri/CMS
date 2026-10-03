@@ -4,10 +4,26 @@ const { pool } = require('../config/database');
  * Base Repository for standardized data access
  */
 class BaseRepository {
+  // Repository-layer pagination guard — hard LIMIT ceiling mirroring
+  // middleware/pagination.js maxLimit so callers can't request unbounded rows.
+  static MAX_LIMIT = 100;
+
   constructor(tableName) {
     this.tableName = tableName;
     this.pool = pool;
     this._columnCache = null;
+  }
+
+  /**
+   * Clamps a caller-supplied LIMIT into [1, MAX_LIMIT].
+   * Repositories must route every user-influenced limit through this to
+   * prevent memory exhaustion when a request bypasses the pagination
+   * middleware: `params.push(this.clampLimit(options.limit))`.
+   */
+  clampLimit(limit, maxLimit = BaseRepository.MAX_LIMIT) {
+    const parsed = parseInt(limit, 10);
+    if (Number.isNaN(parsed)) return maxLimit;
+    return Math.min(Math.max(parsed, 1), maxLimit);
   }
 
   async getTableColumns() {

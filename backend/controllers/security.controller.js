@@ -106,14 +106,15 @@ class SecurityController extends BaseController {
   /**
    * Unblock an IP address
    * @param {Object} req - Express request object
-   * @param {Object} req.params - Route parameters
-   * @param {string} req.params.ipAddress - IP address to unblock
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.ipAddress - IP address to unblock (body, not
+   *   params — CIDR values like 10.0.0.0/8 can't survive a path segment)
    * @param {Object} res - Express response object
    * @returns {Promise<void>}
    */
   async unblockIP(req, res) {
     try {
-      const ipAddress = req.params.ipAddress;
+      const ipAddress = req.body.ipAddress || req.params.ipAddress;
 
       await SecurityRepository.unblockIP(ipAddress, req.user.church_id);
 
@@ -236,7 +237,7 @@ class SecurityController extends BaseController {
   async getAnalytics(req, res) {
     try {
       const analytics = await SecurityRepository.getSecurityAnalytics(req.user.church_id);
-      const recentEvents = await SecurityRepository.getRecentSecurityEvents();
+      const recentEvents = await SecurityRepository.getRecentSecurityEvents(req.user.church_id);
 
       return this.success(res, { analytics, recentEvents });
     } catch (error) {

@@ -24,6 +24,32 @@ class ReconciliationRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  /**
+   * Push a batch of relay transactions atomically — either all land in the
+   * queue or none do. Each row is deduplicated on transaction_code.
+   */
+  async pushTransactions(transactions) {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      for (const tx of transactions) {
+        await client.query(
+          `INSERT INTO reconciliation_queue
+           (id, church_id, transaction_code, sender_name, amount, source_type)
+           VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
+           ON CONFLICT (transaction_code) DO NOTHING`,
+          [tx.church_id, tx.transaction_code, tx.sender_name, tx.amount, tx.source_type]
+        );
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async getPendingTransactions(churchId) {
     const query = `
       SELECT * FROM reconciliation_queue

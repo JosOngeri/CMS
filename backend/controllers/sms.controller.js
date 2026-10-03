@@ -576,7 +576,7 @@ class SMSController extends BaseController {
     try {
       const templateId = req.params.id;
 
-      const analytics = await SMSRepository.getTemplateAnalytics(templateId);
+      const analytics = await SMSRepository.getTemplateAnalytics(templateId, req.user.church_id);
 
       this.success(res, { analytics });
     } catch (error) {

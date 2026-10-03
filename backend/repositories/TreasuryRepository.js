@@ -950,18 +950,14 @@ class TreasuryRepository extends BaseRepository {
   // Fixed Assets CRUD
   // ---------------------------------------------------------------------------
 
-  async getFixedAssets(churchId = null) {
-    let query = 'SELECT * FROM fixed_assets WHERE 1=1';
-    const params = [];
-    if (churchId) {
-      query += ' AND church_id = $1';
-      params.push(churchId);
-    }
-    const result = await this.pool.query(query, params);
+  async getFixedAssets(churchId) {
+    if (!churchId) throw new Error('getFixedAssets: churchId is required');
+    const result = await this.pool.query('SELECT * FROM fixed_assets WHERE church_id = $1', [churchId]);
     return result.rows;
   }
 
-  async createFixedAsset(data, churchId = null) {
+  async createFixedAsset(data, churchId) {
+    if (!churchId) throw new Error('createFixedAsset: churchId is required');
     const result = await this.pool.query(
       'INSERT INTO fixed_assets (asset_name, asset_code, purchase_price, purchase_date, depreciation_rate, location, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, churchId]
@@ -969,19 +965,20 @@ class TreasuryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateFixedAsset(id, data, churchId = null) {
+  async updateFixedAsset(id, data, churchId) {
+    if (!churchId) throw new Error('updateFixedAsset: churchId is required');
     const result = await this.pool.query(
-      `UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), depreciation_rate = COALESCE($5, depreciation_rate), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9${churchId ? ' AND church_id = $10' : ''} RETURNING *`,
-      churchId ? [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id, churchId]
-               : [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id]
+      `UPDATE fixed_assets SET asset_name = COALESCE($1, asset_name), asset_code = COALESCE($2, asset_code), purchase_price = COALESCE($3, purchase_price), purchase_date = COALESCE($4, purchase_date), depreciation_rate = COALESCE($5, depreciation_rate), location = COALESCE($6, location), current_value = COALESCE($7, current_value), status = COALESCE($8, status) WHERE id = $9 AND church_id = $10 RETURNING *`,
+      [data.assetName, data.assetCode, data.purchasePrice, data.purchaseDate, data.depreciationRate, data.location, data.currentValue, data.status, id, churchId]
     );
     return result.rows[0];
   }
 
-  async deleteFixedAsset(id, churchId = null) {
+  async deleteFixedAsset(id, churchId) {
+    if (!churchId) throw new Error('deleteFixedAsset: churchId is required');
     await this.pool.query(
-      `DELETE FROM fixed_assets WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
-      churchId ? [id, churchId] : [id]
+      'DELETE FROM fixed_assets WHERE id = $1 AND church_id = $2',
+      [id, churchId]
     );
   }
 

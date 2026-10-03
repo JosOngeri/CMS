@@ -5,10 +5,13 @@ const BaseController = require('./BaseController');
 const DocumentsRepository = require('../repositories/DocumentsRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 
-// Configure multer for file uploads
+// Absolute upload dir shared by multer disk uploads and uploadToCloud —
+// 'uploads/documents/' alone was CWD-relative and could land elsewhere.
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads', 'documents');
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/documents/');
+    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    cb(null, UPLOAD_DIR);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -187,7 +190,7 @@ class DocumentsController extends BaseController {
 
       // Save old content to document_versions before overwriting
       if (currentDocument.file_path) {
-        const lastVersion = await DocumentsRepository.getLastVersionNumber(req.params.id);
+        const lastVersion = await DocumentsRepository.getLastVersionNumber(req.params.id, churchId);
         await DocumentsRepository.createDocumentVersion(
           req.params.id,
           currentDocument.file_path,
@@ -320,7 +323,7 @@ class DocumentsController extends BaseController {
       // so the stored URL actually serves the file. The storage_provider
       // field is kept on the record for a future real cloud backend.
       const buffer = Buffer.from(String(file_content).replace(/^data:[^;]+;base64,/, ''), 'base64');
-      const dir = path.join(__dirname, '..', 'uploads', 'documents');
+      const dir = UPLOAD_DIR;
       fs.mkdirSync(dir, { recursive: true });
       const storage_key = `${Date.now()}-${Math.round(Math.random() * 1e9)}-${path.basename(file_name || 'file')}`;
       fs.writeFileSync(path.join(dir, storage_key), buffer);
@@ -424,8 +427,9 @@ class DocumentsController extends BaseController {
   async getVersionHistory(req, res) {
     try {
       const { documentId } = req.params;
+      const churchId = req.user.church_id;
 
-      const versions = await DocumentsRepository.getVersionHistory(documentId);
+      const versions = await DocumentsRepository.getVersionHistory(documentId, churchId);
 
       res.json({ success: true, data: versions });
     } catch (error) {
@@ -451,7 +455,7 @@ class DocumentsController extends BaseController {
       const churchId = req.user.church_id;
 
       // Get the version to rollback to
-      const version = await DocumentsRepository.getVersionById(versionId, documentId);
+      const version = await DocumentsRepository.getVersionById(versionId, documentId, churchId);
 
       if (!version) {
         return res.status(404).json({ success: false, error: 'Version not found' });

@@ -36,16 +36,17 @@ class ProjectsController extends BaseController {
   async getProjectById(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
 
-      const project = await ProjectsRepository.getWithDetails(id);
+      const project = await ProjectsRepository.getWithDetails(id, churchId);
 
       if (!project) {
         return ResponseHandler.notFound(res, 'Project not found');
       }
 
       // Get additional data for enhanced response
-      const milestones = await ProjectsRepository.getProjectMilestones(id);
-      const contributions = await ProjectsRepository.getProjectContributions(id);
+      const milestones = await ProjectsRepository.getProjectMilestones(id, churchId);
+      const contributions = await ProjectsRepository.getProjectContributions(id, churchId);
       
       // Use ProjectService for calculated values
       const projectSummary = ProjectService.getProjectSummary(project, milestones, contributions);
@@ -127,8 +128,10 @@ class ProjectsController extends BaseController {
         })));
       }
 
+      const churchId = req.user.church_id;
+
       // Validate status transition if changing status
-      const currentProject = await ProjectsRepository.getWithDetails(id);
+      const currentProject = await ProjectsRepository.getWithDetails(id, churchId);
       if (currentProject && status && currentProject.status !== status) {
         const isValidTransition = ProjectService.isValidStatusTransition(currentProject.status, status);
         if (!isValidTransition) {
@@ -150,7 +153,7 @@ class ProjectsController extends BaseController {
         department_id,
         fund_id,
         is_active
-      });
+      }, churchId);
 
       if (!project) {
         return ResponseHandler.notFound(res, 'Project not found');
@@ -167,7 +170,7 @@ class ProjectsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const project = await ProjectsRepository.delete(id);
+      const project = await ProjectsRepository.delete(id, req.user.church_id);
 
       if (!project) {
         return ResponseHandler.notFound(res, 'Project not found');
@@ -183,7 +186,7 @@ class ProjectsController extends BaseController {
   async getProjectMilestones(req, res) {
     try {
       const { id } = req.params;
-      const milestones = await ProjectsRepository.getProjectMilestones(id);
+      const milestones = await ProjectsRepository.getProjectMilestones(id, req.user.church_id);
       
       // Add progress calculation using ProjectService
       const progress = ProjectService.calculateProgress(milestones);
@@ -213,7 +216,11 @@ class ProjectsController extends BaseController {
 
       const milestone = await ProjectsRepository.createMilestone(id, {
         title, description, due_date, status: status || 'pending'
-      });
+      }, req.user.church_id);
+
+      if (!milestone) {
+        return ResponseHandler.notFound(res, 'Project not found');
+      }
 
       return res.status(201).json({ success: true, milestone  });
     } catch (error) {
@@ -227,8 +234,10 @@ class ProjectsController extends BaseController {
       const { id, milestoneId } = req.params;
       const { title, description, due_date, status, completed_at } = req.body;
 
+      const churchId = req.user.church_id;
+
       // Get current milestone for validation
-      const currentMilestone = await ProjectsRepository.getMilestoneById(milestoneId);
+      const currentMilestone = await ProjectsRepository.getMilestoneById(milestoneId, id, churchId);
       if (currentMilestone && status && currentMilestone.status !== status) {
         const validation = ProjectService.validateMilestoneTransition(
           currentMilestone.status, 
@@ -243,9 +252,13 @@ class ProjectsController extends BaseController {
         }
       }
 
-      const milestone = await ProjectsRepository.updateMilestone(milestoneId, {
+      const milestone = await ProjectsRepository.updateMilestone(milestoneId, id, {
         title, description, due_date, status, completed_at
-      });
+      }, churchId);
+
+      if (!milestone) {
+        return ResponseHandler.notFound(res, 'Milestone not found');
+      }
 
       return res.status(200).json({ success: true, milestone  });
     } catch (error) {
@@ -256,8 +269,8 @@ class ProjectsController extends BaseController {
 
   async deleteMilestone(req, res) {
     try {
-      const { milestoneId } = req.params;
-      await ProjectsRepository.deleteMilestone(milestoneId);
+      const { id, milestoneId } = req.params;
+      await ProjectsRepository.deleteMilestone(milestoneId, id, req.user.church_id);
 
       return ResponseHandler.success(res, null, 'Milestone deleted successfully');
     } catch (error) {
@@ -269,7 +282,7 @@ class ProjectsController extends BaseController {
   async getProjectContributions(req, res) {
     try {
       const { id } = req.params;
-      const contributions = await ProjectsRepository.getProjectContributions(id);
+      const contributions = await ProjectsRepository.getProjectContributions(id, req.user.church_id);
 
       return res.status(200).json({ success: true, contributions  });
     } catch (error) {
@@ -284,7 +297,11 @@ class ProjectsController extends BaseController {
       const { amount, contributor_id, date, notes } = req.body;
       const contribution = await ProjectsRepository.addContribution(id, {
         amount, contributor_id, date, notes
-      });
+      }, req.user.church_id);
+
+      if (!contribution) {
+        return ResponseHandler.notFound(res, 'Project not found');
+      }
 
       return res.status(201).json({ success: true, contribution  });
     } catch (error) {
@@ -296,18 +313,19 @@ class ProjectsController extends BaseController {
   async getProjectAnalytics(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
 
-      const project = await ProjectsRepository.getWithDetails(id);
+      const project = await ProjectsRepository.getWithDetails(id, churchId);
       if (!project) {
         return ResponseHandler.notFound(res, 'Project not found');
       }
 
-      const milestones = await ProjectsRepository.getProjectMilestones(id);
-      const contributions = await ProjectsRepository.getProjectContributions(id);
+      const milestones = await ProjectsRepository.getProjectMilestones(id, churchId);
+      const contributions = await ProjectsRepository.getProjectContributions(id, churchId);
 
       // Use ProjectService for comprehensive analytics
       const analytics = {
-        ...await ProjectsRepository.getProjectAnalytics(id),
+        ...await ProjectsRepository.getProjectAnalytics(id, churchId),
         progress: ProjectService.calculateProgress(milestones),
         financial: ProjectService.calculateFinancialStatus(
           parseFloat(project.target_amount || 0),
@@ -333,9 +351,10 @@ class ProjectsController extends BaseController {
     try {
       const { id } = req.params;
       const { status } = req.body;
+      const churchId = req.user.church_id;
 
       // Validate status transition
-      const currentProject = await ProjectsRepository.getWithDetails(id);
+      const currentProject = await ProjectsRepository.getWithDetails(id, churchId);
       if (currentProject && currentProject.status !== status) {
         const isValidTransition = ProjectService.isValidStatusTransition(currentProject.status, status);
         if (!isValidTransition) {
@@ -343,7 +362,7 @@ class ProjectsController extends BaseController {
         }
       }
 
-      const project = await ProjectsRepository.updateProjectStatus(id, status);
+      const project = await ProjectsRepository.updateProjectStatus(id, status, churchId);
 
       return res.status(200).json({ success: true, project  });
     } catch (error) {

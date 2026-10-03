@@ -255,26 +255,32 @@ class SmsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getTemplateAnalytics(templateId) {
+  async getTemplateAnalytics(templateId, churchId) {
+    if (!churchId) throw new Error('getTemplateAnalytics: churchId is required');
+    // sms_logs has no church_id — scope through the sender's user record
     const query = `
       SELECT
         COUNT(*) as usage_count,
-        COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_count,
-        ROUND(COUNT(CASE WHEN status = 'delivered' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 2) as success_rate
-      FROM sms_logs
-      WHERE template_id = $1
+        COUNT(CASE WHEN sl.status = 'delivered' THEN 1 END) as delivered_count,
+        ROUND(COUNT(CASE WHEN sl.status = 'delivered' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 2) as success_rate
+      FROM sms_logs sl
+      WHERE sl.template_id = $1
+      AND EXISTS (SELECT 1 FROM users u WHERE u.id = sl.sender_id AND u.church_id = $2)
     `;
-    const result = await this.pool.query(query, [templateId]);
+    const result = await this.pool.query(query, [templateId, churchId]);
     return result.rows[0];
   }
 
-  async getTemplateVersions(templateId) {
+  async getTemplateVersions(templateId, churchId) {
+    if (!churchId) throw new Error('getTemplateVersions: churchId is required');
+    // sms_templates is global; scope via the version author's church
     const query = `
-      SELECT * FROM sms_template_versions
-      WHERE template_id = $1
-      ORDER BY created_at DESC
+      SELECT tv.* FROM sms_template_versions tv
+      WHERE tv.template_id = $1
+      AND EXISTS (SELECT 1 FROM users u WHERE u.id = tv.created_by AND u.church_id = $2)
+      ORDER BY tv.created_at DESC
     `;
-    const result = await this.pool.query(query, [templateId]);
+    const result = await this.pool.query(query, [templateId, churchId]);
     return result.rows;
   }
 

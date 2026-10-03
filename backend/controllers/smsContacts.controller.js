@@ -301,7 +301,14 @@ class SMSContactsController extends BaseController {
       `;
       const result = await this.db.query(query, [churchId]);
 
-      // Convert to CSV
+      // RFC 4180 escaping: double internal quotes, wrap in quotes.
+      // Leading = + - @ prefixed with ' to neutralize Excel formula injection.
+      const csvCell = (value) => {
+        let s = String(value ?? '');
+        if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+
       const headers = ['Name', 'Phone', 'Email', 'Source', 'Status', 'Group'];
       const csvRows = [headers.join(',')];
 
@@ -313,7 +320,7 @@ class SMSContactsController extends BaseController {
           row.source,
           row.status,
           row.group_name || ''
-        ].map(value => `"${value}"`);
+        ].map(csvCell);
         csvRows.push(values.join(','));
       });
 

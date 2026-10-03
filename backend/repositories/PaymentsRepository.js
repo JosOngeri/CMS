@@ -263,7 +263,8 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getPledgesWithFilters(filters) {
-    const { memberId, status, pledgeType } = filters;
+    const { memberId, status, pledgeType, churchId } = filters;
+    if (!churchId) throw new Error('getPledgesWithFilters: churchId is required');
 
     let query = `
       SELECT p.*,
@@ -272,10 +273,10 @@ class PaymentsRepository extends BaseRepository {
       FROM pledges p
       LEFT JOIN members m ON p.member_id = m.id
       LEFT JOIN pledge_payments pp ON p.id = pp.pledge_id
-      WHERE 1=1
+      WHERE p.church_id = $1
     `;
-    const params = [];
-    let paramCount = 0;
+    const params = [churchId];
+    let paramCount = 1;
 
     if (memberId) {
       paramCount++;
@@ -301,22 +302,28 @@ class PaymentsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createPledge(memberId, amount, pledgeType, startDate, endDate, frequency) {
+  async createPledge(memberId, amount, pledgeType, startDate, endDate, frequency, churchId) {
+    if (!churchId) throw new Error('createPledge: churchId is required');
     const result = await this.pool.query(
-      `INSERT INTO pledges (member_id, amount, pledge_type, start_date, end_date, frequency)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO pledges (member_id, amount, pledge_type, start_date, end_date, frequency, church_id)
+       SELECT $1, $2, $3, $4, $5, $6, $7
+       WHERE EXISTS (SELECT 1 FROM members m WHERE m.id = $1 AND m.church_id = $7)
        RETURNING *`,
-      [memberId, amount, pledgeType, startDate, endDate, frequency]
+      [memberId, amount, pledgeType, startDate, endDate, frequency, churchId]
     );
     return result.rows[0];
   }
 
-  async addPledgePayment(pledgeId, paymentId, amount) {
+  async addPledgePayment(pledgeId, paymentId, amount, churchId) {
+    if (!churchId) throw new Error('addPledgePayment: churchId is required');
+    // Both the pledge and the payment must belong to the caller's church.
     const result = await this.pool.query(
       `INSERT INTO pledge_payments (pledge_id, payment_id, amount)
-       VALUES ($1, $2, $3)
+       SELECT $1, $2, $3
+       WHERE EXISTS (SELECT 1 FROM pledges pl WHERE pl.id = $1 AND pl.church_id = $4)
+         AND EXISTS (SELECT 1 FROM payments py WHERE py.id = $2 AND py.church_id = $4)
        RETURNING *`,
-      [pledgeId, paymentId, amount]
+      [pledgeId, paymentId, amount, churchId]
     );
     return result.rows[0];
   }
@@ -496,14 +503,11 @@ class PaymentsRepository extends BaseRepository {
     await this.pool.query(`DELETE FROM payments WHERE ${where}`, params);
   }
 
-  async updatePledge(id, data, churchId = null) {
+  async updatePledge(id, data, churchId) {
+    if (!churchId) throw new Error('updatePledge: churchId is required');
     const { amount, pledgeType, startDate, endDate, frequency, status } = data;
-    const params = [amount, pledgeType, startDate, endDate, frequency, status, id];
-    let where = 'id = $7';
-    if (churchId) {
-      where += ' AND church_id = $8';
-      params.push(churchId);
-    }
+    const params = [amount, pledgeType, startDate, endDate, frequency, status, id, churchId];
+    const where = 'id = $7 AND church_id = $8';
     const result = await this.pool.query(
       `UPDATE pledges SET amount = COALESCE($1, amount), pledge_type = COALESCE($2, pledge_type), start_date = COALESCE($3, start_date), end_date = COALESCE($4, end_date), frequency = COALESCE($5, frequency), status = COALESCE($6, status) WHERE ${where} RETURNING *`,
       params
@@ -511,23 +515,15 @@ class PaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async deletePledge(id, churchId = null) {
-    const params = [id];
-    let where = 'id = $1';
-    if (churchId) {
-      where += ' AND church_id = $2';
-      params.push(churchId);
-    }
-    await this.pool.query(`DELETE FROM pledges WHERE ${where}`, params);
+  async deletePledge(id, churchId) {
+    if (!churchId) throw new Error('deletePledge: churchId is required');
+    await this.pool.query('DELETE FROM pledges WHERE id = $1 AND church_id = $2', [id, churchId]);
   }
 
-  async getPledgePayments(pledgeId, churchId = null) {
-    const params = [pledgeId];
-    let where = 'pp.pledge_id = $1';
-    if (churchId) {
-      where += ' AND pl.church_id = $2';
-      params.push(churchId);
-    }
+  async getPledgePayments(pledgeId, churchId) {
+    if (!churchId) throw new Error('getPledgePayments: churchId is required');
+    const params = [pledgeId, churchId];
+    const where = 'pp.pledge_id = $1 AND pl.church_id = $2';
     const result = await this.pool.query(
       `SELECT pp.*, p.payment_date, p.amount as payment_amount
        FROM pledge_payments pp

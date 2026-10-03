@@ -56,7 +56,8 @@ class ProjectsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getWithDetails(id) {
+  async getWithDetails(id, churchId) {
+    if (!churchId) throw new Error('getWithDetails: churchId is required');
     const query = `
       SELECT p.*,
              d.name as department_name,
@@ -66,9 +67,9 @@ class ProjectsRepository extends BaseRepository {
       LEFT JOIN departments d ON p.department_id = d.id
       LEFT JOIN funds f ON p.fund_id = f.id
       LEFT JOIN users u ON p.assigned_to = u.id
-      WHERE p.id = $1
+      WHERE p.id = $1 AND p.church_id = $2
     `;
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 
@@ -92,7 +93,8 @@ class ProjectsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateProject(id, projectData) {
+  async updateProject(id, projectData, churchId) {
+    if (!churchId) throw new Error('updateProject: churchId is required');
     const {
       project_name, description, project_type, start_date, end_date,
       target_amount, current_amount, status, priority,
@@ -115,92 +117,114 @@ class ProjectsRepository extends BaseRepository {
           fund_id = COALESCE($12, fund_id),
           is_active = COALESCE($13, is_active),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $14
+      WHERE id = $14 AND church_id = $15
       RETURNING *
     `;
     const result = await this.pool.query(query, [
       project_name, description, project_type, start_date, end_date,
       target_amount, current_amount, status, priority,
-      assigned_to, department_id, fund_id, is_active, id
+      assigned_to, department_id, fund_id, is_active, id, churchId
     ]);
     return result.rows[0];
   }
 
-  async delete(id) {
-    const query = 'DELETE FROM projects WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM projects WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 
-  async getProjectMilestones(projectId) {
-    const query = 'SELECT * FROM project_milestones WHERE project_id = $1 ORDER BY due_date ASC';
-    const result = await this.pool.query(query, [projectId]);
+  // Child tables (project_milestones, project_contributions) have church_id
+  // but legacy rows may be NULL — scope through the parent project instead.
+  async getProjectMilestones(projectId, churchId) {
+    if (!churchId) throw new Error('getProjectMilestones: churchId is required');
+    const query = `SELECT pm.* FROM project_milestones pm
+      WHERE pm.project_id = $1
+      AND EXISTS (SELECT 1 FROM projects p WHERE p.id = pm.project_id AND p.church_id = $2)
+      ORDER BY pm.due_date ASC`;
+    const result = await this.pool.query(query, [projectId, churchId]);
     return result.rows;
   }
 
-  async getMilestoneById(milestoneId) {
-    const query = 'SELECT * FROM project_milestones WHERE id = $1';
-    const result = await this.pool.query(query, [milestoneId]);
+  async getMilestoneById(milestoneId, projectId, churchId) {
+    if (!churchId) throw new Error('getMilestoneById: churchId is required');
+    const query = `SELECT pm.* FROM project_milestones pm
+      WHERE pm.id = $1 AND pm.project_id = $2
+      AND EXISTS (SELECT 1 FROM projects p WHERE p.id = pm.project_id AND p.church_id = $3)`;
+    const result = await this.pool.query(query, [milestoneId, projectId, churchId]);
     return result.rows[0];
   }
 
-  async createMilestone(projectId, milestoneData) {
+  async createMilestone(projectId, milestoneData, churchId) {
+    if (!churchId) throw new Error('createMilestone: churchId is required');
     const { title, description, due_date, status } = milestoneData;
     const query = `
-      INSERT INTO project_milestones (project_id, title, description, due_date, status)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO project_milestones (project_id, title, description, due_date, status, church_id)
+      SELECT $1, $2, $3, $4, $5, $6
+      WHERE EXISTS (SELECT 1 FROM projects p WHERE p.id = $1 AND p.church_id = $6)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [projectId, title, description, due_date, status || 'pending']);
+    const result = await this.pool.query(query, [projectId, title, description, due_date, status || 'pending', churchId]);
     return result.rows[0];
   }
 
-  async updateMilestone(milestoneId, milestoneData) {
+  async updateMilestone(milestoneId, projectId, milestoneData, churchId) {
+    if (!churchId) throw new Error('updateMilestone: churchId is required');
     const { title, description, due_date, status, completed_at } = milestoneData;
     const query = `
-      UPDATE project_milestones
+      UPDATE project_milestones pm
       SET title = COALESCE($1, title),
           description = COALESCE($2, description),
           due_date = COALESCE($3, due_date),
           status = COALESCE($4, status),
           completed_at = COALESCE($5, completed_at),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $6
-      RETURNING *
+      WHERE pm.id = $6 AND pm.project_id = $7
+      AND EXISTS (SELECT 1 FROM projects p WHERE p.id = pm.project_id AND p.church_id = $8)
+      RETURNING pm.*
     `;
-    const result = await this.pool.query(query, [title, description, due_date, status, completed_at, milestoneId]);
+    const result = await this.pool.query(query, [title, description, due_date, status, completed_at, milestoneId, projectId, churchId]);
     return result.rows[0];
   }
 
-  async deleteMilestone(milestoneId) {
-    const query = 'DELETE FROM project_milestones WHERE id = $1';
-    await this.pool.query(query, [milestoneId]);
+  async deleteMilestone(milestoneId, projectId, churchId) {
+    if (!churchId) throw new Error('deleteMilestone: churchId is required');
+    const query = `DELETE FROM project_milestones pm
+      WHERE pm.id = $1 AND pm.project_id = $2
+      AND EXISTS (SELECT 1 FROM projects p WHERE p.id = pm.project_id AND p.church_id = $3)`;
+    await this.pool.query(query, [milestoneId, projectId, churchId]);
   }
 
-  async getProjectContributions(projectId) {
+  async getProjectContributions(projectId, churchId) {
+    if (!churchId) throw new Error('getProjectContributions: churchId is required');
     const query = `
       SELECT pc.*, u.first_name || ' ' || u.last_name as contributor_name
       FROM project_contributions pc
       LEFT JOIN users u ON pc.contributor_id = u.id
       WHERE pc.project_id = $1
+      AND EXISTS (SELECT 1 FROM projects p WHERE p.id = pc.project_id AND p.church_id = $2)
       ORDER BY pc.date DESC
     `;
-    const result = await this.pool.query(query, [projectId]);
+    const result = await this.pool.query(query, [projectId, churchId]);
     return result.rows;
   }
 
-  async addContribution(projectId, contributionData) {
+  async addContribution(projectId, contributionData, churchId) {
+    if (!churchId) throw new Error('addContribution: churchId is required');
     const { amount, contributor_id, date, notes } = contributionData;
     const query = `
-      INSERT INTO project_contributions (project_id, amount, contributor_id, date, notes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO project_contributions (project_id, amount, contributor_id, date, notes, church_id)
+      SELECT $1, $2, $3, $4, $5, $6
+      WHERE EXISTS (SELECT 1 FROM projects p WHERE p.id = $1 AND p.church_id = $6)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [projectId, amount, contributor_id, date || new Date().toISOString(), notes]);
+    const result = await this.pool.query(query, [projectId, amount, contributor_id, date || new Date().toISOString(), notes, churchId]);
     return result.rows[0];
   }
 
-  async getProjectAnalytics(projectId) {
+  async getProjectAnalytics(projectId, churchId) {
+    if (!churchId) throw new Error('getProjectAnalytics: churchId is required');
     const query = `
       SELECT
         p.*,
@@ -212,21 +236,22 @@ class ProjectsRepository extends BaseRepository {
       FROM projects p
       LEFT JOIN project_contributions pc ON p.id = pc.project_id
       LEFT JOIN project_milestones pm ON p.id = pm.project_id
-      WHERE p.id = $1
+      WHERE p.id = $1 AND p.church_id = $2
       GROUP BY p.id
     `;
-    const result = await this.pool.query(query, [projectId]);
+    const result = await this.pool.query(query, [projectId, churchId]);
     return result.rows[0];
   }
 
-  async updateProjectStatus(projectId, status) {
+  async updateProjectStatus(projectId, status, churchId) {
+    if (!churchId) throw new Error('updateProjectStatus: churchId is required');
     const query = `
       UPDATE projects
       SET status = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
+      WHERE id = $2 AND church_id = $3
       RETURNING *
     `;
-    const result = await this.pool.query(query, [status, projectId]);
+    const result = await this.pool.query(query, [status, projectId, churchId]);
     return result.rows[0];
   }
 }

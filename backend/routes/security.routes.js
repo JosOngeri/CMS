@@ -15,6 +15,8 @@ router.get('/failed-attempts', requireRole(['Super Admin']), securityController.
 // IP blocking
 router.get('/blocked-ips', requireRole(['Super Admin']), securityController.getBlockedIPs);
 router.post('/block-ip', requireRole(['Super Admin']), securityController.blockIP);
+// Body variant first — CIDR ranges contain '/' and can't be path params
+router.post('/unblock-ip', requireRole(['Super Admin']), securityController.unblockIP);
 router.delete('/unblock-ip/:ipAddress', requireRole(['Super Admin']), securityController.unblockIP);
 
 // Session management

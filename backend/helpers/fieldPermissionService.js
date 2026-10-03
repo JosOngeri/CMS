@@ -24,9 +24,12 @@ class FieldPermissionService {
 
       return permissions;
     } catch (error) {
+      if (error.code === '42P01') {
+        // Return empty permissions if table doesn't exist yet
+        return {};
+      }
       logger.error('getFieldPermissions', 'Get field permissions error:', error);
-      // Return empty permissions if table doesn't exist yet
-      return {};
+      throw error;
     }
   }
 
@@ -57,9 +60,14 @@ class FieldPermissionService {
    */
   async bulkFetchPermissions(userId, module) {
     try {
-      // Get user roles
+      // Roles come from user_roles → roles join (canonical, per IdentityService);
+      // users.role (singular) is a legacy fallback some rows still carry.
       const userResult = await pool.query(
-        `SELECT roles FROM users WHERE id = $1`,
+        `SELECT r.name AS role_name
+         FROM user_roles ur JOIN roles r ON r.id = ur.role_id
+         WHERE ur.user_id = $1
+         UNION
+         SELECT role FROM users WHERE id = $1 AND role IS NOT NULL`,
         [userId]
       );
 
@@ -67,7 +75,7 @@ class FieldPermissionService {
         return {};
       }
 
-      const roles = userResult.rows[0].roles || [];
+      const roles = userResult.rows.map(r => r.role_name).filter(Boolean);
 
       // Super Admin has all permissions
       if (roles.includes('Super Admin')) {
@@ -180,7 +188,7 @@ class FieldPermissionService {
       return filteredData;
     } catch (error) {
       logger.error('filterFieldsByPermission', 'Filter fields error:', error);
-      return data; // Return original data on error
+      return {}; // Fail closed — never leak unfiltered fields on error
     }
   }
 

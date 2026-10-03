@@ -10,6 +10,16 @@
 const IDENT = /^[a-zA-Z_][a-zA-Z0-9_.]*$/;
 const ORDER_TERM = /^[a-zA-Z_][a-zA-Z0-9_.]*(\s+(ASC|DESC))?$/i;
 
+// Repository-layer pagination guard — hard LIMIT ceiling mirroring
+// middleware/pagination.js maxLimit so callers can't request unbounded rows.
+const MAX_LIMIT = 100;
+
+function clampLimit(limit, maxLimit = MAX_LIMIT) {
+  const parsed = parseInt(limit, 10);
+  if (Number.isNaN(parsed)) return maxLimit;
+  return Math.min(Math.max(parsed, 1), maxLimit);
+}
+
 function assertIdent(value, what) {
   if (typeof value !== 'string' || !IDENT.test(value)) {
     throw new Error(`Invalid SQL identifier for ${what}: ${value}`);
@@ -97,9 +107,9 @@ class BaseRepository {
       query += ` ORDER BY ${orderBy}`;
     }
     
-    // Add pagination
+    // Add pagination (clamped — see clampLimit)
     if (limit) {
-      params.push(limit);
+      params.push(clampLimit(limit));
       query += ` LIMIT $${paramIndex++}`;
     }
     

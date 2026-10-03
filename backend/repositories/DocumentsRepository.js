@@ -282,28 +282,33 @@ class DocumentsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getVersionHistory(documentId) {
+  async getVersionHistory(documentId, churchId = null) {
+    // document_versions has no church_id — scope through the parent document.
     const query = `SELECT dv.*, u.first_name || ' ' || u.last_name as created_by_name
        FROM document_versions dv
        LEFT JOIN users u ON dv.uploaded_by = u.id
        WHERE dv.document_id = $1
+       AND EXISTS (SELECT 1 FROM documents d WHERE d.id = dv.document_id AND ($2::uuid IS NULL OR d.church_id = $2))
        ORDER BY dv.created_at DESC`;
 
-    const result = await this.pool.query(query, [documentId]);
+    const result = await this.pool.query(query, [documentId, churchId]);
     return result.rows;
   }
 
-  async getLastVersionNumber(documentId) {
-    const query = `SELECT COALESCE(MAX(version_number), 0) as last_version
-       FROM document_versions
-       WHERE document_id = $1`;
-    const result = await this.pool.query(query, [documentId]);
+  async getLastVersionNumber(documentId, churchId = null) {
+    const query = `SELECT COALESCE(MAX(dv.version_number), 0) as last_version
+       FROM document_versions dv
+       WHERE dv.document_id = $1
+       AND EXISTS (SELECT 1 FROM documents d WHERE d.id = dv.document_id AND ($2::uuid IS NULL OR d.church_id = $2))`;
+    const result = await this.pool.query(query, [documentId, churchId]);
     return result.rows[0]?.last_version || 0;
   }
 
-  async getVersionById(versionId, documentId) {
-    const query = 'SELECT * FROM document_versions WHERE id = $1 AND document_id = $2';
-    const result = await this.pool.query(query, [versionId, documentId]);
+  async getVersionById(versionId, documentId, churchId = null) {
+    const query = `SELECT dv.* FROM document_versions dv
+       WHERE dv.id = $1 AND dv.document_id = $2
+       AND EXISTS (SELECT 1 FROM documents d WHERE d.id = dv.document_id AND ($3::uuid IS NULL OR d.church_id = $3))`;
+    const result = await this.pool.query(query, [versionId, documentId, churchId]);
     return result.rows[0];
   }
 

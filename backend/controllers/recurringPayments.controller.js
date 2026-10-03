@@ -37,7 +37,7 @@ class RecurringPaymentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const payment = await RecurringPaymentsRepository.getWithDetails(id);
+      const payment = await RecurringPaymentsRepository.getWithDetails(id, req.user.church_id);
 
       if (!payment) {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
@@ -98,6 +98,7 @@ class RecurringPaymentsController extends BaseController {
   async updateRecurringPayment(req, res) {
     try {
       const { id } = req.params;
+      const churchId = req.user.church_id;
       const {
         amount, frequency, start_date, end_date, payment_method,
         auto_charge, status, notes
@@ -114,7 +115,7 @@ class RecurringPaymentsController extends BaseController {
       // Recalculate next payment date if frequency or start date changed
       let nextPaymentDate = null;
       if (frequency || start_date) {
-        const current = await RecurringPaymentsRepository.getStartDateAndFrequency(id);
+        const current = await RecurringPaymentsRepository.getStartDateAndFrequency(id, churchId);
         if (current) {
           nextPaymentDate = SchedulingService.calculateNextPaymentDate(
             start_date || current.start_date, 
@@ -133,7 +134,7 @@ class RecurringPaymentsController extends BaseController {
         auto_charge,
         status,
         notes
-      });
+      }, churchId);
 
       if (!payment) {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
@@ -150,7 +151,7 @@ class RecurringPaymentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const payment = await RecurringPaymentsRepository.delete(id);
+      const payment = await RecurringPaymentsRepository.delete(id, req.user.church_id);
 
       if (!payment) {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
@@ -167,7 +168,7 @@ class RecurringPaymentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const payment = await RecurringPaymentsRepository.updateStatus(id, 'paused');
+      const payment = await RecurringPaymentsRepository.updateStatus(id, 'paused', req.user.church_id);
 
       if (!payment) {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
@@ -184,7 +185,7 @@ class RecurringPaymentsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const payment = await RecurringPaymentsRepository.updateStatus(id, 'active');
+      const payment = await RecurringPaymentsRepository.updateStatus(id, 'active', req.user.church_id);
 
       if (!payment) {
         return ResponseHandler.notFound(res, 'Recurring payment not found');
@@ -197,52 +198,6 @@ class RecurringPaymentsController extends BaseController {
     }
   }
 
-  /**
-   * Handle payment failure with retry logic
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
-   * @returns {Promise<void>}
-   */
-  async handlePaymentFailure(req, res) {
-    try {
-      const { id } = req.params;
-      const { failureReason } = req.body;
-
-      const payment = await RecurringPaymentsRepository.getWithDetails(id);
-
-      if (!payment) {
-        return ResponseHandler.notFound(res, 'Recurring payment not found');
-      }
-
-      // Process failure and determine next action using SchedulingService
-      const failureAction = SchedulingService.processPaymentFailure(payment);
-
-      // Update payment based on failure action
-      if (failureAction.shouldCancel) {
-        await RecurringPaymentsRepository.updateStatus(id, 'cancelled');
-        await RecurringPaymentsRepository.updateRetryCount(id, failureAction.retryCount);
-        
-        return res.status(200).json({ success: true, 
-          action: 'cancelled',
-          reason: failureAction.reason,
-          retryCount: failureAction.retryCount
-         });
-      } else {
-        await RecurringPaymentsRepository.updateNextRetryDate(id, failureAction.nextRetryDate);
-        await RecurringPaymentsRepository.updateRetryCount(id, failureAction.retryCount);
-        
-        return res.status(200).json({ success: true, 
-          action: 'retry_scheduled',
-          nextRetryDate: failureAction.nextRetryDate,
-          retryCount: failureAction.retryCount,
-          reason: failureAction.reason
-         });
-      }
-    } catch (error) {
-      this.logger.error('handlePaymentFailure', error);
-      return ResponseHandler.error(res, 'Failed to handle payment failure');
-    }
-  }
 }
 
 module.exports = new RecurringPaymentsController();

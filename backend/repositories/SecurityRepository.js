@@ -132,12 +132,15 @@ class SecurityRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getRecentSecurityEvents() {
+  async getRecentSecurityEvents(churchId) {
+    if (!churchId) throw new Error('getRecentSecurityEvents: churchId is required');
     const result = await this.pool.query(
       `SELECT type, description, severity, created_at
        FROM security_logs
+       WHERE church_id = $1
        ORDER BY created_at DESC
-       LIMIT 10`
+       LIMIT 10`,
+      [churchId]
     );
     return result.rows;
   }

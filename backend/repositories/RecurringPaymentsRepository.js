@@ -50,7 +50,8 @@ class RecurringPaymentsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getWithDetails(id) {
+  async getWithDetails(id, churchId) {
+    if (!churchId) throw new Error('getWithDetails: churchId is required');
     const query = `
       SELECT rp.*,
              m.first_name || ' ' || m.last_name as member_name,
@@ -60,9 +61,9 @@ class RecurringPaymentsRepository extends BaseRepository {
       LEFT JOIN users m ON rp.member_id = m.id
       LEFT JOIN projects pr ON rp.project_id = pr.id
       LEFT JOIN funds f ON rp.fund_id = f.id
-      WHERE rp.id = $1
+      WHERE rp.id = $1 AND rp.church_id = $2
     `;
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 
@@ -84,7 +85,8 @@ class RecurringPaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateRecurringPayment(id, paymentData) {
+  async updateRecurringPayment(id, paymentData, churchId) {
+    if (!churchId) throw new Error('updateRecurringPayment: churchId is required');
     const {
       amount, frequency, start_date, end_date, next_payment_date,
       payment_method, auto_charge, status, notes
@@ -102,43 +104,48 @@ class RecurringPaymentsRepository extends BaseRepository {
           status = COALESCE($8, status),
           notes = COALESCE($9, notes),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $10
+      WHERE id = $10 AND church_id = $11
       RETURNING *
     `;
     const result = await this.pool.query(query, [
       amount, frequency, start_date, end_date, next_payment_date,
-      payment_method, auto_charge, status, notes, id
+      payment_method, auto_charge, status, notes, id, churchId
     ]);
     return result.rows[0];
   }
 
-  async updateStatus(id, status) {
-    const query = 'UPDATE recurring_payments SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const result = await this.pool.query(query, [status, id]);
+  async updateStatus(id, status, churchId) {
+    if (!churchId) throw new Error('updateStatus: churchId is required');
+    const query = 'UPDATE recurring_payments SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND church_id = $3 RETURNING *';
+    const result = await this.pool.query(query, [status, id, churchId]);
     return result.rows[0];
   }
 
-  async getStartDateAndFrequency(id) {
-    const query = 'SELECT start_date, frequency FROM recurring_payments WHERE id = $1';
-    const result = await this.pool.query(query, [id]);
+  async getStartDateAndFrequency(id, churchId) {
+    if (!churchId) throw new Error('getStartDateAndFrequency: churchId is required');
+    const query = 'SELECT start_date, frequency FROM recurring_payments WHERE id = $1 AND church_id = $2';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 
-  async updateRetryCount(id, retryCount) {
-    const query = 'UPDATE recurring_payments SET retry_count = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const result = await this.pool.query(query, [retryCount, id]);
+  async updateRetryCount(id, retryCount, churchId) {
+    if (!churchId) throw new Error('updateRetryCount: churchId is required');
+    const query = 'UPDATE recurring_payments SET retry_count = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND church_id = $3 RETURNING *';
+    const result = await this.pool.query(query, [retryCount, id, churchId]);
     return result.rows[0];
   }
 
-  async updateNextRetryDate(id, nextRetryDate) {
-    const query = 'UPDATE recurring_payments SET next_retry_date = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const result = await this.pool.query(query, [nextRetryDate, id]);
+  async updateNextRetryDate(id, nextRetryDate, churchId) {
+    if (!churchId) throw new Error('updateNextRetryDate: churchId is required');
+    const query = 'UPDATE recurring_payments SET next_retry_date = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND church_id = $3 RETURNING *';
+    const result = await this.pool.query(query, [nextRetryDate, id, churchId]);
     return result.rows[0];
   }
 
-  async delete(id) {
-    const query = 'DELETE FROM recurring_payments WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM recurring_payments WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 }

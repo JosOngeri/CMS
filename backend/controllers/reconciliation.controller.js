@@ -1,29 +1,39 @@
 const BaseController = require('./BaseController');
 const ReconciliationRepository = require('../repositories/ReconciliationRepository');
+const { createLogger } = require('../helpers/controllerLogger');
 
 /**
  * Reconciliation Controller (REQ-FR-004)
  * Handles "Name-First" forensic auditing of financial transactions
  */
 class ReconciliationController extends BaseController {
+  constructor() {
+    super();
+    this.logger = createLogger('ReconciliationController');
+  }
 
   async pushFromRelay(req, res) {
     const { transactions } = req.body;
     const churchId = req.user.church_id;
 
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return res.status(400).json({ success: false, error: 'transactions must be a non-empty array' });
+    }
+
     try {
-      for (const tx of transactions) {
-        await ReconciliationRepository.pushTransaction({
+      await ReconciliationRepository.pushTransactions(
+        transactions.map(tx => ({
           church_id: churchId,
           transaction_code: tx.code,
           sender_name: tx.name,
           amount: tx.amount,
           source_type: tx.source
-        });
-      }
+        }))
+      );
       res.json({ success: true, message: 'Transactions pushed to queue' });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      this.logger.error('pushFromRelay', error);
+      res.status(500).json({ success: false, error: 'Failed to push transactions' });
     }
   }
 
@@ -34,7 +44,8 @@ class ReconciliationController extends BaseController {
       const pending = await ReconciliationRepository.getPendingTransactions(churchId);
       res.json({ success: true, pending: pending });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      this.logger.error('getPending', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch pending transactions' });
     }
   }
 
@@ -55,7 +66,8 @@ class ReconciliationController extends BaseController {
 
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
+      this.logger.error('verifyTransaction', error);
+      res.status(500).json({ success: false, error: 'Failed to verify transaction' });
     }
   }
 }

@@ -347,6 +347,10 @@ class PaymentsController extends BaseController {
         churchId
       );
 
+      if (!pledge) {
+        return res.status(404).json({ success: false, error: 'Member not found in this church' });
+      }
+
       res.status(201).json({
         success: true,
         message: 'Pledge created successfully',
@@ -376,6 +380,10 @@ class PaymentsController extends BaseController {
       const churchId = req.user.church_id;
 
       const pledgePayment = await PaymentsRepository.addPledgePayment(pledgeId, paymentId, amount, churchId);
+
+      if (!pledgePayment) {
+        return res.status(404).json({ success: false, error: 'Pledge or payment not found in this church' });
+      }
 
       res.status(201).json({
         success: true,
