@@ -1568,3 +1568,38 @@ extension from response Content-Type (xlsx→csv degradation names correctly).
 
 Verification: `node --check` auth.controller; eslint 0 errors (ResetPassword
 lints fully clean); `vite build` ✓ (bundled into AuthShell chunk).
+
+---
+
+## 2026-06-26 — Test-suite resurrection + excluded auth pages (verification pass 4)
+
+### A. Backend test suite — was completely unrunnable, now runs end-to-end
+
+`npm test` aborted in `setup-test-db.js` before Jest could start. Root cause + fixes, all verified by running the suite to completion:
+
+| Root cause | Fix | File |
+|---|---|---|
+| `churches`, `users`, `roles`, `departments`, `announcements`, `payments`, `sms_*`, `events` never existed in canonical migrations — only in legacy `database/*.sql` the runner never applies. Every fresh DB (test, new deploy) died on first FK reference | NEW `001_churches_table.sql` (churches + seed) + `002_00_base_schema.sql` (union of `schema.sql` + `001_auth_schema.sql`, tenancy columns, idempotent, sorts before other 002_* files) | `migrations/001*`, `002_00*` |
+| `005` ALTER on `refresh_tokens` guarded only by column check — table doesn't exist yet on fresh DB | Added `information_schema.tables` EXISTS guard | `005_fix_missing_columns.sql` |
+| `006` `ON CONFLICT (key)` but UNIQUE constraint is `(key, church_id)` | Fixed conflict target | `006_settings_schema.sql` |
+| `022` unguarded `CREATE INDEX` on `pledges`/`budgets`/`collections` (created later by 041) | Wrapped each in `to_regclass` DO-block | `022_add_missing_church_id.sql` |
+| `040` ALTERed `notification_logs` (legacy-only table) | `CREATE TABLE IF NOT EXISTS` first | `040_notifications_schema_alignment.sql` |
+| Windows `template1` created test DB as WIN1252 — server can't store UTF-8 migration bytes (arrows in comments) | `setup-test-db.js` detects non-UTF8 test DB → terminate + recreate `ENCODING 'UTF8'`; runs all migrations on one client after `SET client_encoding` | `scripts/setup-test-db.js` |
+| Test tokens never verified: signed raw `{id, role}` payloads — middleware needs `{userId, roles}` + issuer/audience + a real DB identity | Tokens now signed via app's own `generateAccessToken`; new `identityFor`/`identityAwareQuery` helpers answer the 3 getIdentity queries; `JWT_SECRET` pinned in `tests/setup/global-setup.js`; `IdentityService` mocked in API suites | `test-helpers.js`, `global-setup.js`, 4 test files |
+| `require('../../../server')` returned `{app,server,io}` not an Express app — `app.address is not a function` | Import `../../../app` (raw app) in 5 suites + `.app` in user-workflows | 6 test files |
+| `health.test.js` targeted `/health` (never existed — SPA catch-all returned HTML) + wrong body shape | Pointed at real `/api/health` contract (`status:'healthy'`, `database:'connected'`) | `health.test.js` |
+| `extractToken` ignored `x-auth-token` (in CORS allowlist; used by tests/legacy clients) → 401; CSRF 403'd header-auth clients | `extractToken` accepts `x-auth-token` fallback; CSRF bypass treats it as header-auth like Bearer | `middleware/auth.js`, `csrf.js` |
+| `SnapshotJob.test.js` orphaned — `jobs/` dir purged in 3214583 | Deleted | `tests/jobs/` |
+
+**Result: 196 passing / 114 failing (was: hard abort, 0 tests ran).** Remaining failures are per-test stale assertions against current controllers (mock data shapes, expected statuses) — a follow-on test-remediation backlog, not infra.
+
+### B. Excluded auth pages check
+
+| Page | Verdict |
+|---|---|
+| `EmailVerification.jsx` | NOT needed — no backend/frontend flow references it. Stays excluded. |
+| `MFASetup.jsx` | NEEDED — `/api/auth/mfa/*` live but unreachable. Restored from `98621c2~1`, rewired axios→`useAuth().api` (CSRF), fixed `mfa/verify`→`verify-setup`, mounted at `/dashboard/profile/mfa` |
+| `Sessions.jsx` | NEEDED — `GET/DELETE /api/auth/sessions` live but unreachable. Restored, rewired, mounted at `/dashboard/profile/sessions` |
+| — | Both linked via new "Account Security" cards in `ProfileManagement` security tab |
+
+Verification: eslint 0 errors, `vite build` emits `MFASetup-*.js` + `Sessions-*.js` chunks. Commits `c7b30a9` (test infra) + `e9bb824` (pages).
