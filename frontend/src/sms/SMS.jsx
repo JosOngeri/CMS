@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Send, Users, MessageSquare, Clock, CheckCircle, DollarSign, Upload, Download, X, FileText, BarChart3, LayoutTemplate, Send as TelegramIcon, Bell } from 'lucide-react'
+import { Send, Users, Clock, CheckCircle, DollarSign, Upload, Download, X, FileText, BarChart3, LayoutTemplate } from 'lucide-react'
 import Card from '../components/common/Card'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
@@ -18,12 +18,61 @@ const SMS = () => {
   const [showCsvUpload, setShowCsvUpload] = useState(false)
   const [manualNumbers, setManualNumbers] = useState('')
   const [departments, setDepartments] = useState([])
+  const [smsGroups, setSmsGroups] = useState([])
+  const [templates, setTemplates] = useState([])
+  const [campaigns, setCampaigns] = useState([])
+  const [analytics, setAnalytics] = useState(null)
 
   useEffect(() => {
     fetchSMSHistory()
     fetchSMSBalance()
     fetchDepartments()
+    fetchSmsGroups()
   }, [])
+
+  const fetchSmsGroups = async () => {
+    try {
+      const response = await api.get('/sms-groups')
+      setSmsGroups(response.data.data?.groups || response.data.groups || [])
+    } catch (error) {
+      console.error('Failed to fetch SMS groups:', error)
+    }
+  }
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await api.get('/sms/templates')
+      setTemplates(response.data.data?.templates || response.data.templates || [])
+    } catch (error) {
+      toast.error('Failed to load templates')
+    }
+  }
+
+  const fetchCampaigns = async () => {
+    try {
+      const response = await api.get('/sms/campaigns')
+      setCampaigns(response.data.data?.campaigns || response.data.campaigns || [])
+    } catch (error) {
+      toast.error('Failed to load campaigns')
+    }
+  }
+
+  const fetchAnalytics = async () => {
+    try {
+      const response = await api.get('/sms/analytics')
+      setAnalytics(response.data.data?.analytics || null)
+    } catch (error) {
+      toast.error('Failed to load analytics')
+    }
+  }
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId)
+    // Lazy-load each tab's data on first visit
+    if (tabId === 'templates' && templates.length === 0) fetchTemplates()
+    if (tabId === 'campaigns' && campaigns.length === 0) fetchCampaigns()
+    if (tabId === 'analytics' && !analytics) fetchAnalytics()
+  }
 
   const fetchDepartments = async () => {
     try {
@@ -109,59 +158,69 @@ const SMS = () => {
     return [...new Set(numbers)] // Remove duplicates
   }
 
+  // L631: telegram/notifications tabs were placeholder boxes duplicating real
+  // pages at /dashboard/telegram/* and /dashboard/notifications — removed.
   const smsTabs = [
     { id: 'compose', label: 'Compose', icon: Send },
     { id: 'templates', label: 'Templates', icon: LayoutTemplate },
     { id: 'campaigns', label: 'Campaigns', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'telegram', label: 'Telegram', icon: TelegramIcon },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
   ]
 
-  const handleSendSMS = async () => {
+  // Normalize Kenyan phone inputs to E.164 — backend sendSMS rejects anything else.
+  const toE164 = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '')
+    if (!digits) return null
+    if (digits.startsWith('254') && digits.length === 12) return `+${digits}`
+    if (digits.startsWith('0') && digits.length === 10) return `+254${digits.slice(1)}`
+    if (digits.length === 9) return `+254${digits}`
+    if (digits.length >= 11 && digits.length <= 15) return `+${digits}`
+    return null
+  }
+
+  // Resolve the selected recipient option to a phone array — the backend
+  // contract is recipients: string[] of E.164 numbers (no group keywords).
+  const resolveRecipientPhones = async () => {
+    if (recipients === 'manual') {
+      return manualNumbers.split(',').map(toE164).filter(Boolean)
+    }
+    if (recipients === 'csv') {
+      return csvNumbers.map(toE164).filter(Boolean)
+    }
+    if (recipients.startsWith('dept-')) {
+      const deptId = recipients.slice(5)
+      const response = await api.get(`/departments/${deptId}/members`)
+      const members = response.data.members || []
+      return members.map(m => toE164(m.phone_number)).filter(Boolean)
+    }
+    if (recipients.startsWith('group-')) {
+      const groupId = recipients.slice(6)
+      const response = await api.get(`/sms-groups/${groupId}/members`)
+      const contacts = response.data.data?.contacts || response.data.contacts || []
+      return contacts.map(c => toE164(c.phone)).filter(Boolean)
+    }
+    // 'all' → every active SMS contact in this church's list
+    const response = await api.get('/sms-contacts', { params: { limit: 5000 } })
+    const contacts = response.data.data?.contacts || response.data.contacts || []
+    return contacts.map(c => toE164(c.phone)).filter(Boolean)
+  }
+
+  const handleSendSMS = async (e) => {
+    e?.preventDefault()
     if (!message.trim()) return
 
     setSending(true)
     try {
-      let recipientData = {
-        message: message,
-        recipients: recipients,
-        recipientType: recipients === 'all' ? 'all' : 'department'
+      const phones = await resolveRecipientPhones()
+      if (phones.length === 0) {
+        toast.error('No valid phone numbers found for the selected recipients')
+        return
       }
 
-      // If department is selected, set recipientType to department
-      if (recipients.startsWith('dept-')) {
-        recipientData = {
-          message: message,
-          recipients: recipients,
-          recipientType: 'department'
-        }
-      }
-
-      // If using CSV numbers, override recipients
-      if (recipients === 'csv' && csvNumbers.length > 0) {
-        recipientData = {
-          message: message,
-          recipients: csvNumbers,
-          recipientType: 'custom'
-        }
-      }
-
-      // If using manual numbers, override recipients
-      if (recipients === 'manual' && manualNumbers.trim()) {
-        const phoneArray = manualNumbers
-          .split(',')
-          .map(num => num.trim())
-          .filter(num => num.length > 0)
-
-        recipientData = {
-          message: message,
-          recipients: phoneArray,
-          recipientType: 'custom'
-        }
-      }
-
-      const response = await api.post('/sms/send-blessed', recipientData)
+      const response = await api.post('/sms/send-blessed', {
+        message,
+        recipients: phones,
+      })
 
       if (response.data.success) {
         // Refresh history and balance
@@ -171,13 +230,14 @@ const SMS = () => {
         setMessage('')
         setRecipients('all')
 
-        toast.success(`SMS sent successfully! ${response.data.data.sentCount} messages delivered.`)
+        const d = response.data.data || {}
+        toast.success(`SMS queued: ${d.totalRecipients ?? phones.length} recipients (${d.batchCount ?? 1} batch(es))`)
       } else {
         toast.error(`Failed to send SMS: ${response.data.message}`)
       }
     } catch (error) {
       console.error('Failed to send SMS:', error)
-      toast.error('Failed to send SMS. Please try again.')
+      toast.error(error.response?.data?.error || 'Failed to send SMS. Please try again.')
     } finally {
       setSending(false)
     }
@@ -223,7 +283,7 @@ const SMS = () => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
@@ -258,11 +318,16 @@ const SMS = () => {
               onChange={(e) => setRecipients(e.target.value)}
               className="w-full px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
             >
-              <option value="all">All Members</option>
-              <option value="elders">Elders</option>
-              <option value="youth">Youth Group</option>
-              <option value="choir">Choir Members</option>
-              <option value="leadership">Leadership Team</option>
+              <option value="all">All SMS Contacts</option>
+              {smsGroups.length > 0 && (
+                <optgroup label="SMS Groups">
+                  {smsGroups.map((group) => (
+                    <option key={group.id} value={`group-${group.id}`}>
+                      {group.name}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
               {departments.length > 0 && (
                 <optgroup label="Departments">
                   {departments.map((dept) => (
@@ -444,38 +509,67 @@ const SMS = () => {
       )}
 
       {activeTab === 'templates' && (
-        <div className="p-6 bg-[var(--color-surface)]  rounded-lg border">
+        <Card>
           <h2 className="text-lg font-semibold mb-4">SMS Templates</h2>
-          <p className="text-[var(--color-textSecondary)]">Template management will be integrated here.</p>
-        </div>
+          {templates.length === 0 ? (
+            <p className="text-[var(--color-textSecondary)]">No templates created yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {templates.map((t) => (
+                <div key={t.id} className="border border-[var(--color-border)] rounded-lg p-4">
+                  <p className="font-medium text-[var(--color-text)]">{t.name || t.title}</p>
+                  <p className="text-sm text-[var(--color-textSecondary)] mt-1">{t.content || t.body || t.message}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
 
       {activeTab === 'campaigns' && (
-        <div className="p-6 bg-[var(--color-surface)]  rounded-lg border">
+        <Card>
           <h2 className="text-lg font-semibold mb-4">SMS Campaigns</h2>
-          <p className="text-[var(--color-textSecondary)]">Campaign management will be integrated here.</p>
-        </div>
+          {campaigns.length === 0 ? (
+            <p className="text-[var(--color-textSecondary)]">No campaigns created yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {campaigns.map((c) => (
+                <div key={c.id} className="border border-[var(--color-border)] rounded-lg p-4 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-[var(--color-text)]">{c.name}</p>
+                    <p className="text-sm text-[var(--color-textSecondary)]">
+                      {c.status}{c.sent_count != null ? ` · ${c.sent_count} sent` : ''}
+                      {c.scheduled_date ? ` · ${new Date(c.scheduled_date).toLocaleDateString()}` : ''}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
 
       {activeTab === 'analytics' && (
-        <div className="p-6 bg-[var(--color-surface)]  rounded-lg border">
+        <Card>
           <h2 className="text-lg font-semibold mb-4">SMS Analytics</h2>
-          <p className="text-[var(--color-textSecondary)]">Analytics will be integrated here.</p>
-        </div>
-      )}
-
-      {activeTab === 'telegram' && (
-        <div className="p-6 bg-[var(--color-surface)]  rounded-lg border">
-          <h2 className="text-lg font-semibold mb-4">Telegram Integration</h2>
-          <p className="text-[var(--color-textSecondary)]">Telegram bot configuration and management.</p>
-        </div>
-      )}
-
-      {activeTab === 'notifications' && (
-        <div className="p-6 bg-[var(--color-surface)]  rounded-lg border">
-          <h2 className="text-lg font-semibold mb-4">Notifications</h2>
-          <p className="text-[var(--color-textSecondary)]">System notification settings and management.</p>
-        </div>
+          {!analytics ? (
+            <p className="text-[var(--color-textSecondary)]">Loading analytics...</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                ['Total Sent', analytics.totalSent],
+                ['Delivery Rate', analytics.deliveryRate != null ? `${analytics.deliveryRate}%` : null],
+                ['Response Rate', analytics.responseRate != null ? `${analytics.responseRate}%` : null],
+                ['Total Cost', analytics.totalCost != null ? `KES ${analytics.totalCost}` : null],
+              ].map(([label, value]) => (
+                <div key={label} className="p-4 bg-[var(--color-background)] rounded-lg text-center">
+                  <p className="text-2xl font-bold text-[var(--color-text)]">{value ?? '—'}</p>
+                  <p className="text-sm text-[var(--color-textSecondary)]">{label}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
     </div>
   )

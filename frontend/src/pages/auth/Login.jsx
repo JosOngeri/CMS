@@ -123,7 +123,7 @@ const Login = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-[var(--color-border)] rounded"
+                  className="h-4 w-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-[var(--color-border)] rounded"
                   aria-label="Remember me"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-[var(--color-text)] ">
@@ -131,7 +131,7 @@ const Login = () => {
                 </label>
               </div>
               <div className="text-sm">
-                <Link to="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                <Link to="/auth/forgot-password" className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-600)]">
                   Forgot password?
                 </Link>
               </div>
@@ -158,18 +158,20 @@ const Login = () => {
             </div>
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-[var(--color-background)] rounded-lg">
-            <p className="text-sm text-[var(--color-textSecondary)]  mb-2">
-              <strong>Demo Credentials (Email/Username/Phone):</strong>
-            </p>
-            <div className="text-xs space-y-1 text-[var(--color-textSecondary)] ">
-              <p>Admin: admin@sda.org / admin@123</p>
-              <p>Treasurer: treasurer@sda.org / treasurer123</p>
-              <p>Pastor: pastor@sda.org / pastor123</p>
-              <p>Member: member@sda.org / member123</p>
+          {/* Demo Credentials — dev builds only (L606) */}
+          {import.meta.env.DEV && (
+            <div className="mt-6 p-4 bg-[var(--color-background)] rounded-lg">
+              <p className="text-sm text-[var(--color-textSecondary)]  mb-2">
+                <strong>Demo Credentials (Email/Username/Phone):</strong>
+              </p>
+              <div className="text-xs space-y-1 text-[var(--color-textSecondary)] ">
+                <p>Admin: admin@sda.org / admin@123</p>
+                <p>Treasurer: treasurer@sda.org / treasurer123</p>
+                <p>Pastor: pastor@sda.org / pastor123</p>
+                <p>Member: member@sda.org / member123</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Register Link */}
@@ -178,7 +180,7 @@ const Login = () => {
             Don't have an account?{' '}
             <Link
               to="/auth/register"
-              className="font-medium text-primary-600 hover:text-primary-500"
+              className="font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-600)]"
             >
               Sign up here
             </Link>

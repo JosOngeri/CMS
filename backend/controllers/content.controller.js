@@ -697,6 +697,7 @@ class ContentController extends BaseController {
    */
   async getScheduledContent(req, res) {
     try {
+      const { status } = req.query;
       const scheduled = await ContentRepository.getScheduledContent(status);
 
       this.success(res, { data: scheduled });

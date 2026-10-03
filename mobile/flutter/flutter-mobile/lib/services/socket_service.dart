@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:battery_plus/battery_plus.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'config.dart';
@@ -59,7 +63,7 @@ class SocketService {
       
       // Auto-register relay if churchId is set
       if (_churchId != null) {
-        registerRelay(_churchId!);
+        unawaited(registerRelay(_churchId!));
       }
     });
 
@@ -122,10 +126,10 @@ class SocketService {
     }
   }
 
-  // Register this device as an SMS relay for the church
-  void registerRelay(String churchId) {
+  // Register this device as an SMS relay for the church (L653: real device data)
+  Future<void> registerRelay(String churchId) async {
     _churchId = churchId;
-    
+
     if (!_isConnected) {
       if (kDebugMode) {
         debugPrint('Cannot register relay: not connected');
@@ -136,14 +140,14 @@ class SocketService {
     try {
       final deviceData = {
         'churchId': churchId,
-        'deviceId': _getDeviceId(),
-        'model': _getDeviceModel(),
-        'batteryLevel': _getBatteryLevel(),
-        'signalStrength': _getSignalStrength(),
+        'deviceId': await _getDeviceId(),
+        'model': await _getDeviceModel(),
+        'batteryLevel': await _getBatteryLevel(),
+        'connectionType': await _getConnectionType(),
       };
 
       _socket!.emit('register_relay', deviceData);
-      
+
       if (kDebugMode) {
         debugPrint('Registered relay for church: $churchId');
       }
@@ -154,28 +158,58 @@ class SocketService {
     }
   }
 
-  // Get device ID (placeholder - would need platform-specific implementation)
-  String _getDeviceId() {
-    // In a real implementation, you'd use device_info_plus package
-    return 'flutter_device_${DateTime.now().millisecondsSinceEpoch}';
+  // Stable per-install device identifier (Android ID / iOS vendor ID).
+  Future<String> _getDeviceId() async {
+    try {
+      final info = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        return (await info.androidInfo).id;
+      }
+      if (Platform.isIOS) {
+        return (await info.iosInfo).identifierForVendor ?? 'ios-unknown';
+      }
+    } catch (e) {
+      debugPrint('device id lookup failed: $e');
+    }
+    return 'unknown-device';
   }
 
-  // Get device model (placeholder)
-  String _getDeviceModel() {
-    // In a real implementation, you'd use device_info_plus package
-    return 'Flutter Device';
+  Future<String> _getDeviceModel() async {
+    try {
+      final info = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final a = await info.androidInfo;
+        return '${a.manufacturer} ${a.model}';
+      }
+      if (Platform.isIOS) {
+        return (await info.iosInfo).utsname.machine;
+      }
+    } catch (e) {
+      debugPrint('device model lookup failed: $e');
+    }
+    return 'unknown';
   }
 
-  // Get battery level (placeholder)
-  int _getBatteryLevel() {
-    // In a real implementation, you'd use battery_plus package
-    return 100;
+  Future<int> _getBatteryLevel() async {
+    try {
+      return await Battery().batteryLevel;
+    } catch (e) {
+      debugPrint('battery level lookup failed: $e');
+      return -1; // -1 = unavailable, not a fabricated 100
+    }
   }
 
-  // Get signal strength (placeholder)
-  int _getSignalStrength() {
-    // In a real implementation, you'd use connectivity_plus package
-    return 100;
+  // connectivity_plus reports transport type, not signal strength —
+  // emit the type honestly instead of a fake 0-100 number.
+  Future<String> _getConnectionType() async {
+    try {
+      final results = await Connectivity().checkConnectivity();
+      final r = results.isNotEmpty ? results.first : ConnectivityResult.none;
+      return r.name;
+    } catch (e) {
+      debugPrint('connectivity lookup failed: $e');
+      return 'unknown';
+    }
   }
 
   // Get server URL based on environment

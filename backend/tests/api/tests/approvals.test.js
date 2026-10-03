@@ -20,7 +20,7 @@ jest.mock('../../../config/database', () => ({
 const request  = require('supertest');
 const app      = require('../../../server');
 const db       = require('../../../config/database');
-const { createAdminToken, createPastorToken, seedTestApproval, seedTestUser } = require('../setup/test-helpers');
+const { createAdminToken, createMemberToken, createPastorToken, seedTestApproval, seedTestUser } = require('../setup/test-helpers');
 
 beforeEach(() => {
   jest.clearAllMocks();

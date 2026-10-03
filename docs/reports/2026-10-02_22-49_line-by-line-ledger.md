@@ -1014,3 +1014,37 @@ verified FIXED below (not re-worked): 548, 553, 561-569, 570 (file deleted),
 All three live in `department.routes.js` (mounted before `departments.routes.js`' `/:identifier`) and are church-scoped via `JOIN departments d ON d.id = ... AND d.church_id = $1`.
 
 Verified: `node --check` clean on touched backend files; `vite build` clean (1800 modules).
+
+
+## 2026-10-05 — Batch 10d (remaining pages) + Batch 11 (Flutter lib/) — 17 rows FIXED
+
+### Batch 10d frontend fixes
+
+| Row | Fix |
+|-----|-----|
+| L606 Login.jsx | Demo-credentials box gated behind dev-only flag (was visible in production); leftover `text-primary-NNN` scale classes → CSS-var tokens. |
+| L610 ProfileManagement.jsx | Password min length 6 → 8 (matches backend `isLength({min:8})`); dead Camera button wired to real `POST /auth/profile/photo` upload (multer route already existed) with avatar refresh. |
+| L615 UserManagement.jsx | Now requests `GET /users?page&limit` (backend already paginated); added Prev/Next pagination UI bound to `pagination.pages`; refetches current page after mutations. |
+| L618 GalleryManagement.jsx | Destructures hook's `setPage` (local page state was disconnected); account info loaded from `GET /telegramAuth/auth-methods` instead of hardcoded phone/bot labels; fake “end session” controls removed (no revocation endpoint exists); sync button kept (real `POST /gallery/sync`). |
+| L622 Telegram.jsx | Placeholder tab page deleted; `/dashboard/telegram` redirects to real `telegram/church` settings page. |
+| L627 Security.jsx | `parseInt` calls null-guarded via `setNumberSetting`; Export wired to real `GET /audit-logs` CSV download; **server-side enforcement added**: auth + smsAuth login lockout now reads the church's `security_settings` (maxLoginAttempts/lockoutDuration, camel+snake fallback) instead of hardcoded 5 attempts / 15 min. |
+| L630 Notifications.jsx | Deleted (dead duplicate; NotificationDashboard remains the live route). Folder README updated. |
+| L631 sms/SMS.jsx | Five dead placeholder tabs rewritten against real endpoints: /sms/templates, /sms/campaigns, /sms/analytics; group-recipient ambiguity resolved — groups expanded to E.164 member phones before send. |
+| L633 Contacts.jsx/Groups.jsx | Debounced search added (Contacts); `response.data.data.*` envelope fallbacks (real bug — `response.data.contacts` missed the wrapper); null-guard on `groups.find()` before `.source`. |
+
+### Batch 11 Flutter fixes (mobile/flutter/flutter-mobile)
+
+| Row | Fix |
+|-----|-----|
+| L647 api_service.dart | LogInterceptor debug-gated + headers/status only (bodies stripped); login debugPrints removed; added `refreshSession()` against rotating `POST /auth/refresh-token`. |
+| L649 biometric_service.dart | Rewritten: stores **refresh token** in secure storage instead of the password; `authenticateWithBiometric()` returns {email, refreshToken}; `updateRefreshToken()` persists rotation after refreshSession. login_screen wires enrollment + biometric login through it. |
+| L650 update_service.dart | Real semver comparison restored (`1.10.0 > 1.9.0`-correct, build metadata stripped) vs AppConfig.appVersion; appVersion constant synced to pubspec 1.7.0. |
+| L651 media_service.dart | `_isAndroid13OrHigher()` now uses device_info_plus real `sdkInt >= 33` check (fail-safe: requests legacy permission on lookup error); unused pass-through `compressImage()` deleted. |
+| L652 firebase_service.dart | Full FCM token no longer logged (masked, debug-only); topics now church-scoped (`church_{id}_announcements/payments/events` read from stored user_data) with `refreshTopicSubscriptions()`; `_handleMessage` deep-links via GoRouter `rootNavigatorKey` (announcements/payments/events). |
+| L653 socket_service.dart | Stub telemetry replaced: Android ID / iOS vendor ID via device_info_plus, real manufacturer+model, real `Battery().batteryLevel` (-1 if unavailable, not fake 100), connectivity transport type via connectivity_plus (honest type instead of fabricated signal %). registerRelay now async+unawaited. |
+| L654 config.dart | `setCustomApiUrl()` validates + normalizes to /api, requires HTTPS outside debug builds (dynamic server switching preserved); callers updated for bool return; logging debug-gated. |
+| L655 main.dart | Dead commented init paths (Firebase/Socket.IO/update) removed; verbose startup logging stripped; persisted URL validated before applying. |
+
+Deps added to pubspec.yaml: device_info_plus, battery_plus.
+
+Verified: `vite build` clean (1798 modules); `node --check` clean on touched backend files. Flutter analyze/build pending — flutter CLI unavailable in this shell.

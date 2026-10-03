@@ -2,13 +2,16 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Biometric unlock that stores a *refresh token* — never the password (L649).
+/// After biometric auth the app exchanges the token via /auth/refresh-token,
+/// which rotates it server-side; a stolen token is single-use.
 class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   static const String _biometricEnabledKey = 'biometric_enabled';
   static const String _biometricEmailKey = 'biometric_email';
-  static const String _biometricPasswordKey = 'biometric_password';
+  static const String _biometricRefreshTokenKey = 'biometric_refresh_token';
 
   Future<bool> isBiometricAvailable() async {
     try {
@@ -25,7 +28,9 @@ class BiometricService {
     return value == 'true';
   }
 
-  Future<bool> enableBiometric(String email, String password) async {
+  /// [email] identifies the account shown on the login screen;
+  /// [refreshToken] is the long-lived credential exchanged on biometric login.
+  Future<bool> enableBiometric(String email, String refreshToken) async {
     final isAvailable = await isBiometricAvailable();
     if (!isAvailable) return false;
 
@@ -42,13 +47,14 @@ class BiometricService {
 
       await _secureStorage.write(key: _biometricEnabledKey, value: 'true');
       await _secureStorage.write(key: _biometricEmailKey, value: email);
-      await _secureStorage.write(key: _biometricPasswordKey, value: password);
+      await _secureStorage.write(key: _biometricRefreshTokenKey, value: refreshToken);
       return true;
     } on PlatformException {
       return false;
     }
   }
 
+  /// Returns {'email', 'refreshToken'} after a successful biometric check.
   Future<Map<String, String>?> authenticateWithBiometric() async {
     final isAvailable = await isBiometricAvailable();
     final isEnabled = await isBiometricEnabled();
@@ -66,18 +72,23 @@ class BiometricService {
       if (!didAuthenticate) return null;
 
       final email = await _secureStorage.read(key: _biometricEmailKey);
-      final password = await _secureStorage.read(key: _biometricPasswordKey);
+      final refreshToken = await _secureStorage.read(key: _biometricRefreshTokenKey);
 
-      if (email == null || password == null) return null;
-      return {'email': email, 'password': password};
+      if (email == null || refreshToken == null) return null;
+      return {'email': email, 'refreshToken': refreshToken};
     } on PlatformException {
       return null;
     }
   }
 
+  /// Update the stored refresh token after a rotation (call after refreshSession).
+  Future<void> updateRefreshToken(String refreshToken) async {
+    await _secureStorage.write(key: _biometricRefreshTokenKey, value: refreshToken);
+  }
+
   Future<void> disableBiometric() async {
     await _secureStorage.delete(key: _biometricEnabledKey);
     await _secureStorage.delete(key: _biometricEmailKey);
-    await _secureStorage.delete(key: _biometricPasswordKey);
+    await _secureStorage.delete(key: _biometricRefreshTokenKey);
   }
 }

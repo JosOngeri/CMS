@@ -30,9 +30,17 @@ class AppConfig {
   
   // Method to override API URL for testing
   static String? _customApiUrl;
-  
-  static void setCustomApiUrl(String url) {
-    _customApiUrl = url;
+
+  // L654: validate overrides — release builds only accept https URLs so a
+  // saved/hand-edited URL can't silently downgrade traffic to plaintext.
+  static bool setCustomApiUrl(String url) {
+    final uri = Uri.tryParse(url.trim());
+    final valid = uri != null &&
+        uri.host.isNotEmpty &&
+        (uri.isScheme('https') || kDebugMode);
+    if (!valid) return false;
+    _customApiUrl = url.trim();
+    return true;
   }
   
   static void clearCustomApiUrl() {
@@ -45,7 +53,7 @@ class AppConfig {
   
   // App Info
   static const String appName = 'Msabato';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.7.0'; // keep in sync with pubspec version field
   
   // Environment detection
   static bool get isDevelopment {
@@ -60,8 +68,8 @@ class AppConfig {
   static const Duration apiTimeout = Duration(seconds: 30);
   static const int maxRetries = 3;
   
-  // Feature flags
-  static const bool enableLogging = true;
+  // Feature flags — L654: logging must never ship in release builds.
+  static bool get enableLogging => kDebugMode;
   static const bool enableCrashReporting = false; // Enable in production
   
   // Debug helper to show current API URL

@@ -28,6 +28,7 @@ const Security = () => {
     try {
       const response = await api.get('/security/settings');
       const saved = response.data?.data?.settings || response.data?.settings;
+      // Backend stores the raw body in a JSONB `settings` column — camelCase keys round-trip.
       if (saved && typeof saved === 'object') {
         setSecuritySettings((prev) => ({ ...prev, ...saved }));
       }
@@ -39,13 +40,47 @@ const Security = () => {
   const fetchLogs = async () => {
     try {
       const response = await api.get('/api/audit-logs?limit=50');
-      setLogs(response.data?.data?.logs || response.data?.data || []);
+      const rows = response.data?.data?.logs || response.data?.data || [];
+      // Normalize audit-log columns to what the UI renders (L627).
+      setLogs((Array.isArray(rows) ? rows : []).map((log) => ({
+        id: log.id,
+        action: log.action || 'UNKNOWN',
+        user: [log.first_name, log.last_name].filter(Boolean).join(' ') || log.email || 'System',
+        ip: log.ip_address || '—',
+        timestamp: log.created_at ? new Date(log.created_at).toLocaleString() : '—',
+        status: log.action?.includes('FAILED') || log.action?.includes('UNAUTHORIZED') ? 'failed' : 'success',
+      })));
     } catch (error) {
       toast.error('Failed to load security logs');
       setLogs([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // L627: client-side CSV export of the loaded logs (no backend export exists).
+  const exportLogs = () => {
+    if (!filteredLogs.length) {
+      toast.info('No logs to export');
+      return;
+    }
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [
+      'id,action,user,ip,timestamp,status',
+      ...filteredLogs.map((l) => [l.id, l.action, l.user, l.ip, l.timestamp, l.status].map(esc).join(',')),
+    ].join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `security-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // L627: guard numeric inputs — bare parseInt('') stores NaN.
+  const setNumberSetting = (key) => (e) => {
+    const v = parseInt(e.target.value, 10);
+    setSecuritySettings((prev) => ({ ...prev, [key]: Number.isFinite(v) ? v : 0 }));
   };
 
   const saveSettings = async () => {
@@ -123,7 +158,7 @@ const Security = () => {
           <div className="bg-[var(--color-surface)]  rounded-lg border">
             <div className="p-4 border-b flex justify-between items-center">
               <h2 className="font-semibold">Security Events ({filteredLogs.length})</h2>
-              <button className="text-sm text-[var(--color-primary)] hover:underline">Export Logs</button>
+              <button onClick={exportLogs} className="text-sm text-[var(--color-primary)] hover:underline">Export Logs</button>
             </div>
             <div className="p-4">
               {filteredLogs.length === 0 ? (
@@ -207,7 +242,7 @@ const Security = () => {
                   type="number"
                   inputMode="numeric"
                   value={securitySettings.passwordExpiry}
-                  onChange={(e) => setSecuritySettings({ ...securitySettings, passwordExpiry: parseInt(e.target.value) })}
+                  onChange={setNumberSetting('passwordExpiry')}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
@@ -217,7 +252,7 @@ const Security = () => {
                   type="number"
                   inputMode="numeric"
                   value={securitySettings.sessionTimeout}
-                  onChange={(e) => setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(e.target.value) })}
+                  onChange={setNumberSetting('sessionTimeout')}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
@@ -236,7 +271,7 @@ const Security = () => {
                   type="number"
                   inputMode="numeric"
                   value={securitySettings.maxLoginAttempts}
-                  onChange={(e) => setSecuritySettings({ ...securitySettings, maxLoginAttempts: parseInt(e.target.value) })}
+                  onChange={setNumberSetting('maxLoginAttempts')}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>
@@ -246,7 +281,7 @@ const Security = () => {
                   type="number"
                   inputMode="numeric"
                   value={securitySettings.lockoutDuration}
-                  onChange={(e) => setSecuritySettings({ ...securitySettings, lockoutDuration: parseInt(e.target.value) })}
+                  onChange={setNumberSetting('lockoutDuration')}
                   className="w-full px-3 py-2 border rounded-lg"
                 />
               </div>

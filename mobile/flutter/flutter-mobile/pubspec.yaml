@@ -67,6 +67,10 @@ dependencies:
   socket_io_client: ^2.0.3+1
   flutter_local_notifications: ^17.0.0
 
+  # Device info for real SDK checks (media permissions, SMS relay identity)
+  device_info_plus: ^10.1.0
+  battery_plus: ^6.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

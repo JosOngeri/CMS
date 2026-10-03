@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -87,10 +88,17 @@ class MediaService {
     }
   }
   
-  // Check if Android 13 or higher
+  // L651: real SDK check — Android 13 (API 33) introduced scoped media access
+  // where READ_EXTERNAL_STORAGE is a no-op for the photo picker.
   Future<bool> _isAndroid13OrHigher() async {
-    // This is a simplified check - in production, use device_info_plus
-    return true; // Assume Android 13+ for now
+    if (!Platform.isAndroid) return true; // iOS/desktop don't use this permission
+    try {
+      final info = await DeviceInfoPlugin().androidInfo;
+      return info.version.sdkInt >= 33;
+    } catch (e) {
+      debugPrint('Error reading Android SDK version: $e');
+      return false; // fail safe: request the legacy permission
+    }
   }
   
   // Validate image file
@@ -123,18 +131,9 @@ class MediaService {
     }
   }
   
-  // Compress image (further compression if needed)
-  Future<File?> compressImage(File imageFile) async {
-    try {
-      // For now, return the original file
-      // In production, use image compression library like flutter_image_compress
-      return imageFile;
-    } catch (e) {
-      debugPrint('Error compressing image: $e');
-      return null;
-    }
-  }
-  
+  // L651: compressImage removed — it was a pass-through stub with no callers.
+  // Picker-level compression (imageQuality/maxWidth) already happens at source.
+
   // Get image file size in human-readable format
   String getImageFileSize(File imageFile) {
     try {

@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../app/router.dart' show rootNavigatorKey;
 
 class FirebaseService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -31,10 +35,10 @@ class FirebaseService {
       // Handle background messages (when app is terminated)
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
       
-      // Get FCM token
+      // Get FCM token — never log it in full (it's a push credential; L652)
       final token = await _messaging.getToken();
-      if (kDebugMode) {
-        debugPrint('FCM Token: $token');
+      if (kDebugMode && token != null) {
+        debugPrint('FCM token issued: …${token.substring(token.length - 6)}');
       }
       
       // Subscribe to topics
@@ -101,29 +105,27 @@ class FirebaseService {
     _handleMessage(message);
   }
   
-  // Handle message navigation and actions
+  // Handle message navigation and actions — deep-links into GoRouter via the
+  // app-level rootNavigatorKey (no BuildContext available here; L652).
   void _handleMessage(RemoteMessage message) {
-    // Extract data from message
     final data = message.data;
-    
-    // Navigate based on message type
     final messageType = data['type'] ?? 'general';
-    
+
+    final context = rootNavigatorKey.currentContext;
+    if (context == null) return; // app not fully up yet
+
     switch (messageType) {
       case 'announcement':
-        // Navigate to announcements screen
-        // TODO: Implement navigation to announcements
+        context.go('/announcements');
         break;
       case 'payment':
-        // Navigate to payments screen
-        // TODO: Implement navigation to payments
+        context.go('/payments');
         break;
       case 'event':
-        // Navigate to events screen
-        // TODO: Implement navigation to events
+        context.go('/events');
         break;
       default:
-        // Default behavior - show notification or navigate to dashboard
+        context.go('/dashboard');
         break;
     }
   }
@@ -156,25 +158,37 @@ class FirebaseService {
     }
   }
   
-  // Subscribe to relevant topics
+  // Subscribe to topics scoped to the signed-in user's church (L652).
+  // Global topics would push every tenant's messages to every device.
   Future<void> _subscribeToTopics() async {
     try {
-      // Subscribe to general announcements
-      await _messaging.subscribeToTopic('announcements');
-      
-      // Subscribe to payment notifications
-      await _messaging.subscribeToTopic('payments');
-      
-      // Subscribe to event notifications
-      await _messaging.subscribeToTopic('events');
-      
-      if (kDebugMode) {
-        debugPrint('Subscribed to Firebase topics');
+      final prefs = await SharedPreferences.getInstance();
+      final userData = prefs.getString('user_data');
+      final churchId = userData != null
+          ? (jsonDecode(userData) as Map<String, dynamic>)['church_id']?.toString()
+          : null;
+
+      if (churchId == null || churchId.isEmpty) {
+        if (kDebugMode) debugPrint('No church_id yet — skipping topic subscriptions');
+        return;
       }
+
+      for (final topic in [
+        'church_${churchId}_announcements',
+        'church_${churchId}_payments',
+        'church_${churchId}_events',
+      ]) {
+        await _messaging.subscribeToTopic(topic);
+      }
+
+      if (kDebugMode) debugPrint('Subscribed to church-scoped topics');
     } catch (e) {
       debugPrint('Error subscribing to topics: $e');
     }
   }
+
+  /// Re-call after login so topic subscriptions pick up the user's church.
+  Future<void> refreshTopicSubscriptions() => _subscribeToTopics();
   
   // Get FCM token
   Future<String?> getToken() async {

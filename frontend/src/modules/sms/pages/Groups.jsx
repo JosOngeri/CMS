@@ -37,7 +37,7 @@ const Groups = () => {
   const fetchGroups = async () => {
     try {
       const response = await api.get('/sms-groups');
-      setGroups(response.data.groups || []);
+      setGroups(response.data.data?.groups || response.data.groups || []);
     } catch (error) {
       console.error('Error fetching groups:', error);
       setGroups([]);
@@ -49,7 +49,7 @@ const Groups = () => {
   const fetchGroupMembers = async (groupId) => {
     try {
       const response = await api.get(`/sms-groups/${groupId}/members`);
-      setGroupMembers(response.data.contacts || []);
+      setGroupMembers(response.data.data?.contacts || response.data.contacts || []);
     } catch (error) {
       console.error('Error fetching group members:', error);
     }
@@ -89,6 +89,7 @@ const Groups = () => {
 
   const handleDelete = async (id) => {
     const group = groups.find(g => g.id === id);
+    if (!group) return;
     if (group.source === 'website') {
       toast.info('Cannot delete website-imported groups');
       return;

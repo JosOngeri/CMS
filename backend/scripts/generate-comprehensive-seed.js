@@ -157,11 +157,8 @@ const churchWorkersData = {
 const departmentMappings = {
   'Elders': 'elders',
   'Deaconry': 'deacons',
-  'Deaconry': 'deaconesses',
   'Treasurer': 'treasurer',
-  'Treasurer': 'treasurerAssistants',
   'Church Clerk': 'churchClerk',
-  'Church Clerk': 'clerkAssistants',
   'Youth Ministry': 'youth',
   'Children Ministry': 'children',
   'Adventist Men Ministry': 'men',

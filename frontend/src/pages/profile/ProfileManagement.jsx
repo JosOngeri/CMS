@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { User, Mail, Phone, Calendar, Shield, Camera, Edit2, Save, X, Lock, Key, History, Eye, EyeOff, Bell, Globe } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -31,6 +31,25 @@ const ProfileManagement = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const avatarInputRef = useRef(null)
+
+  // L610: uploads to POST /auth/profile/photo (multer 'photo' field).
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const data = new FormData()
+    data.append('photo', file)
+    try {
+      const response = await api.post('/auth/profile/photo', data)
+      const avatarUrl = response.data?.data?.avatarUrl
+      if (avatarUrl) updateUser({ ...user, avatar_url: avatarUrl })
+      toast.success('Profile photo updated')
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to upload photo')
+    } finally {
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     if (user) {
@@ -82,8 +101,8 @@ const ProfileManagement = () => {
       return
     }
 
-    if (passwordData.new_password.length < 6) {
-      toast.error('Password must be at least 6 characters long')
+    if (passwordData.new_password.length < 8) {
+      toast.error('Password must be at least 8 characters long')
       return
     }
 
@@ -193,10 +212,26 @@ const ProfileManagement = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-[var(--color-primary)]" />
+                  <div className="w-20 h-20 bg-[var(--color-primary-light)] rounded-full flex items-center justify-center overflow-hidden">
+                    {user.avatar_url ? (
+                      <img src={user.avatar_url} alt="Profile" className="w-20 h-20 object-cover" />
+                    ) : (
+                      <User className="w-10 h-10 text-[var(--color-primary)]" />
+                    )}
                   </div>
-                  <button className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full hover:bg-[var(--color-primary)]">
+                  <input
+                    ref={avatarInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                    aria-label="Upload profile photo"
+                  />
+                  <button
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 p-1 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-full hover:bg-[var(--color-primary-600)]"
+                    aria-label="Change profile photo"
+                  >
                     <Camera className="w-3 h-3" />
                   </button>
                 </div>
@@ -401,7 +436,7 @@ const ProfileManagement = () => {
                       onChange={(e) => setPasswordData({...passwordData, new_password: e.target.value})}
                       className="input w-full pr-10"
                       required
-                      minLength={6}
+                      minLength={8}
                     />
                     <button
                       type="button"
@@ -412,7 +447,7 @@ const ProfileManagement = () => {
                     </button>
                   </div>
                   <p className="text-xs text-[var(--color-textSecondary)] mt-1">
-                    Password must be at least 6 characters long
+                    Password must be at least 8 characters long
                   </p>
                 </div>
 
@@ -427,7 +462,7 @@ const ProfileManagement = () => {
                       onChange={(e) => setPasswordData({...passwordData, confirm_password: e.target.value})}
                       className="input w-full pr-10"
                       required
-                      minLength={6}
+                      minLength={8}
                     />
                     <button
                       type="button"

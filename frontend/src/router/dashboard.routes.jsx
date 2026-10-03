@@ -105,12 +105,10 @@ const SMSGroups               = lazy(() => import('../modules/sms/pages/Groups')
 const Announcements           = lazy(() => import('../pages/announcements/Announcements'));
 const Events                  = lazy(() => import('../pages/events/Events'));
 const ApprovalInbox           = lazy(() => import('../pages/approvals/ApprovalInbox'));
-const Notifications           = lazy(() => import('../pages/notifications/Notifications'));
 const Reports                 = lazy(() => import('../pages/reports/Reports'));
 const Content                 = lazy(() => import('../pages/content/Content'));
 const Analytics               = lazy(() => import('../pages/analytics/Analytics'));
 const Security                = lazy(() => import('../pages/security/Security'));
-const Telegram                = lazy(() => import('../pages/telegram/Telegram'));
 const TelegramAuth            = lazy(() => import('../pages/telegram/TelegramAuth'));
 const TelegramChurchSettings  = lazy(() => import('../pages/telegram/TelegramChurchSettings'));
 const Mobile                  = lazy(() => import('../pages/mobile/Mobile'));
@@ -213,7 +211,7 @@ export const dashboardRoutes = [
   { path: 'announcements',  element: <W C={Announcements} /> },
   { path: 'documents',      element: <W C={Documents} /> },
   { path: 'notifications',  element: <W C={NotificationDashboard} /> },
-  { path: 'telegram',       element: <W C={Telegram} roles={ADMIN_ROLES} /> },
+  { path: 'telegram',       element: <Navigate to="church" replace /> },
   { path: 'telegram/auth',  element: <W C={TelegramAuth} /> },
   { path: 'telegram/church', element: <W C={TelegramChurchSettings} roles={ADMIN_ROLES} /> },
   { path: 'gallery',        element: <W C={GalleryManagement} /> },

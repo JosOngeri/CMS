@@ -4,48 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/app.dart';
 import 'services/config.dart';
-// import 'services/socket_service.dart';
-// import 'services/firebase_service.dart';
-// import 'services/update_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Debug: Show API URL being used
-  debugPrint('=== Msabato CMS App Starting ===');
-  debugPrint('API URL: ${AppConfig.debugApiUrl}');
-  debugPrint('Is Production: ${AppConfig.isProduction}');
-  debugPrint('Is Development: ${AppConfig.isDevelopment}');
-
-  // Initialize Firebase (non-blocking; app works without Firebase config)
-  // try {
-  //   await Firebase.initializeApp();
-  //   
-  //   // Initialize Firebase Messaging
-  //   await firebaseService.initialize();
-  // } catch (e) {
-  //   debugPrint('Firebase init skipped: $e');
-  // }
+  if (kDebugMode) {
+    debugPrint('=== Msabato CMS App Starting ===');
+    debugPrint('API URL: ${AppConfig.debugApiUrl}');
+    debugPrint('Is Production: ${AppConfig.isProduction}');
+  }
 
   // Initialize services
   final prefs = await SharedPreferences.getInstance();
 
-  // Load any previously saved server URL so the app can target a different backend
+  // Load any previously saved server URL so the app can target a different
+  // backend. Invalid/non-https overrides are ignored (validated in config).
   final savedApiUrl = prefs.getString('api_url');
   if (savedApiUrl != null && savedApiUrl.isNotEmpty) {
-    AppConfig.setCustomApiUrl(savedApiUrl);
-    debugPrint('Loaded saved API URL: $savedApiUrl');
+    if (!AppConfig.setCustomApiUrl(savedApiUrl)) {
+      await prefs.remove('api_url'); // drop a stale/insecure override
+    }
   }
 
-
-  // Initialize Socket.IO service for Msabato CMS integration
-  // try {
-  //   SocketService().initialize();
-  //   SocketService().connect();
-  //   debugPrint('Socket.IO service initialized');
-  // } catch (e) {
-  //   debugPrint('Socket.IO service initialization failed: $e');
-  // }
+  // L655: Firebase/Socket.IO init stays disabled until the push-notification
+  // and SMS-relay features ship — dead init blocks were removed.
 
   runApp(
     const ProviderScope(

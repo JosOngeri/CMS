@@ -48,7 +48,6 @@ const GalleryManagement = () => {
   })
   const [uploading, setUploading] = useState(false)
   const [syncing, setSyncing] = useState(false)
-  const [page, setPage] = useState(1)
   const [filterUntagged, setFilterUntagged] = useState(false)
   const [selectedPhotos, setSelectedPhotos] = useState(new Set())
   const [showBatchTagModal, setShowBatchTagModal] = useState(false)
@@ -59,10 +58,15 @@ const GalleryManagement = () => {
   const [authSubmitting, setAuthSubmitting] = useState(false)
   const [authTarget, setAuthTarget] = useState('primary') // 'primary' or 'fallback'
   const [authStatus, setAuthStatus] = useState({ primary: 'unknown', fallback: 'unknown', bot: 'unknown' })
+  // L618: account labels come from /telegramAuth/auth-methods, not literals.
+  const [authMethods, setAuthMethods] = useState([])
   const baseUrl = `/api/gallery/photos?limit=20${filterUntagged ? '&untagged=true' : ''}${!canViewAll ? '&public=true' : ''}`
-  const { data, loading, error, pagination, refetch, isEmpty } = usePaginatedFetch(baseUrl, {
+  // L618: setPage must come from the hook — a local useState page was
+  // shadowing it, leaving pagination buttons wired to dead state.
+  const { data, loading, error, pagination, refetch, isEmpty, setPage } = usePaginatedFetch(baseUrl, {
     transform: (result) => result.data?.photos || []
   })
+  const page = pagination?.page || 1
 
   useEffect(() => {
     checkAuthStatus()
@@ -71,24 +75,39 @@ const GalleryManagement = () => {
   const checkAuthStatus = async () => {
     try {
       const response = await api.get('/telegramAuth/auth-methods')
-      const methods = response.data.methods || []
-      
-      // Check if there are any active auth methods
-      const hasActiveMethods = methods.some(m => m.isActive)
-      
+      const methods = response.data.data?.methods || response.data.methods || []
+      setAuthMethods(methods)
+
+      const active = methods.filter(m => m.isActive)
+      const mtproto = active.filter(m => m.type === 'mtproto')
+      const bot = active.find(m => m.type === 'bot')
+
       setAuthStatus({
-        primary: hasActiveMethods ? 'authenticated' : 'unknown',
-        fallback: hasActiveMethods ? 'authenticated' : 'unknown',
-        bot: hasActiveMethods ? 'configured' : 'unknown'
+        primary: mtproto.some(m => m.isDefault) || mtproto.length > 0 ? 'authenticated' : 'not_authenticated',
+        fallback: mtproto.length > 1 ? 'authenticated' : 'not_authenticated',
+        bot: bot ? 'configured' : 'not_configured'
       })
     } catch (error) {
       console.error('Failed to check auth status:', error)
+      setAuthMethods([])
       setAuthStatus({
         primary: 'unknown',
         fallback: 'unknown',
         bot: 'unknown'
       })
     }
+  }
+
+  // Display label for an auth method slot: real phone/name when configured.
+  const authMethodLabel = (kind) => {
+    const mtproto = authMethods.filter(m => m.type === 'mtproto' && m.isActive)
+    const method = kind === 'bot'
+      ? authMethods.find(m => m.type === 'bot')
+      : kind === 'primary'
+        ? (mtproto.find(m => m.isDefault) || mtproto[0])
+        : mtproto.find(m => !m.isDefault) || mtproto[1]
+    if (!method) return 'Not configured'
+    return method.config?.phone || method.config?.username || method.name || 'Configured'
   }
 
   const handleFileChange = (e) => {
@@ -389,7 +408,7 @@ const GalleryManagement = () => {
               {getStatusIcon(authStatus.primary)}
               <div>
                 <p className="font-medium text-[var(--color-text)] ">Primary Account (Channel Owner)</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">+254736075771</p>
+                <p className="text-sm text-[var(--color-textSecondary)] ">{authMethodLabel('primary')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -411,7 +430,7 @@ const GalleryManagement = () => {
               {getStatusIcon(authStatus.fallback)}
               <div>
                 <p className="font-medium text-[var(--color-text)] ">Fallback Account (Admin)</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">+254724363290</p>
+                <p className="text-sm text-[var(--color-textSecondary)] ">{authMethodLabel('fallback')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -433,7 +452,7 @@ const GalleryManagement = () => {
               {getStatusIcon(authStatus.bot)}
               <div>
                 <p className="font-medium text-[var(--color-text)] ">Telegram Bot</p>
-                <p className="text-sm text-[var(--color-textSecondary)] ">@sdakiserianmain_bot</p>
+                <p className="text-sm text-[var(--color-textSecondary)] ">{authMethodLabel('bot')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -744,7 +763,7 @@ const GalleryManagement = () => {
             </div>
             <div className="space-y-4">
               <p className="text-sm text-[var(--color-textSecondary)] ">
-                Authenticating: <span className="font-semibold">{authTarget === 'primary' ? 'Primary Account (+254736075771)' : 'Fallback Account (+254724363290)'}</span>
+                Authenticating: <span className="font-semibold">{authTarget === 'primary' ? `Primary Account (${authMethodLabel('primary')})` : `Fallback Account (${authMethodLabel('fallback')})`}</span>
               </p>
               <p className="text-sm text-[var(--color-textSecondary)] ">
                 A verification code will be sent to this Telegram account. Please enter it below to authenticate.

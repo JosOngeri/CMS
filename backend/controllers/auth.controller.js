@@ -1,6 +1,7 @@
 const UserRepository = require('../repositories/UserRepository');
 const AuthRepository = require('../repositories/AuthRepository');
 const ChurchRepository = require('../repositories/ChurchRepository');
+const SecurityRepository = require('../repositories/SecurityRepository');
 const BaseController = require('./BaseController');
 const IdentityService = require('../services/IdentityService');
 const ResponseHandler = require('../utils/ResponseHandler');
@@ -52,16 +53,23 @@ class AuthController extends BaseController {
 
       const isValid = await comparePassword(password, user.password_hash);
       if (!isValid) {
+        // Lockout policy comes from the church's security_settings row
+        // (L627 — previously hardcoded 5 attempts / 15 min regardless of settings).
+        const secSettings = await SecurityRepository.getSecuritySettings(user.church_id).catch(() => ({}));
+        const maxAttempts = Number.isFinite(parseInt(secSettings.maxLoginAttempts ?? secSettings.max_login_attempts))
+          ? parseInt(secSettings.maxLoginAttempts ?? secSettings.max_login_attempts) : 5;
+        const lockoutMinutes = Number.isFinite(parseInt(secSettings.lockoutDuration ?? secSettings.lockout_duration))
+          ? parseInt(secSettings.lockoutDuration ?? secSettings.lockout_duration) : 15;
         // Increment failed login attempts
         const failedAttempts = (user.failed_login_attempts || 0) + 1;
-        if (failedAttempts >= 5) {
+        if (failedAttempts >= maxAttempts) {
           // Lock the account
-          const lockoutTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+          const lockoutTime = new Date(Date.now() + lockoutMinutes * 60 * 1000);
           await UserRepository.update(user.id, {
             failed_login_attempts: failedAttempts,
             locked_until: lockoutTime
           }, user.church_id);
-          return ResponseHandler.error(res, 'Too many failed attempts. Account locked for 15 minutes.', 429);
+          return ResponseHandler.error(res, `Too many failed attempts. Account locked for ${lockoutMinutes} minutes.`, 429);
         } else {
           // Update failed attempts
           await UserRepository.update(user.id, {

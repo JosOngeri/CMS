@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
@@ -94,9 +97,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) {
           ref.read(authProvider.notifier).login(result['user'], result['token']);
 
-          // Store credentials for biometric if opted in
-          if (_rememberMe || _enableBiometricNextTime) {
-            await _storeCredentialsForBiometric();
+          // Store the refresh token for biometric if opted in — the password
+          // itself is never persisted (L649).
+          if ((_rememberMe || _enableBiometricNextTime) && result['refreshToken'] != null) {
+            await _storeCredentialsForBiometric(result['refreshToken'] as String);
           }
 
           // Navigate to dashboard
@@ -118,11 +122,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _storeCredentialsForBiometric() async {
+  Future<void> _storeCredentialsForBiometric(String refreshToken) async {
     try {
       final success = await _biometricService.enableBiometric(
         _emailController.text.trim(),
-        _passwordController.text,
+        refreshToken,
       );
 
       if (success) {
@@ -139,19 +143,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _biometricLogin() async {
     try {
       final credentials = await _biometricService.authenticateWithBiometric();
-      
-      if (credentials != null && mounted) {
-        // Auto-fill credentials
-        _emailController.text = credentials['email'] ?? '';
-        _passwordController.text = credentials['password'] ?? '';
-        
-        // Auto-login
-        await _login();
+
+      if (credentials == null || !mounted) return;
+      final refreshToken = credentials['refreshToken'];
+      if (refreshToken == null) return;
+
+      setState(() => _isLoading = true);
+      final apiService = await ApiService.getInstance();
+      final result = await apiService.refreshSession(refreshToken);
+
+      if (result['success'] == true && mounted) {
+        // Refresh tokens rotate server-side — persist the new one.
+        final prefs = await SharedPreferences.getInstance();
+        final rotated = prefs.getString('refresh_token');
+        if (rotated != null) await _biometricService.updateRefreshToken(rotated);
+
+        final userData = prefs.getString('user_data');
+        ref.read(authProvider.notifier).login(
+          userData != null ? jsonDecode(userData) as Map<String, dynamic> : {},
+          result['token'] as String,
+        );
+        context.go('/dashboard');
+      } else if (mounted) {
+        await _biometricService.disableBiometric();
+        _showErrorSnackBar('Session expired — please sign in with your password');
       }
     } catch (e) {
       if (mounted) {
         _showErrorSnackBar('Biometric authentication failed');
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

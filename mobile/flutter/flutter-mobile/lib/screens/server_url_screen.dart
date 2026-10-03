@@ -39,7 +39,11 @@ class _ServerUrlScreenState extends State<ServerUrlScreen> {
     }
 
     final normalized = url.endsWith('/api') ? url : '$url/api';
-    AppConfig.setCustomApiUrl(normalized);
+    // Rejects malformed/non-https URLs in release builds (L654).
+    if (!AppConfig.setCustomApiUrl(normalized)) {
+      _showMessage('Invalid URL — must be a valid https:// server address');
+      return;
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_savedUrlKey, normalized);

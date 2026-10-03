@@ -21,8 +21,15 @@ const Contacts = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  // L633: debounced value actually sent to the API — raw searchTerm refetches per keystroke.
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sourceFilter, setSourceFilter] = useState('all');
   const [groupFilter, setGroupFilter] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [formData, setFormData] = useState({
@@ -36,18 +43,21 @@ const Contacts = () => {
 
   useEffect(() => {
     fetchContacts();
+  }, [sourceFilter, groupFilter, debouncedSearch]);
+
+  useEffect(() => {
     fetchGroups();
-  }, [sourceFilter, groupFilter, searchTerm]);
+  }, []);
 
   const fetchContacts = async () => {
     try {
       const params = new URLSearchParams();
       if (sourceFilter !== 'all') params.set('source', sourceFilter);
       if (groupFilter) params.set('group_id', groupFilter);
-      if (searchTerm) params.set('search', searchTerm);
+      if (debouncedSearch) params.set('search', debouncedSearch);
 
       const response = await api.get(`/sms-contacts?${params.toString()}`);
-      setContacts(response.data.contacts || []);
+      setContacts(response.data.data?.contacts || response.data.contacts || []);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       setContacts([]);
@@ -59,7 +69,7 @@ const Contacts = () => {
   const fetchGroups = async () => {
     try {
       const response = await api.get('/sms-groups');
-      setGroups(response.data.groups || []);
+      setGroups(response.data.data?.groups || response.data.groups || []);
     } catch (error) {
       console.error('Error fetching groups:', error);
     }
@@ -198,7 +208,7 @@ const Contacts = () => {
                 <td className="px-6 py-4 whitespace-nowrap">{contact.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{contact.phone}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{contact.email || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{contact.group_name || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap">{(contact.group_name ?? (groups.find(g => g.id === contact.group_id)?.name)) || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap capitalize">{contact.source}</td>
                 <td className="px-6 py-4 whitespace-nowrap capitalize">{contact.status}</td>
                 <td className="px-6 py-4 whitespace-nowrap">

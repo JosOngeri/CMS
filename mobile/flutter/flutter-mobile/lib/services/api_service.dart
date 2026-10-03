@@ -85,12 +85,15 @@ class ApiService {
       
       final prefs = await SharedPreferences.getInstance();
       
-      // Add logging interceptor in development
+      // L647: headers-only logging — request/response bodies can contain
+      // passwords, tokens and M-Pesa payloads and must never hit debug logs.
       if (AppConfig.enableLogging && kDebugMode) {
         dio.interceptors.add(
           LogInterceptor(
-            requestBody: true,
-            responseBody: true,
+            requestBody: false,
+            responseBody: false,
+            requestHeader: false,
+            responseHeader: false,
             error: true,
           ),
         );
@@ -200,8 +203,6 @@ class ApiService {
   Future<Map<String, dynamic>> login(String identifier, String password) async {
     try {
       debugPrint('=== API: Attempting login ===');
-      debugPrint('=== API: URL: ${AppConfig.effectiveApiUrl}/auth/login ===');
-      debugPrint('=== API: Identifier (username/email/phone): $identifier ===');
       
       final service = await getInstance();
       final response = await service._dio.post(
@@ -219,7 +220,6 @@ class ApiService {
       );
       
       debugPrint('=== API: Login response status: ${response.statusCode} ===');
-      debugPrint('=== API: Login response data: ${response.data} ===');
       
       if (response.statusCode == 200) {
         // Handle CMS ResponseHandler format
@@ -232,13 +232,21 @@ class ApiService {
           
           // Store user data
           await _prefs.setString('user_data', jsonEncode(responseData['user']));
-          
-          debugPrint('=== API: Login successful, token stored ===');
-          
+
+          // L649: keep the refresh token — biometric login exchanges it instead
+          // of re-authenticating with a stored plaintext password.
+          final refreshToken = responseData['refreshToken'] as String?;
+          if (refreshToken != null) {
+            await _prefs.setString('refresh_token', refreshToken);
+          }
+
+          debugPrint('=== API: Login successful ===');
+
           return {
             'success': true,
             'user': responseData['user'],
             'token': token,
+            'refreshToken': refreshToken,
           };
         }
         // Fallback to direct format
@@ -258,7 +266,6 @@ class ApiService {
       debugPrint('=== API: Login DioException: ${e.toString()} ===');
       debugPrint('=== API: Login error type: ${e.type} ===');
       if (e.response != null) {
-        debugPrint('=== API: Login error response: ${e.response?.data} ===');
         debugPrint('=== API: Login error status: ${e.response?.statusCode} ===');
       }
       return {
@@ -271,6 +278,29 @@ class ApiService {
         'success': false,
         'error': 'Network error: ${e.toString()}',
       };
+    }
+  }
+
+  // Exchange a stored refresh token for a new access token (L649).
+  // The backend rotates refresh tokens — the returned one replaces the stored value.
+  Future<Map<String, dynamic>> refreshSession(String refreshToken) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post(
+        '/auth/refresh-token',
+        data: {'refreshToken': refreshToken},
+      );
+      final data = response.data['data'];
+      if (response.statusCode == 200 && data != null && data['accessToken'] != null) {
+        await _prefs.setString('auth_token', data['accessToken']);
+        if (data['refreshToken'] != null) {
+          await _prefs.setString('refresh_token', data['refreshToken']);
+        }
+        return {'success': true, 'token': data['accessToken']};
+      }
+      return {'success': false, 'error': 'Refresh failed'};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
     }
   }
 

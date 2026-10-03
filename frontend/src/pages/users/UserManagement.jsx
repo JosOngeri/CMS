@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Users, Plus, Edit, Trash2, Search, Filter, Mail, Phone, Calendar, Shield, UserCheck, UserX, ChevronDown, Eye, EyeOff, User } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -15,6 +15,10 @@ const UserManagement = () => {
   const [filterRole, setFilterRole] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [sortBy, setSortBy] = useState('name')
+  // L615: server-side pagination — /users accepts page/limit/role.
+  const [page, setPage] = useState(1)
+  const pageSize = 20
+  const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, pages: 0 })
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -42,22 +46,25 @@ const UserManagement = () => {
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ]
 
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async (pageNum = 1, role = 'all') => {
     try {
       setLoading(true)
-      const response = await api.get('/users')
+      const params = { page: pageNum, limit: pageSize }
+      if (role !== 'all') params.role = role
+      const response = await api.get('/users', { params })
       setUsers(response.data.users || [])
+      setPagination(response.data.pagination || { page: pageNum, limit: pageSize, total: 0, pages: 0 })
     } catch (error) {
       console.error('Error fetching users:', error)
       toast.error('Failed to load users')
     } finally {
       setLoading(false)
     }
-  }
+  }, [api, toast])
+
+  useEffect(() => {
+    fetchUsers(page, filterRole)
+  }, [page, filterRole, fetchUsers])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -82,7 +89,7 @@ const UserManagement = () => {
       })
       setShowCreateForm(false)
       setEditingUser(null)
-      fetchUsers()
+      fetchUsers(page, filterRole)
     } catch (error) {
       console.error('Failed to save user:', error)
       toast.error(editingUser ? 'Failed to update user' : 'Failed to create user')
@@ -382,7 +389,7 @@ const UserManagement = () => {
 
           <select
             value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
+            onChange={(e) => { setFilterRole(e.target.value); setPage(1) }}
             className="px-4 py-2 border border-[var(--color-border)]  rounded-lg bg-[var(--color-surface)]  text-[var(--color-text)]  focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
           >
             <option value="all">All Roles</option>
@@ -599,6 +606,31 @@ const UserManagement = () => {
               : 'No users have been created yet'
             }
           </p>
+        </div>
+      )}
+
+      {/* Server-side pagination */}
+      {pagination.pages > 1 && (
+        <div className="flex items-center justify-between bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] px-4 py-3">
+          <p className="text-sm text-[var(--color-textSecondary)]">
+            Page {pagination.page} of {pagination.pages} · {pagination.total} users
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-1 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] disabled:opacity-50 hover:bg-[var(--color-surfaceHover)]"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage(p => Math.min(pagination.pages, p + 1))}
+              disabled={page >= pagination.pages}
+              className="px-3 py-1 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] disabled:opacity-50 hover:bg-[var(--color-surfaceHover)]"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
