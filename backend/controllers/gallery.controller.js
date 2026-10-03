@@ -66,7 +66,7 @@ class GalleryController extends BaseController {
    */
   async getCategories(req, res) {
     try {
-      const categories = await GalleryRepository.getCategories();
+      const categories = await GalleryRepository.getCategories(req.user.church_id);
       this.success(res, { categories });
     } catch (error) {
       this.logger.error('getCategories', error);
@@ -144,7 +144,7 @@ class GalleryController extends BaseController {
       const { id } = req.params;
       const { title, description, coverPhotoId, is_public } = req.body;
 
-      const album = await GalleryRepository.updateAlbum(id, title, description, coverPhotoId, is_public);
+      const album = await GalleryRepository.updateAlbum(id, title, description, coverPhotoId, is_public, req.user.church_id);
 
       if (!album) {
         return this.notFound(res, 'Album not found');
@@ -169,7 +169,7 @@ class GalleryController extends BaseController {
     try {
       const { id } = req.params;
 
-      await GalleryRepository.deleteAlbum(id);
+      await GalleryRepository.deleteAlbum(id, req.user.church_id);
 
       this.success(res, { message: 'Album deleted successfully' });
     } catch (error) {
@@ -697,7 +697,7 @@ class GalleryController extends BaseController {
     try {
       const { startDate, endDate } = req.query;
 
-      const analytics = await GalleryRepository.getGalleryAnalytics(startDate, endDate);
+      const analytics = await GalleryRepository.getGalleryAnalytics(startDate, endDate, req.user.church_id);
 
       this.success(res, { data: analytics });
     } catch (error) {

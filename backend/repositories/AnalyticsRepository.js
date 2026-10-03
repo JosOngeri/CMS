@@ -1,11 +1,19 @@
 const BaseRepository = require('./BaseRepository');
 
 class AnalyticsRepository extends BaseRepository {
+
+  // Enforce tenant scope — optional churchId would silently expose
+  // cross-tenant aggregates (ledger L99).
+  _requireChurchId(churchId) {
+    if (!churchId) throw new Error("AnalyticsRepository: churchId is required");
+  }
+
   constructor() {
     super('analytics');
   }
 
-  async getDashboardStats(churchId = null) {
+  async getDashboardStats(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         (SELECT COUNT(*) FROM members) as total_members,
@@ -34,7 +42,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getUnreadNotificationsCount(userId, churchId = null) {
+  async getUnreadNotificationsCount(userId, churchId) {
+    this._requireChurchId(churchId);
     let query = `SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = false`;
     const params = [userId];
 
@@ -47,7 +56,8 @@ class AnalyticsRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getMemberGrowthTrend(days = 30, churchId = null) {
+  async getMemberGrowthTrend(days = 30, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         DATE(created_at) as date,
@@ -65,7 +75,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getTransactionTrend(days = 30, churchId = null) {
+  async getTransactionTrend(days = 30, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         DATE(transaction_date) as date,
@@ -86,6 +97,7 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getDepartmentAnalytics(months, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
          d.name as department_name,
@@ -105,6 +117,7 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getAttendanceAnalytics(weeks, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
          DATE_TRUNC('week', attendance_date) as week,
@@ -120,7 +133,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getMemberDemographics(churchId = null) {
+  async getMemberDemographics(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         COUNT(*) as total_members,
@@ -150,7 +164,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getMemberActivity(days = 30, churchId = null) {
+  async getMemberActivity(days = 30, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         DATE(activity_date) as date,
@@ -169,7 +184,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getUserActivity(days = 30, churchId = null) {
+  async getUserActivity(days = 30, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         DATE(last_login) as date,
@@ -190,7 +206,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getContentViews(churchId = null) {
+  async getContentViews(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         c.id,
@@ -219,7 +236,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getHeatmapData(period = '7d', churchId = null) {
+  async getHeatmapData(period = '7d', churchId) {
+    this._requireChurchId(churchId);
     let days = 7;
     if (period === '30d') days = 30;
     if (period === '90d') days = 90;
@@ -245,7 +263,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getFinancialSummary(churchId = null) {
+  async getFinancialSummary(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) as total_income,
@@ -268,7 +287,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getContributionTrends(months = 12, churchId = null) {
+  async getContributionTrends(months = 12, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         DATE_TRUNC('month', date) as month,
@@ -292,6 +312,7 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getDepartmentPerformance(months = 6, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         d.name as department_name,
@@ -311,7 +332,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getAttendanceSummary(churchId = null) {
+  async getAttendanceSummary(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         COUNT(*) as total_attendance_records,
@@ -332,7 +354,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getCollectionPerformance(months = 6, churchId = null) {
+  async getCollectionPerformance(months = 6, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         ec.title as collection_name,
@@ -359,7 +382,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getCollectionTrends(months = 12, churchId = null) {
+  async getCollectionTrends(months = 12, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         DATE_TRUNC('month', ec.created_at) as month,
@@ -383,6 +407,7 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getEventEngagement(months = 6, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         e.title as event_name,
@@ -402,6 +427,7 @@ class AnalyticsRepository extends BaseRepository {
   }
 
   async getEventAttendance(months = 6, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       SELECT
         DATE_TRUNC('week', e.start_date) as week,
@@ -419,7 +445,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getSMSPerformance(months = 6, churchId = null) {
+  async getSMSPerformance(months = 6, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         COUNT(*) as total_messages,
@@ -442,7 +469,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getSMSDelivery(months = 6, churchId = null) {
+  async getSMSDelivery(months = 6, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         DATE_TRUNC('day', created_at) as date,
@@ -465,7 +493,8 @@ class AnalyticsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getCustomAnalytics(metrics, startDate, endDate, groupBy, churchId = null) {
+  async getCustomAnalytics(metrics, startDate, endDate, groupBy, churchId) {
+    this._requireChurchId(churchId);
     // Build a custom analytics query based on requested metrics
     const metricMap = {
       'members': 'SELECT COUNT(*) FROM members WHERE 1=1',
@@ -491,7 +520,8 @@ class AnalyticsRepository extends BaseRepository {
     return results;
   }
 
-  async exportAnalytics(type, startDate, endDate, churchId = null) {
+  async exportAnalytics(type, startDate, endDate, churchId) {
+    this._requireChurchId(churchId);
     // Return data in the requested format for export
     let query = '';
     let params = [];

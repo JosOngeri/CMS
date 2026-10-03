@@ -36,7 +36,7 @@ class VendorsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const vendor = await VendorsRepository.getVendorById(id);
+      const vendor = await VendorsRepository.getVendorById(id, req.user.church_id);
 
       if (!vendor) {
         return res.status(404).json({ success: false, error: 'Vendor not found' });
@@ -95,7 +95,7 @@ class VendorsController extends BaseController {
       const vendor = await VendorsRepository.updateVendor(id, {
         vendor_name, contact_person, phone, email,
         address, city, country, tax_id, payment_terms, is_active
-      });
+      }, req.user.church_id);
 
       if (!vendor) {
         return res.status(404).json({ success: false, error: 'Vendor not found' });
@@ -116,7 +116,7 @@ class VendorsController extends BaseController {
     try {
       const { id } = req.params;
 
-      const { vendor, archived } = await VendorService.deleteOrArchiveVendor(id);
+      const { vendor, archived } = await VendorService.deleteOrArchiveVendor(id, req.user.church_id);
 
       if (!vendor) {
         return res.status(404).json({ success: false, error: 'Vendor not found' });

@@ -7,11 +7,19 @@
 const BaseRepository = require('./BaseRepository');
 
 class PaymentRepository extends BaseRepository {
+
+  // Enforce tenant scope — optional churchId would silently expose
+  // cross-tenant payments/refunds (ledger L112/L559).
+  _requireChurchId(churchId) {
+    if (!churchId) throw new Error("PaymentRepository: churchId is required");
+  }
+
   constructor() {
     super('payments');
   }
 
-  async create(data, churchId = null) {
+  async create(data, churchId) {
+    this._requireChurchId(churchId);
     const { amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id } = data;
 
     let query = `
@@ -34,7 +42,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateStatus(paymentId, status, transactionId = null, churchId = null) {
+  async updateStatus(paymentId, status, transactionId = null, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       UPDATE ${this.tableName}
       SET status = $1,
@@ -94,7 +103,8 @@ class PaymentRepository extends BaseRepository {
     );
   }
 
-  async getById(paymentId, churchId = null) {
+  async getById(paymentId, churchId) {
+    this._requireChurchId(churchId);
     let query = `SELECT * FROM ${this.tableName} WHERE id = $1`;
     const params = [paymentId];
 
@@ -107,7 +117,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getByTransactionId(transactionId, churchId = null) {
+  async getByTransactionId(transactionId, churchId) {
+    this._requireChurchId(churchId);
     let query = `SELECT * FROM ${this.tableName} WHERE transaction_id = $1`;
     const params = [transactionId];
 
@@ -120,7 +131,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getByMember(memberId, churchId = null, limit = 50) {
+  async getByMember(memberId, churchId, limit = 50) {
+    this._requireChurchId(churchId);
     let query = `SELECT * FROM ${this.tableName} WHERE member_id = $1`;
     const params = [memberId];
 
@@ -136,7 +148,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getPaymentStats(churchId = null) {
+  async getPaymentStats(churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT
         COUNT(*) as total_payments,
@@ -157,7 +170,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateStatusWithFailureReason(paymentId, status, failureReason, churchId = null) {
+  async updateStatusWithFailureReason(paymentId, status, failureReason, churchId) {
+    this._requireChurchId(churchId);
     const params = [status, failureReason, paymentId];
     let where = 'id = $3';
     if (churchId) {
@@ -171,7 +185,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getPaymentsWithFilters(filters, churchId = null, limit = 20, offset = 0) {
+  async getPaymentsWithFilters(filters, churchId, limit = 20, offset = 0) {
+    this._requireChurchId(churchId);
     let query = `SELECT * FROM ${this.tableName} WHERE 1=1`;
     const params = [];
     let paramCount = 0;
@@ -260,7 +275,8 @@ class PaymentRepository extends BaseRepository {
     return approvalResult.rows[0];
   }
 
-  async getRefundById(refundId, churchId = null) {
+  async getRefundById(refundId, churchId) {
+    this._requireChurchId(churchId);
     // Scope via the parent payment — covers legacy refund rows whose own
     // church_id is NULL
     const params = [refundId];
@@ -289,7 +305,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createRefundWithNumber(paymentId, amount, reason, refundNumber, userId, churchId = null) {
+  async createRefundWithNumber(paymentId, amount, reason, refundNumber, userId, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       INSERT INTO refunds (payment_id, amount, reason, refund_number, status, initiated_by, church_id)
       VALUES ($1, $2, $3, $4, 'pending', $5, $6)
@@ -299,7 +316,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId = null) {
+  async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId) {
+    this._requireChurchId(churchId);
     const query = `
       INSERT INTO approval_requests (request_type, module, amount, description, requested_by, status, metadata, church_id)
       VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7)
@@ -309,7 +327,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0].id;
   }
 
-  async getPaymentByIdSimple(paymentId, churchId = null) {
+  async getPaymentByIdSimple(paymentId, churchId) {
+    this._requireChurchId(churchId);
     const params = [paymentId];
     let query = 'SELECT * FROM payments WHERE id = $1';
     if (churchId) {
@@ -320,7 +339,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updatePaymentStatus(paymentId, status, churchId = null) {
+  async updatePaymentStatus(paymentId, status, churchId) {
+    this._requireChurchId(churchId);
     const params = [paymentId, status];
     let where = 'id = $1';
     if (churchId) {
@@ -334,7 +354,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async rejectRefund(refundId, userId, reason, rejectionReason, churchId = null) {
+  async rejectRefund(refundId, userId, reason, rejectionReason, churchId) {
+    this._requireChurchId(churchId);
     const params = [userId, reason, rejectionReason, refundId];
     let where = 'id = $4';
     if (churchId) {
@@ -353,7 +374,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getRefundsWithStatus(status, churchId = null) {
+  async getRefundsWithStatus(status, churchId) {
+    this._requireChurchId(churchId);
     let query = `
       SELECT r.*,
              p.amount as original_amount,
@@ -387,7 +409,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getPaymentAnalyticsByCategory(start, end, churchId = null) {
+  async getPaymentAnalyticsByCategory(start, end, churchId) {
+    this._requireChurchId(churchId);
     const params = [start, end];
     let where = `status = 'completed' AND created_at >= $1 AND created_at <= $2`;
     if (churchId) {
@@ -409,7 +432,8 @@ class PaymentRepository extends BaseRepository {
     return result.rows;
   }
 
-  async approveRefund(refundId, kopokopoRefundId, userId, churchId = null) {
+  async approveRefund(refundId, kopokopoRefundId, userId, churchId) {
+    this._requireChurchId(churchId);
     const params = [kopokopoRefundId, userId, refundId];
     let where = 'id = $3';
     if (churchId) {

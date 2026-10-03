@@ -91,9 +91,10 @@ class GalleryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getTags(churchId = null) {
-    let query = `SELECT * FROM photo_tags ORDER BY name`;
-    const result = await this.pool.query(query);
+  async getTags(churchId) {
+    if (!churchId) throw new Error('GalleryRepository.getTags: churchId required');
+    const result = await this.pool.query(
+      'SELECT * FROM photo_tags WHERE church_id = $1 ORDER BY name', [churchId]);
     return result.rows;
   }
 
@@ -148,9 +149,9 @@ class GalleryRepository extends BaseRepository {
       `SELECT gp.*, u.first_name || ' ' || u.last_name as uploaded_by_name
        FROM gallery_photos gp
        LEFT JOIN users u ON gp.uploaded_by = u.id
-       WHERE gp.album_id = $1
+       WHERE gp.album_id = $1 AND gp.church_id = $2
        ORDER BY gp.order_index, gp.uploaded_at DESC`,
-      [albumId]
+      [albumId, churchId]
     );
 
     return {
@@ -159,12 +160,13 @@ class GalleryRepository extends BaseRepository {
     };
   }
 
-  async getCategories() {
+  async getCategories(churchId) {
+    if (!churchId) throw new Error('GalleryRepository.getCategories: churchId required');
     const result = await this.pool.query(
       `SELECT DISTINCT title as category
        FROM gallery_albums
-       WHERE title IS NOT NULL
-       ORDER BY title`
+       WHERE title IS NOT NULL AND church_id = $1
+       ORDER BY title`, [churchId]
     );
     return result.rows.map(row => row.category);
   }
@@ -179,7 +181,8 @@ class GalleryRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateAlbum(id, title, description, coverPhotoId, isPublic) {
+  async updateAlbum(id, title, description, coverPhotoId, isPublic, churchId) {
+    if (!churchId) throw new Error('GalleryRepository.updateAlbum: churchId required');
     const result = await this.pool.query(
       `UPDATE gallery_albums
        SET title = COALESCE($1, title),
@@ -187,15 +190,16 @@ class GalleryRepository extends BaseRepository {
            cover_photo_id = COALESCE($3, cover_photo_id),
            is_private = COALESCE($4, is_private),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5
+       WHERE id = $5 AND church_id = $6
        RETURNING *`,
-      [title, description, coverPhotoId, isPublic !== undefined ? !isPublic : undefined, id]
+      [title, description, coverPhotoId, isPublic !== undefined ? !isPublic : undefined, id, churchId]
     );
     return result.rows[0];
   }
 
-  async deleteAlbum(id) {
-    await this.pool.query('DELETE FROM gallery_albums WHERE id = $1', [id]);
+  async deleteAlbum(id, churchId) {
+    if (!churchId) throw new Error('GalleryRepository.deleteAlbum: churchId required');
+    await this.pool.query('DELETE FROM gallery_albums WHERE id = $1 AND church_id = $2', [id, churchId]);
   }
 
   async uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId) {
@@ -501,29 +505,32 @@ class GalleryRepository extends BaseRepository {
     );
   }
 
-  async getGalleryAnalytics(startDate, endDate) {
-    const totalResult = await this.pool.query('SELECT COUNT(*) as count FROM gallery_photos');
+  async getGalleryAnalytics(startDate, endDate, churchId) {
+    if (!churchId) throw new Error('GalleryRepository.getGalleryAnalytics: churchId required');
+    const totalResult = await this.pool.query(
+      'SELECT COUNT(*) as count FROM gallery_photos WHERE church_id = $1', [churchId]);
 
     const albumResult = await this.pool.query(
-      `SELECT ga.title, COUNT(gp.id) as count 
-       FROM gallery_albums ga 
-       LEFT JOIN gallery_photos gp ON ga.id = gp.album_id 
-       GROUP BY ga.title`
+      `SELECT ga.title, COUNT(gp.id) as count
+       FROM gallery_albums ga
+       LEFT JOIN gallery_photos gp ON ga.id = gp.album_id AND gp.church_id = $1
+       WHERE ga.church_id = $1
+       GROUP BY ga.title`, [churchId]
     );
 
     let trendQuery = `
-      SELECT DATE(uploaded_at) as date, COUNT(*) as count 
-      FROM gallery_photos 
-      WHERE uploaded_at IS NOT NULL
+      SELECT DATE(uploaded_at) as date, COUNT(*) as count
+      FROM gallery_photos
+      WHERE uploaded_at IS NOT NULL AND church_id = $1
     `;
-    const trendParams = [];
+    const trendParams = [churchId];
 
     if (startDate) {
-      trendQuery += ` AND uploaded_at >= $1`;
+      trendQuery += ` AND uploaded_at >= $${trendParams.length + 1}`;
       trendParams.push(startDate);
     }
     if (endDate) {
-      trendQuery += ` AND uploaded_at <= $2`;
+      trendQuery += ` AND uploaded_at <= $${trendParams.length + 1}`;
       trendParams.push(endDate);
     }
 

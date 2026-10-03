@@ -145,17 +145,18 @@ class ContentRepository extends BaseRepository {
   }
 
   async createContentItem(data) {
+    if (!data.churchId) throw new Error('ContentRepository.createContentItem: churchId required');
     const result = await this.pool.query(
       `INSERT INTO content_items (
         title, slug, content, content_type, category_id, author_id, status,
-        published_at, expires_at, priority, seo_title, seo_description, og_image
+        published_at, expires_at, priority, seo_title, seo_description, og_image, church_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *`,
       [
         data.title, data.slug, data.content, data.contentType, data.categoryId, data.authorId,
         data.status, data.publishedAt, data.expiresAt, data.priority, data.seoTitle,
-        data.seoDescription, data.ogImage
+        data.seoDescription, data.ogImage, data.churchId
       ]
     );
     return result.rows[0];

@@ -23,23 +23,24 @@ class FundRepository extends BaseRepository {
     return rows.map(row => Fund.fromDatabase(row));
   }
 
-  async findById(id, churchId = null) {
+  async findById(id, churchId) {
+    if (!churchId) throw new Error('findById: churchId is required');
     const rows = await super.findAll({
-      where: churchId ? { id, church_id: churchId } : { id },
+      where: { id, church_id: churchId },
       limit: 1
     });
     return rows[0] ? Fund.fromDatabase(rows[0]) : null;
   }
 
-  async findByFundCode(fundCode, churchId = null) {
-    const query = churchId
-      ? 'SELECT * FROM funds WHERE fund_code = $1 AND church_id = $2'
-      : 'SELECT * FROM funds WHERE fund_code = $1';
-    const result = await this.pool.query(query, churchId ? [fundCode, churchId] : [fundCode]);
+  async findByFundCode(fundCode, churchId) {
+    if (!churchId) throw new Error('findByFundCode: churchId is required');
+    const query = 'SELECT * FROM funds WHERE fund_code = $1 AND church_id = $2';
+    const result = await this.pool.query(query, [fundCode, churchId]);
     return result.rows[0] ? Fund.fromDatabase(result.rows[0]) : null;
   }
 
-  async create(fund, churchId = null) {
+  async create(fund, churchId) {
+    if (!churchId) throw new Error('create: churchId is required');
     const validation = fund.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
@@ -62,14 +63,15 @@ class FundRepository extends BaseRepository {
     return Fund.fromDatabase(result.rows[0]);
   }
 
-  async update(id, fund, churchId = null) {
+  async update(id, fund, churchId) {
+    if (!churchId) throw new Error('update: churchId is required');
     const data = fund.toDatabase();
     const query = `
       UPDATE funds SET
         fund_code = $1, fund_name = $2, fund_type = $3, description = $4,
         purpose = $5, start_date = $6, end_date = $7, target_amount = $8,
         is_active = $9, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $10 ${churchId ? 'AND church_id = $11' : ''}
+      WHERE id = $10  AND church_id = $11
       RETURNING *
     `;
 
@@ -84,27 +86,28 @@ class FundRepository extends BaseRepository {
     return result.rows[0] ? Fund.fromDatabase(result.rows[0]) : null;
   }
 
-  async delete(id, churchId = null) {
-    const query = churchId
-      ? 'DELETE FROM funds WHERE id = $1 AND church_id = $2 RETURNING *'
-      : 'DELETE FROM funds WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM funds WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] || null;
   }
 
-  async updateBalance(id, amount, churchId = null) {
+  async updateBalance(id, amount, churchId) {
+    if (!churchId) throw new Error('updateBalance: churchId is required');
     const query = `
       UPDATE funds
       SET current_balance = current_balance + $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 ${churchId ? 'AND church_id = $3' : ''}
+      WHERE id = $2  AND church_id = $3
       RETURNING *
     `;
-    const params = churchId ? [amount, id, churchId] : [amount, id];
+    const params = [amount, id, churchId];
     const result = await this.pool.query(query, params);
     return result.rows[0] ? Fund.fromDatabase(result.rows[0]) : null;
   }
 
-  async getFundBalances(churchId = null) {
+  async getFundBalances(churchId) {
+    if (!churchId) throw new Error('getFundBalances: churchId is required');
     const query = `
       SELECT f.*,
         COALESCE((
@@ -114,10 +117,10 @@ class FundRepository extends BaseRepository {
           SELECT SUM(amount) FROM expenses WHERE fund_id = f.id AND status = 'paid'
         ), 0) as total_expenses
       FROM funds f
-      WHERE f.is_active = true ${churchId ? 'AND f.church_id = $1' : ''}
+      WHERE f.is_active = true  AND f.church_id = $1
       ORDER BY f.fund_code
     `;
-    const result = await this.pool.query(query, churchId ? [churchId] : []);
+    const result = await this.pool.query(query, [churchId]);
     return result.rows;
   }
 

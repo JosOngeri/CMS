@@ -36,8 +36,10 @@ class VendorsRepository extends BaseRepository {
     return result.rows;
   }
 
-  async getVendorById(id) {
-    const result = await this.pool.query('SELECT * FROM vendors WHERE id = $1', [id]);
+  async getVendorById(id, churchId) {
+    if (!churchId) throw new Error('VendorsRepository.getVendorById: churchId required');
+    const result = await this.pool.query(
+      'SELECT * FROM vendors WHERE id = $1 AND church_id = $2', [id, churchId]);
     return result.rows[0];
   }
 
@@ -53,7 +55,8 @@ class VendorsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateVendor(id, data) {
+  async updateVendor(id, data, churchId) {
+    if (!churchId) throw new Error('VendorsRepository.updateVendor: churchId required');
     const { vendor_name, contact_person, phone, email, address, city, country, tax_id, payment_terms, is_active } = data;
 
     const result = await this.pool.query(
@@ -69,31 +72,32 @@ class VendorsRepository extends BaseRepository {
            payment_terms = COALESCE($9, payment_terms),
            is_active = COALESCE($10, is_active),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $11
+       WHERE id = $11 AND church_id = $12
        RETURNING *`,
-      [vendor_name, contact_person, phone, email, address, city, country, tax_id, payment_terms, is_active, id]
+      [vendor_name, contact_person, phone, email, address, city, country, tax_id, payment_terms, is_active, id, churchId]
     );
     return result.rows[0] || null;
   }
 
-  async getVendorTransactionCount(id) {
+  async getVendorTransactionCount(id, churchId) {
     const result = await this.pool.query(
-      'SELECT COUNT(*) as count FROM transactions WHERE vendor_id = $1',
-      [id]
+      'SELECT COUNT(*) as count FROM transactions WHERE vendor_id = $1 AND church_id = $2',
+      [id, churchId]
     );
     return parseInt(result.rows[0].count);
   }
 
-  async archiveVendor(id) {
+  async archiveVendor(id, churchId) {
     const result = await this.pool.query(
-      `UPDATE vendors SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
-      [id]
+      `UPDATE vendors SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND church_id = $2 RETURNING *`,
+      [id, churchId]
     );
     return result.rows[0];
   }
 
-  async deleteVendor(id) {
-    const result = await this.pool.query('DELETE FROM vendors WHERE id = $1 RETURNING *', [id]);
+  async deleteVendor(id, churchId) {
+    const result = await this.pool.query(
+      'DELETE FROM vendors WHERE id = $1 AND church_id = $2 RETURNING *', [id, churchId]);
     return result.rows[0];
   }
 }

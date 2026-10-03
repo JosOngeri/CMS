@@ -196,7 +196,7 @@ class ManualPaymentController extends BaseController {
         return ResponseHandler.error(res, 'Cannot delete verified payment', 403);
       }
 
-      await ManualPaymentRepository.deletePayment(id);
+      await ManualPaymentRepository.deletePayment(id, churchId);
 
       this.logger.info(`Manual payment deleted: ${id}`);
 
@@ -226,7 +226,7 @@ class ManualPaymentController extends BaseController {
       }
 
       // Update payment with matched member
-      await ManualPaymentRepository.updatePaymentMember(paymentId, bestMatch.id);
+      await ManualPaymentRepository.updatePaymentMember(paymentId, bestMatch.id, churchId);
 
       return ResponseHandler.success(res, {
         matched: true,

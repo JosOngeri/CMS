@@ -3,7 +3,7 @@
  * Legacy singular mounts (/department, /payment) 308-redirect to plural.
  * @exports express.Router
  * @deps routes/*.routes.js, middleware/{rateLimiter,pagination}
- * @known /treasury/dashboard + /treasury/chart-of-accounts mount AFTER two /treasury parents (fallthrough-dependent); accountingExport.controller has no mount (dead code) — ledger.
+ * @known /treasury/dashboard + /treasury/chart-of-accounts mount AFTER two /treasury parents (fallthrough-dependent).
  */
 const express = require('express');
 const router = express.Router();

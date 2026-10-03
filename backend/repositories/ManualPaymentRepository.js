@@ -179,8 +179,10 @@ class ManualPaymentRepository extends BaseRepository {
   /**
    * Delete payment
    */
-  async deletePayment(id) {
-    const result = await this.pool.query('DELETE FROM payments WHERE id = $1', [id]);
+  async deletePayment(id, churchId) {
+    // Scoped delete — the prior findById check is TOCTOU-unsafe on its own.
+    const result = await this.pool.query(
+      'DELETE FROM payments WHERE id = $1 AND church_id = $2', [id, churchId]);
     return result.rowCount > 0;
   }
 
@@ -198,10 +200,13 @@ class ManualPaymentRepository extends BaseRepository {
   /**
    * Update payment with matched member
    */
-  async updatePaymentMember(paymentId, memberId) {
+  async updatePaymentMember(paymentId, memberId, churchId) {
+    // Both the payment AND the target member must belong to the church.
     const result = await this.pool.query(
-      'UPDATE payments SET member_id = $1 WHERE id = $2',
-      [memberId, paymentId]
+      `UPDATE payments SET member_id = $1
+       WHERE id = $2 AND church_id = $3
+         AND EXISTS (SELECT 1 FROM members m WHERE m.id = $1 AND m.church_id = $3)`,
+      [memberId, paymentId, churchId]
     );
     return result.rows[0];
   }

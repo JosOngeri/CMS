@@ -4,8 +4,30 @@
  * Follows Repository Pattern for data access abstraction
  */
 
+// SECURITY: identifiers (where keys, orderBy, joins) are interpolated into SQL —
+// every one is validated against a strict identifier pattern. Pass `churchId`
+// to scope queries to a tenant; omit it only for explicit platform-level reads.
+const IDENT = /^[a-zA-Z_][a-zA-Z0-9_.]*$/;
+const ORDER_TERM = /^[a-zA-Z_][a-zA-Z0-9_.]*(\s+(ASC|DESC))?$/i;
+
+function assertIdent(value, what) {
+  if (typeof value !== 'string' || !IDENT.test(value)) {
+    throw new Error(`Invalid SQL identifier for ${what}: ${value}`);
+  }
+}
+
+function assertOrderBy(orderBy) {
+  orderBy.split(',').forEach(term => {
+    if (!ORDER_TERM.test(term.trim())) {
+      throw new Error(`Invalid ORDER BY term: ${term}`);
+    }
+  });
+}
+
 class BaseRepository {
   constructor(pool, tableName, primaryKey = 'id') {
+    assertIdent(tableName, 'tableName');
+    assertIdent(primaryKey, 'primaryKey');
     this.pool = pool;
     this.tableName = tableName;
     this.primaryKey = primaryKey;
@@ -15,47 +37,63 @@ class BaseRepository {
    * Find all records with optional filtering and pagination
    */
   async findAll(options = {}) {
-    const { where = {}, orderBy = null, limit = null, offset = null, joins = [] } = options;
-    
+    const { where = {}, orderBy = null, limit = null, offset = null, joins = [], churchId = null } = options;
+
     let query = `SELECT ${this.tableName}.*`;
     let params = [];
     let paramIndex = 1;
-    
-    // Add join selects
+
+    // Add join selects (identifier chains + optional alias only)
     joins.forEach(join => {
       if (join.select) {
+        join.select.split(',').forEach(sel => {
+          const trimmed = sel.trim();
+          const m = trimmed.match(/^([a-zA-Z_][a-zA-Z0-9_.*]*)(\s+(?:AS\s+)?[a-zA-Z_][a-zA-Z0-9_]*)?$/i);
+          if (!m) throw new Error(`Invalid join select: ${trimmed}`);
+        });
         query += `, ${join.select}`;
       }
+      assertIdent(join.table.split(' ')[0], 'join.table');
+      if (!/^(INNER|LEFT|RIGHT|FULL|CROSS)$/i.test(join.type || 'LEFT')) {
+        throw new Error(`Invalid join type: ${join.type}`);
+      }
     });
-    
+
     query += ` FROM ${this.tableName}`;
-    
+
     // Add joins
     joins.forEach(join => {
       query += ` ${join.type || 'LEFT'} JOIN ${join.table} ON ${join.condition}`;
     });
-    
+
+    // Tenant scope — explicit opt-in; subclasses should always pass it
+    const effectiveWhere = { ...where };
+    if (churchId) effectiveWhere[`${this.tableName}.church_id`] = churchId;
+
     // Add where clause
-    const whereKeys = Object.keys(where);
+    const whereKeys = Object.keys(effectiveWhere);
     if (whereKeys.length > 0) {
       const whereConditions = whereKeys.map(key => {
-        if (Array.isArray(where[key])) {
+        assertIdent(key, 'where key');
+        const value = effectiveWhere[key];
+        if (Array.isArray(value)) {
           // Handle array values (IN clause)
-          const placeholders = where[key].map(() => `$${paramIndex++}`).join(', ');
-          params.push(...where[key]);
+          const placeholders = value.map(() => `$${paramIndex++}`).join(', ');
+          params.push(...value);
           return `${key} IN (${placeholders})`;
-        } else if (where[key] === null) {
+        } else if (value === null) {
           return `${key} IS NULL`;
         } else {
-          params.push(where[key]);
+          params.push(value);
           return `${key} = $${paramIndex++}`;
         }
       });
       query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
-    
-    // Add order by
+
+    // Add order by (validated — interpolated into SQL)
     if (orderBy) {
+      assertOrderBy(orderBy);
       query += ` ORDER BY ${orderBy}`;
     }
     
@@ -95,8 +133,14 @@ class BaseRepository {
     });
     
     query += ` WHERE ${this.tableName}.${this.primaryKey} = $1`;
-    
-    const result = await this.pool.query(query, [id]);
+
+    const params = [id];
+    if (options.churchId) {
+      params.push(options.churchId);
+      query += ` AND ${this.tableName}.church_id = $2`;
+    }
+
+    const result = await this.pool.query(query, params);
     return result.rows[0] || null;
   }
 
@@ -131,38 +175,53 @@ class BaseRepository {
   /**
    * Update a record by primary key
    */
-  async update(id, data) {
+  async update(id, data, churchId = null) {
     const keys = Object.keys(data);
     const values = Object.values(data);
-    
+
     if (keys.length === 0) {
       throw new Error('No data provided for update');
     }
-    
+
+    keys.forEach(key => assertIdent(key, 'update column'));
     const setClause = keys.map((key, index) => `${key} = $${index + 1}`).join(', ');
-    
+
+    const params = [...values, id];
+    let scopeClause = '';
+    if (churchId) {
+      params.push(churchId);
+      scopeClause = ` AND church_id = $${params.length}`;
+    }
+
     const query = `
       UPDATE ${this.tableName}
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
-      WHERE ${this.primaryKey} = $${keys.length + 1}
+      WHERE ${this.primaryKey} = $${keys.length + 1}${scopeClause}
       RETURNING *
     `;
-    
-    const result = await this.pool.query(query, [...values, id]);
+
+    const result = await this.pool.query(query, params);
     return result.rows[0] || null;
   }
 
   /**
    * Delete a record by primary key
    */
-  async delete(id) {
+  async delete(id, churchId = null) {
+    const params = [id];
+    let scopeClause = '';
+    if (churchId) {
+      params.push(churchId);
+      scopeClause = ` AND church_id = $2`;
+    }
+
     const query = `
       DELETE FROM ${this.tableName}
-      WHERE ${this.primaryKey} = $1
+      WHERE ${this.primaryKey} = $1${scopeClause}
       RETURNING *
     `;
-    
-    const result = await this.pool.query(query, [id]);
+
+    const result = await this.pool.query(query, params);
     return result.rows[0] || null;
   }
 
@@ -177,12 +236,13 @@ class BaseRepository {
     const whereKeys = Object.keys(where);
     if (whereKeys.length > 0) {
       const whereConditions = whereKeys.map(key => {
+        assertIdent(key, 'count where key');
         params.push(where[key]);
         return `${key} = $${paramIndex++}`;
       });
       query += ` WHERE ${whereConditions.join(' AND ')}`;
     }
-    
+
     const result = await this.pool.query(query, params);
     return parseInt(result.rows[0].count, 10);
   }

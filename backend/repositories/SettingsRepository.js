@@ -458,12 +458,12 @@ class SettingsRepository extends BaseRepository {
     const params = [];
 
     if (key) {
-      query += ' AND setting_key = $1';
       params.push(key);
+      query += ` AND setting_key = $${params.length}`;
     }
 
-    query += ' ORDER BY changed_at DESC LIMIT $1';
     params.push(limit);
+    query += ` ORDER BY changed_at DESC LIMIT $${params.length}`;
 
     const result = await this.pool.query(query, params);
     return result.rows;

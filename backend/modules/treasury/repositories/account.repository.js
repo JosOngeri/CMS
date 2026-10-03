@@ -64,7 +64,8 @@ class AccountRepository extends BaseRepository {
   /**
    * Find account by ID with related data
    */
-  async findById(id, churchId = null) {
+  async findById(id, churchId) {
+    if (!churchId) throw new Error('findById: churchId is required');
     const joins = [
       {
         table: 'accounts p',
@@ -96,10 +97,11 @@ class AccountRepository extends BaseRepository {
   /**
    * Find account by account number
    */
-  async findByAccountNumber(accountNumber, churchId = null) {
+  async findByAccountNumber(accountNumber, churchId) {
+    if (!churchId) throw new Error('findByAccountNumber: churchId is required');
     const result = await this.pool.query(
-      `SELECT * FROM accounts WHERE account_number = $1 ${churchId ? 'AND church_id = $2' : ''}`,
-      churchId ? [accountNumber, churchId] : [accountNumber]
+      `SELECT * FROM accounts WHERE account_number = $1  AND church_id = $2`,
+      [accountNumber, churchId]
     );
     return result.rows[0] ? Account.fromDatabase(result.rows[0]) : null;
   }
@@ -107,10 +109,11 @@ class AccountRepository extends BaseRepository {
   /**
    * Find child accounts by parent ID
    */
-  async findByParentId(parentId, churchId = null) {
+  async findByParentId(parentId, churchId) {
+    if (!churchId) throw new Error('findByParentId: churchId is required');
     const result = await this.pool.query(
-      `SELECT * FROM accounts WHERE parent_account_id = $1 ${churchId ? 'AND church_id = $2' : ''} ORDER BY account_number`,
-      churchId ? [parentId, churchId] : [parentId]
+      `SELECT * FROM accounts WHERE parent_account_id = $1  AND church_id = $2 ORDER BY account_number`,
+      [parentId, churchId]
     );
     return result.rows.map(row => Account.fromDatabase(row));
   }
@@ -118,10 +121,11 @@ class AccountRepository extends BaseRepository {
   /**
    * Find accounts by fund ID
    */
-  async findByFundId(fundId, churchId = null) {
+  async findByFundId(fundId, churchId) {
+    if (!churchId) throw new Error('findByFundId: churchId is required');
     const result = await this.pool.query(
-      `SELECT * FROM accounts WHERE fund_id = $1 ${churchId ? 'AND church_id = $2' : ''} ORDER BY account_number`,
-      churchId ? [fundId, churchId] : [fundId]
+      `SELECT * FROM accounts WHERE fund_id = $1  AND church_id = $2 ORDER BY account_number`,
+      [fundId, churchId]
     );
     return result.rows.map(row => Account.fromDatabase(row));
   }
@@ -129,8 +133,9 @@ class AccountRepository extends BaseRepository {
   /**
    * Get account hierarchy
    */
-  async getHierarchy(churchId = null) {
-    const churchFilter = churchId ? 'AND a.church_id = $1' : '';
+  async getHierarchy(churchId) {
+    if (!churchId) throw new Error('getHierarchy: churchId is required');
+    const churchFilter = "AND a.church_id = $1";
     const query = `
       WITH RECURSIVE account_tree AS (
         SELECT
@@ -152,7 +157,7 @@ class AccountRepository extends BaseRepository {
       SELECT * FROM account_tree ORDER BY path;
     `;
 
-    const result = await this.pool.query(query, churchId ? [churchId] : []);
+    const result = await this.pool.query(query, [churchId]);
     return result.rows.map(row => ({
       ...Account.fromDatabase(row),
       level: row.level,
@@ -163,19 +168,18 @@ class AccountRepository extends BaseRepository {
   /**
    * Get trial balance (all accounts with balances)
    */
-  async getTrialBalance(asOfDate = null, churchId = null) {
+  async getTrialBalance(asOfDate = null, churchId) {
+    if (!churchId) throw new Error('getTrialBalance: churchId is required');
     const conditions = [];
     const params = [];
     if (asOfDate) {
       params.push(asOfDate);
       conditions.push(`je.entry_date <= $${params.length}`);
     }
-    if (churchId) {
-      params.push(churchId);
-      conditions.push(`je.church_id = $${params.length}`);
-    }
+    params.push(churchId);
+    conditions.push(`je.church_id = $${params.length}`);
     const extra = conditions.length ? `AND ${conditions.join(' AND ')}` : '';
-    const accountChurch = churchId ? `AND a.church_id = $${params.length}` : '';
+    const accountChurch = `AND a.church_id = $${params.length}`;
 
     const query = `
       SELECT
@@ -221,7 +225,8 @@ class AccountRepository extends BaseRepository {
   /**
    * Create new account
    */
-  async create(account, churchId = null) {
+  async create(account, churchId) {
+    if (!churchId) throw new Error('create: churchId is required');
     const validation = account.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
@@ -254,7 +259,8 @@ class AccountRepository extends BaseRepository {
   /**
    * Update account
    */
-  async update(id, account, churchId = null) {
+  async update(id, account, churchId) {
+    if (!churchId) throw new Error('update: churchId is required');
     const data = account.toDatabase();
     const query = `
       UPDATE accounts SET
@@ -267,7 +273,7 @@ class AccountRepository extends BaseRepository {
         description = $7,
         is_active = $8,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $9 ${churchId ? 'AND church_id = $10' : ''}
+      WHERE id = $9  AND church_id = $10
       RETURNING *
     `;
 
@@ -292,7 +298,8 @@ class AccountRepository extends BaseRepository {
   /**
    * Delete account (only if no transactions)
    */
-  async delete(id, churchId = null) {
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
     // Check for transactions first
     const checkQuery = `
       SELECT COUNT(*) as count
@@ -306,8 +313,8 @@ class AccountRepository extends BaseRepository {
     }
 
     const result = await this.pool.query(
-      `DELETE FROM accounts WHERE id = $1 ${churchId ? 'AND church_id = $2' : ''} RETURNING *`,
-      churchId ? [id, churchId] : [id]
+      `DELETE FROM accounts WHERE id = $1  AND church_id = $2 RETURNING *`,
+      [id, churchId]
     );
     
     return result.rows[0] ? Account.fromDatabase(result.rows[0]) : null;

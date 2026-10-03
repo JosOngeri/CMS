@@ -608,36 +608,44 @@ class MobileRepository extends BaseRepository {
   }
 
   async getUnifiedAnalytics(churchId, startDate, endDate) {
+    if (!churchId) throw new Error('MobileRepository.getUnifiedAnalytics: churchId required');
     const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const end = endDate || new Date();
 
+    // sms_logs has no church_id — scope through the sender's user row.
     const [smsStats, memberStats, engagementStats] = await Promise.all([
       this.pool.query(
         `SELECT
           COUNT(*) as total_sent,
-          COUNT(CASE WHEN status = 'sent' THEN 1 END) as successful,
-          COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed,
-          AVG(recipient_count) as avg_recipients
-        FROM sms_logs
-        WHERE created_at BETWEEN $1 AND $2`,
-        [start, end]
+          COUNT(CASE WHEN sl.status = 'sent' THEN 1 END) as successful,
+          COUNT(CASE WHEN sl.status = 'failed' THEN 1 END) as failed,
+          AVG(sl.recipient_count) as avg_recipients
+        FROM sms_logs sl
+        JOIN users u ON sl.sender_id = u.id AND u.church_id = $3
+        WHERE sl.created_at BETWEEN $1 AND $2`,
+        [start, end, churchId]
       ),
       this.pool.query(
         `SELECT
           COUNT(*) as total_members,
           COUNT(CASE WHEN updated_at > $2 THEN 1 END) as active_members
         FROM members
-        WHERE is_active = true`,
-        [start]
+        WHERE is_active = true AND church_id = $1`,
+        [churchId, start]
       ),
+      // activities table is optional — tolerate 42P01, fail on anything else
       this.pool.query(
         `SELECT
           COUNT(*) as total_interactions,
           COUNT(DISTINCT user_id) as unique_users
-        FROM activities
-        WHERE created_at BETWEEN $1 AND $2`,
-        [start, end]
-      )
+        FROM activities a
+        JOIN users u ON a.user_id = u.id AND u.church_id = $3
+        WHERE a.created_at BETWEEN $1 AND $2`,
+        [start, end, churchId]
+      ).catch(err => {
+        if (err.code === '42P01') return { rows: [{ total_interactions: 0, unique_users: 0 }] };
+        throw err;
+      })
     ]);
 
     return {
@@ -649,48 +657,50 @@ class MobileRepository extends BaseRepository {
   }
 
   async getSmsAnalytics(churchId, startDate, endDate) {
+    if (!churchId) throw new Error('MobileRepository.getSmsAnalytics: churchId required');
     const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const end = endDate || new Date();
 
     const query = `
       SELECT
-        DATE(created_at) as date,
+        DATE(sl.created_at) as date,
         COUNT(*) as total_sent,
-        COUNT(CASE WHEN status = 'sent' THEN 1 END) as successful,
-        COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed,
-        SUM(recipient_count) as total_recipients
-      FROM sms_logs
-      WHERE created_at BETWEEN $1 AND $2
-      GROUP BY DATE(created_at)
+        COUNT(CASE WHEN sl.status = 'sent' THEN 1 END) as successful,
+        COUNT(CASE WHEN sl.status = 'failed' THEN 1 END) as failed,
+        SUM(sl.recipient_count) as total_recipients
+      FROM sms_logs sl
+      JOIN users u ON sl.sender_id = u.id AND u.church_id = $3
+      WHERE sl.created_at BETWEEN $1 AND $2
+      GROUP BY DATE(sl.created_at)
       ORDER BY date ASC
     `;
 
-    const result = await this.pool.query(query, [start, end]);
+    const result = await this.pool.query(query, [start, end, churchId]);
     return result.rows;
   }
 
   async mobileLogin(email, password, deviceId, deviceName) {
-    // This would integrate with the existing auth system
-    // For now, return a mock response
+    const { comparePassword, generateAccessToken, generateRefreshToken } = require('../helpers/security');
+
     const userQuery = await this.pool.query(
-      'SELECT * FROM users WHERE email = $1 AND is_active = true',
+      'SELECT * FROM users WHERE email = $1 AND is_active = true AND deleted_at IS NULL',
       [email]
     );
 
     if (userQuery.rows.length === 0) {
-      throw new Error('User not found');
+      throw new Error('Invalid credentials');
     }
 
     const user = userQuery.rows[0];
+    const valid = await comparePassword(password, user.password_hash);
+    if (!valid) {
+      throw new Error('Invalid credentials');
+    }
 
-    // In production, verify password hash here
-    // For now, we'll assume password is valid
+    const accessToken = generateAccessToken(user.id, user.roles || [], false, 'mobile');
+    const refreshToken = generateRefreshToken(user.id);
 
-    // Generate tokens (this would use the existing JWT system)
-    const accessToken = 'mock_access_token_' + Date.now();
-    const refreshToken = 'mock_refresh_token_' + Date.now();
-
-    // Register device if provided
+    // Register device if provided — real church_id, never a hardcoded fallback
     if (deviceId && deviceName) {
       await this.registerMobileDevice({
         deviceId,
@@ -698,7 +708,7 @@ class MobileRepository extends BaseRepository {
         platform: 'android',
         osVersion: 'unknown',
         userId: user.id,
-        churchId: 1 // Default church ID
+        churchId: user.church_id
       });
     }
 
@@ -708,7 +718,7 @@ class MobileRepository extends BaseRepository {
         email: user.email,
         name: `${user.first_name} ${user.last_name}`,
         roles: user.roles,
-        churchId: 1 // Default church ID
+        churchId: user.church_id
       },
       tokens: {
         accessToken,
@@ -749,7 +759,7 @@ class MobileRepository extends BaseRepository {
       ORDER BY last_sync DESC
     `;
 
-    const result = await this.pool.query(query, [userId, churchId || 1]);
+    const result = await this.pool.query(query, [userId, churchId]);
     return result.rows;
   }
 
@@ -764,13 +774,13 @@ class MobileRepository extends BaseRepository {
         error_message = NULL
     `;
 
-    await this.pool.query(query, [userId, churchId || 1, syncType, status, timestamp]);
+    await this.pool.query(query, [userId, churchId, syncType, status, timestamp]);
   }
 
   async resetSync(userId, churchId) {
     await this.pool.query(
       'DELETE FROM mobile_sync_status WHERE user_id = $1 AND church_id = $2',
-      [userId, churchId || 1]
+      [userId, churchId]
     );
   }
 
@@ -790,7 +800,7 @@ class MobileRepository extends BaseRepository {
       ORDER BY last_used DESC
     `;
 
-    const result = await this.pool.query(query, [userId, churchId || 1]);
+    const result = await this.pool.query(query, [userId, churchId]);
     return result.rows;
   }
 
@@ -814,7 +824,7 @@ class MobileRepository extends BaseRepository {
 
     const result = await this.pool.query(query, [
       deviceId, deviceName, platform, osVersion,
-      userId, churchId || 1, new Date(), new Date()
+      userId, churchId, new Date(), new Date()
     ]);
 
     return result.rows[0];

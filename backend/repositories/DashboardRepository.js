@@ -744,7 +744,9 @@ class DashboardRepository extends BaseRepository {
         spentBudget: parseFloat(budgetResult.rows[0]?.spent_budget) || 0
       };
     } catch (error) {
-      // If tables don't exist, return zeros
+      // Only tolerate missing-table errors (42P01) — anything else
+      // (bad SQL, perms, constraint) must surface, not masquerade as zeros.
+      if (error.code !== '42P01') throw error;
       return {
         totalTasks: 0,
         completedTasks: 0,
@@ -835,7 +837,8 @@ class DashboardRepository extends BaseRepository {
       const result = await this.pool.query(query, params);
       return result.rows;
     } catch (error) {
-      // If tables don't exist, return empty array
+      // Missing-table only (42P01); real errors propagate.
+      if (error.code !== '42P01') throw error;
       return [];
     }
   }

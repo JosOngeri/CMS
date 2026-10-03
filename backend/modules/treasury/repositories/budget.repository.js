@@ -62,7 +62,8 @@ class BudgetRepository extends BaseRepository {
     return result.rows.map(row => Budget.fromDatabase(row));
   }
 
-  async findById(id, churchId = null) {
+  async findById(id, churchId) {
+    if (!churchId) throw new Error('findById: churchId is required');
     const query = `
       SELECT b.*,
         a.account_name, a.account_number,
@@ -74,13 +75,14 @@ class BudgetRepository extends BaseRepository {
       LEFT JOIN funds f ON b.fund_id = f.id
       LEFT JOIN departments d ON b.department_id = d.id
       LEFT JOIN users u ON b.created_by = u.id
-      WHERE b.id = $1 ${churchId ? 'AND b.church_id = $2' : ''}
+      WHERE b.id = $1  AND b.church_id = $2
     `;
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] ? Budget.fromDatabase(result.rows[0]) : null;
   }
 
-  async create(budget, churchId = null) {
+  async create(budget, churchId) {
+    if (!churchId) throw new Error('create: churchId is required');
     const validation = budget.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
@@ -104,7 +106,8 @@ class BudgetRepository extends BaseRepository {
     return this.findById(result.rows[0].id, churchId);
   }
 
-  async update(id, budget, churchId = null) {
+  async update(id, budget, churchId) {
+    if (!churchId) throw new Error('update: churchId is required');
     const data = budget.toDatabase();
     const query = `
       UPDATE budgets SET
@@ -112,7 +115,7 @@ class BudgetRepository extends BaseRepository {
         fund_id = $5, department_id = $6, total_budgeted = $7, total_actual = $8,
         variance = $9, variance_percentage = $10, status = $11, start_date = $12,
         end_date = $13, notes = $14, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $15 ${churchId ? 'AND church_id = $16' : ''}
+      WHERE id = $15  AND church_id = $16
       RETURNING *
     `;
 
@@ -129,15 +132,15 @@ class BudgetRepository extends BaseRepository {
     return result.rows[0] ? this.findById(id, churchId) : null;
   }
 
-  async delete(id, churchId = null) {
-    const query = churchId
-      ? 'DELETE FROM budgets WHERE id = $1 AND church_id = $2 RETURNING *'
-      : 'DELETE FROM budgets WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM budgets WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] || null;
   }
 
-  async updateActualSpending(id, churchId = null) {
+  async updateActualSpending(id, churchId) {
+    if (!churchId) throw new Error('updateActualSpending: churchId is required');
     const query = `
       UPDATE budgets SET
         total_actual = COALESCE((
@@ -166,14 +169,15 @@ class BudgetRepository extends BaseRepository {
           ELSE 0
         END,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1 ${churchId ? 'AND church_id = $2' : ''}
+      WHERE id = $1  AND church_id = $2
       RETURNING *
     `;
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] ? Budget.fromDatabase(result.rows[0]) : null;
   }
 
-  async getBudgetAlerts(threshold = 80, churchId = null) {
+  async getBudgetAlerts(threshold = 80, churchId) {
+    if (!churchId) throw new Error('getBudgetAlerts: churchId is required');
     // Update all budget actuals first
     await this.pool.query(`
       UPDATE budgets SET
@@ -184,8 +188,8 @@ class BudgetRepository extends BaseRepository {
             AND e.status = 'paid'
             AND e.expense_date BETWEEN budgets.start_date AND budgets.end_date
         ), 0)
-      WHERE status = 'active' ${churchId ? 'AND church_id = $1' : ''}
-    `, churchId ? [churchId] : []);
+      WHERE status = 'active'  AND church_id = $1
+    `, [churchId]);
     
     const query = `
       SELECT b.*,
@@ -199,14 +203,15 @@ class BudgetRepository extends BaseRepository {
       WHERE b.status = 'active'
         AND b.total_budgeted > 0
         AND (b.total_actual / b.total_budgeted) * 100 >= $1
-        ${churchId ? 'AND b.church_id = $2' : ''}
+         AND b.church_id = $2
       ORDER BY (b.total_actual / b.total_budgeted) DESC
     `;
-    const result = await this.pool.query(query, churchId ? [threshold, churchId] : [threshold]);
+    const result = await this.pool.query(query, [threshold, churchId]);
     return result.rows.map(row => Budget.fromDatabase(row));
   }
 
-  async getBudgetComparison(fiscalYear, churchId = null) {
+  async getBudgetComparison(fiscalYear, churchId) {
+    if (!churchId) throw new Error('getBudgetComparison: churchId is required');
     const query = `
       SELECT 
         b.budget_name,
@@ -223,10 +228,10 @@ class BudgetRepository extends BaseRepository {
       FROM budgets b
       LEFT JOIN accounts a ON b.account_id = a.id
       WHERE b.fiscal_year = $1 AND b.status = 'active'
-        ${churchId ? 'AND b.church_id = $2' : ''}
+         AND b.church_id = $2
       ORDER BY ABS(b.variance) DESC
     `;
-    const result = await this.pool.query(query, churchId ? [fiscalYear, churchId] : [fiscalYear]);
+    const result = await this.pool.query(query, [fiscalYear, churchId]);
     return result.rows;
   }
 

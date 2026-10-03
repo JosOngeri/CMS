@@ -31,16 +31,16 @@ class VendorService {
    * @param {string} id - Vendor ID
    * @returns {Promise<{vendor: Object|null, archived: boolean}>}
    */
-  async deleteOrArchiveVendor(id) {
+  async deleteOrArchiveVendor(id, churchId) {
     // Check if vendor has transactions
-    const transactionCount = await VendorsRepository.getVendorTransactionCount(id);
+    const transactionCount = await VendorsRepository.getVendorTransactionCount(id, churchId);
 
     if (transactionCount > 0) {
-      const archived = await VendorsRepository.archiveVendor(id);
+      const archived = await VendorsRepository.archiveVendor(id, churchId);
       return { vendor: archived, archived: true };
     }
 
-    const vendor = await VendorsRepository.deleteVendor(id);
+    const vendor = await VendorsRepository.deleteVendor(id, churchId);
     return { vendor, archived: false };
   }
 }

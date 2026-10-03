@@ -80,14 +80,16 @@ class ExpenseRepository extends BaseRepository {
     return result.rows.map(row => Expense.fromDatabase(row));
   }
 
-  async findById(id, churchId = null) {
-    const query = `${SELECT_WITH_JOINS} WHERE e.id = $1 ${churchId ? 'AND e.church_id = $2' : ''}`;
-    const params = churchId ? [id, churchId] : [id];
+  async findById(id, churchId) {
+    if (!churchId) throw new Error('findById: churchId is required');
+    const query = `${SELECT_WITH_JOINS} WHERE e.id = $1  AND e.church_id = $2`;
+    const params = [id, churchId];
     const result = await this.pool.query(query, params);
     return result.rows[0] ? Expense.fromDatabase(result.rows[0]) : null;
   }
 
-  async create(expense, churchId = null) {
+  async create(expense, churchId) {
+    if (!churchId) throw new Error('create: churchId is required');
     const validation = expense.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
@@ -113,7 +115,8 @@ class ExpenseRepository extends BaseRepository {
     return this.findById(result.rows[0].id, churchId);
   }
 
-  async update(id, expense, churchId = null) {
+  async update(id, expense, churchId) {
+    if (!churchId) throw new Error('update: churchId is required');
     const data = expense.toDatabase();
     const query = `
       UPDATE expenses SET
@@ -121,7 +124,7 @@ class ExpenseRepository extends BaseRepository {
         fund_id = $5, vendor_id = $6, department_id = $7, project_id = $8,
         receipt_url = $9, status = $10, payment_method = $11, notes = $12,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $13 ${churchId ? 'AND church_id = $14' : ''}
+      WHERE id = $13  AND church_id = $14
       RETURNING *
     `;
 
@@ -136,71 +139,76 @@ class ExpenseRepository extends BaseRepository {
     return result.rows[0] ? this.findById(id, churchId) : null;
   }
 
-  async delete(id, churchId = null) {
-    const query = churchId
-      ? 'DELETE FROM expenses WHERE id = $1 AND church_id = $2 RETURNING *'
-      : 'DELETE FROM expenses WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM expenses WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] || null;
   }
 
-  async approve(id, approverId, churchId = null) {
+  async approve(id, approverId, churchId) {
+    if (!churchId) throw new Error('approve: churchId is required');
     const query = `
       UPDATE expenses SET
         status = 'approved',
         approved_by = $1,
         approved_at = CURRENT_TIMESTAMP,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 AND status = 'pending' ${churchId ? 'AND church_id = $3' : ''}
+      WHERE id = $2 AND status = 'pending'  AND church_id = $3
       RETURNING *
     `;
-    const params = churchId ? [approverId, id, churchId] : [approverId, id];
+    const params = [approverId, id, churchId];
     const result = await this.pool.query(query, params);
     return result.rows[0] ? Expense.fromDatabase(result.rows[0]) : null;
   }
 
-  async reject(id, reason, churchId = null) {
+  async reject(id, reason, churchId) {
+    if (!churchId) throw new Error('reject: churchId is required');
     const query = `
       UPDATE expenses SET
         status = 'rejected',
         rejection_reason = $1,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 AND status = 'pending' ${churchId ? 'AND church_id = $3' : ''}
+      WHERE id = $2 AND status = 'pending'  AND church_id = $3
       RETURNING *
     `;
-    const params = churchId ? [reason, id, churchId] : [reason, id];
+    const params = [reason, id, churchId];
     const result = await this.pool.query(query, params);
     return result.rows[0] ? Expense.fromDatabase(result.rows[0]) : null;
   }
 
-  async markAsPaid(id, churchId = null) {
+  async markAsPaid(id, churchId) {
+    if (!churchId) throw new Error('markAsPaid: churchId is required');
     const query = `
       UPDATE expenses SET
         status = 'paid',
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1 AND status = 'approved' ${churchId ? 'AND church_id = $2' : ''}
+      WHERE id = $1 AND status = 'approved'  AND church_id = $2
       RETURNING *
     `;
-    const params = churchId ? [id, churchId] : [id];
+    const params = [id, churchId];
     const result = await this.pool.query(query, params);
     return result.rows[0] ? Expense.fromDatabase(result.rows[0]) : null;
   }
 
-  async getPendingApprovals(churchId = null) {
+  async getPendingApprovals(churchId) {
+    if (!churchId) throw new Error('getPendingApprovals: churchId is required');
     return this.findAll({ status: 'pending', churchId, limit: 100 });
   }
 
-  async getExpensesByStatus(churchId = null) {
+  async getExpensesByStatus(churchId) {
+    if (!churchId) throw new Error('getExpensesByStatus: churchId is required');
     const query = `
       SELECT status, COUNT(*) as count, SUM(amount) as total
-      FROM expenses ${churchId ? 'WHERE church_id = $1' : ''}
+      FROM expenses  WHERE church_id = $1
       GROUP BY status
     `;
-    const result = await this.pool.query(query, churchId ? [churchId] : []);
+    const result = await this.pool.query(query, [churchId]);
     return result.rows;
   }
 
-  async getExpenseSummary(startDate, endDate, churchId = null) {
+  async getExpenseSummary(startDate, endDate, churchId) {
+    if (!churchId) throw new Error('getExpenseSummary: churchId is required');
     const query = `
       SELECT
         a.account_name,
@@ -210,11 +218,11 @@ class ExpenseRepository extends BaseRepository {
       JOIN accounts a ON e.account_id = a.id
       WHERE e.expense_date BETWEEN $1 AND $2
         AND e.status = 'paid'
-        ${churchId ? 'AND e.church_id = $3' : ''}
+         AND e.church_id = $3
       GROUP BY a.account_name
       ORDER BY total_amount DESC
     `;
-    const params = churchId ? [startDate, endDate, churchId] : [startDate, endDate];
+    const params = [startDate, endDate, churchId];
     const result = await this.pool.query(query, params);
     return result.rows;
   }

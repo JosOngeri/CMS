@@ -70,14 +70,15 @@ class JournalEntryRepository extends BaseRepository {
     return entries;
   }
 
-  async findById(id, churchId = null) {
+  async findById(id, churchId) {
+    if (!churchId) throw new Error('findById: churchId is required');
     const query = `
       SELECT je.*, u.first_name || ' ' || u.last_name as created_by_name
       FROM journal_entries je
       LEFT JOIN users u ON je.created_by = u.id
-      WHERE je.id = $1 ${churchId ? 'AND je.church_id = $2' : ''}
+      WHERE je.id = $1  AND je.church_id = $2
     `;
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     
     if (!result.rows[0]) return null;
     
@@ -97,7 +98,8 @@ class JournalEntryRepository extends BaseRepository {
     return result.rows.map(row => new JournalEntryLine(row));
   }
 
-  async create(entry, churchId = null, client = null) {
+  async create(entry, churchId, client = null) {
+    if (!churchId) throw new Error('create: churchId is required');
     const validation = entry.validate();
     if (!validation.isValid) {
       throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
@@ -140,7 +142,8 @@ class JournalEntryRepository extends BaseRepository {
     return this.findById(entryId, churchId);
   }
 
-  async update(id, entry, churchId = null) {
+  async update(id, entry, churchId) {
+    if (!churchId) throw new Error('update: churchId is required');
     const data = entry.toDatabase();
 
     await this.transaction(async client => {
@@ -150,13 +153,13 @@ class JournalEntryRepository extends BaseRepository {
           entry_date = $1, description = $2, reference_type = $3,
           reference_id = $4, status = $5, total_debits = $6, total_credits = $7,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $8 ${churchId ? 'AND church_id = $9' : ''}
+        WHERE id = $8  AND church_id = $9
       `;
 
       await client.query(entryQuery, [
         data.entry_date, data.description, data.reference_type, data.reference_id,
         data.status, entry.total_debits, entry.total_credits, id,
-        ...(churchId ? [churchId] : [])
+        ...([churchId])
       ]);
       
       // Delete existing lines
@@ -180,15 +183,16 @@ class JournalEntryRepository extends BaseRepository {
     return this.findById(id, churchId);
   }
 
-  async reverse(id, userId, churchId = null) {
+  async reverse(id, userId, churchId) {
+    if (!churchId) throw new Error('reverse: churchId is required');
     const original = await this.findById(id, churchId);
     if (!original) throw new Error('Journal entry not found');
 
     return this.transaction(async client => {
       // Mark original as reversed
       await client.query(
-        `UPDATE journal_entries SET status = 'reversed' WHERE id = $1 ${churchId ? 'AND church_id = $2' : ''}`,
-        churchId ? [id, churchId] : [id]
+        `UPDATE journal_entries SET status = 'reversed' WHERE id = $1  AND church_id = $2`,
+        [id, churchId]
       );
       
       // Create reversing entry
@@ -212,11 +216,10 @@ class JournalEntryRepository extends BaseRepository {
     });
   }
 
-  async delete(id, churchId = null) {
-    const query = churchId
-      ? 'DELETE FROM journal_entries WHERE id = $1 AND church_id = $2 RETURNING *'
-      : 'DELETE FROM journal_entries WHERE id = $1 RETURNING *';
-    const result = await this.pool.query(query, churchId ? [id, churchId] : [id]);
+  async delete(id, churchId) {
+    if (!churchId) throw new Error('delete: churchId is required');
+    const query = 'DELETE FROM journal_entries WHERE id = $1 AND church_id = $2 RETURNING *';
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0] || null;
   }
 

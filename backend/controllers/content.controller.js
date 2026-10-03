@@ -109,7 +109,8 @@ class ContentController extends BaseController {
         priority: priority || 0,
         seoTitle,
         seoDescription,
-        ogImage
+        ogImage,
+        churchId: req.user.church_id
       });
 
       if (tags && tags.length > 0) {

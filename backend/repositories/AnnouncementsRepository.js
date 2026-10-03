@@ -242,15 +242,17 @@ class AnnouncementsRepository extends BaseRepository {
     return parseInt(result.rows[0].count);
   }
 
-  async getAnnouncementById(id) {
+  async getAnnouncementById(id, churchId) {
+    if (!churchId) throw new Error('AnnouncementsRepository.getAnnouncementById: churchId required');
     const query = `
       SELECT a.*, u.first_name || ' ' || u.last_name as author_name
       FROM announcements a
       LEFT JOIN users u ON a.author_id = u.id
       WHERE a.id = $1
+      AND a.church_id = $2
       AND (a.expires_at IS NULL OR a.expires_at > CURRENT_TIMESTAMP)
     `;
-    const result = await this.pool.query(query, [id]);
+    const result = await this.pool.query(query, [id, churchId]);
     return result.rows[0];
   }
 

@@ -448,17 +448,29 @@ class UserRepository extends BaseRepository {
   }
 
   async updateProfile(userId, updates) {
+    // Column-name allowlist — keys are interpolated into SQL, so any
+    // key outside this set (e.g. church_id, roles, password_hash) is dropped.
+    const ALLOWED_COLUMNS = new Set([
+      'first_name', 'last_name', 'phone', 'phone_number', 'avatar_url',
+      'email', 'username', 'updated_at'
+    ]);
+
     const fields = [];
     const values = [];
     let paramCount = 1;
 
     for (const [key, value] of Object.entries(updates)) {
+      if (!ALLOWED_COLUMNS.has(key)) continue;
       if (value === 'CURRENT_TIMESTAMP') {
         fields.push(`${key} = CURRENT_TIMESTAMP`);
       } else {
         fields.push(`${key} = $${paramCount++}`);
         values.push(value);
       }
+    }
+
+    if (fields.length === 0) {
+      throw new Error('updateProfile: no permitted fields to update');
     }
 
     values.push(userId);
