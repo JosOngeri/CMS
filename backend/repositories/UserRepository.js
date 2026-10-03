@@ -1,4 +1,5 @@
 const BaseRepository = require('./BaseRepository');
+const UserSettingsRepository = require('./UserSettingsRepository');
 
 class UserRepository extends BaseRepository {
   constructor() {
@@ -6,7 +7,8 @@ class UserRepository extends BaseRepository {
   }
 
   async findByEmail(email, churchId = null) {
-    let query = 'SELECT * FROM users WHERE email = $1';
+    // Case-insensitive: login identifiers come straight from user input.
+    let query = 'SELECT * FROM users WHERE LOWER(email) = LOWER($1)';
     const params = [email];
 
     if (churchId) {
@@ -19,7 +21,7 @@ class UserRepository extends BaseRepository {
   }
 
   async findByUsername(username, churchId = null) {
-    let query = 'SELECT * FROM users WHERE username = $1';
+    let query = 'SELECT * FROM users WHERE LOWER(username) = LOWER($1)';
     const params = [username];
 
     if (churchId) {
@@ -66,6 +68,9 @@ class UserRepository extends BaseRepository {
   }
 
   async findByIdentifier(identifier) {
+    // Trim pasted/typed whitespace first — autofill and copy-paste regularly
+    // add leading/trailing spaces, which previously caused 401s for valid users.
+    identifier = String(identifier || '').trim();
     // Check if identifier is email, username, or phone
     const isEmail = identifier.includes('@');
     const cleanIdentifier = identifier.replace(/[\s\-()]/g, '');
@@ -133,95 +138,74 @@ class UserRepository extends BaseRepository {
   async getMemberDirectory(filters = {}, churchId) {
     const { page = 1, limit = 50, role, department } = filters;
     const offset = (page - 1) * limit;
+    const limitVal = parseInt(limit);
+    const offsetVal = parseInt(offset);
 
-    const params = [];
-    let paramIndex = 1;
+    // Shared directory filter builder — the data and count queries reuse it
+    // so church/department/role placeholder logic lives in exactly one place.
+    const buildDirectoryQuery = (selectColumns) => {
+      const params = [];
+      let paramIndex = 1;
 
-    let churchFilter = '';
-    if (churchId) {
-      churchFilter = `u.church_id = $${paramIndex} AND`;
-      params.push(churchId);
-      paramIndex++;
-    }
+      let churchFilter = '';
+      if (churchId) {
+        churchFilter = `u.church_id = $${paramIndex} AND`;
+        params.push(churchId);
+        paramIndex++;
+      }
 
-    let roleFilter = '';
-    if (role) {
-      roleFilter = `AND $${paramIndex} = ANY(roles)`;
-      params.push(role);
-      paramIndex++;
-    }
+      let deptFilter = '';
+      if (department) {
+        deptFilter = ` AND EXISTS (SELECT 1 FROM department_members dm WHERE dm.user_id = u.id AND dm.department_id = $${paramIndex})`;
+        params.push(department);
+        paramIndex++;
+      }
 
-    const deptJoin = '';
-    let deptFilter = '';
-    if (department) {
-      deptFilter = ` AND EXISTS (SELECT 1 FROM department_members dm WHERE dm.user_id = u.id AND dm.department_id = $${paramIndex})`;
-      params.push(department);
-      paramIndex++;
-    }
+      let roleFilter = '';
+      if (role) {
+        roleFilter = `AND $${paramIndex} = ANY(roles)`;
+        params.push(role);
+        paramIndex++;
+      }
 
-    const query = `
-      SELECT * FROM (
-        SELECT u.id, u.username, u.email, u.first_name, u.last_name,
+      const sql = `
+        FROM (
+          SELECT ${selectColumns},
+                 COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::text[]) as roles
+          FROM users u
+          LEFT JOIN user_roles ur ON u.id = ur.user_id
+          LEFT JOIN roles r ON ur.role_id = r.id
+          WHERE ${churchFilter} u.is_active = true ${deptFilter}
+          GROUP BY u.id
+        ) users_with_roles
+        WHERE 1=1 ${roleFilter}
+      `;
+
+      return { sql, params, nextIndex: paramIndex };
+    };
+
+    const directorySelect = `u.id, u.username, u.email, u.first_name, u.last_name,
                u.phone, u.phone_number, u.is_active, u.created_at, u.slug,
-               COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::text[]) as roles,
                (SELECT COALESCE(array_agg(d.name), ARRAY[]::text[])
                 FROM department_members dm
                 JOIN departments d ON d.id = dm.department_id
-                WHERE dm.user_id = u.id AND COALESCE(dm.is_active, true) = true) as departments
-        FROM users u
-        LEFT JOIN user_roles ur ON u.id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE ${churchFilter} u.is_active = true ${deptFilter}
-        GROUP BY u.id
-      ) users_with_roles
-      WHERE 1=1 ${roleFilter}
+                WHERE dm.user_id = u.id AND COALESCE(dm.is_active, true) = true) as departments`;
+
+    const dataQuery = buildDirectoryQuery(directorySelect);
+    const query = `
+      SELECT * ${dataQuery.sql}
       ORDER BY created_at DESC
-      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+      LIMIT $${dataQuery.nextIndex} OFFSET $${dataQuery.nextIndex + 1}
     `;
 
-    const limitVal = parseInt(limit);
-    const offsetVal = parseInt(offset);
-    params.push(limitVal, offsetVal);
-
-    const result = await this.pool.query(query, params);
+    const result = await this.pool.query(query, [...dataQuery.params, limitVal, offsetVal]);
 
     // Get total count
-    const countParams = [];
-    let countParamIndex = 1;
-    let countChurchFilter = '';
-    if (churchId) {
-      countChurchFilter = `u.church_id = $${countParamIndex} AND`;
-      countParams.push(churchId);
-      countParamIndex++;
-    }
-
-    let countRoleFilter = '';
-    if (role) {
-      countRoleFilter = `AND $${countParamIndex} = ANY(roles)`;
-      countParams.push(role);
-      countParamIndex++;
-    }
-
-    let countDeptFilter = '';
-    if (department) {
-      countDeptFilter = ` AND EXISTS (SELECT 1 FROM department_members dm WHERE dm.user_id = u.id AND dm.department_id = $${countParamIndex})`;
-      countParams.push(department);
-      countParamIndex++;
-    }
-
-    const countQuery = `
-      SELECT COUNT(*) as total FROM (
-        SELECT u.id, COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::text[]) as roles
-        FROM users u
-        LEFT JOIN user_roles ur ON u.id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE ${countChurchFilter} u.is_active = true ${countDeptFilter}
-        GROUP BY u.id
-      ) users_with_roles
-      WHERE 1=1 ${countRoleFilter}
-    `;
-
-    const countResult = await this.pool.query(countQuery, countParams);
+    const countQuery = buildDirectoryQuery('u.id');
+    const countResult = await this.pool.query(
+      `SELECT COUNT(*) as total ${countQuery.sql}`,
+      countQuery.params
+    );
     const total = parseInt(countResult.rows[0].total);
 
     return {
@@ -396,46 +380,15 @@ class UserRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async getUserActivityHistory(userId, limit = 20) {
-    const activities = [];
-
-    try {
-      // Recent payments
-      const paymentsQuery = `
-        SELECT
-          'payment' as type,
-          'Payment made' as description,
-          created_at as timestamp
-        FROM payments
-        WHERE member_id = $1
-        ORDER BY created_at DESC
-        LIMIT $2
-      `;
-      const paymentsResult = await this.pool.query(paymentsQuery, [userId, limit]);
-      activities.push(...paymentsResult.rows);
-
-      // Profile updates (from user table updated_at)
-      const profileQuery = `
-        SELECT
-          'profile_update' as type,
-          'Profile updated' as description,
-          updated_at as timestamp
-        FROM users
-        WHERE id = $1 AND updated_at > created_at
-      `;
-      const profileResult = await this.pool.query(profileQuery, [userId]);
-      if (profileResult.rows.length > 0) {
-        activities.push(...profileResult.rows);
-      }
-    } catch (err) {
-      console.error('Error fetching activity history:', err);
-    }
-
-    // Sort by timestamp
-    activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // Limit results
-    return activities.slice(0, parseInt(limit));
+  async getUserActivityHistory(userId, limit = 20, churchId = null) {
+    // Single activity-feed implementation lives in UserSettingsRepository —
+    // mapped here to this endpoint's {type, description, timestamp} shape.
+    const rows = await UserSettingsRepository.getActivityFeed(userId, limit, 0, churchId);
+    return rows.map(row => ({
+      type: row.type,
+      description: row.description,
+      timestamp: row.created_at
+    }));
   }
 
   async getUserById(id) {
