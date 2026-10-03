@@ -118,8 +118,28 @@ class DocumentsRepository extends BaseRepository {
     return result.rows.map(row => row.category);
   }
 
+  // Mirrors the documents.tags jsonb array into the document_tags junction
+  // table (migration 072) so tag lookups stay index-assisted as the
+  // documents table grows. Accepts a JS array or a comma-separated string.
+  async _syncDocumentTags(documentId, tags, churchId) {
+    await this.pool.query('DELETE FROM document_tags WHERE document_id = $1', [documentId]);
+    const tagList = Array.isArray(tags)
+      ? tags
+      : String(tags || '').split(',').map(t => t.trim());
+    const clean = tagList.map(t => String(t).trim()).filter(Boolean);
+    if (clean.length === 0) return;
+    await this.pool.query(
+      `INSERT INTO document_tags (document_id, church_id, tag)
+       SELECT $1, $2, TRIM(t.tag)
+       FROM unnest($3::text[]) AS t(tag)
+       WHERE TRIM(t.tag) <> ''
+       ON CONFLICT (document_id, tag) DO NOTHING`,
+      [documentId, churchId, clean]
+    );
+  }
+
   async getTags(churchId = null) {
-    let query = `SELECT DISTINCT unnest(string_to_array(tags, ',')) as tag FROM documents WHERE tags IS NOT NULL AND tags != ''`;
+    let query = `SELECT DISTINCT tag FROM document_tags WHERE 1=1`;
     const params = [];
 
     if (churchId) {
@@ -133,6 +153,17 @@ class DocumentsRepository extends BaseRepository {
     return result.rows.map(row => row.tag);
   }
 
+  // documents.tags is jsonb — callers hand us a JS array or a comma-separated
+  // string; node-pg serializes a raw JS array to a Postgres array literal
+  // ({"a","b"}) which fails the jsonb cast, so normalize to a JSON string.
+  _normalizeTags(tags) {
+    if (Array.isArray(tags)) return JSON.stringify(tags.map(t => String(t).trim()).filter(Boolean));
+    const s = String(tags || '').trim();
+    if (!s) return '[]';
+    if (s.startsWith('[')) return s;
+    return JSON.stringify(s.split(',').map(t => t.trim()).filter(Boolean));
+  }
+
   async createDocument(data) {
     const { name, file_path, size, category, tags, description, uploaded_by, church_id } = data;
 
@@ -140,9 +171,13 @@ class DocumentsRepository extends BaseRepository {
       `INSERT INTO documents (name, file_path, size, category, tags, description, uploaded_by, church_id)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [name, file_path, size, category, tags, description, uploaded_by, church_id]
+      [name, file_path, size, category, this._normalizeTags(tags), description, uploaded_by, church_id]
     );
-    return result.rows[0];
+    const document = result.rows[0];
+    if (document) {
+      await this._syncDocumentTags(document.id, tags, document.church_id);
+    }
+    return document;
   }
 
   async softDelete(id, churchId = null) {
@@ -164,7 +199,7 @@ class DocumentsRepository extends BaseRepository {
     let query = `UPDATE documents
        SET name = $1, category = $2, tags = $3, description = $4, updated_at = CURRENT_TIMESTAMP
        WHERE id = $5`;
-    const params = [name, category, tags, description, id];
+    const params = [name, category, this._normalizeTags(tags), description, id];
 
     if (churchId) {
       query += ' AND church_id = $6';
@@ -174,7 +209,11 @@ class DocumentsRepository extends BaseRepository {
     query += ' RETURNING *';
 
     const result = await this.pool.query(query, params);
-    return result.rows[0];
+    const document = result.rows[0];
+    if (document) {
+      await this._syncDocumentTags(document.id, document.tags, document.church_id);
+    }
+    return document;
   }
 
   async getDocuments(filters = {}) {
@@ -198,7 +237,7 @@ class DocumentsRepository extends BaseRepository {
     }
 
     if (tags) {
-      query += ` AND d.tags LIKE $${paramCount++}`;
+      query += ` AND EXISTS (SELECT 1 FROM document_tags dt WHERE dt.document_id = d.id AND dt.tag ILIKE $${paramCount++})`;
       params.push(`%${tags}%`);
     }
 

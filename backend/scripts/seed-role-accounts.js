@@ -153,6 +153,15 @@ const passwordHash = bcrypt.hashSync(seedPassword('role accounts'), 12);
     console.log('  Super Admin -> superadmin@kiserian-main-sda.com');
   }
 
+  // Platform-console login (/platform/login) authenticates against
+  // platform_users, not users — set its password_hash so the seeded
+  // admin@kmaincms.org account can actually log in.
+  await client.query(
+    `UPDATE platform_users SET password_hash = $1 WHERE email = 'admin@kmaincms.org'`,
+    [passwordHash]
+  );
+  console.log('  Platform Owner -> admin@kmaincms.org (/platform/login)');
+
   await client.end();
   console.log('\nDone.');
 }
