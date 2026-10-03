@@ -24,6 +24,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { API_ENDPOINTS } from '../../constants/api';
 import { FullPageLoading } from '../../components/common/Loading';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const NotificationDashboard = () => {
   const { api } = useAuth();
@@ -32,6 +33,7 @@ const NotificationDashboard = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, unread, read
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchNotifications = async () => {
     try {
@@ -87,9 +89,11 @@ const NotificationDashboard = () => {
     }
   };
 
-  const deleteNotification = async (id) => {
-    if (!window.confirm('Delete this notification?')) return;
+  const deleteNotification = (id) => setDeleteTarget(id);
 
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(API_ENDPOINTS.NOTIFICATIONS.DELETE(id));
       setNotifications(prev => prev.filter(n => n.id !== id));
@@ -268,6 +272,15 @@ const NotificationDashboard = () => {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Notification"
+        message="Delete this notification? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

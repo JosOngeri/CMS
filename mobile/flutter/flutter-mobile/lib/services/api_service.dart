@@ -2,9 +2,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config.dart';
+
+// B8: auth/refresh tokens live in platform secure storage (same options as
+// AuthService) — never in plaintext SharedPreferences. user_data stays in
+// prefs; it is a non-sensitive profile cache.
+const _secureStorage = FlutterSecureStorage(
+  aOptions: AndroidOptions(encryptedSharedPreferences: true),
+);
 
 // Custom Retry Interceptor
 class RetryInterceptor extends Interceptor {
@@ -106,7 +114,7 @@ class ApiService {
       dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) async {
-            final token = prefs.getString('auth_token');
+            final token = await _secureStorage.read(key: 'auth_token');
             if (token != null) {
               options.headers['Authorization'] = 'Bearer $token';
             }
@@ -115,7 +123,8 @@ class ApiService {
           onError: (error, handler) async {
             // Handle 401 Unauthorized
             if (error.response?.statusCode == 401) {
-              await prefs.remove('auth_token');
+              await _secureStorage.delete(key: 'auth_token');
+              await _secureStorage.delete(key: 'refresh_token');
               await prefs.remove('user_data');
             }
             
@@ -228,8 +237,8 @@ class ApiService {
           
           // Store JWT token (regular webapp token, not SMS-scoped)
           final token = responseData['accessToken'] ?? responseData['token'];
-          await _prefs.setString('auth_token', token);
-          
+          await _secureStorage.write(key: 'auth_token', value: token);
+
           // Store user data
           await _prefs.setString('user_data', jsonEncode(responseData['user']));
 
@@ -237,7 +246,7 @@ class ApiService {
           // of re-authenticating with a stored plaintext password.
           final refreshToken = responseData['refreshToken'] as String?;
           if (refreshToken != null) {
-            await _prefs.setString('refresh_token', refreshToken);
+            await _secureStorage.write(key: 'refresh_token', value: refreshToken);
           }
 
           debugPrint('=== API: Login successful ===');
@@ -292,11 +301,15 @@ class ApiService {
       );
       final data = response.data['data'];
       if (response.statusCode == 200 && data != null && data['accessToken'] != null) {
-        await _prefs.setString('auth_token', data['accessToken']);
+        await _secureStorage.write(key: 'auth_token', value: data['accessToken']);
         if (data['refreshToken'] != null) {
-          await _prefs.setString('refresh_token', data['refreshToken']);
+          await _secureStorage.write(key: 'refresh_token', value: data['refreshToken']);
         }
-        return {'success': true, 'token': data['accessToken']};
+        return {
+          'success': true,
+          'token': data['accessToken'],
+          'refreshToken': data['refreshToken'],
+        };
       }
       return {'success': false, 'error': 'Refresh failed'};
     } on DioException catch (e) {

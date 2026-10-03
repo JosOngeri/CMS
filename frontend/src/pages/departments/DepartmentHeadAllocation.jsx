@@ -19,6 +19,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { FullPageLoading } from '../../components/common/Loading';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { Building, User, Search, Clock, UserPlus, XCircle } from 'lucide-react';
 
 const POSITION_LABELS = {
@@ -38,6 +39,7 @@ const DepartmentHeadAllocation = () => {
   const [handovers, setHandovers] = useState({});     // deptId -> rows
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [revokeTarget, setRevokeTarget] = useState(null);
   // drafts: deptId -> { position, user_id, allocation_type, end_date }
   const [drafts, setDrafts] = useState({});
 
@@ -108,8 +110,12 @@ const DepartmentHeadAllocation = () => {
     }
   };
 
-  const handleRevoke = async (departmentId, leadershipId) => {
-    if (!window.confirm('Revoke this appointment?')) return;
+  const handleRevoke = (departmentId, leadershipId) =>
+    setRevokeTarget({ departmentId, leadershipId });
+
+  const confirmRevoke = async () => {
+    const { departmentId, leadershipId } = revokeTarget;
+    setRevokeTarget(null);
     try {
       await api.delete(`/departments/${departmentId}/leadership/${leadershipId}`);
       toast.success('Appointment revoked');
@@ -288,6 +294,15 @@ const DepartmentHeadAllocation = () => {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        show={revokeTarget !== null}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={confirmRevoke}
+        title="Revoke Appointment"
+        message="Revoke this appointment? The leader will lose this role immediately."
+        confirmLabel="Revoke"
+      />
     </div>
   );
 };

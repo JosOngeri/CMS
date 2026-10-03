@@ -59,14 +59,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _loadStoredAuth();
   }
 
-  /// Move a token stored by the pre-secure-storage version out of
-  /// SharedPreferences and into secure storage, then delete the plaintext copy.
+  /// Move tokens stored by the pre-secure-storage version out of
+  /// SharedPreferences and into secure storage, then delete the plaintext
+  /// copies.
   Future<void> _migrateLegacyToken() async {
-    final legacy = _prefs!.getString('auth_token');
-    if (legacy != null) {
-      await _secureStorage.write(key: 'auth_token', value: legacy);
-      await _prefs!.remove('auth_token');
-      debugPrint('Auth: migrated legacy plaintext token to secure storage');
+    for (final key in ['auth_token', 'refresh_token']) {
+      final legacy = _prefs!.getString(key);
+      if (legacy != null) {
+        await _secureStorage.write(key: key, value: legacy);
+        await _prefs!.remove(key);
+        debugPrint('Auth: migrated legacy plaintext $key to secure storage');
+      }
     }
   }
 
@@ -115,6 +118,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _secureStorage.delete(key: 'auth_token');
+      // Drop the session refresh token too — an explicit logout must not
+      // leave a credential that can mint new access tokens. The
+      // biometric_refresh_token copy survives: "log out" is not
+      // "unenroll biometric", and biometric re-login remains opt-in.
+      await _secureStorage.delete(key: 'refresh_token');
       await _prefs!.remove('user_data');
 
       state = const AuthState(isAuthenticated: false, isLoading: false);

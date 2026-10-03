@@ -27,6 +27,7 @@ import {
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { API_ENDPOINTS } from '../../../constants/api';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
 
 const PermissionManagement = ({ departmentId }) => {
   const toast = useToast();
@@ -36,6 +37,7 @@ const PermissionManagement = ({ departmentId }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState(null);
 
   // Check if user is an admin (can bypass approval)
   const isAdmin = user?.roles?.some(role =>
@@ -102,9 +104,11 @@ const PermissionManagement = ({ departmentId }) => {
     }
   };
 
-  const revokeAdmin = async (userId) => {
-    if (!window.confirm('Revoke admin access for this user?')) return;
+  const revokeAdmin = (userId) => setRevokeTarget(userId);
 
+  const confirmRevoke = async () => {
+    const userId = revokeTarget;
+    setRevokeTarget(null);
     try {
       if (isAdmin) {
         // Admins can revoke admin access directly
@@ -296,6 +300,15 @@ const PermissionManagement = ({ departmentId }) => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={revokeTarget !== null}
+        onClose={() => setRevokeTarget(null)}
+        onConfirm={confirmRevoke}
+        title="Revoke Admin Access"
+        message="Revoke admin access for this user?"
+        confirmLabel="Revoke"
+      />
     </div>
   );
 };

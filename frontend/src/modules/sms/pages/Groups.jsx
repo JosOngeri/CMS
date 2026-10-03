@@ -14,6 +14,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
 
 const Groups = () => {
   const { api } = useAuth();
@@ -22,6 +23,7 @@ const Groups = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [groupMembers, setGroupMembers] = useState([]);
   const [formData, setFormData] = useState({
@@ -87,16 +89,19 @@ const Groups = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     const group = groups.find(g => g.id === id);
     if (!group) return;
     if (group.source === 'website') {
       toast.info('Cannot delete website-imported groups');
       return;
     }
+    setDeleteTarget(id);
+  };
 
-    if (!window.confirm('Are you sure you want to delete this group?')) return;
-
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(`/sms-groups/${id}`);
       fetchGroups();
@@ -256,6 +261,15 @@ const Groups = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Group"
+        message="Are you sure you want to delete this group? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

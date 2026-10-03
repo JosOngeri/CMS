@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const Projects = () => {
   const { api } = useAuth()
@@ -27,6 +28,7 @@ const Projects = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [funds, setFunds] = useState([])
   const [users, setUsers] = useState([])
   const [formData, setFormData] = useState({
@@ -113,8 +115,8 @@ const Projects = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(project =>
-        project.project_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.project_code.toLowerCase().includes(searchTerm.toLowerCase())
+        (project.project_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (project.project_code || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -175,16 +177,24 @@ const Projects = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this project?')) {
-      try {
-        await api.delete(`/treasury/projects/${id}`)
+  const handleDelete = (id) => setDeleteTarget({ type: 'project', id })
+
+  const confirmDelete = async () => {
+    const target = deleteTarget
+    setDeleteTarget(null)
+    try {
+      if (target.type === 'project') {
+        await api.delete(`/treasury/projects/${target.id}`)
         toast.success('Project deleted successfully')
         fetchProjects()
-      } catch (error) {
-        console.error('Failed to delete project:', error)
-        toast.error('Failed to delete project')
+      } else {
+        await api.delete(`/projects/${selectedProject.id}/milestones/${target.id}`)
+        toast.success('Milestone deleted successfully')
+        handleViewMilestones(selectedProject)
       }
+    } catch (error) {
+      console.error(`Failed to delete ${target.type}:`, error)
+      toast.error(`Failed to delete ${target.type}`)
     }
   }
 
@@ -248,18 +258,7 @@ const Projects = () => {
     }
   }
 
-  const handleDeleteMilestone = async (milestoneId) => {
-    if (confirm('Are you sure you want to delete this milestone?')) {
-      try {
-        await api.delete(`/projects/${selectedProject.id}/milestones/${milestoneId}`)
-        toast.success('Milestone deleted successfully')
-        handleViewMilestones(selectedProject)
-      } catch (error) {
-        console.error('Failed to delete milestone:', error)
-        toast.error('Failed to delete milestone')
-      }
-    }
-  }
+  const handleDeleteMilestone = (milestoneId) => setDeleteTarget({ type: 'milestone', id: milestoneId })
 
   const handleAddContribution = async (e) => {
     e.preventDefault()
@@ -606,6 +605,15 @@ const Projects = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title={deleteTarget?.type === 'milestone' ? 'Delete Milestone' : 'Delete Project'}
+        message={`Are you sure you want to delete this ${deleteTarget?.type || 'project'}? This action cannot be undone.`}
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

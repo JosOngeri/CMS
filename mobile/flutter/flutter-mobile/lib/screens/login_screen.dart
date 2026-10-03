@@ -138,10 +138,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (result['success'] == true && mounted) {
         // Refresh tokens rotate server-side — persist the new one.
-        final prefs = await SharedPreferences.getInstance();
-        final rotated = prefs.getString('refresh_token');
+        final rotated = result['refreshToken'] as String?;
         if (rotated != null) await _biometricService.updateRefreshToken(rotated);
 
+        final prefs = await SharedPreferences.getInstance();
         final userData = prefs.getString('user_data');
         ref.read(authProvider.notifier).login(
           userData != null ? jsonDecode(userData) as Map<String, dynamic> : {},

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import PermissionButton from '../../components/common/PermissionButton'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { PERMISSIONS } from '../../constants/permissions'
 
 const UserManagement = () => {
@@ -19,6 +20,7 @@ const UserManagement = () => {
   const [page, setPage] = useState(1)
   const pageSize = 20
   const [pagination, setPagination] = useState({ page: 1, limit: pageSize, total: 0, pages: 0 })
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
@@ -111,11 +113,11 @@ const UserManagement = () => {
     setShowCreateForm(true)
   }
 
-  const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-      return
-    }
+  const handleDelete = (userId) => setDeleteTarget(userId)
 
+  const confirmDelete = async () => {
+    const userId = deleteTarget
+    setDeleteTarget(null)
     try {
       await api.delete(`/users/${userId}`)
       setUsers(users.filter(u => u.id !== userId))
@@ -633,6 +635,15 @@ const UserManagement = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

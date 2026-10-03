@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const Pledges = () => {
   const { api } = useAuth()
@@ -20,6 +21,7 @@ const Pledges = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [campaigns, setCampaigns] = useState([])
   const [members, setMembers] = useState([])
   const [formData, setFormData] = useState({
@@ -149,16 +151,18 @@ const Pledges = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this pledge?')) {
-      try {
-        await api.delete(`/treasury/pledges/${id}`)
-        toast.success('Pledge deleted successfully')
-        fetchPledges()
-      } catch (error) {
-        console.error('Failed to delete pledge:', error)
-        toast.error('Failed to delete pledge')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/pledges/${id}`)
+      toast.success('Pledge deleted successfully')
+      fetchPledges()
+    } catch (error) {
+      console.error('Failed to delete pledge:', error)
+      toast.error('Failed to delete pledge')
     }
   }
 
@@ -489,6 +493,15 @@ const Pledges = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Pledge"
+        message="Are you sure you want to delete this pledge? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

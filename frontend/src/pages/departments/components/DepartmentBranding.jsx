@@ -23,6 +23,7 @@ import {
 import { useToast } from '../../../contexts/ToastContext';
 import { useColorPalette } from '../../../contexts/ColorPaletteContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
 
 const DepartmentBranding = ({ department, onUpdate }) => {
   const toast = useToast();
@@ -33,6 +34,7 @@ const DepartmentBranding = ({ department, onUpdate }) => {
   const [logoColor, setLogoColor] = useState(department?.logo_color || colors.primary);
   const [bannerColor, setBannerColor] = useState(department?.banner_color || colors.primary);
   const [uploading, setUploading] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null); // 'logo' | 'banner'
 
   // The api client attaches the auth cookie + CSRF token; axios sets the
   // multipart boundary itself when given FormData.
@@ -134,31 +136,24 @@ const DepartmentBranding = ({ department, onUpdate }) => {
     }
   };
 
-  const removeLogo = async () => {
-    if (!window.confirm('Remove the department logo?')) return;
+  const removeLogo = () => setRemoveTarget('logo');
+  const removeBanner = () => setRemoveTarget('banner');
 
+  const confirmRemove = async () => {
+    const target = removeTarget;
+    setRemoveTarget(null);
+    const isLogo = target === 'logo';
     try {
       setUploading(true);
-      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, logoUrl: null });
-      toast.success('Logo removed successfully');
-      onUpdate({ logo_url: null });
+      await api.put(`/departments/${department.id}/colors`, {
+        logoColor,
+        bannerColor,
+        ...(isLogo ? { logoUrl: null } : { bannerUrl: null })
+      });
+      toast.success(`${isLogo ? 'Logo' : 'Banner'} removed successfully`);
+      onUpdate(isLogo ? { logo_url: null } : { banner_url: null });
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to remove logo');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeBanner = async () => {
-    if (!window.confirm('Remove the department banner?')) return;
-
-    try {
-      setUploading(true);
-      await api.put(`/departments/${department.id}/colors`, { logoColor, bannerColor, bannerUrl: null });
-      toast.success('Banner removed successfully');
-      onUpdate({ banner_url: null });
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to remove banner');
+      toast.error(error.response?.data?.error || `Failed to remove ${target}`);
     } finally {
       setUploading(false);
     }
@@ -364,6 +359,15 @@ const DepartmentBranding = ({ department, onUpdate }) => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        show={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={confirmRemove}
+        title={removeTarget === 'logo' ? 'Remove Logo' : 'Remove Banner'}
+        message={`Remove the department ${removeTarget || 'image'}?`}
+        confirmLabel="Remove"
+      />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { FileText, Plus, Edit, Trash2, Eye, Save, X, Calendar, Tag, BookOpen } f
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import PermissionButton from '../../components/common/PermissionButton';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { PERMISSIONS } from '../../constants/permissions';
 
 const Content = () => {
@@ -13,6 +14,7 @@ const Content = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [filter, setFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -94,9 +96,11 @@ const Content = () => {
     }
   };
 
-  const deleteContent = async (id) => {
-    if (!confirm('Are you sure you want to delete this content?')) return;
-    
+  const deleteContent = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       toast.info('Deleting content...');
       await api.delete(`/content/${id}`);
@@ -349,6 +353,15 @@ const Content = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Content"
+        message="Are you sure you want to delete this content? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

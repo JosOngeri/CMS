@@ -20,6 +20,7 @@ import { FullPageLoading } from '../../components/common/Loading'
 import GmailMessageList from '../../components/common/GmailMessageList'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import PermissionButton from '../../components/common/PermissionButton'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
 import { PERMISSIONS } from '../../constants/permissions'
 
@@ -34,6 +35,7 @@ const Announcements = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingAnnouncement, setEditingAnnouncement] = useState(null)
   const [viewingAnnouncement, setViewingAnnouncement] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null) // {type:'single'|'bulk', id?}
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -106,34 +108,32 @@ const Announcements = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this announcement?')) {
-      try {
-        await api.delete(`/announcements/${id}`)
-        toast.success(SUCCESS_MESSAGES.ANNOUNCEMENT_DELETED)
-        setViewingAnnouncement(null)
-        fetchAnnouncements()
-      } catch (error) {
-        console.error('Failed to delete announcement:', error)
-        toast.error('Failed to delete announcement')
-      }
-    }
+  const handleDelete = (id) => setPendingDelete({ type: 'single', id })
+
+  const handleBulkAction = (action) => {
+    if (action !== 'delete' || !canManage || selectedItems.size === 0) return
+    setPendingDelete({ type: 'bulk' })
   }
 
-  const handleBulkAction = async (action) => {
-    if (action !== 'delete' || !canManage) return
+  const confirmPendingDelete = async () => {
+    const pending = pendingDelete
+    setPendingDelete(null)
     try {
-      if (confirm(`Are you sure you want to delete ${selectedItems.size} announcements?`)) {
+      if (pending.type === 'single') {
+        await api.delete(`/announcements/${pending.id}`)
+        toast.success(SUCCESS_MESSAGES.ANNOUNCEMENT_DELETED)
+        setViewingAnnouncement(null)
+      } else {
         for (const id of selectedItems) {
           await api.delete(`/announcements/${id}`)
         }
         toast.success(`${selectedItems.size} announcement${selectedItems.size === 1 ? '' : 's'} deleted`)
+        setSelectedItems(new Set())
       }
-      setSelectedItems(new Set())
       fetchAnnouncements()
     } catch (error) {
-      console.error('Failed to perform bulk action:', error)
-      toast.error('Failed to perform action')
+      console.error('Failed to delete announcement:', error)
+      toast.error('Failed to delete announcement')
     }
   }
 
@@ -319,6 +319,19 @@ const Announcements = () => {
         onRowAction={handleRowAction}
         emptyMessage="No announcements found"
         loading={loading}
+      />
+
+      <ConfirmDialog
+        show={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmPendingDelete}
+        title="Delete Announcement"
+        message={
+          pendingDelete?.type === 'bulk'
+            ? `Are you sure you want to delete ${selectedItems.size} announcements?`
+            : 'Are you sure you want to delete this announcement?'
+        }
+        confirmLabel="Delete"
       />
     </div>
   )

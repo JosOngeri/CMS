@@ -21,6 +21,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { FullPageLoading } from '../../components/common/Loading'
 import PageInfoPanel from '../../components/common/PageInfoPanel'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const emptyForm = { name: '', category: '', tags: '', description: '' }
 
@@ -35,6 +36,7 @@ const Documents = () => {
   const [editingDocument, setEditingDocument] = useState(null)
   const [formData, setFormData] = useState(emptyForm)
   const [files, setFiles] = useState([])
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   const canManage = user?.roles?.some(role =>
     ['Super Admin', 'Pastor', 'Department Head'].includes(role)
@@ -82,8 +84,11 @@ const Documents = () => {
     setShowModal(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this document?')) return
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
     try {
       await api.delete(`/documents/${id}`)
       toast.success('Document deleted')
@@ -389,6 +394,15 @@ const Documents = () => {
           }
         ]}
         defaultOpen={false}
+      />
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Document"
+        message="Are you sure you want to delete this document? This action cannot be undone."
+        confirmLabel="Delete"
       />
     </div>
   )

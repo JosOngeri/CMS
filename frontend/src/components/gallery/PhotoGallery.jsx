@@ -4,6 +4,7 @@ import Card from '../common/Card'
 import { EmptyState } from '../common/EmptyState'
 import { useToast } from '../../contexts/ToastContext'
 import { useAuth } from '../../contexts/AuthContext'
+import ConfirmDialog from '../common/ConfirmDialog'
 
 const PhotoGallery = ({ 
   photos = [], 
@@ -33,6 +34,7 @@ const PhotoGallery = ({
   const [favOverrides, setFavOverrides] = useState({})
   const [labelOverrides, setLabelOverrides] = useState({})
   const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null) // {type:'label'|'photo', photo, label?}
   const [selectedLabel, setSelectedLabel] = useState('')
   const [newLabel, setNewLabel] = useState('')
 
@@ -65,14 +67,22 @@ const PhotoGallery = ({
     }
   }
 
-  const removeLabel = async (photo, label) => {
-    if (!window.confirm(`Remove label "${label}" from this photo?`)) return
+  const removeLabel = (photo, label) => setPendingAction({ type: 'label', photo, label })
 
+  const confirmPendingAction = async () => {
+    const pending = pendingAction
+    setPendingAction(null)
     try {
-      await api.delete(`/gallery/photos/${photo.id}/labels/${encodeURIComponent(label)}`)
-      setLabelOverrides(prev => ({ ...prev, [photo.id]: photoLabels(photo).filter(l => l !== label) }))
+      if (pending.type === 'label') {
+        await api.delete(`/gallery/photos/${pending.photo.id}/labels/${encodeURIComponent(pending.label)}`)
+        setLabelOverrides(prev => ({ ...prev, [pending.photo.id]: photoLabels(pending.photo).filter(l => l !== pending.label) }))
+      } else {
+        await api.delete(`/gallery/photos/${pending.photoId}`)
+        toast.success('Photo deleted successfully')
+        if (onDelete) onDelete(pending.photoId)
+      }
     } catch {
-      toast.error('Failed to remove label')
+      toast.error(pending.type === 'label' ? 'Failed to remove label' : 'Failed to delete photo')
     }
   }
 
@@ -123,17 +133,7 @@ const PhotoGallery = ({
     }
   }
 
-  const handleDelete = async (photoId) => {
-    if (!window.confirm('Are you sure you want to delete this photo?')) return
-    
-    try {
-      await api.delete(`/gallery/photos/${photoId}`)
-      toast.success('Photo deleted successfully')
-      if (onDelete) onDelete(photoId)
-    } catch (error) {
-      toast.error('Failed to delete photo')
-    }
-  }
+  const handleDelete = (photoId) => setPendingAction({ type: 'photo', photoId })
 
   const navigateSlideshow = (direction) => {
     if (direction === 'next') {
@@ -575,6 +575,19 @@ const PhotoGallery = ({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={pendingAction !== null}
+        onClose={() => setPendingAction(null)}
+        onConfirm={confirmPendingAction}
+        title={pendingAction?.type === 'label' ? 'Remove Label' : 'Delete Photo'}
+        message={
+          pendingAction?.type === 'label'
+            ? `Remove label "${pendingAction.label}" from this photo?`
+            : 'Are you sure you want to delete this photo?'
+        }
+        confirmLabel={pendingAction?.type === 'label' ? 'Remove' : 'Delete'}
+      />
     </div>
   )
 }

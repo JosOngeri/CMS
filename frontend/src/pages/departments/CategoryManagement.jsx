@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { FullPageLoading } from '../../components/common/Loading';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { Tag, Plus, Edit, Trash2, Save, X } from 'lucide-react';
 
 const CategoryManagement = () => {
@@ -11,6 +12,7 @@ const CategoryManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -64,11 +66,11 @@ const CategoryManagement = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (categoryId) => {
-    if (!confirm('Are you sure you want to delete this category?')) {
-      return;
-    }
+  const handleDelete = (categoryId) => setDeleteTarget(categoryId);
 
+  const confirmDelete = async () => {
+    const categoryId = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(`/department-categories/${categoryId}`);
       toast.success('Category deleted successfully');
@@ -230,6 +232,15 @@ const CategoryManagement = () => {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

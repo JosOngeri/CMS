@@ -113,11 +113,8 @@ const Analytics               = lazy(() => import('../pages/analytics/Analytics'
 const Security                = lazy(() => import('../pages/security/Security'));
 const TelegramAuth            = lazy(() => import('../pages/telegram/TelegramAuth'));
 const TelegramChurchSettings  = lazy(() => import('../pages/telegram/TelegramChurchSettings'));
-const Mobile                  = lazy(() => import('../pages/mobile/Mobile'));
 const Monitoring              = lazy(() => import('../pages/monitoring/Monitoring'));
 const SEO                     = lazy(() => import('../pages/seo/SEO'));
-const Accessibility           = lazy(() => import('../pages/accessibility/Accessibility'));
-const Testing                 = lazy(() => import('../pages/testing/Testing'));
 const Documentation           = lazy(() => import('../pages/documentation/Documentation'));
 const TreasuryDashboard       = lazy(() => import('../pages/treasury/TreasuryDashboard'));
 const ChartOfAccounts         = lazy(() => import('../pages/treasury/ChartOfAccounts'));
@@ -225,9 +222,6 @@ export const dashboardRoutes = [
   { path: 'approvals',      element: <W C={ApprovalInbox} roles={LEADERSHIP_ROLES} /> },
   { path: 'reports',        element: <W C={Reports} roles={FINANCE_ROLES} /> },
   { path: 'content',        element: <W C={Content} roles={LEADERSHIP_ROLES} /> },
-  { path: 'mobile',         element: <W C={Mobile} roles={ADMIN_ROLES} /> },
   { path: 'seo',            element: <W C={SEO} roles={ADMIN_ROLES} /> },
-  { path: 'accessibility',  element: <W C={Accessibility} roles={ADMIN_ROLES} /> },
-  { path: 'testing',        element: <W C={Testing} roles={ADMIN_ROLES} /> },
   { path: 'documentation',  element: <W C={Documentation} roles={ADMIN_ROLES} /> },
 ];

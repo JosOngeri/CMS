@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const Funds = () => {
   const { api } = useAuth()
@@ -20,6 +21,7 @@ const Funds = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     fund_code: '',
     fund_name: '',
@@ -65,8 +67,8 @@ const Funds = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(fund =>
-        fund.fund_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        fund.fund_code.toLowerCase().includes(searchTerm.toLowerCase())
+        (fund.fund_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (fund.fund_code || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -123,16 +125,18 @@ const Funds = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this fund?')) {
-      try {
-        await api.delete(`/treasury/funds/${id}`)
-        toast.success('Fund deleted successfully')
-        fetchFunds()
-      } catch (error) {
-        console.error('Failed to delete fund:', error)
-        toast.error('Failed to delete fund')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/funds/${id}`)
+      toast.success('Fund deleted successfully')
+      fetchFunds()
+    } catch (error) {
+      console.error('Failed to delete fund:', error)
+      toast.error('Failed to delete fund')
     }
   }
 
@@ -404,6 +408,15 @@ const Funds = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Fund"
+        message="Are you sure you want to delete this fund? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

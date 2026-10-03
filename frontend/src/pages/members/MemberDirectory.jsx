@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, Link } from 'react-router-dom'
 import { Users, Search, Filter, Mail, Phone, Calendar, MapPin, Download, Eye, Edit, Shield, UserCheck, UserX, ChevronDown, Building, Clock, FileText, TrendingUp, ChevronRight } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -101,9 +101,10 @@ const MemberDirectory = () => {
   const memberJoined = (m) => m.joined_date || m.created_at
 
   const filteredMembers = members.filter(member => {
-    const matchesSearch = member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const term = searchTerm.toLowerCase()
+    const matchesSearch = (member.first_name || '').toLowerCase().includes(term) ||
+                         (member.last_name || '').toLowerCase().includes(term) ||
+                         (member.email || '').toLowerCase().includes(term) ||
                          member.phone_number?.includes(searchTerm)
 
     const matchesRole = filterRole === 'all' || memberRoles(member).includes(filterRole)
@@ -148,7 +149,14 @@ const MemberDirectory = () => {
   }
 
   const handleExport = (format) => {
-    // Export functionality
+    // CSV cells must be quoted + inner quotes doubled, or names like
+    // "Doe, Jane" silently shift columns. Formula-leading chars (=,+,-,@)
+    // are prefixed with ' to stop spreadsheet formula injection.
+    const csvCell = (v) => {
+      const s = String(v ?? '')
+      const safe = /^[=+\-@]/.test(s) ? `'${s}` : s
+      return `"${safe.replace(/"/g, '""')}"`
+    }
     const csvContent = [
       ['First Name', 'Last Name', 'Email', 'Phone', 'Role', 'Department', 'Status', 'Joined Date'],
       ...filteredMembers.map(member => [
@@ -161,7 +169,7 @@ const MemberDirectory = () => {
         member.is_active ? 'Active' : 'Inactive',
         memberJoined(member)
       ])
-    ].map(row => row.join(',')).join('\n')
+    ].map(row => row.map(csvCell).join(',')).join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -239,25 +247,21 @@ const MemberDirectory = () => {
       {activeTab === 'reports' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { title: 'Membership Growth', icon: TrendingUp, link: '/reports/membership-growth' },
-              { title: 'Department Distribution', icon: Building, link: '/reports/department-distribution' },
-              { title: 'Attendance Reports', icon: Calendar, link: '/reports/attendance' },
-              { title: 'Member Engagement', icon: Users, link: '/reports/engagement' }
-            ].map((report, index) => (
-              <div key={index} className="bg-[var(--color-surface)]  p-6 rounded-lg border border-[var(--color-border)]  hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-[var(--color-accent-light)]  rounded-lg">
-                    <report.icon className="h-6 w-6 text-[var(--color-accent)] " />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[var(--color-text)] ">{report.title}</h3>
-                    <p className="text-sm text-[var(--color-textSecondary)] ">View report</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-[var(--color-textSecondary)]" />
+            {/* The card grid used to invent per-report routes that don't exist
+                (/reports/membership-growth etc.) and never navigated anyway —
+                point to the real Reports page instead. */}
+            <Link to="/dashboard/reports" className="bg-[var(--color-surface)] p-6 rounded-lg border border-[var(--color-border)] hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-[var(--color-accent-light)] rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-[var(--color-accent)]" />
                 </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-[var(--color-text)]">Member & Activity Reports</h3>
+                  <p className="text-sm text-[var(--color-textSecondary)]">Generate and download reports</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-[var(--color-textSecondary)]" />
               </div>
-            ))}
+            </Link>
           </div>
         </div>
       )}

@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const RecurringPayments = () => {
   const { api } = useAuth()
@@ -20,6 +21,7 @@ const RecurringPayments = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     payment_number: '',
     description: '',
@@ -129,16 +131,18 @@ const RecurringPayments = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this recurring payment?')) {
-      try {
-        await api.delete(`/treasury/recurring-payments/${id}`)
-        toast.success('Recurring payment deleted successfully')
-        fetchPayments()
-      } catch (error) {
-        console.error('Failed to delete recurring payment:', error)
-        toast.error('Failed to delete recurring payment')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/recurring-payments/${id}`)
+      toast.success('Recurring payment deleted successfully')
+      fetchPayments()
+    } catch (error) {
+      console.error('Failed to delete recurring payment:', error)
+      toast.error('Failed to delete recurring payment')
     }
   }
 
@@ -476,6 +480,15 @@ const RecurringPayments = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Recurring Payment"
+        message="Are you sure you want to delete this recurring payment? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

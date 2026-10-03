@@ -35,6 +35,7 @@ import { DepartmentsEmptyState } from '../../components/common/EmptyState';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import TabNavigation from '../../components/common/TabNavigation';
 import PasswordConfirmationModal from '../../components/common/PasswordConfirmationModal';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 import PermissionButton from '../../components/common/PermissionButton';
 import Card from '../../components/common/Card';
 import { usePasswordConfirmation } from '../../hooks/usePasswordConfirmation';
@@ -59,6 +60,7 @@ const DepartmentsList = () => {
   const [editingDepartment, setEditingDepartment] = useState(null);
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [pendingBatch, setPendingBatch] = useState(null); // {action, message}
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -180,53 +182,43 @@ const DepartmentsList = () => {
     setSelectAll(!selectAll);
   };
 
-  const handleBatchOperation = async (action) => {
+  const BATCH_LABELS = {
+    activate_all: { confirm: 'Are you sure you want to activate all departments?', success: 'All departments activated successfully' },
+    deactivate_all: { confirm: 'Are you sure you want to deactivate all departments?', success: 'All departments deactivated successfully' },
+    activate_selected: { confirm: `Are you sure you want to activate ${selectedDepartments.length} selected departments?`, success: 'Selected departments activated successfully' },
+    deactivate_selected: { confirm: `Are you sure you want to deactivate ${selectedDepartments.length} selected departments?`, success: 'Selected departments deactivated successfully' },
+  };
+
+  const handleBatchOperation = (action) => {
+    if (action === 'delete_selected') {
+      requirePasswordConfirmation(
+        async () => {
+          const payload = { action: 'delete_selected', department_ids: selectedDepartments };
+          await api.post('/departments/batch', payload);
+          toast.success('Selected departments deleted successfully');
+          setSelectedDepartments([]);
+          setSelectAll(false);
+          fetchDepartments();
+        },
+        `Please enter your password to confirm the deletion of ${selectedDepartments.length} department(s).`
+      );
+      return;
+    }
+    const labels = BATCH_LABELS[action];
+    if (!labels) return;
+    setPendingBatch({ action, message: labels.confirm });
+  };
+
+  const confirmBatchOperation = async () => {
+    const pending = pendingBatch;
+    setPendingBatch(null);
     try {
-      let confirmMessage = '';
-      let successMessage = '';
-
-      switch (action) {
-        case 'activate_all':
-          confirmMessage = 'Are you sure you want to activate all departments?';
-          successMessage = 'All departments activated successfully';
-          break;
-        case 'deactivate_all':
-          confirmMessage = 'Are you sure you want to deactivate all departments?';
-          successMessage = 'All departments deactivated successfully';
-          break;
-        case 'activate_selected':
-          confirmMessage = `Are you sure you want to activate ${selectedDepartments.length} selected departments?`;
-          successMessage = 'Selected departments activated successfully';
-          break;
-        case 'deactivate_selected':
-          confirmMessage = `Are you sure you want to deactivate ${selectedDepartments.length} selected departments?`;
-          successMessage = 'Selected departments deactivated successfully';
-          break;
-        case 'delete_selected':
-          requirePasswordConfirmation(
-            async () => {
-              const payload = { action: 'delete_selected', department_ids: selectedDepartments };
-              await api.post('/departments/batch', payload);
-              toast.success('Selected departments deleted successfully');
-              setSelectedDepartments([]);
-              setSelectAll(false);
-              fetchDepartments();
-            },
-            `Please enter your password to confirm the deletion of ${selectedDepartments.length} department(s).`
-          );
-          return;
-        default:
-          return;
-      }
-
-      if (!confirm(confirmMessage)) return;
-
-      const payload = action === 'activate_all' || action === 'deactivate_all'
-        ? { action }
-        : { action, department_ids: selectedDepartments };
+      const payload = pending.action === 'activate_all' || pending.action === 'deactivate_all'
+        ? { action: pending.action }
+        : { action: pending.action, department_ids: selectedDepartments };
 
       await api.post('/departments/batch', payload);
-      toast.success(successMessage);
+      toast.success(BATCH_LABELS[pending.action].success);
       setSelectedDepartments([]);
       setSelectAll(false);
       fetchDepartments();
@@ -241,9 +233,9 @@ const DepartmentsList = () => {
   const departmentTabs = [
     { id: 'overview', label: 'Overview', icon: Building, count: departments.length },
     { id: 'members', label: 'Members', icon: Users, count: departments.reduce((sum, d) => sum + (d.member_count || 0), 0) },
-    { id: 'events', label: 'Events', icon: Calendar, count: 0 },
-    { id: 'budget', label: 'Budget', icon: DollarSign, count: 0 },
-    { id: 'reports', label: 'Reports', icon: BarChart3, count: 0 }
+    { id: 'events', label: 'Events', icon: Calendar },
+    { id: 'budget', label: 'Budget', icon: DollarSign },
+    { id: 'reports', label: 'Reports', icon: BarChart3 }
   ];
 
   const filteredDepartments = currentDepartments.filter(dept => {
@@ -476,6 +468,15 @@ const DepartmentsList = () => {
         password={password}
         setPassword={setPassword}
         isLoading={passwordLoading}
+      />
+
+      <ConfirmDialog
+        show={pendingBatch !== null}
+        onClose={() => setPendingBatch(null)}
+        onConfirm={confirmBatchOperation}
+        title="Confirm Batch Operation"
+        message={pendingBatch?.message || ''}
+        confirmLabel="Confirm"
       />
     </div>
   );

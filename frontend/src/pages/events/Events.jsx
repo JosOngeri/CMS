@@ -22,6 +22,7 @@ import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EventsEmptyState } from '../../components/common/EmptyState'
 import PermissionButton from '../../components/common/PermissionButton'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
 import { groupEventsByDate } from '../../utils/dateGrouping'
 import { fmtDate } from '../../utils/format'
@@ -39,6 +40,7 @@ const Events = () => {
   // Groups default to expanded — a section is only hidden once the user folds it.
   const [collapsedGroups, setCollapsedGroups] = useState({})
   const [rsvps, setRsvps] = useState([])
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -165,16 +167,18 @@ const Events = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this event?')) {
-      try {
-        await api.delete(`/events/${id}`)
-        toast.success(SUCCESS_MESSAGES.EVENT_DELETED)
-        fetchEvents()
-      } catch (error) {
-        console.error('Failed to delete event:', error)
-        toast.error('Failed to delete event')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/events/${id}`)
+      toast.success(SUCCESS_MESSAGES.EVENT_DELETED)
+      fetchEvents()
+    } catch (error) {
+      console.error('Failed to delete event:', error)
+      toast.error('Failed to delete event')
     }
   }
 
@@ -544,6 +548,15 @@ const Events = () => {
       ) : (
         <EventsEmptyState />
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Event"
+        message="Are you sure you want to delete this event? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

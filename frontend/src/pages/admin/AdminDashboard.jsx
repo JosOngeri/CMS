@@ -14,11 +14,26 @@ const AdminDashboard = () => {
     totalDepartments: 0,
     totalAnnouncements: 0
   })
+  const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchAdminStats()
+    fetchRecentActivity()
   }, [])
+
+  // L611: the old section hardcoded "John Doe registered 2 hours ago" — fake
+  // activity presented as live. The nearest real signal is recent
+  // announcements; an empty/failed fetch hides the section.
+  const fetchRecentActivity = async () => {
+    try {
+      const response = await api.get('/announcements', { params: { limit: 3 } })
+      const list = response.data.data || response.data.announcements || []
+      setRecentActivity(list.slice(0, 3))
+    } catch {
+      setRecentActivity([])
+    }
+  }
 
   const fetchAdminStats = async () => {
     try {
@@ -68,7 +83,7 @@ const AdminDashboard = () => {
       description: 'View and manage all payments',
       icon: DollarSign,
       color: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
-      link: '/dashboard/payment-management',
+      link: '/dashboard/payments/management',
       permissions: ['Super Admin', 'Pastor', 'First Elder']
     },
     {
@@ -92,7 +107,7 @@ const AdminDashboard = () => {
       description: 'Configure system settings',
       icon: Shield,
       color: 'bg-[var(--color-primary-light)] text-[var(--color-primary)]',
-      link: '/dashboard/profile-management',
+      link: '/dashboard/admin/settings',
       permissions: ['Super Admin']
     },
     {
@@ -213,47 +228,27 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-[var(--color-surface)] rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Recent System Activity</h2>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
-            <div className="w-2 h-2 bg-[var(--color-success)] rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)]">
-                New user registration
-              </p>
-              <p className="text-xs text-[var(--color-textSecondary)]">
-                John Doe registered 2 hours ago
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
-            <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)]">
-                Payment received
-              </p>
-              <p className="text-xs text-[var(--color-textSecondary)]">
-                KES 5,000 from Jane Smith 4 hours ago
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
-            <div className="w-2 h-2 bg-[var(--color-accent)] rounded-full"></div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-[var(--color-text)]">
-                New announcement posted
-              </p>
-              <p className="text-xs text-[var(--color-textSecondary)]">
-                Sabbath School updates 6 hours ago
-              </p>
-            </div>
+      {/* Recent Activity — real announcements, not hardcoded entries (L611) */}
+      {recentActivity.length > 0 && (
+        <div className="bg-[var(--color-surface)] rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Recent Activity</h2>
+          <div className="space-y-4">
+            {recentActivity.map((item) => (
+              <div key={item.id} className="flex items-center space-x-3 p-3 bg-[var(--color-background)] rounded-lg">
+                <div className="w-2 h-2 bg-[var(--color-primary)] rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[var(--color-text)]">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">
+                    {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

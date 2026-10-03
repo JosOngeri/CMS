@@ -325,7 +325,7 @@ const ProfileManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
-                    className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>
@@ -482,7 +482,7 @@ const ProfileManagement = () => {
                       setShowPasswordForm(false)
                       setPasswordData({ current_password: '', new_password: '', confirm_password: '' })
                     }}
-                    className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-text)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
+                    className="px-4 py-2 bg-[var(--color-surface)] text-[var(--color-textSecondary)] rounded-lg hover:bg-[var(--color-surface)] transition-colors"
                   >
                     Cancel
                   </button>

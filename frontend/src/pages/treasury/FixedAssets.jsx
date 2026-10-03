@@ -9,6 +9,7 @@ import Card from '../../components/common/Card'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const FixedAssets = () => {
   const { api } = useAuth()
@@ -21,6 +22,7 @@ const FixedAssets = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     asset_number: '',
     asset_name: '',
@@ -67,8 +69,8 @@ const FixedAssets = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(asset =>
-        asset.asset_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        asset.asset_number.toLowerCase().includes(searchTerm.toLowerCase())
+        (asset.asset_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (asset.asset_number || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -129,16 +131,18 @@ const FixedAssets = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this asset?')) {
-      try {
-        await api.delete(`/treasury/fixed-assets/${id}`)
-        toast.success('Asset deleted successfully')
-        fetchAssets()
-      } catch (error) {
-        console.error('Failed to delete asset:', error)
-        toast.error('Failed to delete asset')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/fixed-assets/${id}`)
+      toast.success('Asset deleted successfully')
+      fetchAssets()
+    } catch (error) {
+      console.error('Failed to delete asset:', error)
+      toast.error('Failed to delete asset')
     }
   }
 
@@ -485,6 +489,15 @@ const FixedAssets = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Asset"
+        message="Are you sure you want to delete this asset? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

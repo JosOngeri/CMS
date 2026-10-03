@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const Vendors = () => {
   const { api } = useAuth()
@@ -20,6 +21,7 @@ const Vendors = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     vendor_number: '',
     vendor_name: '',
@@ -66,8 +68,8 @@ const Vendors = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(vendor =>
-        vendor.vendor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        vendor.vendor_number.toLowerCase().includes(searchTerm.toLowerCase())
+        (vendor.vendor_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (vendor.vendor_number || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -130,16 +132,18 @@ const Vendors = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this vendor?')) {
-      try {
-        await api.delete(`/treasury/vendors/${id}`)
-        toast.success('Vendor deleted successfully')
-        fetchVendors()
-      } catch (error) {
-        console.error('Failed to delete vendor:', error)
-        toast.error('Failed to delete vendor')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/vendors/${id}`)
+      toast.success('Vendor deleted successfully')
+      fetchVendors()
+    } catch (error) {
+      console.error('Failed to delete vendor:', error)
+      toast.error('Failed to delete vendor')
     }
   }
 
@@ -435,6 +439,15 @@ const Vendors = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Vendor"
+        message="Are you sure you want to delete this vendor? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

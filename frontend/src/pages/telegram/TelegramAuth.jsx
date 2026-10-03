@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const TelegramAuth = () => {
   const { api } = useAuth();
@@ -34,6 +35,7 @@ const TelegramAuth = () => {
   const [testing, setTesting] = useState(false);
   const [authMethods, setAuthMethods] = useState([]);
   const [showAddMethod, setShowAddMethod] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [newMethodType, setNewMethodType] = useState('bot');
 
   // Form state for each auth method
@@ -81,7 +83,7 @@ const TelegramAuth = () => {
 
   const handleAddMethod = () => {
     const newMethod = {
-      id: Date.now().toString(),
+      id: `new-${Date.now()}`, // L649: must match the `startsWith('new-')` check in handleSaveMethod — a bare timestamp was POSTed as PUT /auth-methods/<ts> → 404
       type: newMethodType,
       name: `${newMethodType === 'bot' ? 'Bot API' : 'MTProto'} - ${authMethods.length + 1}`,
       config: {},
@@ -104,11 +106,11 @@ const TelegramAuth = () => {
     setNewMethodType('bot');
   };
 
-  const handleDeleteMethod = async (methodId) => {
-    if (!confirm('Are you sure you want to delete this authentication method?')) {
-      return;
-    }
+  const handleDeleteMethod = (methodId) => setDeleteTarget(methodId);
 
+  const confirmDeleteMethod = async () => {
+    const methodId = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(`/telegramAuth/auth-methods/${methodId}`);
       setAuthMethods(authMethods.filter(m => m.id !== methodId));
@@ -687,6 +689,15 @@ const TelegramAuth = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDeleteMethod}
+        title="Delete Authentication Method"
+        message="Are you sure you want to delete this authentication method? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

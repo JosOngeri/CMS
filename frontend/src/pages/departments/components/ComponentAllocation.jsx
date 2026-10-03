@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
 
 const ComponentAllocation = ({ departmentId }) => {
   const toast = useToast();
@@ -31,6 +32,7 @@ const ComponentAllocation = ({ departmentId }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null);
 
   // The api client attaches the auth cookie + CSRF token automatically.
   // 403 means "not allowed" — show an empty panel rather than an error toast.
@@ -77,9 +79,11 @@ const ComponentAllocation = ({ departmentId }) => {
     }
   };
 
-  const removeComponent = async (componentId) => {
-    if (!window.confirm('Remove this component from the department?')) return;
+  const removeComponent = (componentId) => setRemoveTarget(componentId);
 
+  const confirmRemove = async () => {
+    const componentId = removeTarget;
+    setRemoveTarget(null);
     try {
       await api.delete(`/departments/${departmentId}/components/${componentId}`);
       toast.success('Component removed successfully');
@@ -251,6 +255,15 @@ const ComponentAllocation = ({ departmentId }) => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={removeTarget !== null}
+        onClose={() => setRemoveTarget(null)}
+        onConfirm={confirmRemove}
+        title="Remove Component"
+        message="Remove this component from the department?"
+        confirmLabel="Remove"
+      />
     </div>
   );
 };

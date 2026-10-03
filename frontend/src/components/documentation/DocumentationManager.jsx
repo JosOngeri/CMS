@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Book, FileText, Search, Plus, Trash2, Download } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import ConfirmDialog from '../common/ConfirmDialog';
 
 const DocumentationManager = () => {
   // Shared instance from AuthContext — cookie auth + CSRF + /api prefix built in.
@@ -11,6 +12,7 @@ const DocumentationManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   useEffect(() => {
     fetchDocuments();
@@ -43,9 +45,11 @@ const DocumentationManager = () => {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this document?')) return;
+  const handleDelete = (id) => setDeleteTarget(id);
 
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(`/documents/${id}`);
       toast.success('Document deleted');
@@ -194,6 +198,15 @@ const DocumentationManager = () => {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Document"
+        message="Delete this document? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

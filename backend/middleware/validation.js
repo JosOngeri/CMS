@@ -33,13 +33,14 @@ module.exports = {
   validateRequest,
   validationRules: {
     idParam: [
-      param('id').notEmpty().withMessage('ID is required')
+      // trim() first so a whitespace-only id fails notEmpty instead of passing.
+      param('id').trim().notEmpty().withMessage('ID is required')
     ],
     user: {
       update: [
-        body('email').optional().isEmail().withMessage('Invalid email'),
-        body('first_name').optional().notEmpty().withMessage('First name cannot be empty'),
-        body('last_name').optional().notEmpty().withMessage('Last name cannot be empty')
+        body('email').optional().trim().isEmail().withMessage('Invalid email'),
+        body('first_name').optional().trim().notEmpty().withMessage('First name cannot be empty'),
+        body('last_name').optional().trim().notEmpty().withMessage('Last name cannot be empty')
       ],
       changePassword: [
         body('currentPassword').notEmpty().withMessage('Current password is required'),
@@ -55,24 +56,24 @@ module.exports = {
     },
     announcement: {
       create: [
-        body('title').notEmpty().withMessage('Title is required'),
-        body('content').notEmpty().withMessage('Content is required')
+        body('title').trim().notEmpty().withMessage('Title is required'),
+        body('content').trim().notEmpty().withMessage('Content is required')
       ],
       update: [
-        body('title').optional().notEmpty().withMessage('Title cannot be empty'),
-        body('content').optional().notEmpty().withMessage('Content cannot be empty')
+        body('title').optional().trim().notEmpty().withMessage('Title cannot be empty'),
+        body('content').optional().trim().notEmpty().withMessage('Content cannot be empty')
       ]
     },
     department: {
       create: [
         // slug is derived from name inside the route — requiring it in the
         // body rejected every legitimate create call.
-        body('name').notEmpty().withMessage('Department name is required'),
-        body('slug').optional()
+        body('name').trim().notEmpty().withMessage('Department name is required'),
+        body('slug').optional().trim()
       ],
       addMember: [
-        body('userId').notEmpty().withMessage('User ID is required'),
-        body('role').notEmpty().withMessage('Role is required')
+        body('userId').trim().notEmpty().withMessage('User ID is required'),
+        body('role').trim().notEmpty().withMessage('Role is required')
       ]
     }
   }

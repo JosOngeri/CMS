@@ -1646,3 +1646,51 @@ Confirmed still open: `broadcastActivities` still runs on the activity-feed **re
 The three fixable remnants from §C are closed: activity-feed broadcast removed from the read path (L161 → FIXED), all three change-password paths now call `validatePasswordStrength` — `PUT /api/auth/password` had **no** route validation and `userSettings` accepted `min 6` (L416 → FIXED), `invalidateUserCache` wired into `departmentLeadership` grant/revoke helpers, the handover legacy-head path, and the `is_active` update path (L403 remnant → FIXED). L121 (repositories tracing note) remains an ongoing audit item, not a defect.
 
 New: `tests/integration/mfa.integration.test.js` — 4 tests covering enable→QR data URL→real-TOTP verify→disable against live endpoints (the regression guard that would have caught the dead MFA flow). Suite: **308 passing, 0 failing**.
+
+---
+
+## 2026-10-03 — Frontend ConfirmDialog sweep + ledger verification (pass 7), Flutter sweep (pass 8)
+
+### A. Native confirm()/alert() sweep — complete
+
+All 28 native calls across 26 files replaced with the shared `components/common/ConfirmDialog.jsx` (CSS-var themed, Escape/focus, loading + destructive variants). Pattern: pending-target state → handler only sets target → confirm callback runs the API call → dialog rendered at component end. Files touched: 8 treasury pages (Vendors, Funds, Pledges, RecurringPayments, FixedAssets, ChartOfAccounts, BankReconciliations, Projects), UserManagement, Sessions, Content, Documents, CategoryManagement, DepartmentHeadAllocation, NotificationDashboard, TelegramAuth, Events, DepartmentsList, Announcements, PhotoGallery (2 sites — label removal + photo delete), SMS Contacts/Groups, DepartmentDashboard, ComponentAllocation, DepartmentBranding, PermissionManagement, DocumentationManager. Post-sweep grep: **0 native `confirm(`/`alert(` remain** under `frontend/src`.
+
+### B. Frontend ledger rows — verified already-fixed (ledger bookkeeping catch-up)
+
+Source-verified, no new code needed: Header user-name/gallery/notification links; StatsCard keyboard gating; ProtectedComponent no-handler guard; ActivityFeed 44px + stable keys; CollectionTracker numeric formatting + palette tokens; ApplePhotoGrid gap/scroll; GalleryNavigation mobile drawer; MinistriesCarousel dead links + hover pause; SMS.jsx tab stubs removed + Kenyan normalization; DocumentationManager authenticated `api` (docApi gone); GmailMessageList selection wiring + mobile actions + FAB; DepartmentHandover + DepartmentHeadAllocation aggregate endpoints (N+1 gone); TreasuryDashboard all nav targets exist; MyPayments numeric coercion; DepartmentActivity route param; GalleryManagement pagination; UserManagement server-side pagination; EmptyState lowercase fix; Login demo box DEV-gated; Security.jsx parseInt + dead Export; PaletteSelector; DepartmentOverview.
+
+Resolved by deletion: `Notifications.jsx` (unreferenced), `MobileDashboard.jsx`, `Telegram.jsx` (stub), accessibility/Testing/Mobile scaffold pages — routes + imports removed from `dashboard.routes.jsx`.
+
+### C. Frontend real fixes this pass
+
+| File | Fix |
+|---|---|
+| `pages/members/MemberDirectory.jsx` | B12: loads ALL `/users/directory` pages (not just page 1); `roles[]`/`departments[]`/`created_at` helpers; dynamic `/departments` filter options; null-safe search; CSV escaping for commas/quotes/newlines; dead report cards repointed to real `/dashboard/reports` |
+| `pages/admin/AdminDashboard.jsx` | `payment-management` → `payments/management` route fix; System Settings link → admin settings; fake hardcoded activity ("John Doe", "KES 5,000 from Jane Smith") replaced with real `/announcements` feed |
+| `pages/telegram/TelegramAuth.jsx` | New-method temp ids used `Date.now()` but update path tested `startsWith('new-')` → new methods hit backend update/delete 404s. Now `new-${Date.now()}` |
+| `pages/events/Events.jsx` | `category` appended to FormData (verified); `organizer` left as verification item — backend may not consume it |
+| `pages/departments/DepartmentsList.jsx` | `isAdmin` now role-derived; children render; dead `count:0` tabs — bogus counts dropped (placeholders honestly show "coming soon") |
+
+### D. Flutter sweep — pass 8
+
+Most rows were already fixed in a prior pass (evidence markers L649/L651/L654/L655/L731–L733/B8/L766/L767/L770):
+
+- `router.dart` — `/departments/:id` covered by prefix guard; error page goes `/dashboard` not `/`
+- `phone_utils.dart` — accepts 2547/2541/07/01 formats (L731)
+- `dept_leadership_tab.dart` — searchable member picker sends real `user_id` (L732)
+- `biometric_service.dart` — stores refresh token, never password (L649)
+- `theme.dart` — dark theme has full component parity (L733)
+- `Info.plist` — camera/photo/FaceID/notification usage descriptions present
+- `pubspec.yaml` — dead deps removed, `another_telephony` deferred (L770)
+- `google-services.json` — deleted along with disabled Firebase init (L655)
+- `sync_models.dart`/`RollingUpdate` — deleted when pull-sync was stubbed; note: offline sync is a **feature gap** (PullSyncService is a no-op stub), not a bug
+- `Dockerfile` copies `dist-new` (L766); Playwright/Cypress target 5181 (L767)
+
+**Real regression found + fixed — plaintext token storage (B8 incomplete):**
+`api_service.dart` still read/wrote `auth_token` + `refresh_token` via `SharedPreferences` — AuthService's B8 migration deletes the plaintext copy on every cold start, so the interceptor sent no Bearer header → every request 401'd → wiped `user_data`. Logged-out-looking sessions after restart. Now: interceptor + login + `refreshSession` use `FlutterSecureStorage` (same Keystore options as AuthService); `refreshSession` returns the rotated `refreshToken` in its result (login_screen no longer re-reads storage); `auth_service.logout()` also deletes `refresh_token` (explicit logout must not leave a session-minting credential — `biometric_refresh_token` intentionally survives as opt-in enrollment); legacy migration now covers `refresh_token` too. Flutter SDK not installed on this machine — `flutter analyze` deferred to the user's environment.
+
+### E. Verification
+
+- ESLint on all touched frontend files: **0 errors** (133 pre-existing warnings — prop-types/unused-vars/exhaustive-deps debt)
+- `vite build`: clean, `dist-new` emitted
+- Dart changes reviewed manually (no analyzer available); changes are mechanical storage-backend swaps

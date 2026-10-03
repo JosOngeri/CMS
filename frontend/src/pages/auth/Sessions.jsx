@@ -5,10 +5,12 @@ import { Monitor, Trash2, Shield, LogOut, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useColorPalette } from '../../contexts/ColorPaletteContext';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showRevokeAll, setShowRevokeAll] = useState(false);
   const { logout, api } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
@@ -38,11 +40,10 @@ const Sessions = () => {
     }
   };
 
-  const revokeAllSessions = async () => {
-    if (!confirm('Are you sure you want to revoke all sessions? You will be logged out.')) {
-      return;
-    }
+  const revokeAllSessions = () => setShowRevokeAll(true);
 
+  const confirmRevokeAll = async () => {
+    setShowRevokeAll(false);
     try {
       await api.delete('auth/sessions');
       toast.success('All sessions revoked successfully');
@@ -164,6 +165,15 @@ const Sessions = () => {
           </ul>
         </div>
       </div>
+
+      <ConfirmDialog
+        show={showRevokeAll}
+        onClose={() => setShowRevokeAll(false)}
+        onConfirm={confirmRevokeAll}
+        title="Revoke All Sessions"
+        message="Are you sure you want to revoke all sessions? You will be logged out."
+        confirmLabel="Revoke All"
+      />
     </div>
   );
 };

@@ -56,6 +56,7 @@ import DepartmentCollections from '../../components/departments/DepartmentCollec
 import CollectionTracker from '../../components/events/CollectionTracker';
 import ApplePhotoGrid from '../../components/gallery/ApplePhotoGrid';
 import PhotoLightbox from '../../components/gallery/PhotoLightbox';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
 
 const DepartmentDashboard = () => {
   const { departmentSlug } = useParams();
@@ -111,6 +112,7 @@ const DepartmentDashboard = () => {
     assignee: '',
   });
   const [commSelectedItems, setCommSelectedItems] = useState(new Set());
+  const [pendingDelete, setPendingDelete] = useState(null); // {type:'comm-bulk'|'comm'|'task', id?}
   const [commActiveTab, setCommActiveTab] = useState('all');
   const [error, setError] = useState(null);
   const [errorType, setErrorType] = useState(null);
@@ -406,33 +408,43 @@ const DepartmentDashboard = () => {
   // GmailMessageList only emits real actions: 'delete' (bulk + row) and
   // 'view' (row click). Deletion goes through the authed api client — a raw
   // fetch here used to call undefined authHeaders() and crash.
-  const handleCommBulkAction = async (action) => {
-    if (action !== 'delete') return;
-    if (!confirm(`Are you sure you want to delete ${commSelectedItems.size} communications?`)) return;
-    try {
-      for (const id of commSelectedItems) {
-        await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${id}`);
-      }
-      toast.success(`${commSelectedItems.size} communications deleted`);
-      setCommSelectedItems(new Set());
-      loadCommunications();
-    } catch (error) {
-      console.error('Failed to delete communications:', error);
-      toast.error('Failed to delete communications');
+  const handleCommBulkAction = (action) => {
+    if (action !== 'delete' || commSelectedItems.size === 0) return;
+    setPendingDelete({ type: 'comm-bulk' });
+  };
+
+  const handleCommRowAction = (action, item) => {
+    if (action === 'view') {
+      setViewComm(item);
+    } else if (action === 'delete') {
+      setPendingDelete({ type: 'comm', id: item.id });
     }
   };
 
-  const handleCommRowAction = async (action, item) => {
-    if (action === 'view') {
-      setViewComm(item);
-    } else if (action === 'delete' && confirm('Are you sure you want to delete this communication?')) {
-      try {
-        await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${item.id}`);
+  const confirmPendingDelete = async () => {
+    const pending = pendingDelete;
+    setPendingDelete(null);
+    try {
+      if (pending.type === 'comm-bulk') {
+        for (const id of commSelectedItems) {
+          await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${id}`);
+        }
+        toast.success(`${commSelectedItems.size} communications deleted`);
+        setCommSelectedItems(new Set());
+        loadCommunications();
+      } else if (pending.type === 'comm') {
+        await api.delete(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.COMMUNICATIONS(departmentSlug)}/${pending.id}`);
         toast.success('Communication deleted');
         loadCommunications();
-      } catch (error) {
-        toast.error('Failed to delete communication');
+      } else if (pending.type === 'task') {
+        await api.delete(API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.TASK_BY_ID(departmentSlug, pending.id));
+        toast.success('Task deleted');
+        loadTasks();
+        fetchDepartmentDashboard();
       }
+    } catch (error) {
+      console.error(`Failed to delete ${pending.type}:`, error);
+      toast.error(error.response?.data?.error || `Failed to delete ${pending.type === 'task' ? 'task' : 'communication(s)'}`);
     }
   };
 
@@ -585,18 +597,7 @@ const DepartmentDashboard = () => {
     }
   };
 
-  const deleteTask = async (taskId) => {
-    if (!window.confirm('Are you sure you want to delete this task?')) return;
-    
-    try {
-      await api.delete(API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.TASK_BY_ID(departmentSlug, taskId));
-      toast.success('Task deleted');
-      loadTasks();
-      fetchDepartmentDashboard();
-    } catch (err) {
-      toast.error(err.response?.data?.error || err.message || 'Failed to delete task');
-    }
-  };
+  const deleteTask = (taskId) => setPendingDelete({ type: 'task', id: taskId });
 
   const getActivityIcon = (type) => {
     switch (type) {
@@ -1968,6 +1969,21 @@ const DepartmentDashboard = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={pendingDelete !== null}
+        onClose={() => setPendingDelete(null)}
+        onConfirm={confirmPendingDelete}
+        title={pendingDelete?.type === 'task' ? 'Delete Task' : 'Delete Communication'}
+        message={
+          pendingDelete?.type === 'comm-bulk'
+            ? `Are you sure you want to delete ${commSelectedItems.size} communications?`
+            : pendingDelete?.type === 'task'
+              ? 'Are you sure you want to delete this task?'
+              : 'Are you sure you want to delete this communication?'
+        }
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

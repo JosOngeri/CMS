@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const ChartOfAccounts = () => {
   const { api } = useAuth()
@@ -21,6 +22,7 @@ const ChartOfAccounts = () => {
   const [filterType, setFilterType] = useState('all')
   const [filterFund, setFilterFund] = useState('all')
   const [showFilters, setShowFilters] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [funds, setFunds] = useState([])
   const [formData, setFormData] = useState({
     account_number: '',
@@ -81,8 +83,8 @@ const ChartOfAccounts = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(account =>
-        account.account_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        account.account_number.toLowerCase().includes(searchTerm.toLowerCase())
+        (account.account_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (account.account_number || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -139,16 +141,18 @@ const ChartOfAccounts = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this account?')) {
-      try {
-        await api.delete(`/treasury/accounts/${id}`)
-        toast.success('Account deleted successfully')
-        fetchAccounts()
-      } catch (error) {
-        console.error('Failed to delete account:', error)
-        toast.error('Failed to delete account')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/accounts/${id}`)
+      toast.success('Account deleted successfully')
+      fetchAccounts()
+    } catch (error) {
+      console.error('Failed to delete account:', error)
+      toast.error('Failed to delete account')
     }
   }
 
@@ -440,6 +444,15 @@ const ChartOfAccounts = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Account"
+        message="Are you sure you want to delete this account? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useToast } from '../../../contexts/ToastContext';
+import ConfirmDialog from '../../../components/common/ConfirmDialog';
 
 const Contacts = () => {
   const { api } = useAuth();
@@ -32,6 +33,7 @@ const Contacts = () => {
   }, [searchTerm]);
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -106,9 +108,11 @@ const Contacts = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this contact?')) return;
-    
+  const handleDelete = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    const id = deleteTarget;
+    setDeleteTarget(null);
     try {
       await api.delete(`/sms-contacts/${id}`);
       fetchContacts();
@@ -320,6 +324,15 @@ const Contacts = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Contact"
+        message="Are you sure you want to delete this contact? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   );
 };

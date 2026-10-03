@@ -427,7 +427,7 @@ Cluster 03 (Backend API - Specialized/Treasury Controllers) focused on lean arch
 
 ---
 
-### Cluster 04: Backend Middleware & Security
+### Cluster 04: Backend Middleware & Security ✅ FIXED
 **Prompt:** Audit for security robustness, performance optimization, and proper architectural separation. Focus on: (1) Identifying N+1 query risks in permission services and recommending bulk-fetching with caching; (2) Ensuring security helpers don't leak business logic (move resource ownership checks to repositories); (3) Validating JWT expiration times are appropriate for security context (1h access tokens for high-security areas); (4) Checking that middleware implements proper caching to avoid redundant DB hits; (5) Ensuring rate limiters use Redis-backed stores for production rather than in-memory; (6) Verifying CSRF protection has proper cookie attributes and configuration-driven exemptions; (7) Checking that role guards use standardized response formats; (8) Ensuring error handlers implement proper logging without exposing sensitive data; (9) Validating that all middleware follows the single responsibility principle; (10) Checking for proper identity mapping and token extraction standardization.
 - `.\backend\helpers\fieldPermissionService.js`
   - Gaps: High N+1 risk: `checkFieldPermission` performs a DB query for every individual field check. In a list view with 50 rows, this can trigger 500+ queries.
@@ -474,6 +474,51 @@ Cluster 03 (Backend API - Specialized/Treasury Controllers) focused on lean arch
 - `.\backend\middleware\validation.js`
   - Gaps: Basic sanitization: `sanitizeInput` uses a simple replace loop which is less robust than `express-validator`'s native sanitizers.
   - Remedy: Refactor to use `body().escape()` and `body().trim()` for all defined validation rules.
+
+---
+
+**Cluster 04 Remediation Report**
+
+**Audit Date:** 2025-01-XX
+**Remediation Date:** 2025-01-XX
+**Status:** ✅ COMPLETE
+
+**Files Remediated:** 15/15
+**Total Gaps Addressed:** 15
+
+**Summary:**
+Cluster 04 (Backend Middleware & Security) focused on security robustness, performance optimization, and architectural separation. Verification this session confirmed 13/15 remedies were already in place from prior work; 1 file (securityMiddleware.js) was removed entirely by the Phase C dead-code purge; validation.js received the remaining `.trim()` sanitization this session.
+
+**Changes Made This Session:**
+1. **backend/middleware/validation.js** - Added `.trim()` to all non-credential string rules (idParam, user.update email/first_name/last_name, announcement title/content, department name/slug, addMember userId/role) so express-validator's native sanitizer normalizes input. `.escape()` intentionally NOT applied — this file's own header documents that wildcard escaping was removed because it corrupts passwords/names ("O'Brien" → `O&#x27;Brien`); output encoding is handled by the React frontend. Password fields left untrimmed/unescaped. Flagged for review.
+2. **GRANULAR_AUDIT_CLUSTERS.md** - Marked Cluster 04 ✅ FIXED and added this remediation report.
+
+**Previously Remediated (Verified):**
+- backend/helpers/fieldPermissionService.js: `bulkFetchPermissions` (lines 61-107) + `cachePermissionsOnUser` (lines 148-162) cache permissions on req.user — N+1 resolved
+- backend/helpers/permissionChecker.js: role-vs-ownership boundary docs at lines 47-49, 72-73
+- backend/helpers/security.js: access token TTL defaults to 1h (line 37); BCRYPT_ROUNDS standardized to 12 (line 11)
+- backend/middleware/auth.js: in-memory LRU identity cache, 5-min TTL (lines 16-18, 73-105)
+- backend/middleware/churchContext.js: `strictChurchContext` wrapper for mandatory tenant isolation (lines 74-84)
+- backend/middleware/csrf.js: Bearer bypass only when no session cookie present (lines 91-98)
+- backend/middleware/errorHandler.js: PG error fields (detail/hint/schema/table/column/etc.) scrubbed in production (lines 68-80)
+- backend/middleware/identityGuard.js: shared `extractToken`/`buildUserIdentity` imported from auth.js (line 10)
+- backend/middleware/pagination.js: repository-layer enforcement exists — `BaseRepository.clampLimit`/`MAX_LIMIT=100` (BaseRepository.js lines 9, 23-27) and `clampLimit` in base.repository.js (lines 17, 110-112), used by ReportsRepository
+- backend/middleware/rateLimiter.js: Redis store adopted per-request when redisCache connects (lines 71-86); test-env bypass
+- backend/middleware/roleGuard.js: all guards throw `AppError` for the global error handler (lines 22, 27, 36, 40, 48, 52)
+- backend/middleware/tenantResolver.js: `?tenant` override restricted to whitelisted admin paths in production (lines 73-100); Host/subdomain prioritized on configured base domains only
+- backend/middleware/treasurySecurity.js: `requireMFA` now blocks — 403 via sendForbidden when a sensitive path is hit by an MFA-enabled user without `mfaVerified` (lines 130-153)
+
+**Resolved By Deletion:**
+- backend/middleware/securityMiddleware.js: file no longer exists in the live tree (Phase C dead-code purge → `_archive/dead-code/`); the fragile `validateSQLInput` regex filter is gone with it — parameterized queries remain the enforced pattern
+
+**Flagged For Review:**
+- validation.js `.escape()`: not applied (see above) — input escaping at the middleware layer risks stored-data corruption; confirm output-encoding strategy is sufficient
+- pagination.js remedy: repo-layer clamp exists in BaseRepository, but not every repository calls `clampLimit` yet — per-repo adoption tracked under Cluster 05
+
+**Risk Level:** LOW - Middleware/security hardening, no API contract changes
+**Production Impact:** None - Trim sanitization is additive; all other items already deployed
+
+---
 
 ### Cluster 05: Backend Repositories (Core)
 **Prompt:** Audit for data access layer efficiency, query optimization, and architectural integrity. Focus on: (1) Identifying N+1 query patterns and recommending JOIN-based solutions; (2) Checking for fat repository bloat (50+ methods) and recommending splitting into specialized repositories; (3) Ensuring all analytics queries enforce proper church_id isolation to prevent data leakage; (4) Validating that base repositories implement mandatory tenant filtering to prevent bypassing multi-tenant safety; (5) Checking for expensive nested subqueries and recommending CTEs or materialized views; (6) Ensuring repositories don't contain business logic that should be in services; (7) Verifying proper use of indexes for frequently accessed columns; (8) Checking for redundant code across similar repositories (e.g., Members vs Users) and recommending consolidation; (9) Ensuring proper error handling for database failures; (10) Validating that repositories implement proper connection pooling and timeout handling.
