@@ -15,7 +15,8 @@ WORKDIR /app
 COPY backend/package*.json ./backend/
 RUN npm install --prefix backend --production
 COPY backend/ ./backend/
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+# Vite builds to dist-new; the backend serves frontend/dist — rename on copy.
+COPY --from=frontend-builder /app/frontend/dist-new ./frontend/dist
 
 RUN chown -R appuser:appgroup /app
 
