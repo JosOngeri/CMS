@@ -4,22 +4,25 @@
  */
 
 module.exports = {
+  // rootDir is the backend root so BOTH tests/ and __tests__/ trees are
+  // reachable — the workflow patterns target `__tests__/unit/` which is
+  // invisible when rootDir defaults to tests/.
+  rootDir: '..',
   testEnvironment: 'node',
   testMatch: [
     '**/tests/**/*.test.js',
-    '**/__tests__/**/*.test.js',
-    '**/*.test.js'
+    '**/__tests__/**/*.test.js'
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/'
   ],
   collectCoverageFrom: [
-    '../controllers/**/*.js',
-    '../services/**/*.js',
-    '../repositories/**/*.js',
-    '../middleware/**/*.js',
-    '../utils/**/*.js',
+    'controllers/**/*.js',
+    'services/**/*.js',
+    'repositories/**/*.js',
+    'middleware/**/*.js',
+    'utils/**/*.js',
     '!**/node_modules/**',
     '!**/tests/**',
     '!**/__tests__/**',
@@ -33,14 +36,14 @@ module.exports = {
       statements: 50
     }
   },
-  setupFilesAfterEnv: ['<rootDir>/setup/global-setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup/global-setup.js'],
   testTimeout: 30000,
   verbose: true,
   coverageReporters: ['text', 'lcov', 'html'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/../$1',
-    '^uuid$': '<rootDir>/setup/uuid-mock.js',
-    '^hibp$': '<rootDir>/setup/hibp-mock.js'
+    '^@/(.*)$': '<rootDir>/$1',
+    '^uuid$': '<rootDir>/tests/setup/uuid-mock.js',
+    '^hibp$': '<rootDir>/tests/setup/hibp-mock.js'
   },
   transform: {},
   transformIgnorePatterns: [

@@ -1,137 +1,168 @@
 /**
  * Unit Tests for Notification Service
+ *
+ * Targets the real service API (sendRealTimeNotification, createFromTemplate,
+ * replaceVariables, createNotification, trackDelivery, batchNotifications,
+ * createAggregatedNotification, getNotificationHistory, getDeliveryStats).
+ * NOTE: no babel transform in this project — jest.mock is NOT hoisted, so
+ * requires come after the mocks. The service starts a batch interval in its
+ * constructor; cleanup() in afterAll prevents a worker-leak hang.
  */
 
+jest.mock('../../config/database', () => ({
+  pool: { query: jest.fn() }
+}));
+
+jest.mock('../../config/logging', () => ({
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
+}));
+
+const { pool } = require('../../config/database');
 const notificationService = require('../../services/notificationService');
-
-// Mock dependencies
-jest.mock('../../services/redisCache', () => ({
-  get: jest.fn(),
-  set: jest.fn(),
-  del: jest.fn()
-}));
-
-jest.mock('socket.io', () => ({
-  emit: jest.fn()
-}));
-
-const redisCache = require('../../services/redisCache');
 
 describe('Notification Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('sendNotification', () => {
-    it('should send notification to user', async () => {
-      redisCache.get.mockResolvedValue(null);
-      redisCache.set.mockResolvedValue(true);
+  afterAll(() => {
+    notificationService.cleanup();
+  });
 
-      const result = await notificationService.sendNotification('user-1', 'test-notification', {
-        title: 'Test',
-        message: 'Test message'
-      });
-
-      expect(result).toHaveProperty('success', true);
-      expect(redisCache.set).toHaveBeenCalled();
+  describe('sendRealTimeNotification', () => {
+    it('returns false when socket.io is not initialized', async () => {
+      notificationService.setIo(null);
+      const result = await notificationService.sendRealTimeNotification('user-1', { title: 'T' });
+      expect(result).toBe(false);
     });
 
-    it('should use cached template if available', async () => {
-      const cachedTemplate = {
-        subject: 'Cached Subject',
-        body: 'Cached Body with {{name}}'
-      };
-      redisCache.get.mockResolvedValue(JSON.stringify(cachedTemplate));
+    it('emits to the user namespace when io is set', async () => {
+      const emit = jest.fn();
+      notificationService.setIo({ to: jest.fn(() => ({ emit })) });
 
-      const result = await notificationService.sendNotification('user-1', 'test-notification', {
-        name: 'John'
-      });
+      const result = await notificationService.sendRealTimeNotification('user-1', { title: 'T' });
 
-      expect(redisCache.get).toHaveBeenCalled();
-      expect(result).toHaveProperty('success', true);
-    });
-
-    it('should batch notifications for multiple users', async () => {
-      const userIds = ['user-1', 'user-2', 'user-3'];
-      redisCache.get.mockResolvedValue(null);
-      redisCache.set.mockResolvedValue(true);
-
-      const result = await notificationService.sendBatchNotifications(userIds, 'test-notification', {
-        title: 'Test'
-      });
-
-      expect(result).toHaveProperty('success', true);
-      expect(result.sentCount).toBe(3);
+      expect(result).toBe(true);
+      expect(emit).toHaveBeenCalledWith('notification', { title: 'T' });
+      notificationService.setIo(null);
     });
   });
 
-  describe('template management', () => {
-    it('should create notification template', async () => {
-      const template = {
-        key: 'welcome-notification',
-        subject: 'Welcome {{name}}',
-        body: 'Hello {{name}}, welcome to our church!'
-      };
-
-      const result = await notificationService.createTemplate(template);
-
-      expect(result).toHaveProperty('success', true);
-      expect(redisCache.set).toHaveBeenCalled();
-    });
-
-    it('should substitute template variables', () => {
-      const template = 'Hello {{name}}, your balance is {{amount}}';
-      const variables = { name: 'John', amount: '1000' };
-
-      const result = notificationService.substituteVariables(template, variables);
-
+  describe('replaceVariables', () => {
+    it('substitutes template variables', () => {
+      const result = notificationService.replaceVariables(
+        'Hello {{name}}, your balance is {{amount}}',
+        { name: 'John', amount: '1000' }
+      );
       expect(result).toBe('Hello John, your balance is 1000');
     });
 
-    it('should handle missing variables gracefully', () => {
-      const template = 'Hello {{name}}, your balance is {{amount}}';
-      const variables = { name: 'John' };
-
-      const result = notificationService.substituteVariables(template, variables);
-
+    it('leaves unknown variables untouched', () => {
+      const result = notificationService.replaceVariables(
+        'Hello {{name}}, your balance is {{amount}}',
+        { name: 'John' }
+      );
       expect(result).toBe('Hello John, your balance is {{amount}}');
     });
-  });
 
-  describe('notification tracking', () => {
-    it('should track notification delivery', async () => {
-      const result = await notificationService.trackDelivery('notification-id-1', 'delivered');
-
-      expect(result).toHaveProperty('success', true);
-    });
-
-    it('should get notification history for user', async () => {
-      const result = await notificationService.getUserNotificationHistory('user-1');
-
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('notifications');
-      expect(Array.isArray(result.notifications)).toBe(true);
+    it('returns null for null templates', () => {
+      expect(notificationService.replaceVariables(null, { a: 1 })).toBeNull();
     });
   });
 
-  describe('notification aggregation', () => {
-    it('should aggregate similar notifications', async () => {
-      const notifications = [
-        { type: 'payment', count: 1 },
-        { type: 'payment', count: 1 },
-        { type: 'announcement', count: 1 }
-      ];
+  describe('createNotification', () => {
+    it('inserts a church-scoped notification row', async () => {
+      pool.query.mockResolvedValue({ rows: [{ id: 'n1', title: 'T' }] });
 
-      const result = notificationService.aggregateNotifications(notifications);
+      const result = await notificationService.createNotification(
+        { user_id: 'u1', type_id: 't1', title: 'T', message: 'M' },
+        'church-1'
+      );
 
-      expect(result).toHaveLength(2);
-      expect(result[0].count).toBe(2);
+      expect(result).toEqual({ id: 'n1', title: 'T' });
+      const [sql, params] = pool.query.mock.calls[0];
+      expect(sql).toContain('INSERT INTO notifications');
+      expect(params).toContain('church-1');
     });
 
-    it('should respect aggregation time window', async () => {
-      const result = await notificationService.getAggregatedNotifications('user-1', 300); // 5 minutes
+    it('rejects titles over 255 characters', async () => {
+      await expect(
+        notificationService.createNotification({ title: 'x'.repeat(256) }, 'church-1')
+      ).rejects.toThrow('255');
+    });
+  });
 
-      expect(result).toHaveProperty('success', true);
+  describe('trackDelivery', () => {
+    it('upserts a delivery record', async () => {
+      pool.query.mockResolvedValue({ rows: [] });
+
+      await notificationService.trackDelivery('n1', 'delivered');
+
+      const [sql, params] = pool.query.mock.calls[0];
+      expect(sql).toContain('ON CONFLICT');
+      expect(params[0]).toBe('n1');
+      expect(params[1]).toBe('delivered');
+    });
+
+    it('swallows tracking errors (delivery tracking must not break sends)', async () => {
+      pool.query.mockRejectedValue(new Error('DB down'));
+      await expect(notificationService.trackDelivery('n1', 'failed')).resolves.toBeUndefined();
+    });
+  });
+
+  describe('batchNotifications / createAggregatedNotification', () => {
+    it('queues notifications per user', async () => {
+      await notificationService.batchNotifications('user-9', [{ id: 'a' }, { id: 'b' }]);
+      expect(notificationService.notificationQueue.get('user-9')).toHaveLength(2);
+      notificationService.notificationQueue.clear();
+    });
+
+    it('creates a summary notification for a batch', async () => {
+      pool.query.mockResolvedValue({ rows: [{ id: 'agg-1' }] });
+
+      const result = await notificationService.createAggregatedNotification('user-9', [
+        { id: 'a', type_id: 't1', church_id: 'church-1' },
+        { id: 'b', type_id: 't2', church_id: 'church-1' }
+      ]);
+
+      expect(result).toEqual({ id: 'agg-1' });
+      const [, params] = pool.query.mock.calls[0];
+      expect(params[2]).toBe('2 New Notifications');
+    });
+
+    it('returns undefined for an empty batch', async () => {
+      await expect(
+        notificationService.createAggregatedNotification('user-9', [])
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('getNotificationHistory', () => {
+    it('queries by user and clamps limit', async () => {
+      pool.query.mockResolvedValue({ rows: [{ id: 'n1' }] });
+
+      const rows = await notificationService.getNotificationHistory('user-1', { limit: 99999 });
+
+      expect(rows).toEqual([{ id: 'n1' }]);
+      const [sql, params] = pool.query.mock.calls[0];
+      expect(sql).toContain('LIMIT $');
+      expect(params[params.length - 1]).toBe(1000); // clamped
+      expect(sql).not.toContain('LIMIT 99999'); // never interpolated
+    });
+  });
+
+  describe('getDeliveryStats', () => {
+    it('scopes stats to the church', async () => {
+      pool.query.mockResolvedValue({ rows: [{ total_sent: '5' }] });
+
+      const stats = await notificationService.getDeliveryStats('church-1');
+
+      expect(stats.total_sent).toBe('5');
+      const [sql, params] = pool.query.mock.calls[0];
+      expect(sql).toContain('n.church_id = $1');
+      expect(params[0]).toBe('church-1');
     });
   });
 });

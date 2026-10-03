@@ -1,107 +1,151 @@
 /**
  * Unit Tests for API Hub Service
+ *
+ * Targets the real API: registerIntegration, callAPI (retry + failover),
+ * checkHealth, getIntegrationStatus, getAllIntegrationStatuses.
+ * axios is invoked as a function (axios({...})) so the mock is a jest.fn.
+ * retryConfig is shrunk in beforeEach so retry tests don't sleep for real.
  */
 
-const apiHub = require('../../services/apiHub');
+jest.mock('axios', () => jest.fn());
 
-// Mock axios
-jest.mock('axios', () => ({
-  post: jest.fn(),
-  get: jest.fn(),
-  put: jest.fn(),
-  delete: jest.fn()
+jest.mock('../../config/logging', () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
 }));
 
 const axios = require('axios');
+const apiHub = require('../../services/apiHub');
 
 describe('API Hub Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    apiHub.integrations.clear();
+    apiHub.retryConfig = { maxRetries: 2, retryDelay: 1, backoffMultiplier: 1 };
   });
 
-  describe('makeRequest', () => {
-    it('should make successful POST request', async () => {
-      const mockResponse = { data: { success: true, data: { id: 1 } } };
-      axios.post.mockResolvedValue(mockResponse);
+  describe('registerIntegration / getIntegrationStatus', () => {
+    it('registers an integration with unknown health', () => {
+      apiHub.registerIntegration('sms', { baseUrl: 'https://api.example.com' });
 
-      const result = await apiHub.makeRequest('POST', 'https://api.example.com/endpoint', { test: 'data' });
-
-      expect(axios.post).toHaveBeenCalledWith('https://api.example.com/endpoint', { test: 'data' }, expect.any(Object));
-      expect(result).toEqual({ success: true, data: { id: 1 } });
+      const status = apiHub.getIntegrationStatus('sms');
+      expect(status.name).toBe('sms');
+      expect(status.healthStatus).toBe('unknown');
+      expect(status.hasFailover).toBe(false);
     });
 
-    it('should retry on failure', async () => {
-      axios.post
+    it('reports not_found for unregistered integrations', () => {
+      expect(apiHub.getIntegrationStatus('nope')).toEqual({ status: 'not_found' });
+    });
+  });
+
+  describe('callAPI', () => {
+    it('makes a successful request and marks the integration healthy', async () => {
+      apiHub.registerIntegration('sms', { baseUrl: 'https://api.example.com' });
+      axios.mockResolvedValue({ data: { success: true, id: 1 }, headers: {} });
+
+      const result = await apiHub.callAPI('sms', '/send', { method: 'POST', data: { x: 1 } });
+
+      expect(result).toEqual({ success: true, id: 1 });
+      expect(axios).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://api.example.com/send', method: 'POST' })
+      );
+      expect(apiHub.getIntegrationStatus('sms').healthStatus).toBe('healthy');
+    });
+
+    it('retries until success and resets the failure count', async () => {
+      apiHub.registerIntegration('sms', { baseUrl: 'https://api.example.com' });
+      axios
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Network error'))
-        .mockResolvedValueOnce({ data: { success: true } });
+        .mockResolvedValueOnce({ data: { success: true }, headers: {} });
 
-      const result = await apiHub.makeRequest('POST', 'https://api.example.com/endpoint', {}, { maxRetries: 3 });
+      const result = await apiHub.callAPI('sms', '/send', {});
 
-      expect(axios.post).toHaveBeenCalledTimes(3);
+      expect(axios).toHaveBeenCalledTimes(3);
       expect(result).toEqual({ success: true });
+      expect(apiHub.getIntegrationStatus('sms').failureCount).toBe(0);
     });
 
-    it('should fail after max retries', async () => {
-      axios.post.mockRejectedValue(new Error('Network error'));
+    it('throws after exhausting retries', async () => {
+      apiHub.registerIntegration('sms', { baseUrl: 'https://api.example.com' });
+      axios.mockRejectedValue(new Error('Network error'));
 
-      await expect(
-        apiHub.makeRequest('POST', 'https://api.example.com/endpoint', {}, { maxRetries: 2 })
-      ).rejects.toThrow('Network error');
-
-      expect(axios.post).toHaveBeenCalledTimes(3); // initial + 2 retries
+      await expect(apiHub.callAPI('sms', '/send', {})).rejects.toThrow('Network error');
+      // initial + maxRetries(2) = 3 attempts
+      expect(axios).toHaveBeenCalledTimes(3);
+      expect(apiHub.getIntegrationStatus('sms').healthStatus).toBe('unhealthy');
     });
 
-    it('should use failover provider if primary fails', async () => {
-      const providers = [
-        { url: 'https://primary.example.com', apiKey: 'key1' },
-        { url: 'https://backup.example.com', apiKey: 'key2' }
-      ];
+    it('falls over to the configured backup integration', async () => {
+      apiHub.registerIntegration('primary', {
+        baseUrl: 'https://primary.example.com',
+        failoverIntegration: 'backup'
+      });
+      apiHub.registerIntegration('backup', { baseUrl: 'https://backup.example.com' });
 
-      axios.post
-        .mockRejectedValueOnce(new Error('Primary failed'))
-        .mockResolvedValueOnce({ data: { success: true } });
+      axios
+        .mockRejectedValueOnce(new Error('Primary down')) // primary attempts
+        .mockRejectedValueOnce(new Error('Primary down'))
+        .mockRejectedValueOnce(new Error('Primary down'))
+        .mockResolvedValueOnce({ data: { success: true }, headers: {} }); // backup succeeds
 
-      const result = await apiHub.makeRequestWithFailover('POST', '/endpoint', {}, providers);
+      const result = await apiHub.callAPI('primary', '/send', {});
 
-      expect(axios.post).toHaveBeenCalledTimes(2);
       expect(result).toEqual({ success: true });
+      // Last axios call must have hit the backup URL
+      expect(axios.mock.calls.at(-1)[0].url).toBe('https://backup.example.com/send');
+    });
+
+    it('throws for unknown integrations', async () => {
+      await expect(apiHub.callAPI('ghost', '/x', {})).rejects.toThrow('Integration not found');
     });
   });
 
-  describe('healthCheck', () => {
-    it('should return healthy status for working API', async () => {
-      axios.get.mockResolvedValue({ status: 200 });
+  describe('checkHealth', () => {
+    it('returns healthy when the health endpoint responds', async () => {
+      apiHub.registerIntegration('sms', {
+        baseUrl: 'https://api.example.com',
+        healthEndpoint: '/health'
+      });
+      axios.mockResolvedValue({ headers: {} });
 
-      const result = await apiHub.healthCheck('https://api.example.com/health');
+      const result = await apiHub.checkHealth('sms');
 
-      expect(result).toEqual({ healthy: true, status: 200 });
+      expect(result.status).toBe('healthy');
+      expect(axios).toHaveBeenCalledWith(
+        expect.objectContaining({ url: 'https://api.example.com/health', method: 'GET' })
+      );
     });
 
-    it('should return unhealthy status for failing API', async () => {
-      axios.get.mockRejectedValue(new Error('API down'));
+    it('returns unhealthy when the health endpoint fails', async () => {
+      apiHub.registerIntegration('sms', {
+        baseUrl: 'https://api.example.com',
+        healthEndpoint: '/health'
+      });
+      axios.mockRejectedValue(new Error('API down'));
 
-      const result = await apiHub.healthCheck('https://api.example.com/health');
+      const result = await apiHub.checkHealth('sms');
 
-      expect(result).toEqual({ healthy: false, error: 'API down' });
+      expect(result.status).toBe('unhealthy');
+      expect(result.error).toBe('API down');
+    });
+
+    it('reports no_health_check when no healthEndpoint is configured', async () => {
+      apiHub.registerIntegration('sms', { baseUrl: 'https://api.example.com' });
+      expect(await apiHub.checkHealth('sms')).toEqual({ status: 'no_health_check' });
     });
   });
 
-  describe('trackUsage', () => {
-    it('should track API usage statistics', () => {
-      apiHub.trackUsage('sms-provider-1', 'POST', 200, 150);
+  describe('getAllIntegrationStatuses', () => {
+    it('lists every registered integration', () => {
+      apiHub.registerIntegration('a', { baseUrl: 'https://a.example.com' });
+      apiHub.registerIntegration('b', { baseUrl: 'https://b.example.com', failoverIntegration: 'a' });
 
-      const stats = apiHub.getUsageStats('sms-provider-1');
-      expect(stats.totalRequests).toBe(1);
-      expect(stats.successfulRequests).toBe(1);
-      expect(stats.totalResponseTime).toBe(150);
-    });
-
-    it('should track failed requests', () => {
-      apiHub.trackUsage('sms-provider-1', 'POST', 500, 100);
-
-      const stats = apiHub.getUsageStats('sms-provider-1');
-      expect(stats.failedRequests).toBe(1);
+      const all = apiHub.getAllIntegrationStatuses();
+      expect(all).toHaveLength(2);
+      expect(all.find(s => s.name === 'b').hasFailover).toBe(true);
     });
   });
 });

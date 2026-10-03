@@ -1,165 +1,177 @@
 /**
  * Unit Tests for Hybrid SMS Service
+ *
+ * Targets the real API: loadProviders, registerProvider, sendSMS
+ * (JOSms small-batch vs bulk-provider large-batch routing),
+ * sendViaBulkProvider failover, updateProviderBalance, getProviderStatus.
+ * NOTE: no babel transform — jest.mock is NOT hoisted; requires come after.
  */
 
-const hybridSMS = require('../../services/hybridSMS');
-
-// Mock dependencies
 jest.mock('../../services/apiHub', () => ({
-  makeRequest: jest.fn(),
-  healthCheck: jest.fn()
+  registerIntegration: jest.fn(),
+  callAPI: jest.fn(),
+  getIntegrationStatus: jest.fn(() => ({ name: 'x', healthStatus: 'unknown' }))
 }));
 
-jest.mock('../../repositories/SMSProviderRepository', () => ({
-  getActiveProviders: jest.fn(),
-  updateProviderBalance: jest.fn()
+jest.mock('../../config/database', () => ({
+  pool: { query: jest.fn(() => Promise.resolve({ rows: [] })) }
+}));
+
+jest.mock('../../config/logging', () => ({
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
 }));
 
 const apiHub = require('../../services/apiHub');
-const SMSProviderRepository = require('../../repositories/SMSProviderRepository');
+const { pool } = require('../../config/database');
+const hybridSMS = require('../../services/hybridSMS');
+
+const provider = (name, id) => ({
+  id,
+  name,
+  api_key: `key-${name}`,
+  api_url: `https://${name}.example.com`,
+  sender_id: 'CHURCH',
+  balance: 100,
+  currency: 'KES',
+  is_active: true
+});
 
 describe('Hybrid SMS Service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    pool.query.mockResolvedValue({ rows: [] });
+    hybridSMS.providers.clear();
+    hybridSMS.defaultProvider = null;
+    hybridSMS.setIo(null);
   });
 
-  describe('sendSMS', () => {
-    it('should send SMS using primary provider', async () => {
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true }
-      ];
+  describe('loadProviders', () => {
+    it('registers each active provider and picks the first as default', async () => {
+      pool.query.mockResolvedValue({ rows: [provider('A', 1), provider('B', 2)] });
 
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.makeRequest.mockResolvedValue({ success: true, messageId: 'MSG001' });
+      await hybridSMS.loadProviders();
 
-      const result = await hybridSMS.sendSMS('254712345678', 'Test message');
-
-      expect(result).toHaveProperty('success', true);
-      expect(result.messageId).toBe('MSG001');
-      expect(apiHub.makeRequest).toHaveBeenCalled();
+      expect(apiHub.registerIntegration).toHaveBeenCalledTimes(2);
+      expect(hybridSMS.defaultProvider).toBe('A');
+      expect(hybridSMS.providers.size).toBe(2);
     });
 
-    it('should failover to backup provider if primary fails', async () => {
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true },
-        { id: 2, name: 'Airtel', url: 'https://airtel.api', priority: 2, is_active: true }
-      ];
+    it('survives a missing sms_providers table (42P01)', async () => {
+      const err = new Error('relation does not exist');
+      err.code = '42P01';
+      pool.query.mockRejectedValue(err);
 
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.makeRequest
-        .mockRejectedValueOnce(new Error('Primary failed'))
-        .mockResolvedValueOnce({ success: true, messageId: 'MSG002' });
-
-      const result = await hybridSMS.sendSMS('254712345678', 'Test message');
-
-      expect(result).toHaveProperty('success', true);
-      expect(apiHub.makeRequest).toHaveBeenCalledTimes(2);
-    });
-
-    it('should fail if all providers fail', async () => {
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true },
-        { id: 2, name: 'Airtel', url: 'https://airtel.api', priority: 2, is_active: true }
-      ];
-
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.makeRequest.mockRejectedValue(new Error('Provider failed'));
-
-      const result = await hybridSMS.sendSMS('254712345678', 'Test message');
-
-      expect(result).toHaveProperty('success', false);
-      expect(result).toHaveProperty('error');
-    });
-
-    it('should validate phone number format', async () => {
-      const result = await hybridSMS.sendSMS('invalid-phone', 'Test message');
-
-      expect(result).toHaveProperty('success', false);
-      expect(result.error).toContain('Invalid phone number');
+      await expect(hybridSMS.loadProviders()).resolves.toBeUndefined();
     });
   });
 
-  describe('sendBulkSMS', () => {
-    it('should send SMS to multiple recipients', async () => {
-      const recipients = ['254712345678', '254798765432', '254711223344'];
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true }
-      ];
+  describe('sendSMS routing', () => {
+    it('routes small batches to JOSms via websocket', async () => {
+      const emit = jest.fn();
+      hybridSMS.setIo({ to: jest.fn(() => ({ emit })) });
 
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.makeRequest.mockResolvedValue({ success: true, messageId: 'MSG001' });
+      const result = await hybridSMS.sendSMS({
+        recipients: ['254700000001'],
+        message: 'Hi',
+        churchId: 'church-1'
+      });
 
-      const result = await hybridSMS.sendBulkSMS(recipients, 'Bulk message');
-
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('sentCount', 3);
-      expect(result).toHaveProperty('failedCount', 0);
+      expect(result.gateway).toBe('JOSms');
+      expect(result.status).toBe('queued');
+      expect(emit).toHaveBeenCalledWith(
+        'process_bulk',
+        expect.objectContaining({ recipients: ['254700000001'] })
+      );
     });
 
-    it('should handle partial failures in bulk send', async () => {
-      const recipients = ['254712345678', '254798765432', '254711223344'];
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true }
-      ];
-
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.makeRequest
-        .mockResolvedValueOnce({ success: true, messageId: 'MSG001' })
-        .mockRejectedValueOnce(new Error('Failed'))
-        .mockResolvedValueOnce({ success: true, messageId: 'MSG003' });
-
-      const result = await hybridSMS.sendBulkSMS(recipients, 'Bulk message');
-
-      expect(result).toHaveProperty('success', true);
-      expect(result.sentCount).toBe(2);
-      expect(result.failedCount).toBe(1);
-    });
-  });
-
-  describe('provider health checks', () => {
-    it('should check provider health', async () => {
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true }
-      ];
-
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.healthCheck.mockResolvedValue({ healthy: true, status: 200 });
-
-      const result = await hybridSMS.checkProviderHealth();
-
-      expect(result).toHaveProperty('success', true);
-      expect(result.providers).toHaveLength(1);
-      expect(result.providers[0].healthy).toBe(true);
+    it('throws for small batches when socket.io is not initialized', async () => {
+      await expect(
+        hybridSMS.sendSMS({ recipients: ['254700000001'], message: 'Hi', churchId: 'c1' })
+      ).rejects.toThrow('Socket.io not initialized');
     });
 
-    it('should mark unhealthy providers as inactive', async () => {
-      const providers = [
-        { id: 1, name: 'Safaricom', url: 'https://safaricom.api', priority: 1, is_active: true }
-      ];
+    it('routes large batches to the bulk provider', async () => {
+      hybridSMS.registerProvider(provider('BulkCo', 1));
+      hybridSMS.defaultProvider = 'BulkCo';
+      apiHub.callAPI.mockResolvedValue({ success: true });
 
-      SMSProviderRepository.getActiveProviders.mockResolvedValue(providers);
-      apiHub.healthCheck.mockResolvedValue({ healthy: false, error: 'Timeout' });
-      SMSProviderRepository.updateProviderBalance.mockResolvedValue(true);
+      const recipients = Array.from({ length: 500 }, (_, i) => `2547${String(i).padStart(6, '0')}`);
+      const result = await hybridSMS.sendSMS({ recipients, message: 'Bulk', churchId: 'c1' });
 
-      const result = await hybridSMS.checkProviderHealth();
-
-      expect(result.providers[0].healthy).toBe(false);
+      expect(result.gateway).toBe('BulkCo');
+      expect(result.status).toBe('sent');
+      expect(result.recipientCount).toBe(500);
+      expect(apiHub.callAPI).toHaveBeenCalledWith(
+        'BulkCo',
+        '/send',
+        expect.objectContaining({ method: 'POST' })
+      );
     });
   });
 
-  describe('balance tracking', () => {
-    it('should track provider balance', async () => {
-      const result = await hybridSMS.updateProviderBalance(1, 500);
+  describe('sendViaBulkProvider failover', () => {
+    it('falls back to the next provider when the primary fails', async () => {
+      hybridSMS.registerProvider(provider('Primary', 1));
+      hybridSMS.registerProvider(provider('Backup', 2));
+      apiHub.callAPI
+        .mockRejectedValueOnce(new Error('Primary down'))
+        .mockResolvedValueOnce({ success: true });
 
-      expect(result).toHaveProperty('success', true);
-      expect(SMSProviderRepository.updateProviderBalance).toHaveBeenCalledWith(1, 500);
+      const result = await hybridSMS.sendViaBulkProvider({
+        recipients: ['254700000001'],
+        message: 'Hi'
+      }, 'Primary');
+
+      expect(result.gateway).toBe('Backup');
+      expect(result.success).toBe(true);
+      expect(apiHub.callAPI).toHaveBeenCalledTimes(2);
     });
 
-    it('should get provider statistics', async () => {
-      const result = await hybridSMS.getProviderStats();
+    it('throws when all providers fail', async () => {
+      hybridSMS.registerProvider(provider('Only', 1));
+      apiHub.callAPI.mockRejectedValue(new Error('down'));
 
-      expect(result).toHaveProperty('success', true);
-      expect(result).toHaveProperty('stats');
+      await expect(
+        hybridSMS.sendViaBulkProvider({ recipients: ['1'], message: 'x' }, 'Only')
+      ).rejects.toThrow('no fallback providers available');
+    });
+
+    it('throws for an unknown provider', async () => {
+      await expect(
+        hybridSMS.sendViaBulkProvider({ recipients: ['1'], message: 'x' }, 'ghost')
+      ).rejects.toThrow('SMS provider not found');
+    });
+
+    it('persists an updated balance returned by the provider', async () => {
+      hybridSMS.registerProvider(provider('BulkCo', 7));
+      apiHub.callAPI.mockResolvedValue({ success: true, balance: 42 });
+
+      await hybridSMS.sendViaBulkProvider({ recipients: ['1'], message: 'x' }, 'BulkCo');
+
+      expect(pool.query).toHaveBeenCalledWith(
+        'UPDATE sms_providers SET balance = $1 WHERE id = $2',
+        [42, 7]
+      );
+    });
+  });
+
+  describe('provider status', () => {
+    it('combines apiHub status with the DB balance', async () => {
+      hybridSMS.registerProvider(provider('BulkCo', 7));
+      apiHub.getIntegrationStatus.mockReturnValue({ name: 'BulkCo', healthStatus: 'healthy' });
+      pool.query.mockResolvedValue({ rows: [{ balance: 250 }] });
+
+      const status = await hybridSMS.getProviderStatus('BulkCo');
+
+      expect(status.healthStatus).toBe('healthy');
+      expect(status.balance).toBe(250);
+      expect(status.currency).toBe('KES');
+    });
+
+    it('returns not_found for unknown providers', async () => {
+      expect(await hybridSMS.getProviderStatus('ghost')).toEqual({ status: 'not_found' });
     });
   });
 });
