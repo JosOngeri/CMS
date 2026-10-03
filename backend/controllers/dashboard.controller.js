@@ -1,6 +1,7 @@
 ﻿const BaseController = require('./BaseController');
 const DashboardRepository = require('../repositories/DashboardRepository');
 const ContentService = require('../services/ContentService');
+const auditService = require('../services/auditService');
 const { createLogger } = require('../helpers/controllerLogger');
 
 /**
@@ -332,6 +333,66 @@ class DashboardController extends BaseController {
     } catch (error) {
       this.logger.error('getDepartmentActivity', error);
       this.error(res, 'Failed to fetch department activity');
+    }
+  }
+
+  /**
+   * Operations snapshot for the Super Admin console — health metrics plus
+   * every "issue that might need resolving" (failed logins, locked
+   * accounts, stuck/failed payments, pending approvals, open alerts) in a
+   * single request. All data is church-scoped.
+   */
+  async getOpsSnapshot(req, res) {
+    try {
+      const snapshot = await DashboardRepository.getOpsSnapshot(req.user.church_id);
+      this.success(res, snapshot);
+    } catch (error) {
+      this.logger.error('getOpsSnapshot', error);
+      this.error(res, 'Failed to load operations snapshot');
+    }
+  }
+
+  /**
+   * Inline resolve control — marks a financial alert resolved. Scoped to
+   * the caller's church; audit-logged like other security actions.
+   */
+  async resolveOpsAlert(req, res) {
+    try {
+      const resolved = await DashboardRepository.resolveAlert(
+        req.params.id, req.user.church_id, req.user.id
+      );
+      if (!resolved) {
+        return this.error(res, 'Alert not found or already resolved', 404);
+      }
+      await auditService.log(
+        req.user.church_id, req.user.id, 'RESOLVE_ALERT',
+        'financial_alerts', String(req.params.id), null, { title: resolved.title }
+      ).catch(() => {});
+      this.success(res, resolved);
+    } catch (error) {
+      this.logger.error('resolveOpsAlert', error);
+      this.error(res, 'Failed to resolve alert');
+    }
+  }
+
+  /**
+   * Inline unlock control — clears a user's lockout (failed_login_attempts,
+   * locked_until) so they can log in again. Church-scoped.
+   */
+  async unlockOpsUser(req, res) {
+    try {
+      const unlocked = await DashboardRepository.unlockUser(req.params.id, req.user.church_id);
+      if (!unlocked) {
+        return this.error(res, 'User not found', 404);
+      }
+      await auditService.log(
+        req.user.church_id, req.user.id, 'UNLOCK_USER',
+        'users', String(req.params.id), null, { email: unlocked.email }
+      ).catch(() => {});
+      this.success(res, unlocked);
+    } catch (error) {
+      this.logger.error('unlockOpsUser', error);
+      this.error(res, 'Failed to unlock user');
     }
   }
 }

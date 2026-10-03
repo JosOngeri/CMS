@@ -890,6 +890,152 @@ class DashboardRepository extends BaseRepository {
       return [];
     }
   }
+
+  /**
+   * One-shot operations snapshot for the Super Admin dashboard — issue
+   * counts plus the small lists the admin acts on inline. Every query is
+   * church-scoped (or church-agnostic where the table has no church_id,
+   * like login_attempts which does have it).
+   *
+   * A table that is absent in a given environment degrades to zero/empty
+   * rather than 500ing the whole snapshot — 42P01 = undefined_table.
+   */
+  async getOpsSnapshot(churchId) {
+    const safe = async (promise, fallback) => {
+      try {
+        return await promise;
+      } catch (error) {
+        if (error.code === '42P01' || error.code === '42703') return fallback;
+        throw error;
+      }
+    };
+
+    const [health, failedLogins, lockedUsers, stuckPayments, paymentCounts,
+      pendingApprovals, openAlerts] = await Promise.all([
+      this.getSystemHealth(churchId).catch(() => null),
+
+      safe(this.pool.query(
+        `SELECT COUNT(*) AS count FROM login_attempts
+         WHERE success = false AND attempted_at > NOW() - INTERVAL '24 hours'
+           AND church_id = $1`,
+        [churchId]
+      ).then(async (r) => ({
+        count: parseInt(r.rows[0]?.count) || 0,
+        recent: (await this.pool.query(
+          `SELECT email, ip_address::text AS ip_address, attempted_at
+           FROM login_attempts
+           WHERE success = false AND church_id = $1
+           ORDER BY attempted_at DESC LIMIT 5`,
+          [churchId]
+        )).rows,
+      })), { count: 0, recent: [] }),
+
+      safe(this.pool.query(
+        `SELECT id, email, first_name, last_name, locked_until, failed_login_attempts,
+                COUNT(*) OVER() AS total
+         FROM users
+         WHERE locked_until > NOW() AND church_id = $1
+         ORDER BY locked_until DESC LIMIT 5`,
+        [churchId]
+      ).then((r) => ({ count: parseInt(r.rows[0]?.total) || 0, list: r.rows })), { count: 0, list: [] }),
+
+      safe(this.pool.query(
+        `SELECT id, amount, category, phone_number, payment_method, created_at,
+                COUNT(*) OVER() AS total
+         FROM payments
+         WHERE status = 'pending'
+           AND created_at < NOW() - INTERVAL '24 hours'
+           AND church_id = $1
+         ORDER BY created_at ASC LIMIT 5`,
+        [churchId]
+      ).then((r) => ({ count: parseInt(r.rows[0]?.total) || 0, list: r.rows })), { count: 0, list: [] }),
+
+      safe(this.pool.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE status = 'failed' AND created_at > NOW() - INTERVAL '24 hours') AS failed_24h,
+           COUNT(*) FILTER (WHERE status = 'pending' AND created_at < NOW() - INTERVAL '24 hours') AS stuck
+         FROM payments WHERE church_id = $1`,
+        [churchId]
+      ).then((r) => ({
+        failed24h: parseInt(r.rows[0]?.failed_24h) || 0,
+        stuck: parseInt(r.rows[0]?.stuck) || 0,
+      })), { failed24h: 0, stuck: 0 }),
+
+      safe(this.pool.query(
+        `SELECT id, title, request_type, status, created_at,
+                COUNT(*) OVER() AS total
+         FROM approval_requests
+         WHERE status = 'pending' AND church_id = $1
+         ORDER BY created_at ASC LIMIT 5`,
+        [churchId]
+      ).then((r) => ({ count: parseInt(r.rows[0]?.total) || 0, list: r.rows })), { count: 0, list: [] }),
+
+      safe(this.pool.query(
+        `SELECT id, alert_type, title, message, priority, created_at,
+                COUNT(*) OVER() AS total
+         FROM financial_alerts
+         WHERE is_resolved = false AND church_id = $1
+         ORDER BY created_at DESC LIMIT 5`,
+        [churchId]
+      ).then((r) => ({ count: parseInt(r.rows[0]?.total) || 0, list: r.rows })), { count: 0, list: [] }),
+    ]);
+
+    return {
+      health,
+      issues: {
+        failedLogins24h: failedLogins.count,
+        lockedAccounts: lockedUsers.count,
+        stuckPayments: paymentCounts.stuck,
+        failedPayments24h: paymentCounts.failed24h,
+        pendingApprovals: pendingApprovals.count,
+        openAlerts: openAlerts.count,
+      },
+      lists: {
+        failedLogins: failedLogins.recent,
+        lockedUsers: lockedUsers.list,
+        stuckPayments: stuckPayments.list,
+        pendingApprovals: pendingApprovals.list,
+        openAlerts: openAlerts.list,
+      },
+    };
+  }
+
+  /**
+   * Mark a financial alert resolved — the inline "Resolve" control on the
+   * ops dashboard. Church-scoped so an admin can only close their own
+   * church's alerts. Returns the row, or null when it doesn't exist / is
+   * already resolved.
+   */
+  async resolveAlert(alertId, churchId, userId) {
+    const result = await this.pool.query(
+      `UPDATE financial_alerts
+       SET is_resolved = true,
+           resolved_at = NOW(),
+           resolved_by = $3,
+           updated_at = NOW()
+       WHERE id = $1 AND church_id = $2 AND is_resolved = false
+       RETURNING id, title`,
+      [alertId, churchId, userId]
+    );
+    return result.rows[0] || null;
+  }
+
+  /**
+   * Clear an account lockout — resets the brute-force counters so the user
+   * can log in again. Church-scoped. Returns the row, or null.
+   */
+  async unlockUser(userId, churchId) {
+    const result = await this.pool.query(
+      `UPDATE users
+       SET failed_login_attempts = 0,
+           locked_until = NULL,
+           updated_at = NOW()
+       WHERE id = $1 AND church_id = $2
+       RETURNING id, email`,
+      [userId, churchId]
+    );
+    return result.rows[0] || null;
+  }
 }
 
 module.exports = new DashboardRepository();

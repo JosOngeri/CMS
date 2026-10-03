@@ -26,6 +26,20 @@ router.get('/system-health', authenticateToken,
   requireRole(['Super Admin']),
   dashboardController.getSystemHealth.bind(dashboardController));
 
+// Ops console (Super Admin) — one aggregate snapshot plus the inline
+// resolve controls the Admin Dashboard calls.
+router.get('/ops', authenticateToken,
+  requireRole(['Super Admin']),
+  dashboardController.getOpsSnapshot.bind(dashboardController));
+
+router.post('/ops/alerts/:id/resolve', authenticateToken,
+  requireRole(['Super Admin']),
+  dashboardController.resolveOpsAlert.bind(dashboardController));
+
+router.post('/ops/users/:id/unlock', authenticateToken,
+  requireRole(['Super Admin']),
+  dashboardController.unlockOpsUser.bind(dashboardController));
+
 // Department Stats (Department Head)
 router.get('/department-stats', authenticateToken,
   requireRole(['Super Admin', 'Pastor', 'First Elder', 'Department Head']),
