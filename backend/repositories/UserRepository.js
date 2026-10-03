@@ -163,7 +163,11 @@ class UserRepository extends BaseRepository {
       SELECT * FROM (
         SELECT u.id, u.username, u.email, u.first_name, u.last_name,
                u.phone, u.phone_number, u.is_active, u.created_at, u.slug,
-               COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::text[]) as roles
+               COALESCE(array_agg(r.name) FILTER (WHERE r.name IS NOT NULL), ARRAY[]::text[]) as roles,
+               (SELECT COALESCE(array_agg(d.name), ARRAY[]::text[])
+                FROM department_members dm
+                JOIN departments d ON d.id = dm.department_id
+                WHERE dm.user_id = u.id AND COALESCE(dm.is_active, true) = true) as departments
         FROM users u
         LEFT JOIN user_roles ur ON u.id = ur.user_id
         LEFT JOIN roles r ON ur.role_id = r.id

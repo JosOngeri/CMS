@@ -17,7 +17,9 @@ import ActivityFeed from '../../components/departments/ActivityFeed';
 import { useActivityFeed, useActivitySummary } from '../../hooks/useActivityFeed';
 
 const DepartmentActivity = () => {
-  const { departmentId } = useParams();
+  // B13: route declares :departmentSlug — the backend resolves it via
+  // `slug = $1 OR id::text = $1`, so the slug works everywhere an id would.
+  const { departmentSlug } = useParams();
   const { api } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
@@ -39,29 +41,29 @@ const DepartmentActivity = () => {
     refresh,
     filterByType,
     filterByDateRange
-  } = useActivityFeed(departmentId, { limit: 50, autoFetch: false });
+  } = useActivityFeed(departmentSlug, { limit: 50, autoFetch: false });
 
   const {
     summary,
     loading: summaryLoading,
     fetchSummary
-  } = useActivitySummary(departmentId);
+  } = useActivitySummary(departmentSlug);
 
   useEffect(() => {
     loadDepartmentInfo();
-  }, [departmentId]);
+  }, [departmentSlug]);
 
   useEffect(() => {
-    if (api && departmentId) {
+    if (api && departmentSlug) {
       fetchActivities(api);
       fetchSummary(api);
     }
-  }, [api, departmentId, fetchActivities, fetchSummary]);
+  }, [api, departmentSlug, fetchActivities, fetchSummary]);
 
   const loadDepartmentInfo = async () => {
     try {
       setError(null);
-      const response = await api.get(`/departments/${departmentId}/dashboard`);
+      const response = await api.get(`/departments/${departmentSlug}/dashboard`);
       
       if (response.data.success) {
         setDepartmentInfo(response.data.data.department);
@@ -126,7 +128,7 @@ const DepartmentActivity = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-                onClick={() => navigate(`/dashboard/departments/${departmentInfo?.slug || departmentId}`)}
+                onClick={() => navigate(`/dashboard/departments/${departmentInfo?.slug || departmentSlug}`)}
                 className="p-2 text-[var(--color-textSecondary)] hover:text-[var(--color-text)] transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -249,7 +251,7 @@ const DepartmentActivity = () => {
 
         {/* Activity Feed */}
         <ActivityFeed 
-          departmentId={departmentId} 
+          departmentSlug={departmentSlug} 
           api={api} 
           limit={50} 
           showViewAll={false}

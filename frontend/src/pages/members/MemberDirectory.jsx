@@ -38,20 +38,9 @@ const MemberDirectory = () => {
     { value: 'Member', label: 'Member', color: 'bg-[var(--color-surface)] text-[var(--color-text)]' }
   ]
 
-  const departments = [
-    { value: 'sabbath-school', label: 'Sabbath School' },
-    { value: 'youth-ministry', label: 'Youth Ministry' },
-    { value: 'music-ministry', label: 'Music Ministry' },
-    { value: 'womens-ministry', label: 'Women\'s Ministry' },
-    { value: 'mens-ministry', label: 'Men\'s Ministry' },
-    { value: 'children-ministry', label: 'Children\'s Ministry' },
-    { value: 'outreach', label: 'Outreach & Evangelism' },
-    { value: 'health', label: 'Health & Temperance' },
-    { value: 'stewardship', label: 'Stewardship' },
-    { value: 'communication', label: 'Communication' },
-    { value: 'prayer-ministry', label: 'Prayer Ministry' },
-    { value: 'family-life', label: 'Family Life' }
-  ]
+  // B12: real departments are fetched from the API — the old hardcoded slug
+  // list never matched actual department names.
+  const [departments, setDepartments] = useState([])
 
   const memberTabs = [
     { id: 'all', label: 'All Members', icon: Users, count: members.length },
@@ -66,11 +55,22 @@ const MemberDirectory = () => {
   }, [searchParams])
 
   useEffect(() => {
+    // B12: /users/directory paginates at 50/page — loop until every member is
+    // loaded so members 51+ are not invisible.
     const fetchMembers = async () => {
       try {
         setLoading(true)
-        const response = await api.get('/users/directory')
-        setMembers(response.data.users || [])
+        const all = []
+        let page = 1
+        let pages = 1
+        do {
+          const response = await api.get('/users/directory', { params: { page, limit: 100 } })
+          const data = response.data
+          all.push(...(data.users || []))
+          pages = data.pagination?.pages || 1
+          page += 1
+        } while (page <= pages)
+        setMembers(all)
       } catch (error) {
         console.error('Error fetching members:', error)
         toast.error('Failed to load members. Please try again.')
@@ -80,8 +80,25 @@ const MemberDirectory = () => {
       }
     }
 
+    const fetchDepartments = async () => {
+      try {
+        const response = await api.get('/departments')
+        const list = response.data.departments || response.data.data || []
+        setDepartments(list.map(d => ({ value: d.name, label: d.name })))
+      } catch {
+        // Non-fatal — the department filter just stays at "All"
+      }
+    }
+
     fetchMembers()
+    fetchDepartments()
   }, [])
+
+  // B12: the API returns roles[] and departments[] arrays plus created_at —
+  // there is no member.role / member.department / member.joined_date.
+  const memberRoles = (m) => Array.isArray(m.roles) && m.roles.length ? m.roles : ['Member']
+  const memberDepts = (m) => Array.isArray(m.departments) ? m.departments : []
+  const memberJoined = (m) => m.joined_date || m.created_at
 
   const filteredMembers = members.filter(member => {
     const matchesSearch = member.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -89,8 +106,8 @@ const MemberDirectory = () => {
                          member.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          member.phone_number?.includes(searchTerm)
 
-    const matchesRole = filterRole === 'all' || member.role === filterRole
-    const matchesDepartment = filterDepartment === 'all' || member.department === filterDepartment
+    const matchesRole = filterRole === 'all' || memberRoles(member).includes(filterRole)
+    const matchesDepartment = filterDepartment === 'all' || memberDepts(member).includes(filterDepartment)
     const matchesStatus = filterStatus === 'all' ||
                           (filterStatus === 'active' && member.is_active) ||
                           (filterStatus === 'inactive' && !member.is_active)
@@ -114,11 +131,11 @@ const MemberDirectory = () => {
     if (sortBy === 'name') {
       return `${a.first_name} ${a.last_name}`.localeCompare(`${b.first_name} ${b.last_name}`);
     } else if (sortBy === 'role') {
-      return (a.role || '').localeCompare(b.role || '');
+      return memberRoles(a)[0].localeCompare(memberRoles(b)[0]);
     } else if (sortBy === 'department') {
-      return (a.department || '').localeCompare(b.department || '');
+      return (memberDepts(a)[0] || '').localeCompare(memberDepts(b)[0] || '');
     } else if (sortBy === 'joined') {
-      return new Date(b.joined_date) - new Date(a.joined_date);
+      return new Date(memberJoined(b)) - new Date(memberJoined(a));
     } else if (sortBy === 'status') {
       return (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0);
     }
@@ -139,10 +156,10 @@ const MemberDirectory = () => {
         member.last_name,
         member.email,
         member.phone_number || '',
-        member.role,
-        member.department || '',
+        memberRoles(member).join('; '),
+        memberDepts(member).join('; '),
         member.is_active ? 'Active' : 'Inactive',
-        member.joined_date
+        memberJoined(member)
       ])
     ].map(row => row.join(',')).join('\n')
 
@@ -209,7 +226,7 @@ const MemberDirectory = () => {
                   <div>
                     <h3 className="font-semibold text-[var(--color-text)] ">{dept.label}</h3>
                     <p className="text-sm text-[var(--color-textSecondary)] ">
-                      {members.filter(m => m.department === dept.value).length} members
+                      {members.filter(m => memberDepts(m).includes(dept.value)).length} members
                     </p>
                   </div>
                 </div>
@@ -294,7 +311,7 @@ const MemberDirectory = () => {
             <div>
               <p className="text-sm text-[var(--color-textSecondary)] ">Department Heads</p>
               <p className="text-2xl font-bold text-[var(--color-text)] ">
-                {members.filter(m => m.role === 'Department Head').length}
+                {members.filter(m => memberRoles(m).includes('Department Head')).length}
               </p>
             </div>
             <div className="p-3 bg-[var(--color-accent-light)]  rounded-lg">
@@ -411,7 +428,7 @@ const MemberDirectory = () => {
                             {member.first_name} {member.last_name}
                           </div>
                           <div className="text-sm text-[var(--color-textSecondary)] ">
-                            Joined {new Date(member.joined_date).toLocaleDateString()}
+                            Joined {new Date(memberJoined(member)).toLocaleDateString()}
                           </div>
                         </div>
                       </div>
@@ -433,15 +450,15 @@ const MemberDirectory = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
-                      {member.role}
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(memberRoles(member)[0])}`}>
+                      {memberRoles(member).join(', ')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-1">
                       <Building className="w-3 h-3 text-[var(--color-textSecondary)]" />
                       <span className="text-sm text-[var(--color-text)] ">
-                        {member.department || 'Not assigned'}
+                        {memberDepts(member).join(', ') || 'Not assigned'}
                       </span>
                     </div>
                   </td>
@@ -521,14 +538,14 @@ const MemberDirectory = () => {
                 <ProtectedComponent permission={PERMISSIONS.MEMBERS_VIEW}>
                   {member.phone_number && <CardField label="Phone" value={member.phone_number} />}
                 </ProtectedComponent>
-                <CardField label="Department" value={member.department || 'Not assigned'} />
+                <CardField label="Department" value={memberDepts(member).join(', ') || 'Not assigned'} />
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-[var(--color-textSecondary)]">Role</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(member.role)}`}>
-                    {member.role}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(memberRoles(member)[0])}`}>
+                    {memberRoles(member).join(', ')}
                   </span>
                 </div>
-                <CardField label="Joined" value={member.joined_date ? new Date(member.joined_date).toLocaleDateString() : '—'} />
+                <CardField label="Joined" value={memberJoined(member) ? new Date(memberJoined(member)).toLocaleDateString() : '—'} />
               </MobileCard>
             ))
           ) : (
@@ -605,8 +622,8 @@ const MemberDirectory = () => {
                   <h4 className="text-lg font-medium text-[var(--color-text)] ">
                     {selectedMember.first_name} {selectedMember.last_name}
                   </h4>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(selectedMember.role)}`}>
-                    {selectedMember.role}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(memberRoles(selectedMember)[0])}`}>
+                    {memberRoles(selectedMember).join(', ')}
                   </span>
                 </div>
               </div>
@@ -627,14 +644,14 @@ const MemberDirectory = () => {
                 <div className="flex items-center gap-3">
                   <Building className="w-4 h-4 text-[var(--color-textSecondary)]" />
                   <span className="text-sm text-[var(--color-text)] ">
-                    {selectedMember.department || 'Not assigned'}
+                    {memberDepts(selectedMember).join(', ') || 'Not assigned'}
                   </span>
                 </div>
                 
                 <div className="flex items-center gap-3">
                   <Calendar className="w-4 h-4 text-[var(--color-textSecondary)]" />
                   <span className="text-sm text-[var(--color-text)] ">
-                    Joined {new Date(selectedMember.joined_date).toLocaleDateString()}
+                    Joined {new Date(memberJoined(selectedMember)).toLocaleDateString()}
                   </span>
                 </div>
                 

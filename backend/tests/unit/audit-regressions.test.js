@@ -112,6 +112,26 @@ describe('frontend config consistency (B21/L766/L767)', () => {
   });
 });
 
+describe('UserRepository.getMemberDirectory (B12)', () => {
+  const UserRepository = require('../../repositories/UserRepository');
+
+  beforeEach(() => jest.clearAllMocks());
+
+  it('returns roles[] and departments[] arrays the member directory UI filters on', async () => {
+    pool.query
+      .mockResolvedValueOnce({ rows: [{ id: 'u1', roles: ['Member'], departments: ['Youth Ministry'] }] })
+      .mockResolvedValueOnce({ rows: [{ total: '1' }] });
+
+    const { users } = await UserRepository.getMemberDirectory({}, 'church-1');
+    expect(Array.isArray(users[0].roles)).toBe(true);
+    expect(Array.isArray(users[0].departments)).toBe(true);
+    // The directory SELECT must project departments — a plain users row lacks it
+    const selectSql = pool.query.mock.calls[0][0];
+    expect(selectSql).toContain('department_members');
+    expect(selectSql).toContain('departments');
+  });
+});
+
 describe('secretBox at-rest encryption (L780)', () => {
   const secretBox = require('../../utils/secretBox');
   const OLD = process.env.SMS_KEYS_SECRET;

@@ -1382,3 +1382,15 @@ fixed in prior remediation passes; one residual hardened this pass.
 Open-issues CSV: rows were not present (already removed when fixed in prior
 passes) — no changes needed. Net new code this pass: MpesaService
 timing-safe signature compare.
+
+## Blocker spot-fixes — B8/B12/B13 verified open + fixed (B21 already closed)
+
+| Row | Status | Resolution |
+|---|---|---|
+| B8 mobile token storage | FIXED | `auth_service.dart` moved `auth_token` to `flutter_secure_storage` (Android Keystore / iOS Keychain); legacy SharedPreferences token migrated once then deleted; `user_data` (non-credential) stays in prefs. Verbose auth debugPrints removed. |
+| B12 MemberDirectory | FIXED | Page read `member.role`/`department`/`joined_date`; `/users/directory` returns `roles[]` + `created_at`. Repo now also projects `departments[]`; page filters/sorts/exports the real fields; department dropdown fetched from `/departments` (was hardcoded slugs); pagination loop loads all pages (members 51+ were invisible). |
+| B13 DepartmentActivity | FIXED | Reads `:departmentSlug` (matches route param); backend resolves slug-or-id so hooks/dashboard calls unchanged. |
+| B21 frontend Dockerfile | Already FIXED earlier — `COPY /app/dist-new` verified, regression test pins it. |
+
+Regression coverage: `audit-regressions.test.js` +1 (directory projects
+roles[]/departments[]). 10/10 pass; `vite build` clean.
