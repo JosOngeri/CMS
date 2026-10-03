@@ -14,6 +14,7 @@
 import { useState, useEffect } from 'react'
 import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt, X } from 'lucide-react'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 
@@ -42,6 +43,7 @@ const PaymentManagement = () => {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingPayment, setEditingPayment] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState(EMPTY_FORM())
 
   const canManagePayments = user?.roles?.some(role => 
@@ -150,10 +152,11 @@ const PaymentManagement = () => {
     setShowCreateForm(true)
   }
 
-  const handleDelete = async (paymentId) => {
-    if (!confirm('Are you sure you want to delete this payment record?')) {
-      return
-    }
+  const handleDelete = (paymentId) => setDeleteTarget(paymentId)
+
+  const confirmDelete = async () => {
+    const paymentId = deleteTarget
+    setDeleteTarget(null)
 
     try {
       await api.delete(`/payments/${paymentId}`)
@@ -717,6 +720,15 @@ const PaymentManagement = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Payment"
+        message="Are you sure you want to delete this payment record? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

@@ -9,6 +9,8 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
+import { hasFinanceRole } from '../../constants/roles'
 
 const Expenses = () => {
   const { api, user } = useAuth()
@@ -25,6 +27,7 @@ const Expenses = () => {
   const [funds, setFunds] = useState([])
   const [vendors, setVendors] = useState([])
   const [departments, setDepartments] = useState([])
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     expense_number: '',
     expense_date: new Date().toISOString().split('T')[0],
@@ -45,9 +48,7 @@ const Expenses = () => {
     { value: 'paid', label: 'Paid' }
   ]
 
-  const canApprove = user?.roles?.some(role => 
-    ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'].includes(role)
-  )
+  const canApprove = hasFinanceRole(user?.roles)
 
   useEffect(() => {
     fetchExpenses()
@@ -125,8 +126,8 @@ const Expenses = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(expense =>
-        expense.expense_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        expense.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        (expense.expense_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (expense.description || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -187,16 +188,18 @@ const Expenses = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this expense?')) {
-      try {
-        await api.delete(`/treasury/expenses/${id}`)
-        toast.success('Expense deleted successfully')
-        fetchExpenses()
-      } catch (error) {
-        console.error('Failed to delete expense:', error)
-        toast.error('Failed to delete expense')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/expenses/${id}`)
+      toast.success('Expense deleted successfully')
+      fetchExpenses()
+    } catch (error) {
+      console.error('Failed to delete expense:', error)
+      toast.error('Failed to delete expense')
     }
   }
 
@@ -578,6 +581,15 @@ const Expenses = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

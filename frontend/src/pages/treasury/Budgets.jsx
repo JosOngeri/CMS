@@ -9,6 +9,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const Budgets = () => {
   const { api } = useAuth()
@@ -24,6 +25,15 @@ const Budgets = () => {
   const [showFilters, setShowFilters] = useState(false)
   const [funds, setFunds] = useState([])
   const [accounts, setAccounts] = useState([])
+  const [deleteTarget, setDeleteTarget] = useState(null)
+
+  // Years present in the data plus current year ±1 — no hardcoded range
+  const yearOptions = [...new Set([
+    new Date().getFullYear() - 1,
+    new Date().getFullYear(),
+    new Date().getFullYear() + 1,
+    ...budgets.map(b => Number(b.fiscal_year)).filter(Number.isFinite)
+  ])].sort((a, b) => a - b)
   const [formData, setFormData] = useState({
     budget_name: '',
     fiscal_year: new Date().getFullYear(),
@@ -92,7 +102,7 @@ const Budgets = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(budget =>
-        budget.budget_name.toLowerCase().includes(searchTerm.toLowerCase())
+        (budget.budget_name || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -151,16 +161,18 @@ const Budgets = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this budget?')) {
-      try {
-        await api.delete(`/treasury/budgets/${id}`)
-        toast.success('Budget deleted successfully')
-        fetchBudgets()
-      } catch (error) {
-        console.error('Failed to delete budget:', error)
-        toast.error('Failed to delete budget')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/budgets/${id}`)
+      toast.success('Budget deleted successfully')
+      fetchBudgets()
+    } catch (error) {
+      console.error('Failed to delete budget:', error)
+      toast.error('Failed to delete budget')
     }
   }
 
@@ -253,7 +265,7 @@ const Budgets = () => {
                   className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] text-[var(--color-text)]"
                 >
                   <option value="all">All Years</option>
-                  {[2024, 2025, 2026, 2027].map(year => (
+                  {yearOptions.map(year => (
                     <option key={year} value={year}>{year}</option>
                   ))}
                 </select>
@@ -284,9 +296,13 @@ const Budgets = () => {
         {filteredBudgets.length > 0 ? (
           <div className="divide-y divide-[var(--color-border)]">
             {filteredBudgets.map((budget) => {
-              const variance = budget.budgeted_amount - budget.actual_amount
-          const variancePercentage = budget.budgeted_amount > 0 
-            ? ((variance / budget.budgeted_amount) * 100).toFixed(1)
+              // Postgres numerics arrive as strings/null — coerce so variance
+              // never renders "KES NaN" (?? 0 does not catch NaN)
+              const budgeted = Number(budget.budgeted_amount) || 0
+              const actual = Number(budget.actual_amount) || 0
+              const variance = budgeted - actual
+          const variancePercentage = budgeted > 0 
+            ? ((variance / budgeted) * 100).toFixed(1)
             : 0
           const VarianceIcon = getVarianceIcon(variance)
           
@@ -318,13 +334,13 @@ const Budgets = () => {
                   <div className="text-right">
                     <p className="text-sm text-[var(--color-textSecondary)]">Budgeted</p>
                     <p className="font-semibold text-[var(--color-text)]">
-                      KES {parseFloat(budget?.budgeted_amount ?? 0).toLocaleString()}
+                      KES {budgeted.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-[var(--color-textSecondary)]">Actual</p>
                     <p className="font-semibold text-[var(--color-text)]">
-                      KES {parseFloat(budget?.actual_amount ?? 0).toLocaleString()}
+                      KES {actual.toLocaleString()}
                     </p>
                   </div>
                   <div className="text-right">
@@ -490,6 +506,15 @@ const Budgets = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Budget"
+        message="Are you sure you want to delete this budget? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

@@ -8,6 +8,7 @@ import {
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { EmptyState } from '../../components/common/EmptyState'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 
 const JournalEntries = () => {
   const { api } = useAuth()
@@ -23,6 +24,7 @@ const JournalEntries = () => {
   const [filterDateTo, setFilterDateTo] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [accounts, setAccounts] = useState([])
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState({
     entry_number: '',
     entry_date: new Date().toISOString().split('T')[0],
@@ -79,8 +81,8 @@ const JournalEntries = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(entry =>
-        entry.entry_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        entry.description?.toLowerCase().includes(searchTerm.toLowerCase())
+        (entry.entry_number || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (entry.description || '').toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -175,16 +177,18 @@ const JournalEntries = () => {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this journal entry?')) {
-      try {
-        await api.delete(`/treasury/journal-entries/${id}`)
-        toast.success('Journal entry deleted successfully')
-        fetchEntries()
-      } catch (error) {
-        console.error('Failed to delete entry:', error)
-        toast.error('Failed to delete journal entry')
-      }
+  const handleDelete = (id) => setDeleteTarget(id)
+
+  const confirmDelete = async () => {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    try {
+      await api.delete(`/treasury/journal-entries/${id}`)
+      toast.success('Journal entry deleted successfully')
+      fetchEntries()
+    } catch (error) {
+      console.error('Failed to delete entry:', error)
+      toast.error('Failed to delete journal entry')
     }
   }
 
@@ -333,13 +337,13 @@ const JournalEntries = () => {
                     <div className="text-right">
                       <p className="text-sm text-[var(--color-textSecondary)]">Debit</p>
                       <p className="font-semibold text-[var(--color-text)]">
-                        KES {(entry?.total_debit ?? 0).toLocaleString()}
+                        KES {(Number(entry?.total_debit) || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-[var(--color-textSecondary)]">Credit</p>
                       <p className="font-semibold text-[var(--color-text)]">
-                        KES {(entry?.total_credit ?? 0).toLocaleString()}
+                        KES {(Number(entry?.total_credit) || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -547,6 +551,15 @@ const JournalEntries = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+        title="Delete Journal Entry"
+        message="Are you sure you want to delete this journal entry? This action cannot be undone."
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

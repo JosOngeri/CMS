@@ -111,7 +111,7 @@ const TreasuryAnalytics = () => {
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Total Income</p>
                 <p className="text-2xl font-bold text-[var(--color-text)]">
-                  KES {analytics?.total_income?.toLocaleString() || 0}
+                  KES {(parseFloat(analytics?.total_income) || 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -127,7 +127,7 @@ const TreasuryAnalytics = () => {
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Total Expenses</p>
                 <p className="text-2xl font-bold text-[var(--color-text)]">
-                  KES {analytics?.total_expenses?.toLocaleString() || 0}
+                  KES {(parseFloat(analytics?.total_expenses) || 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -143,7 +143,7 @@ const TreasuryAnalytics = () => {
               <div>
                 <p className="text-sm text-[var(--color-textSecondary)]">Net Income</p>
                 <p className="text-2xl font-bold text-[var(--color-text)]">
-                  KES {analytics?.net_income?.toLocaleString() || 0}
+                  KES {(parseFloat(analytics?.net_income) || 0).toLocaleString()}
                 </p>
               </div>
             </div>
