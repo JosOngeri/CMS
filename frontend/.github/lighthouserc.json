@@ -1,7 +1,7 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./frontend/dist",
+      "staticDistDir": "./frontend/dist-new",
       "isSinglePageApplication": true,
       "settings": {
         "onlyCategories": ["performance", "accessibility", "best-practices"]

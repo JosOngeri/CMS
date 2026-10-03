@@ -47,8 +47,9 @@ jobs:
       working-directory: ./frontend
       run: |
         npm run build:analyze
-        # Check if bundle size exceeds limits
-        if [ $(stat -c%s "dist/assets/index-*.js" | head -1) -gt 200000 ]; then
+        # Check if main entry bundle exceeds limits (vite builds to dist-new)
+        MAIN_JS=$(ls dist-new/assets/index-*.js 2>/dev/null | head -1)
+        if [ -n "$MAIN_JS" ] && [ $(stat -c%s "$MAIN_JS") -gt 200000 ]; then
           echo "Main bundle exceeds 200KB limit"
           exit 1
         fi
@@ -57,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
-        path: frontend/dist/
+        path: frontend/dist-new/
         
   accessibility:
     runs-on: ubuntu-latest
@@ -123,4 +124,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: bundle-report
-        path: frontend/dist/stats.html
+        path: frontend/stats.html

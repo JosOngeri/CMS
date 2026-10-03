@@ -120,6 +120,9 @@ jobs:
           -e DB_NAME=kmaincms \
           -e DB_USER=postgres \
           -e DB_PASSWORD=postgres \
+          -e JWT_SECRET=ci-docker-jwt-secret-not-for-production-32ch \
+          -e REFRESH_TOKEN_SECRET=ci-docker-refresh-secret-no-prod32 \
+          -e SESSION_SECRET=ci-docker-session-secret-not-prod-32ch \
           kmaincms:${{ github.sha }}
         
         # Wait for server to start
