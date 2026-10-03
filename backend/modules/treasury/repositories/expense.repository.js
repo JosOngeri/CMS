@@ -118,22 +118,23 @@ class ExpenseRepository extends BaseRepository {
   async update(id, expense, churchId) {
     if (!churchId) throw new Error('update: churchId is required');
     const data = expense.toDatabase();
+    // status/approved_by/approved_at are NOT updatable here — transitions go
+    // through approve()/reject()/markAsPaid() so audit fields can't be forged.
     const query = `
       UPDATE expenses SET
         expense_date = $1, description = $2, amount = $3, account_id = $4,
         fund_id = $5, vendor_id = $6, department_id = $7, project_id = $8,
-        receipt_url = $9, status = $10, payment_method = $11, notes = $12,
+        receipt_url = $9, payment_method = $10, notes = $11,
         updated_at = CURRENT_TIMESTAMP
-      WHERE id = $13  AND church_id = $14
+      WHERE id = $12 AND church_id = $13 AND status IN ('pending', 'rejected')
       RETURNING *
     `;
 
     const params = [
       data.expense_date, data.description, data.amount, data.account_id,
       data.fund_id, data.vendor_id, data.department_id, data.project_id,
-      data.receipt_url, data.status, data.payment_method, data.notes, id
+      data.receipt_url, data.payment_method, data.notes, id, churchId
     ];
-    if (churchId) params.push(churchId);
 
     const result = await this.pool.query(query, params);
     return result.rows[0] ? this.findById(id, churchId) : null;

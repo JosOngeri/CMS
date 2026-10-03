@@ -60,14 +60,28 @@ class JournalEntryRepository extends BaseRepository {
     params.push(limit, offset);
     
     const result = await this.pool.query(query, params);
-    
-    // Get lines for each entry
-    const entries = await Promise.all(result.rows.map(async row => {
-      const lines = await this.getEntryLines(row.id);
-      return JournalEntry.fromDatabase(row, lines);
-    }));
-    
-    return entries;
+    if (result.rows.length === 0) return [];
+
+    // Batch-fetch all lines in one query (avoids N+1)
+    const entryIds = result.rows.map(row => row.id);
+    const linesResult = await this.pool.query(
+      `SELECT jel.*, a.account_name, a.account_number
+       FROM journal_entry_lines jel
+       LEFT JOIN accounts a ON jel.account_id = a.id
+       WHERE jel.journal_entry_id = ANY($1)
+       ORDER BY jel.journal_entry_id, jel.line_number`,
+      [entryIds]
+    );
+
+    const linesByEntry = new Map();
+    for (const row of linesResult.rows) {
+      if (!linesByEntry.has(row.journal_entry_id)) linesByEntry.set(row.journal_entry_id, []);
+      linesByEntry.get(row.journal_entry_id).push(new JournalEntryLine(row));
+    }
+
+    return result.rows.map(row =>
+      JournalEntry.fromDatabase(row, linesByEntry.get(row.id) || [])
+    );
   }
 
   async findById(id, churchId) {
@@ -84,6 +98,23 @@ class JournalEntryRepository extends BaseRepository {
     
     const lines = await this.getEntryLines(id);
     return JournalEntry.fromDatabase(result.rows[0], lines);
+  }
+
+  /**
+   * Verify every line's account_id belongs to this church — prevents journal
+   * entries posting debits/credits onto another tenant's chart of accounts.
+   */
+  async validateLineAccounts(entry, churchId, client = null) {
+    const accountIds = [...new Set(entry.lines.map(l => l.account_id).filter(Boolean))];
+    if (accountIds.length === 0) return;
+    const executor = client || this.pool;
+    const result = await executor.query(
+      `SELECT COUNT(*)::int AS owned FROM accounts WHERE id = ANY($1) AND church_id = $2`,
+      [accountIds, churchId]
+    );
+    if (result.rows[0].owned !== accountIds.length) {
+      throw new Error('One or more line accounts do not belong to this church');
+    }
   }
 
   async getEntryLines(journalEntryId) {
@@ -107,6 +138,8 @@ class JournalEntryRepository extends BaseRepository {
 
     const data = entry.toDatabase();
     const queryExecutor = client || this.pool;
+
+    await this.validateLineAccounts(entry, churchId, client);
 
     // Insert journal entry
     const entryQuery = `
@@ -147,13 +180,15 @@ class JournalEntryRepository extends BaseRepository {
     const data = entry.toDatabase();
 
     await this.transaction(async client => {
+      await this.validateLineAccounts(entry, churchId, client);
+
       // Update journal entry (church-scoped)
       const entryQuery = `
         UPDATE journal_entries SET
           entry_date = $1, description = $2, reference_type = $3,
           reference_id = $4, status = $5, total_debits = $6, total_credits = $7,
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $8  AND church_id = $9
+        WHERE id = $8 AND church_id = $9 AND status = 'draft'
       `;
 
       await client.query(entryQuery, [

@@ -1,7 +1,7 @@
 /**
  * @audit JournalEntry model (modular treasury).
- * @known ISSUE: canEdit() returns true for status 'posted' — posted entries can be mutated,
- *        defeating the reversal workflow (should be draft-only).
+ * @fixed canEdit() is now draft-only — posted entries go through reverse() instead
+ *        of in-place mutation, preserving the audit trail.
  */
 /**
  * JournalEntry Model
@@ -171,10 +171,11 @@ class JournalEntry {
   }
 
   /**
-   * Check if entry can be edited
+   * Check if entry can be edited — draft only; posted entries must be reversed,
+   * not mutated, to preserve the audit trail.
    */
   canEdit() {
-    return this.status === 'draft' || this.status === 'posted';
+    return this.status === 'draft';
   }
 
   /**

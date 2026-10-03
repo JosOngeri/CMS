@@ -13,7 +13,13 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
+    // Only redirect projects on the same drive root as this project.
+    // Pub-cache plugins may live on C: while this project is on D:, and
+    // Gradle cannot relativize paths across drive roots ("this and base
+    // files have different roots" when creating *UnitTestSources tasks).
+    if (project.projectDir.toPath().root == rootProject.projectDir.toPath().root) {
+        project.layout.buildDirectory.value(newSubprojectBuildDir)
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
