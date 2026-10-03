@@ -100,7 +100,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: test
-    
+
+    services:
+      # The smoke test boots the real server, which requires Postgres.
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: kmaincms
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -113,9 +129,12 @@ jobs:
     
     - name: Test Docker image
       run: |
+        # host.docker.internal lets the container reach the job's Postgres
+        # service on the runner's port 5432.
         docker run -d -p 5005:5005 \
+          --add-host=host.docker.internal:host-gateway \
           -e NODE_ENV=production \
-          -e DB_HOST=localhost \
+          -e DB_HOST=host.docker.internal \
           -e DB_PORT=5432 \
           -e DB_NAME=kmaincms \
           -e DB_USER=postgres \
@@ -124,12 +143,15 @@ jobs:
           -e REFRESH_TOKEN_SECRET=ci-docker-refresh-secret-no-prod32 \
           -e SESSION_SECRET=ci-docker-session-secret-not-prod-32ch \
           kmaincms:${{ github.sha }}
-        
-        # Wait for server to start
-        sleep 10
-        
-        # Test health endpoint
-        curl -f http://localhost:5005/api/health || exit 1
+
+        # Wait for server to start — poll instead of a fixed sleep.
+        for i in $(seq 1 30); do
+          curl -fs http://localhost:5005/api/health && exit 0
+          sleep 2
+        done
+        echo "Server did not become healthy in time"
+        docker logs $(docker ps -lq)
+        exit 1
     
     - name: Push to registry (if main branch)
       if: github.ref == 'refs/heads/main'
