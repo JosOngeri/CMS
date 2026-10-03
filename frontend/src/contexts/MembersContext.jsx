@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 
 const MembersContext = createContext(null);
@@ -29,11 +29,14 @@ export const MembersProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, active: 0, new: 0 });
 
-  const fetchMembers = async (params = {}) => {
+  // Normalize the {success, data, error} envelope used across the API.
+  const unwrap = (response) => response.data?.data ?? response.data;
+
+  const fetchMembers = useCallback(async (params = {}) => {
     setLoading(true);
     try {
       const response = await api.get('/members', { params });
-      setMembers(response.data.data);
+      setMembers(unwrap(response));
       return response.data;
     } catch (error) {
       console.error('Fetch members error:', error.response?.data || error.message);
@@ -41,19 +44,19 @@ export const MembersProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [api]);
 
-  const fetchMember = async (id) => {
+  const fetchMember = useCallback(async (id) => {
     try {
       const response = await api.get(`/members/${id}`);
-      return response.data.data;
+      return unwrap(response);
     } catch (error) {
       console.error('Fetch member error:', error.response?.data || error.message);
       throw error.response?.data || { error: 'Failed to fetch member' };
     }
-  };
+  }, [api]);
 
-  const createMember = async (memberData) => {
+  const createMember = useCallback(async (memberData) => {
     try {
       const response = await api.post('/members', memberData);
       await fetchMembers();
@@ -62,9 +65,9 @@ export const MembersProvider = ({ children }) => {
       console.error('Create member error:', error.response?.data || error.message);
       throw error.response?.data || { error: 'Failed to create member' };
     }
-  };
+  }, [api, fetchMembers]);
 
-  const updateMember = async (id, memberData) => {
+  const updateMember = useCallback(async (id, memberData) => {
     try {
       const response = await api.put(`/members/${id}`, memberData);
       await fetchMembers();
@@ -73,9 +76,9 @@ export const MembersProvider = ({ children }) => {
       console.error('Update member error:', error.response?.data || error.message);
       throw error.response?.data || { error: 'Failed to update member' };
     }
-  };
+  }, [api, fetchMembers]);
 
-  const deleteMember = async (id) => {
+  const deleteMember = useCallback(async (id) => {
     try {
       const response = await api.delete(`/members/${id}`);
       await fetchMembers();
@@ -84,19 +87,19 @@ export const MembersProvider = ({ children }) => {
       console.error('Delete member error:', error.response?.data || error.message);
       throw error.response?.data || { error: 'Failed to delete member' };
     }
-  };
+  }, [api, fetchMembers]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await api.get('/members/stats');
-      setStats(response.data.data);
-      return response.data.data;
+      setStats(unwrap(response));
+      return unwrap(response);
     } catch (error) {
       console.error('Error fetching stats:', error.response?.data || error.message);
       // Set default stats if API fails
       setStats({ total: 0, active: 0, new: 0 });
     }
-  };
+  }, [api]);
 
   const value = useMemo(() => ({
     members,

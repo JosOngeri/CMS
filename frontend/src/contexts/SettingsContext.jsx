@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 
 const SettingsContext = createContext(null);
@@ -7,18 +7,7 @@ export const SettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPublicSettings();
-    const handler = () => fetchPublicSettings();
-    window.addEventListener('msabato:church-changed', handler);
-    window.addEventListener('storage', handler);
-    return () => {
-      window.removeEventListener('msabato:church-changed', handler);
-      window.removeEventListener('storage', handler);
-    };
-  }, []);
-
-  const fetchPublicSettings = async () => {
+  const fetchPublicSettings = useCallback(async () => {
     try {
       let url = '/api/settings/public';
       const stored = localStorage.getItem('msabato_church');
@@ -33,9 +22,20 @@ export const SettingsProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateSettings = async (settingsData) => {
+  useEffect(() => {
+    fetchPublicSettings();
+    const handler = () => fetchPublicSettings();
+    window.addEventListener('msabato:church-changed', handler);
+    window.addEventListener('storage', handler);
+    return () => {
+      window.removeEventListener('msabato:church-changed', handler);
+      window.removeEventListener('storage', handler);
+    };
+  }, [fetchPublicSettings]);
+
+  const updateSettings = useCallback(async (settingsData) => {
     try {
       const response = await axios.put('/api/settings/bulk', { settings: settingsData });
       await fetchPublicSettings();
@@ -43,11 +43,11 @@ export const SettingsProvider = ({ children }) => {
     } catch (error) {
       throw error.response?.data || { error: 'Failed to update settings' };
     }
-  };
+  }, [fetchPublicSettings]);
 
-  const getSetting = (key, defaultValue = null) => {
+  const getSetting = useCallback((key, defaultValue = null) => {
     return settings[key] !== undefined ? settings[key] : defaultValue;
-  };
+  }, [settings]);
 
   const value = useMemo(() => ({ settings, loading, updateSettings, getSetting, fetchPublicSettings }), [settings, loading, updateSettings, getSetting, fetchPublicSettings]);
 

@@ -70,6 +70,13 @@ export const useActivityFeed = (departmentId, options = {}) => {
           setError(response.data.error || 'Failed to fetch activities');
         }
       } catch (err) {
+        const status = err.response?.status;
+        // 4xx is a definitive answer (unauthorized, not found) — retrying is pointless
+        if (status >= 400 && status < 500) {
+          setError(err.response?.data?.error || err.message || `Request failed with status ${status}`);
+          setLoading(false);
+          return;
+        }
         console.error('Error fetching activity feed:', err);
         if (retryCount < maxRetries) {
           retryCount++;
@@ -103,27 +110,6 @@ export const useActivityFeed = (departmentId, options = {}) => {
     fetchActivities(api, { startDate: newStartDate, endDate: newEndDate, offset: 0 });
   }, [fetchActivities]);
 
-  const addActivity = useCallback(async (api, newActivity) => {
-    // Optimistic update: immediately add to local state
-    const tempId = `temp-${Date.now()}`;
-    const optimisticActivity = { ...newActivity, id: tempId, isOptimistic: true };
-    setActivities(prev => [optimisticActivity, ...prev]);
-
-    try {
-      // In a real implementation, you would call an API to create the activity
-      // const response = await api.post(`${API_ENDPOINTS.DEPARTMENTS.DEPARTMENT.ACTIVITY_FEED(departmentId)}`, newActivity);
-      // if (response.data.success) {
-      //   setActivities(prev => prev.map(a => a.id === tempId ? response.data.data : a));
-      // }
-      // For now, we'll just keep the optimistic update
-    } catch (err) {
-      // Revert on error
-      setActivities(prev => prev.filter(a => a.id !== tempId));
-      console.error('Error adding activity:', err);
-      throw err;
-    }
-  }, [departmentId]);
-
   // Auto-fetch on mount
   useEffect(() => {
     if (autoFetch && departmentId) {
@@ -152,8 +138,7 @@ export const useActivityFeed = (departmentId, options = {}) => {
     loadMore,
     refresh,
     filterByType,
-    filterByDateRange,
-    addActivity
+    filterByDateRange
   };
 };
 

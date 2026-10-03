@@ -65,26 +65,36 @@ export const ToastProvider = ({ children }) => {
 
   const value = useMemo(() => ({ toasts, success, error, info, warning, clearAll }), [toasts, success, error, info, warning, clearAll]);
 
+  // Group toasts by their requested position so each renders in the right corner.
+  const toastsByPosition = toasts.reduce((groups, toast) => {
+    const pos = positionClasses[toast.position] ? toast.position : 'top-right';
+    (groups[pos] = groups[pos] || []).push(toast);
+    return groups;
+  }, {});
+
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div
-        className={`fixed z-50 ${positionClasses['top-right']}`}
-        role="alert"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`px-5 py-3 mb-2.5 rounded-lg text-[var(--color-on-solid)] shadow-md transition-all duration-300 ease-in-out ${typeClasses[toast.type]}`}
-            role={toast.type === 'error' ? 'alert' : 'status'}
-            aria-label={toast.type === 'error' ? 'Error' : toast.type === 'success' ? 'Success' : 'Information'}
-          >
-            {toast.message}
-          </div>
-        ))}
-      </div>
+      {Object.entries(toastsByPosition).map(([position, positionToasts]) => (
+        <div
+          key={position}
+          className={`fixed z-50 ${positionClasses[position]}`}
+          role="alert"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {positionToasts.map(toast => (
+            <div
+              key={toast.id}
+              className={`px-5 py-3 mb-2.5 rounded-lg text-[var(--color-on-solid)] shadow-md transition-all duration-300 ease-in-out ${typeClasses[toast.type]}`}
+              role={toast.type === 'error' ? 'alert' : 'status'}
+              aria-label={toast.type === 'error' ? 'Error' : toast.type === 'success' ? 'Success' : 'Information'}
+            >
+              {toast.message}
+            </div>
+          ))}
+        </div>
+      ))}
     </ToastContext.Provider>
   );
 };

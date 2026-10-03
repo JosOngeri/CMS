@@ -3,8 +3,8 @@
  */
 
 export const VALIDATION = {
-  // Password
-  MIN_PASSWORD_LENGTH: 6,
+  // Password — must match the backend minimum (auth.routes / validation middleware: min 8)
+  MIN_PASSWORD_LENGTH: 8,
   MAX_PASSWORD_LENGTH: 128,
 
   // Username

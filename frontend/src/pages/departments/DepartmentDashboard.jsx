@@ -733,7 +733,7 @@ const DepartmentDashboard = () => {
                 <button
                   onClick={() => {
                     localStorage.removeItem('token');
-                    navigate('/login');
+                    navigate('/auth/login');
                   }}
                   className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
                 >

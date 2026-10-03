@@ -1,7 +1,7 @@
 /**
  * @audit Loading spinners/skeletons.
- * @known ISSUE: InlineLoading calls useColorPalette() (~line 24) without importing it ->
- *        ReferenceError on render; colors is unused — delete the call.
+ * @fixed InlineLoading no longer calls useColorPalette() — it was never imported
+ *        (ReferenceError on render) and `colors` was unused.
  */
 import { Loader2 } from 'lucide-react'
 
@@ -26,7 +26,6 @@ export const FullPageLoading = ({ message = 'Loading...', progress = null }) => 
  * InlineLoading - A smaller inline loading spinner
  */
 export const InlineLoading = ({ size = 'md', className = '' }) => {
-  const { colors } = useColorPalette()
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-6 h-6',

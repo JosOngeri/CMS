@@ -1,10 +1,12 @@
 /**
- * @audit Generic GET hook.
- * @known ISSUE: uses RAW axios (line ~39), not the AuthContext api instance — gets Bearer via
- *        main.jsx global interceptors but NOT the CSRF header; two fetch conventions coexist.
+ * Generic GET hook.
+ * Uses the AuthContext `api` instance when available (cookie auth, CSRF header,
+ * GET caching/dedup). Falls back to global axios for public components rendered
+ * outside AuthProvider.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Custom hook for data fetching with consistent error and empty state handling.
@@ -29,7 +31,11 @@ export const useDataFetch = (url, options = {}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchData = () => {
+  // Public pages render without AuthProvider — fall back to the global axios.
+  const auth = useAuth();
+  const api = auth?.api || axios;
+
+  const fetchData = useCallback(() => {
     if (!enabled) return;
 
     const controller = new AbortController();
@@ -41,7 +47,7 @@ export const useDataFetch = (url, options = {}) => {
         setLoading(true);
         setError(null);
 
-        const response = await axios.get(url, {
+        const response = await api.get(url, {
           signal: controller.signal,
           withCredentials: true,
           timeout: 30000
@@ -81,7 +87,8 @@ export const useDataFetch = (url, options = {}) => {
     attemptFetch();
 
     return () => controller.abort();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [api, enabled, url, JSON.stringify(dependencies)]);
 
   useEffect(() => {
     const cleanup = fetchData();

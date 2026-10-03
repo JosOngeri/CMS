@@ -17,6 +17,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
+import { ADMIN_ROLES, FINANCE_ROLES, LEADERSHIP_ROLES } from '../constants/roles';
 
 const Loader = () => (
   <div className="flex items-center justify-center min-h-64 p-8">
@@ -138,15 +139,6 @@ const GalleryManagement       = lazy(() => import('../pages/gallery/GalleryManag
 const NotificationDashboard   = lazy(() => import('../pages/notifications/NotificationDashboard'));
 const Documents               = lazy(() => import('../pages/admin/Documents'));
 const MyObligations           = lazy(() => import('../pages/obligations/MyObligations'));
-
-// Role groups used for route guards.
-const ADMIN_ROLES = ['Super Admin', 'Pastor', 'First Elder'];
-const FINANCE_ROLES = [...ADMIN_ROLES, 'Treasurer'];
-const LEADERSHIP_ROLES = [
-  ...FINANCE_ROLES,
-  'Elder', 'Church Board Member', 'Department Head',
-  'Assistant Department Head', 'Deacon', 'Deaconess',
-];
 
 // Wrapper that optionally adds a role gate.
 const W = ({ C, roles }) => (

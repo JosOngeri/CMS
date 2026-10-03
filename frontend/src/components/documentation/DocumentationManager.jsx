@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { Book, FileText, Search, Plus, Edit, Trash2, Download, Upload } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import axios from 'axios';
 
 const DocumentationManager = () => {
+  // Shared instance from AuthContext — cookie auth + CSRF + /api prefix built in.
   const { api } = useAuth();
   const toast = useToast();
   const [documents, setDocuments] = useState([]);
@@ -12,27 +12,13 @@ const DocumentationManager = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Create local api instance with correct baseURL
-  const docApi = axios.create({
-    baseURL: '' // Empty to use Vite proxy
-  });
-
-  // Add auth token interceptor
-  docApi.interceptors.request.use((config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  });
-
   useEffect(() => {
     fetchDocuments();
   }, []);
 
   const fetchDocuments = async () => {
     try {
-      const response = await docApi.get('/documentation');
+      const response = await api.get('/documentation');
       setDocuments(response.data.documents || []);
     } catch (error) {
       console.error('Failed to fetch documents:', error);
@@ -45,10 +31,10 @@ const DocumentationManager = () => {
   const handleSave = async (doc) => {
     try {
       if (doc.id) {
-        await docApi.put(`/documentation/${doc.id}`, doc);
+        await api.put(`/documentation/${doc.id}`, doc);
         toast.success('Document updated');
       } else {
-        await docApi.post('/documentation', doc);
+        await api.post('/documentation', doc);
         toast.success('Document created');
       }
       fetchDocuments();
@@ -61,7 +47,7 @@ const DocumentationManager = () => {
     if (!window.confirm('Delete this document?')) return;
 
     try {
-      await docApi.delete(`/documentation/${id}`);
+      await api.delete(`/documentation/${id}`);
       toast.success('Document deleted');
       fetchDocuments();
     } catch (error) {

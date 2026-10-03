@@ -34,7 +34,9 @@ const djb2Hash = (str) => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [csrfToken, setCsrfToken] = useState(null);
+  // Ref, not state — the api instance reads it per-request so the instance never
+  // has to be rebuilt when the token arrives after mount.
+  const csrfTokenRef = useRef(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const profileFetched = useRef(false);
   const csrfFetched = useRef(false);
@@ -49,7 +51,7 @@ export const AuthProvider = ({ children }) => {
     if (csrfFetched.current) return;
     csrfFetched.current = true;
     axios.get('/api/csrf-token', { withCredentials: true })
-      .then(res => setCsrfToken(res.data.csrfToken))
+      .then(res => { csrfTokenRef.current = res.data.csrfToken; })
       .catch(() => {});
   }, []);
 
@@ -72,8 +74,8 @@ export const AuthProvider = ({ children }) => {
         }
 
         // Attach CSRF token to writes.
-        if (['post', 'put', 'patch', 'delete'].includes(config.method) && csrfToken) {
-          config.headers['x-csrf-token'] = csrfToken;
+        if (['post', 'put', 'patch', 'delete'].includes(config.method) && csrfTokenRef.current) {
+          config.headers['x-csrf-token'] = csrfTokenRef.current;
         }
 
         // Deduplicate in-flight GET requests.
@@ -133,7 +135,10 @@ export const AuthProvider = ({ children }) => {
     );
 
     return instance;
-  }, [csrfToken]);
+    // csrfTokenRef is a ref — intentionally absent so the instance is created
+    // once and stays stable for the lifetime of the provider.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
@@ -217,6 +222,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/api/auth/login', credentials);
       const userData = response.data.data.user;
+      // Clear stale GET cache so a different user on this browser never sees
+      // the previous session's cached data.
+      requestCache.clear();
       setUser(normalizeUser(userData));
       requestCache.set('auth_profile', userData, 5 * 60 * 1000);
       return { success: true };

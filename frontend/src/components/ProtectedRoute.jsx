@@ -24,7 +24,7 @@ const ProtectedRoute = ({
   permission,
   permissions = [],
   requireAll = false,
-  redirectTo = '/login',
+  redirectTo = '/auth/login',
   requiredRoles = []
 }) => {
   const { isAuthenticated, isLoading } = useAuth();
