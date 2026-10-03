@@ -89,6 +89,7 @@ One-off ops/maintenance scripts.
 | `seed-history.js` | Seed ~3 years of operational history for the seeded churches. |
 | `seed-palettes.js` | — |
 | `seed-role-accounts.js` | Seed per-church role accounts so every dashboard view can be tested. |
+| `fill-kiserian-main.js` | Targeted backfill for `kiserian-main-sda` — the flagship tenant was skipped by bulk history seeders (0 events/announcements, 6 payments). Adds ~1yr of events, ~25 announcements, ~90 payments; relinks event_id-NULL rows. Idempotent. Run: `node scripts/fill-kiserian-main.js` |
 | `seed-test-permutations.js` | Full coverage seeder — every DB table gets >=1 realistic row per church with status/type variations (pending/approved/rejected, open/closed, public/private). Idempotent natural-key upserts; safe to re-run. Run: `node scripts/seed-test-permutations.js` |
 | `seed-upcoming-events.js` | Seeds 8 weeks of upcoming events for each seeded church |
 | `setup-test-db.js` | async |
