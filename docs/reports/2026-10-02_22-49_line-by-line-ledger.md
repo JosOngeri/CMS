@@ -1480,3 +1480,16 @@ out for the stable release.
 
 Remaining "dead" total: 8 = 4 backend test-infra (live via jest wiring) + 4
 mobile genuine-but-kept. Scanner's dead list is now trustworthy repo-wide.
+
+### Blocker re-verification B8/B12/B13/B21 (2026-10-03)
+
+All four were fixed in commit `21c618f` (after the line-by-line assessment above was written). Verified against current code:
+
+| Blocker | Status | Evidence |
+|---------|--------|----------|
+| B8 mobile token storage | **FIXED** | `auth_service.dart` uses `FlutterSecureStorage` (`encryptedSharedPreferences`); migrates legacy `auth_token` out of SharedPreferences then deletes the plaintext copy (lines 11-117). |
+| B12 MemberDirectory fields | **FIXED** | `memberRoles(m)`→`roles[]`, `memberDepts(m)`→`departments[]`, `memberJoined`→`joined_date \|\| created_at`; filters + sort consume the helpers (lines 97-143). |
+| B13 DepartmentActivity param | **FIXED** | `const { departmentSlug } = useParams()` (line 22); all fetches/summary/navigate use the slug (lines 44-131). |
+| B21 frontend Dockerfile | **FIXED** | `COPY --from=builder /app/dist-new /usr/share/nginx/html` (line 21) matches `vite.config.js outDir: 'dist-new'`. |
+
+**Blocker table is now empty.** Remaining open items are the ~40 mid-tier rows from the line-by-line pass (reports CSV injection, validation dead exports, migration split-brain, treasury dead links, reset-password page, etc.).
