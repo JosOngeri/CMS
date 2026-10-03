@@ -41,7 +41,7 @@ jobs:
         port: ${{ secrets.VPS_PORT || 22 }}
         script: |
           set -e
-          cd /var/www/kmaincms
+          cd /var/www/CMS
           git pull origin main
           cd backend
           npm ci --omit=dev
@@ -51,7 +51,7 @@ jobs:
           cd ../backend
 
           # Bootstrap the migration ledger on existing databases, then apply
-          # pending numbered migrations (050+). Idempotent — safe every deploy.
+          # pending numbered migrations. Idempotent — safe every deploy.
           node scripts/apply-migrations.js --mark-applied 049
           node scripts/apply-migrations.js
 
@@ -61,7 +61,7 @@ jobs:
             || echo "PLATFORM_JWT_SECRET=$(openssl rand -hex 48)" >> .env
 
           pm2 restart kmaincms-backend
-          sudo systemctl restart nginx
+          # Caddy serves frontend/dist-new directly — no proxy restart needed
           
     - name: Verify deployment
       run: |
