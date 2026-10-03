@@ -1,4 +1,5 @@
 const { pool } = require('../config/database');
+const logger = require('../config/logging');
 
 // req.ip can arrive as "1.2.3.4:5678" behind a reverse proxy or as an
 // IPv6-mapped "::ffff:1.2.3.4" — neither is valid for the inet column.
@@ -23,4 +24,37 @@ const logPlatformAudit = async ({ actorId, action, resourceType, resourceId = nu
   );
 };
 
-module.exports = { logPlatformAudit };
+/**
+ * One-call-site audit pattern for platform routes:
+ *
+ *   await auditPlatformAction(req, {
+ *     action: 'tenant.suspended',
+ *     tenantId: id,                 // → details.tenant_id + resourceType 'tenant'
+ *     details: { reason }
+ *   });
+ *
+ * Actor, IP, and user-agent come from the request so controllers can't
+ * forget them. `actorId` may be overridden for unauthenticated flows
+ * (e.g. login attempts where req.platformUser isn't populated yet).
+ * Never throws — audit failure is logged, not fatal to the request.
+ */
+const auditPlatformAction = async (req, { actorId = null, action, resourceType = null, resourceId = null, tenantId = null, details = {} }) => {
+  const hasTenant = tenantId !== null && tenantId !== undefined;
+  const payload = hasTenant ? { ...details, tenant_id: tenantId } : details;
+  try {
+    await logPlatformAudit({
+      actorId: actorId ?? req.platformUser?.id ?? null,
+      action,
+      resourceType: resourceType ?? (hasTenant ? 'tenant' : null),
+      resourceId: resourceId ?? (hasTenant ? String(tenantId) : null),
+      details: payload,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent')
+    });
+  } catch (error) {
+    // Audit must never break the action it records — but it must be loud.
+    logger.error('platform audit write failed', { action, error: error.message });
+  }
+};
+
+module.exports = { logPlatformAudit, auditPlatformAction };

@@ -42,11 +42,15 @@ describe('normalizePermissions (wildcard fix)', () => {
 
   it('falls back to role defaults when permissions are missing', () => {
     expect(normalizePermissions(null, 'platform_owner')).toEqual(['*']);
-    expect(normalizePermissions(undefined, 'support_staff')).toEqual(['platform:read', 'tenant:read']);
+    expect(normalizePermissions(undefined, 'support_staff')).toEqual(
+      ['platform:read', 'tenant:read', 'metrics:read', 'health:read', 'support:read']
+    );
   });
 
   it('treats the legacy "support" role as support_staff', () => {
-    expect(normalizePermissions(null, 'support')).toEqual(['platform:read', 'tenant:read']);
+    expect(normalizePermissions(null, 'support')).toEqual(
+      ['platform:read', 'tenant:read', 'metrics:read', 'health:read', 'support:read']
+    );
   });
 
   it('returns an empty list for unknown roles', () => {

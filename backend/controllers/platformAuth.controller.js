@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../config/database');
 const { getPlatformJwtSecret, PLATFORM_JWT_SIGN_OPTIONS } = require('../config/platformJwt');
-const { logPlatformAudit } = require('../services/platformAudit.service');
+const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 
 const MAX_FAILED_LOGIN_ATTEMPTS = 5;
@@ -65,13 +65,12 @@ class PlatformAuthController extends BaseController {
            WHERE id = $3`,
           [shouldLock ? 0 : failedAttempts, shouldLock, platformUser.id]
         );
-        await logPlatformAudit({
+        // actorId passed explicitly — req.platformUser isn't set yet here
+        await auditPlatformAction(req, {
           actorId: platformUser.id,
           action: 'platform_auth.login_failed',
           resourceType: 'platform_user',
-          resourceId: platformUser.id,
-          ipAddress: req.ip,
-          userAgent: req.get('user-agent')
+          resourceId: platformUser.id
         });
         return this.unauthorized(res, 'Invalid credentials');
       }
@@ -88,13 +87,11 @@ class PlatformAuthController extends BaseController {
          WHERE id = $1`,
         [platformUser.id]
       );
-      await logPlatformAudit({
+      await auditPlatformAction(req, {
         actorId: platformUser.id,
         action: 'platform_auth.login_succeeded',
         resourceType: 'platform_user',
-        resourceId: platformUser.id,
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
+        resourceId: platformUser.id
       });
 
       res.cookie('platform_session', token, {
@@ -139,13 +136,10 @@ class PlatformAuthController extends BaseController {
   async logout(req, res) {
     try {
       if (req.platformUser) {
-        await logPlatformAudit({
-          actorId: req.platformUser.id,
+        await auditPlatformAction(req, {
           action: 'platform_auth.logout',
           resourceType: 'platform_user',
-          resourceId: req.platformUser.id,
-          ipAddress: req.ip,
-          userAgent: req.get('user-agent')
+          resourceId: req.platformUser.id
         });
       }
       res.clearCookie('platform_session', { path: '/api/platform' });

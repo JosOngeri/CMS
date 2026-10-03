@@ -27,6 +27,8 @@ describe('platform authorization middleware', () => {
   });
 
   it('uses the default support permissions when no explicit permissions exist', () => {
-    expect(normalizePermissions(null, 'support')).toEqual(['platform:read', 'tenant:read']);
+    expect(normalizePermissions(null, 'support')).toEqual(
+      ['platform:read', 'tenant:read', 'metrics:read', 'health:read', 'support:read']
+    );
   });
 });

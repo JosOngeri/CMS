@@ -70,3 +70,229 @@ clicking a nav item is never a dead end.
 - Manual: each rail entry opens its panel; rail collapses to icons;
   `/platform/roadmap/<slug>` renders for every unbuilt item slug in the
   catalog (no 404s).
+
+---
+
+# Build Tracker
+
+Status legend: `[ ]` todo · `[~]` in progress · `[x]` done (add date +
+commit hash when closing). Each task means: endpoint(s) implemented and
+permission-gated, UI wired to a real route (remove the roadmap link in
+`platformNav.js` when the real page lands), audit-logged where it
+mutates, backend tests for the new endpoints, eslint + build clean.
+
+## Foundation (do first — every area depends on these)
+
+- [x] F1. Platform permission catalog — `backend/constants/platformPermissions.js`
+  holds `PLATFORM_PERMISSION_GROUPS` (13 areas, 30 permissions),
+  `ROLE_PERMISSIONS` per role, `OWNER_ONLY_PERMISSIONS`; migration 077
+  backfills stored rows (owner → `["*"]`, admin → 22, support → 5).
+- [x] F2. `requirePlatformPermission` already existed; now sourced from
+  the catalog; `/users` routes switched from role-check to
+  `staff:manage` so permission gates are uniform.
+- [x] F3. Shared audit helper — `auditPlatformAction(req, {...})` in
+  `services/platformAudit.service.js` derives actor/ip/UA, supports
+  `tenantId` (writes `details.tenant_id` + resourceType `tenant`), and
+  an explicit `actorId` override for unauthenticated flows. All 12
+  existing call sites converted.
+- [ ] F4. Impersonation infrastructure — short-lived token containing
+  `{ platformUserId, tenantId, asUserId, expiresAt }`; frontend banner
+  component shown while impersonating; "end impersonation" endpoint.
+  (Build before the tasks that need it: 2.1, 11.2.)
+- [ ] F5. Seed + idempotency rule for platform tables: every new table
+  migration includes realistic seed data for all churches where the
+  rule applies (project rule), `ON CONFLICT` guards.
+- [ ] F6. Real deploy verification — replace the echo in
+  `deploy-vps.yml` with `curl /api/health` + retry, fail the run on
+  non-200.
+
+## 1. Tenant Lifecycle (`/platform/tenants*`)
+
+- [x] 1.1 Tenant list / detail / create / edit pages + API (done —
+  existing TenantList, TenantDetail, TenantCreate, TenantSettings).
+- [ ] 1.2 Onboarding checklist — `tenant_onboarding_state` table or
+  JSONB column: logo set, admin invited, members imported, M-Pesa
+  configured, first service scheduled; progress bar on TenantDetail.
+- [ ] 1.3 Trials — `trial_ends_at` on `churches`; list filter
+  "trialing"; extend/convert actions; auto-flag when expired.
+- [ ] 1.4 Tenant templates — snapshot roles/departments/categories from
+  a source church; "create from template" option on TenantCreate.
+- [ ] 1.5 Offboarding flow — export → archive → retention deadline →
+  purge, with status on TenantDetail.
+
+## 2. Tenant Administration (`/platform/tenant-admin`)
+
+- [ ] 2.1 Impersonate — uses F4; pick church → pick user → read-only or
+  full mode; audit both ends; replace roadmap links.
+- [ ] 2.2 Reset tenant admin — force password reset + unlock for a
+  chosen church admin; audit-logged.
+- [ ] 2.3 Tenant feature flags — `tenant_feature_flags (church_id,
+  flag, enabled)`; toggles on TenantDetail; backend checks flags on
+  module routes.
+- [ ] 2.4 Limits & quotas — columns on `churches` (member_cap,
+  sms_credits, storage_cap, admin_seats); enforcement at member
+  create / SMS send / upload.
+- [ ] 2.5 Config override — platform-editable tenant settings editor
+  (same fields churches self-edit); audit diff old→new.
+- [ ] 2.6 Tenant user list — church users with role, last_login,
+  mfa, lockout state on TenantDetail tab.
+
+## 3. Platform Staff (`/platform/staff`)
+
+- [x] 3.1 Platform user CRUD (done — PlatformUsers + /users routes).
+- [ ] 3.2 Role assignment UI constrained to the catalog from F1
+  (dropdown of roles → permission preview).
+- [ ] 3.3 Session revocation — `platform_sessions` table or token
+  denylist; "revoke all sessions" per user.
+- [ ] 3.4 MFA enforcement — `mfa_required` flag on platform_users;
+  setup flow on next login; block API until enrolled.
+- [ ] 3.5 Access audit view — filter platform_audit_logs by platform
+  user (page exists; add actor filter).
+
+## 4. Monitoring & Health (`/platform/monitoring*`)
+
+- [x] 4.1 Base monitoring page (done — exists).
+- [ ] 4.2 Fleet dashboard — per-tenant status cards: users, active
+  sessions, errors last 24h, last payment, SMS credit; new
+  `/api/platform/fleet` endpoint.
+- [ ] 4.3 Uptime & latency — request timing middleware writing
+  aggregates; chart per endpoint.
+- [ ] 4.4 Integration health — last-success/failure timestamps for
+  M-Pesa webhook, SMS provider, Telegram, SMTP; red/amber/green.
+- [ ] 4.5 Background jobs — `platform_jobs` table or reuse existing;
+  failed jobs list + retry button.
+- [ ] 4.6 Alerting — `platform_alert_rules` + `platform_alerts`
+  (table exists in migration 020); rule editor + email/Telegram notify.
+- [ ] 4.7 Log explorer — structured app logs into DB or file tail;
+  filter by tenant/severity/time.
+
+## 5. Payments & Financial Oversight (`/platform/payments`)
+
+- [ ] 5.1 Cross-tenant payment feed — `/api/platform/payments`
+  joining all churches' payments; filter by church/status/date.
+- [ ] 5.2 Failed & stuck queue — pending > 24h + webhook mismatches;
+  "reconcile to completed/failed" action; uses F3 audit.
+- [ ] 5.3 Reconciliation — upload/import M-Pesa statement, match to
+  payments, flag orphans.
+- [ ] 5.4 Refund oversight — refund requests list, approve/reject with
+  reason; writes through to the church ledger.
+- [ ] 5.5 SMS cost ledger — per-tenant SMS spend table (exists
+  partially?); expose per-tenant cost on fleet cards.
+
+## 6. Security & Compliance (`/platform/security`)
+
+- [x] 6.1 Global audit log page (done — /platform/audit).
+- [ ] 6.2 Security center — failed logins, lockouts, suspicious IPs
+  across platform + all tenants.
+- [ ] 6.3 IP blocking — `platform_ip_rules (ip/cidr, allow|deny,
+  reason)`; enforcement middleware on both auth stacks.
+- [ ] 6.4 Session oversight — list active sessions per tenant user;
+  force-logout.
+- [ ] 6.5 Credential rotation tracker — secrets registry (name, last
+  rotated, owner); rotation reminders incl. the Daraja secrets item.
+- [ ] 6.6 Data-protection requests — DSAR/deletion request log per
+  tenant with status workflow.
+- [ ] 6.7 Permission audit — diff each church's role_permissions vs the
+  canonical catalog; flag drift (e.g. the `Admin` orphan we fixed).
+- [ ] 6.8 Rate limits — per-tenant override table; applied by the
+  existing limiter.
+
+## 7. Data Management (`/platform/data`)
+
+- [ ] 7.1 Backups — schedule pg_dump per DB, verify, list restore
+  points; restore action into staging only.
+- [ ] 7.2 Tenant export — full church dump (members, payments, docs)
+  as zipped CSV/JSON, signed-URL download, audit-logged.
+- [ ] 7.3 Import tooling — member CSV import wizard reusing the church
+  import path; preview + error report.
+- [ ] 7.4 Storage usage — per-tenant media/doc sizes on fleet cards +
+  quota flags.
+- [ ] 7.5 Schema versions — `schema_migrations` per tenant vs latest;
+  drift report.
+- [ ] 7.6 Demo data — `is_demo` flagging + purge action on trial
+  conversion.
+
+## 8. Disaster & Incident (`/platform/incidents`)
+
+- [ ] 8.1 Incident playbook — `platform_incidents` table; create
+  incident → broadcast banner → resolve; status enum.
+- [ ] 8.2 Tenant quarantine — `quarantined` flag on churches; middleware
+  returns 503 notice for that tenant only.
+- [ ] 8.3 Rollback tooling — deploy tag/record list; document manual
+  rollback steps (automated rollback optional).
+- [ ] 8.4 Forensic views — audit log pivot: all actions by actor/IP in a
+  window; export to CSV.
+
+## 9. Billing & Revenue (`/platform/billing`)
+
+- [ ] 9.1 Data model — `subscription_plans`, `tenant_subscriptions`,
+  `invoices`, `invoice_items` migrations + seeds.
+- [ ] 9.2 Plans admin — CRUD tiers, feature list per tier, pricing.
+- [ ] 9.3 Tenant billing — assign plan, renewal date, balance; plan
+  picker on TenantDetail.
+- [ ] 9.4 Invoices — generate monthly, mark paid, credit notes; PDF or
+  printable view.
+- [ ] 9.5 Dunning — overdue rules; reminder emails; grace period;
+  auto-suspend + auto-restore on payment.
+- [ ] 9.6 Revenue reports — MRR, churn, LTV, collection rate on
+  PlatformAnalytics.
+
+## 10. Analytics & Reporting (`/platform/analytics*`)
+
+- [x] 10.1 Base analytics page (done — exists).
+- [ ] 10.2 Growth metrics — tenants added/churned, total users, DAU/MAU.
+- [ ] 10.3 Feature adoption — per-tenant module usage counters.
+- [ ] 10.4 Usage reports — payments volume, SMS sent, members per
+  tenant; date-range selector.
+- [ ] 10.5 Benchmarks — percentile rank a church vs similar sizes.
+- [ ] 10.6 Exports — monthly metrics CSV/PDF for stakeholders.
+
+## 11. Communication (`/platform/communication`)
+
+- [ ] 11.1 Announcements — `platform_announcements`; compose → target
+  all/specific churches → shown as banner in tenant dashboards.
+- [ ] 11.2 Tenant messaging — message thread between platform staff
+  and church admins.
+- [ ] 11.3 Status page — public `/status` route: component health,
+  incident history from 8.1.
+- [ ] 11.4 Templates — platform email/SMS template CRUD (welcome,
+  dunning, security notices) with variable preview.
+
+## 12. Support Operations (`/platform/support`)
+
+- [ ] 12.1 Ticket inbox — `support_tickets` tied to churches; list,
+  assign, status, reply.
+- [ ] 12.2 Support access — time-boxed impersonation granted by ticket;
+  uses F4; auto-expires.
+- [ ] 12.3 Known issues board — issue cards linkable to tickets and
+  incidents.
+- [ ] 12.4 Health scores — computed per tenant (recency of logins,
+  member growth, payment failures); sorted at-risk list.
+
+## 13. Platform Configuration (`/platform/settings*`)
+
+- [x] 13.1 Settings page (done — exists).
+- [ ] 13.2 Global feature flags — `platform_feature_flags`; rollout
+  percentage/cohort support.
+- [ ] 13.3 New-tenant defaults — editable defaults for roles,
+  categories, fiscal year used by tenant creation.
+- [ ] 13.4 Branding defaults — default theme assets for new churches.
+- [ ] 13.5 Integration config — M-Pesa/SMS/SMTP fallback credentials
+  editor (masked secrets, re-auth to reveal).
+- [ ] 13.6 Maintenance mode — flag + scheduled window + tenant-visible
+  banner (ties into 8.1).
+- [ ] 13.7 Version & changelog — deployed SHA shown on dashboard;
+  release notes page tenants can read.
+
+## Cleanup (as features land)
+
+- [ ] C1. Remove each roadmap link in `platformNav.js` as its real page
+  ships; delete `PLATFORM_AREAS` entries whose area is fully built.
+- [ ] C2. Delete `PlatformRoadmap.jsx` + its route when no roadmap
+  links remain.
+- [ ] C3. Update this file's filename to mark it implemented
+  (`..._platform-console-13-functions_IMPLEMENTED.md`) when the
+  tracker is all `[x]`.
+- [ ] C4. Ledger entry: link each shipped area back to
+  `docs/reports/2026-10-02_22-49_line-by-line-ledger.md` conventions —
+  record completion evidence (endpoint tested, page verified).

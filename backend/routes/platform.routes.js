@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const platformController = require('../controllers/platform.controller');
 const platformAuthController = require('../controllers/platformAuth.controller');
-const { authenticatePlatformUser, requirePlatformRole, requirePlatformPermission } = require('../middleware/platformAuth');
+const { authenticatePlatformUser, requirePlatformPermission } = require('../middleware/platformAuth');
 const { platformAuthLimiter } = require('../middleware/rateLimiter');
 
 router.post('/auth/login', platformAuthLimiter, platformAuthController.login);
@@ -19,11 +19,12 @@ router.get('/audit-logs/actions', authenticatePlatformUser, requirePlatformPermi
 router.get('/settings', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformController.getSettings);
 router.put('/settings', authenticatePlatformUser, requirePlatformPermission('settings:manage'), platformController.updateSettings);
 
-// Platform staff accounts — owner-only; admins manage tenants, not peers.
-router.get('/users', authenticatePlatformUser, requirePlatformRole(['platform_owner']), platformController.listPlatformUsers);
-router.post('/users', authenticatePlatformUser, requirePlatformRole(['platform_owner']), platformController.createPlatformUser);
-router.patch('/users/:id', authenticatePlatformUser, requirePlatformRole(['platform_owner']), platformController.updatePlatformUser);
-router.post('/users/:id/reset-password', authenticatePlatformUser, requirePlatformRole(['platform_owner']), platformController.resetPlatformUserPassword);
+// Platform staff accounts — gated by staff:manage, which today only the
+// owner wildcard grants (see constants/platformPermissions.js).
+router.get('/users', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.listPlatformUsers);
+router.post('/users', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.createPlatformUser);
+router.patch('/users/:id', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.updatePlatformUser);
+router.post('/users/:id/reset-password', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.resetPlatformUserPassword);
 
 router.get('/tenants', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getAllTenants);
 router.post('/tenants', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformController.createTenant);

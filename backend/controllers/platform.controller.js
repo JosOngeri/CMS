@@ -3,10 +3,10 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const churchPlatformGateway = require('../services/churchPlatformGateway.service');
 const PlatformRepository = require('../repositories/PlatformRepository');
-const { logPlatformAudit } = require('../services/platformAudit.service');
+const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 const { pool } = require('../config/database');
-const { ROLE_PERMISSIONS } = require('../middleware/platformAuth');
+const { ROLE_PERMISSIONS } = require('../constants/platformPermissions');
 
 const PLATFORM_USER_ROLES = ['platform_admin', 'support_staff'];
 const EDITABLE_SETTINGS = new Set(['platform_name', 'support_email', 'tier_pricing', 'trial_days']);
@@ -193,13 +193,10 @@ class PlatformController extends BaseController {
 
     try {
       await PlatformRepository.upsertSettings(entries);
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'platform_settings.updated',
         resourceType: 'platform_settings',
         details: { keys: entries.map(([key]) => key) },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
       const settings = await PlatformRepository.getSettings();
       this.success(res, settings, 'Settings updated');
@@ -251,14 +248,11 @@ class PlatformController extends BaseController {
         permissions: ROLE_PERMISSIONS[role] || []
       });
 
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'platform_user.created',
         resourceType: 'platform_user',
         resourceId: String(user.id),
         details: { email, role },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
 
       this.created(res, {
@@ -301,14 +295,11 @@ class PlatformController extends BaseController {
       }
 
       const updated = await PlatformRepository.updatePlatformUser(id, { name, role, is_active });
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'platform_user.updated',
         resourceType: 'platform_user',
         resourceId: String(id),
         details: { changed: Object.keys({ name, role, is_active }).filter(k => ({ name, role, is_active })[k] !== undefined) },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
 
       this.success(res, updated, 'Platform user updated');
@@ -337,14 +328,11 @@ class PlatformController extends BaseController {
 
       const passwordHash = await bcrypt.hash(password, 10);
       await PlatformRepository.setPlatformUserPassword(id, passwordHash);
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'platform_user.password_reset',
         resourceType: 'platform_user',
         resourceId: String(id),
         details: { email: target.email },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
 
       this.success(res, { temporaryPassword: generated ? password : null }, 'Password reset');
@@ -383,14 +371,10 @@ class PlatformController extends BaseController {
   async createTenant(req, res) {
     try {
       const tenant = await churchPlatformGateway.createTenant(req.body);
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'tenant.created',
-        resourceType: 'tenant',
-        resourceId: tenant.id,
+        tenantId: tenant.id,
         details: { subscriptionTier: tenant.subscription_tier, billingCycle: tenant.billing_cycle },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
       this.created(res, tenant, 'Church created successfully');
     } catch (error) {
@@ -407,14 +391,10 @@ class PlatformController extends BaseController {
       if (!tenant) {
         return this.notFound(res, 'Church not found');
       }
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'tenant.updated',
-        resourceType: 'tenant',
-        resourceId: id,
+        tenantId: id,
         details: { subscriptionTier: tenant.subscription_tier, billingCycle: tenant.billing_cycle },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
       this.success(res, tenant, 'Church updated successfully');
     } catch (error) {
@@ -431,14 +411,10 @@ class PlatformController extends BaseController {
       if (!tenant) {
         return this.notFound(res, 'Church not found');
       }
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'tenant.archived',
-        resourceType: 'tenant',
-        resourceId: id,
+        tenantId: id,
         details: { reason: req.body?.reason || null },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
       this.success(res, null, 'Church archived successfully');
     } catch (error) {
@@ -517,14 +493,10 @@ class PlatformController extends BaseController {
       }
 
       await churchPlatformGateway.setTenantStatus(id, false);
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'tenant.suspended',
-        resourceType: 'tenant',
-        resourceId: id,
+        tenantId: id,
         details: { reason: req.body?.reason || null },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
 
       this.logger.info(`Church suspended: ${id}`);
@@ -548,14 +520,10 @@ class PlatformController extends BaseController {
       }
 
       await churchPlatformGateway.setTenantStatus(id, true);
-      await logPlatformAudit({
-        actorId: req.platformUser.id,
+      await auditPlatformAction(req, {
         action: 'tenant.activated',
-        resourceType: 'tenant',
-        resourceId: id,
+        tenantId: id,
         details: { reason: req.body?.reason || null },
-        ipAddress: req.ip,
-        userAgent: req.get('user-agent')
       });
 
       this.logger.info(`Church activated: ${id}`);

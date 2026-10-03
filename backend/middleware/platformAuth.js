@@ -8,13 +8,9 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const { getPlatformJwtSecret, PLATFORM_JWT_VERIFY_OPTIONS } = require('../config/platformJwt');
 const logger = require('../config/logging');
-
-const ROLE_PERMISSIONS = {
-  platform_owner: ['*'],
-  platform_admin: ['platform:read', 'tenant:read', 'tenant:manage', 'metrics:read', 'health:read', 'audit:read', 'settings:manage'],
-  support_staff: ['platform:read', 'tenant:read'],
-  support: ['platform:read', 'tenant:read'] // legacy alias of support_staff
-};
+// The catalog lives in constants/ so routes, migrations, and the staff UI
+// share one source of truth — middleware just consumes it.
+const { ROLE_PERMISSIONS } = require('../constants/platformPermissions');
 
 // Legacy rows store 'all' as the wildcard; requirePlatformPermission only
 // understands '*' — normalize so seeded owners aren't locked out of every
@@ -159,5 +155,5 @@ module.exports = {
   requirePlatformRole,
   requirePlatformPermission,
   normalizePermissions,
-  ROLE_PERMISSIONS
+  ROLE_PERMISSIONS // re-export for callers that seeded users from this module
 };

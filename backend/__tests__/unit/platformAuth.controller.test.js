@@ -4,7 +4,8 @@ jest.mock('../../config/database', () => ({
   pool: { query: jest.fn() }
 }));
 jest.mock('../../services/platformAudit.service', () => ({
-  logPlatformAudit: jest.fn()
+  logPlatformAudit: jest.fn(),
+  auditPlatformAction: jest.fn()
 }));
 jest.mock('bcryptjs', () => ({
   compare: jest.fn()
@@ -16,7 +17,7 @@ jest.mock('jsonwebtoken', () => ({
 const { pool } = require('../../config/database');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { logPlatformAudit } = require('../../services/platformAudit.service');
+const { auditPlatformAction } = require('../../services/platformAudit.service');
 const controller = require('../../controllers/platformAuth.controller');
 
 describe('PlatformAuthController', () => {
@@ -63,7 +64,10 @@ describe('PlatformAuthController', () => {
       expect.objectContaining({ expiresIn: '8h', issuer: 'msabato-platform', audience: 'platform' })
     );
     expect(res.cookie).toHaveBeenCalledWith('platform_session', 'signed-platform-token', expect.objectContaining({ httpOnly: true }));
-    expect(logPlatformAudit).toHaveBeenCalledWith(expect.objectContaining({ action: 'platform_auth.login_succeeded' }));
+    expect(auditPlatformAction).toHaveBeenCalledWith(
+      expect.objectContaining({ ip: '127.0.0.1' }),
+      expect.objectContaining({ action: 'platform_auth.login_succeeded' })
+    );
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
@@ -82,7 +86,10 @@ describe('PlatformAuthController', () => {
     await controller.login(req, res);
 
     expect(res.cookie).not.toHaveBeenCalled();
-    expect(logPlatformAudit).toHaveBeenCalledWith(expect.objectContaining({ action: 'platform_auth.login_failed' }));
+    expect(auditPlatformAction).toHaveBeenCalledWith(
+      expect.objectContaining({ ip: '127.0.0.1' }),
+      expect.objectContaining({ action: 'platform_auth.login_failed' })
+    );
     expect(res.status).toHaveBeenCalledWith(401);
   });
 });
