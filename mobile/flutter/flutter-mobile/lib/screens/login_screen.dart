@@ -38,7 +38,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _checkForUpdates();
     _checkBiometricAvailability();
   }
 
@@ -61,21 +60,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<void> _checkForUpdates() async {
-    try {
-      // Temporarily disabled due to package compatibility
-      // final updateService = UpdateService();
-      // final hasUpdate = await updateService.checkForUpdate();
-      // if (hasUpdate && mounted) {
-      //   showDialog(
-      //     context: context,
-      //     builder: (context) => const UpdateDialog(),
-      //   );
-      // }
-    } catch (e) {
-      debugPrint('Update check failed: $e');
-    }
-  }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;

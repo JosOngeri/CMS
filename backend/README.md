@@ -7,29 +7,30 @@ Express API entry (`server.js` boots, `app.js` wires middleware/routes).
 | `check-department-members.js` | — |
 | `check-tables.js` | — |
 | `check-users.js` | — |
-| `create-admin.js` | — |
+| `create-admin.js` | L736: no hardcoded admin password; refuse against prod/remote DBs. |
 | `create-announcements-table.js` | — |
 | `create-database.js` | Connect to default postgres database first |
 | `create-department-tables.js` | — |
-| `create-department-users.js` | DepartmentUserCreator |
+| `create-department-users.js` | L736: mass-creates accounts — refuse on prod/remote DBs. |
 | `create-personal-collections-table.js` | — |
 | `create-phase32-tables.js` | — |
 | `create-sms-advanced-tables.js` | — |
-| `create-users-direct.js` | Direct user creation based on the workers list we already read |
+| `create-users-direct.js` | L736: mass-creates accounts — refuse on prod/remote DBs. |
 | `create_admin_user.sql` | Create admin user with password: right123 |
 | `create_admin_via_api.js` | — |
 | `create_login_attempts.sql` | — |
+| `eslint.config.js` | ESLint flat config (ESLint v9) — replaces the legacy .eslintrc.json which |
 | `fix-slugs.js` | — |
 | `generate_hash.js` | — |
 | `get-users.js` | — |
 | `migrate-gallery.js` | — |
 | `migrate-members.js` | — |
 | `migrate-settings.js` | — |
-| `migrate.js` | — |
+| `migrate.js` | Safe migrator — replaces the old landmine version (L725): |
 | `performance_benchmark.js` | Performance Benchmark Script for Msabato CMS Backend |
 | `security_audit.js` | Security Audit Script for Msabato CMS Backend |
 | `seed-activity-data.js` | — |
-| `seed-database.js` | — |
+| `seed-database.js` | L736: seeds accounts — refuse on prod/remote DBs; no hardcoded passwords. |
 | `seed-departments.js` | — |
 | `server.js` | Process entry point — validates env, builds the HTTP server, attaches Socket.io, wires services, graceful shutdown. |
 | `setup-base-database.js` | — |
@@ -44,7 +45,7 @@ Express API entry (`server.js` boots, `app.js` wires middleware/routes).
 | `test-final-implementations.js` | — |
 | `test-login-simple.js` | — |
 | `test-login.js` | — |
-| `test-mpesa.js` | Credentials from Daraja app |
+| `test-mpesa.js` | L765: credentials come from env — the sandbox pair that used to be |
 | `test-new-modules.js` | — |
 | `test-palette-api.js` | — |
 | `test-stkpush.js` | Test credentials from database |

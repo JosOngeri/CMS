@@ -1,16 +1,16 @@
 const BaseRepository = require('./BaseRepository');
+const smsProviderRepo = require('./SMSProviderRepository');
 
 class SmsRepository extends BaseRepository {
   constructor() {
     super('sms_logs');
   }
 
+  // Provider rows are owned by SMSProviderRepository — it decrypts api_key on
+  // read and encrypts on write, so raw queries here would leak ciphertext or
+  // store plaintext keys.
   async getProviders(churchId) {
-    const result = await this.pool.query(
-      'SELECT * FROM sms_providers WHERE church_id = $1 AND is_active = true ORDER BY name',
-      [churchId]
-    );
-    return result.rows;
+    return smsProviderRepo.getActiveProviders({ church_id: churchId });
   }
 
   async getTemplates(churchId) {
@@ -37,14 +37,7 @@ class SmsRepository extends BaseRepository {
   }
 
   async createProvider(providerData) {
-    const { name, api_key, api_url, church_id, is_active } = providerData;
-    const query = `
-      INSERT INTO sms_providers (name, api_key, api_url, church_id, is_active)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *
-    `;
-    const result = await this.pool.query(query, [name, api_key, api_url, church_id, is_active]);
-    return result.rows[0];
+    return smsProviderRepo.create(providerData);
   }
 
   async getSMSLogs(filters = {}) {

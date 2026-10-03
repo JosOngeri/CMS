@@ -151,7 +151,7 @@ describe('Hybrid SMS Service', () => {
       await hybridSMS.sendViaBulkProvider({ recipients: ['1'], message: 'x' }, 'BulkCo');
 
       expect(pool.query).toHaveBeenCalledWith(
-        'UPDATE sms_providers SET balance = $1 WHERE id = $2',
+        expect.stringContaining('SET balance = $1'),
         [42, 7]
       );
     });

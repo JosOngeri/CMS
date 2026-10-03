@@ -1430,3 +1430,53 @@ Re-audited and remediated the middleware block and the Batch 9 component rows.
 Verification: `vite build` clean; `node --check` on all touched middleware;
 `audit-regressions.test.js` 10/10 pass. Open-issues CSV: 19 rows removed,
 50 open remain.
+
+### Dead-code review pass 2 — connect-or-delete (2026-10-03)
+
+Re-reviewed all 42 files the regenerated map (`docs/reports/codebase-map.html`) flagged `dead`. Per-row verdict:
+
+| File | Verdict | Evidence |
+|------|---------|----------|
+| `backend/repositories/SMSProviderRepository.js` | **CONNECTED** | Was genuinely orphaned (prior ledger claim "required by hybridSMS.test" was wrong — test mocks `pool` only). Wired into 5 call sites; see bug fixes below. |
+| `backend/tests/api/setup/test-helpers.js` | KEEP (live) | Imported by approvals/auth/notifications/documents test files — scanner doesn't trace test entry points. |
+| `backend/tests/jest.config.js` | KEEP (live) | Referenced by `--config=tests/jest.config.js` in package.json test scripts. |
+| `backend/tests/setup/hibp-mock.js` | KEEP (live) | `moduleNameMapper` entry in jest.config.js. |
+| `backend/tests/setup/uuid-mock.js` | KEEP (live) | `moduleNameMapper` entry in jest.config.js. |
+| 37 `mobile/**/*.dart` files | KEEP (live) | User directive: no Dart deletions. Verified anyway: `main.dart → app/app.dart (export theme.dart; export router.dart;) → router imports every screen`. Scanner misses `export` edges. |
+
+**Bugs fixed by connecting SMSProviderRepository** (the orphan was the only file that actually *needed* a fix — its non-use was causing real defects):
+
+1. `helpers/paymentSMSIntegration.getSmsProvider` — raw SQL returned `enc:v1:` **ciphertext** as `api_key` → every payment-SMS send would fail provider auth. Now via `getActiveProviders({church_id})` → decrypted.
+2. `helpers/treasurySMSIntegration.getSmsProvider` — same ciphertext-as-key bug, same fix.
+3. `controllers/sms.controller.createProvider` — called `createProvider(name, api_key, api_url, sender_id, churchId)` **positionally** but repo signature is `(providerData)` → all fields undefined → endpoint always failed. Now passes an object.
+4. `repositories/SMSRepository.createProvider` — INSERTed `api_key` **plaintext**, bypassing the enc:v1: convention → mixed plaintext/ciphertext rows. Now delegates to `smsProviderRepo.create` (encrypts on write).
+5. `repositories/SMSRepository.getProviders` — `SELECT *` returned ciphertext `api_key` to API responses. Now delegates to `getActiveProviders` (decrypted for authorized admins).
+6. `services/hybridSMS` — `loadProviders`/`updateProviderBalance`/`getProviderBalance` raw SQL replaced by repo methods (removes duplicated decrypt logic); unused `pool`/`decrypt` imports dropped.
+
+**Verification:** `node --check` clean on all 6 touched files; `jest --config=tests/jest.config.js __tests__/unit/hybridSMS.test.js` → **11/11 pass** (one assertion updated to match repo `updateBalance` SQL); eslint 0 errors on touched files; map regenerated — `SMSProviderRepository` now `live`, backend dead 5→4 (remaining 4 are the test-infra keeps above).
+
+**Nothing deleted this pass** — every dead row was either a scanner blind-spot (keep) or worth connecting (1 repo). Map totals now: live=425, dead=41 (4 backend test-infra + 37 mobile false positives).
+
+### Scanner fix — Dart file-relative URIs (2026-10-03)
+
+`map.js` `resolveImport` treated bare Dart URIs (`export 'theme.dart'`) as
+lib-root-relative, but Dart resolves them relative to the *importing file's*
+directory. `export 'theme.dart'` inside `lib/app/app.dart` means
+`lib/app/theme.dart`, so the whole `app.dart → theme/router → screens →
+services/widgets` chain broke at the first edge → 37 false "dead" files.
+
+Fixed: bare Dart specs now resolve file-relative first, lib-relative as
+fallback. Regenerated map: **mobile live 3→36, dead 37→4** (totals live 425→458,
+dead 41→8).
+
+The 4 remaining mobile dead files are **genuinely dead** (verified by grep —
+only references are commented-out lines in `login_screen.dart:67,72` plus
+READMEs):
+`services/network_service.dart`, `services/update_service.dart`,
+`widgets/online_requirement_dialog.dart`, `widgets/update_dialog.dart`.
+Kept per user directive (no Dart deletions); safe to remove in a future pass —
+they match the earlier ledger finding that update-check/sync code was stubbed
+out for the stable release.
+
+Remaining "dead" total: 8 = 4 backend test-infra (live via jest wiring) + 4
+mobile genuine-but-kept. Scanner's dead list is now trustworthy repo-wide.

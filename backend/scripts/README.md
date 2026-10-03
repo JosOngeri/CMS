@@ -3,6 +3,7 @@ One-off ops/maintenance scripts.
 ## Files
 | File | Purpose |
 |---|---|
+| `_scriptSafety.js` | Shared guards for repo scripts (L736/L753/L754/L755/L756). |
 | `add-gallery-created-at.js` | — |
 | `add-missing-columns.js` | — |
 | `add-palette-setting.js` | — |
@@ -11,6 +12,7 @@ One-off ops/maintenance scripts.
 | `add-video-support.sql` | Add video support to gallery_photos table |
 | `app-smoke-test.js` | Dynamic smoke test for every endpoint the mobile app uses. |
 | `apply-migration.js` | Apply a SQL migration file. |
+| `apply-migrations.js` | Idempotent migration runner for backend/migrations/NNN_*.sql |
 | `assign-demo-church.js` | — |
 | `auth-telegram.js` | Configuration |
 | `auth-wrapper.js` | Configuration |
@@ -39,7 +41,7 @@ One-off ops/maintenance scripts.
 | `check-website-settings-table.js` | — |
 | `create-gallery-table.sql` | DEPRECATED: Superseded by backend/migrations/004_gallery_schema.sql. |
 | `create-indexes.sql` | Database Indexes for Common Queries |
-| `create-local-admin.js` | — |
+| `create-local-admin.js` | L756: refuse prod/remote DBs; no hardcoded password. |
 | `create-missing-tables.js` | — |
 | `create-palette-tables.sql` | Create color_palettes table for storing color palettes |
 | `create-security-tables.js` | — |
@@ -69,7 +71,7 @@ One-off ops/maintenance scripts.
 | `get-admin-logins.js` | — |
 | `probe-schema.js` | — |
 | `reset-admin-password.js` | — |
-| `reset-db.js` | — |
+| `reset-db.js` | L753: DROP SCHEMA public CASCADE — full wipe. Refuse on prod/remote DBs. |
 | `reset-nonmember-passwords.js` | One-off: reset passwords for non-seeded (non "member*" username) accounts |
 | `run-fix-migration.js` | — |
 | `run-migration-026.js` | Runs migrations/026_mobile_parity.sql |
@@ -77,18 +79,18 @@ One-off ops/maintenance scripts.
 | `run-mobile-migration.js` | Mobile Integration Migration Script |
 | `run-platform-migration.js` | — |
 | `security_audit.js` | Security Audit Script for Msabato CMS Backend |
-| `seed-admin.js` | — |
+| `seed-admin.js` | L756: refuse prod/remote DBs; no hardcoded password. |
 | `seed-church-data.js` | docx section heading -> catalog slug |
 | `seed-churches.js` | — |
-| `seed-comprehensive.js` | — |
+| `seed-comprehensive.js` | L754: TRUNCATEs live tables — refuse on prod/remote DBs. |
 | `seed-deep-test-data.js` | Deep test-data seeder — fills every feature table with realistic, |
 | `seed-demo-data.js` | — |
-| `seed-demo-users.js` | — |
+| `seed-demo-users.js` | L756: refuse prod/remote DBs; no hardcoded demo passwords. |
 | `seed-history.js` | Seed ~3 years of operational history for the seeded churches. |
 | `seed-palettes.js` | — |
 | `seed-role-accounts.js` | Seed per-church role accounts so every dashboard view can be tested. |
 | `seed-upcoming-events.js` | Seeds 8 weeks of upcoming events for each seeded church |
-| `setup-test-db.js` | — |
+| `setup-test-db.js` | async |
 | `sync-telegram-gallery.js` | Sync photos from a Telegram channel into the gallery. |
 | `test-all-routes.js` | — |
 | `test-api.js` | — |
@@ -104,6 +106,7 @@ One-off ops/maintenance scripts.
 | `validate-db-routes.js` | — |
 | `validate-route-mounting.js` | Extract mounted routes from server.js |
 | `verify-admin.js` | — |
+| `verify-ledger-fixes.js` | Re-tests every FIXED claim from fix passes 1-5: |
 
 ## Subfolders
 

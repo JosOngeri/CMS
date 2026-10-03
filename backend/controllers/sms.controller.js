@@ -45,7 +45,7 @@ class SMSController extends BaseController {
       const { name, api_key, api_url, sender_id } = req.body;
       const churchId = req.user.church_id;
 
-      const provider = await SMSRepository.createProvider(name, api_key, api_url, sender_id, churchId);
+      const provider = await SMSRepository.createProvider({ name, api_key, api_url, sender_id, church_id: churchId });
       this.success(res, { provider });
     } catch (error) {
       this.logger.error('createProvider', error);

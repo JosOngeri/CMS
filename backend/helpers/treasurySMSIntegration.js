@@ -1,5 +1,6 @@
 const { pool } = require('../config/database');
 const axios = require('axios');
+const smsProviderRepo = require('../repositories/SMSProviderRepository');
 
 /**
  * Treasury SMS Integration Helper
@@ -18,15 +19,9 @@ const axios = require('axios');
  * @returns {Promise<Object|null>} Provider row or null
  */
 async function getSmsProvider(churchId) {
-  const result = await pool.query(
-    `SELECT api_key, api_url, sender_id
-     FROM sms_providers
-     WHERE church_id = $1 AND is_active = true
-     ORDER BY priority ASC
-     LIMIT 1`,
-    [churchId]
-  );
-  return result.rows[0] || null;
+  // Repository decrypts enc:v1: api_keys — raw SQL here would return ciphertext
+  const providers = await smsProviderRepo.getActiveProviders({ church_id: churchId });
+  return providers[0] || null;
 }
 
 /**

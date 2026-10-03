@@ -4,7 +4,6 @@ Request handlers — thin layer over repositories; one file per domain.
 | File | Purpose |
 |---|---|
 | `BaseController.js` | Base Controller Class |
-| `accountingExport.controller.js` | Accounting Export Controller |
 | `activityFeed.controller.js` | Activity Feed Controller |
 | `ai.controller.js` | AI Assistant Controller (REQ-FR-005) |
 | `analytics.controller.js` | Analytics Controller |
@@ -24,7 +23,6 @@ Request handlers — thin layer over repositories; one file per domain.
 | `documentApproval.controller.js` | self-approval, and duplicate-vote rules live in the service. |
 | `documents.controller.js` | Documents Controller |
 | `fieldPermissions.controller.js` | Field Permissions Controller |
-| `fixedAssets.controller.js` | Fixed Assets Controller |
 | `gallery.controller.js` | Gallery Controller |
 | `gateway.controller.js` | Gateway Controller (Phase 9) |
 | `manualPayment.controller.js` | Manual Payment Controller (Phase 12) |
@@ -36,7 +34,6 @@ Request handlers — thin layer over repositories; one file per domain.
 | `payments.controller.js` | (id,status,null,churchId) with 404-before-mutate; createPayment inserts |
 | `platform.controller.js` | Platform Controller (SaaS Owner Dashboard) |
 | `platformAuth.controller.js` | Platform Auth Controller |
-| `pledges.controller.js` | Pledges Controller |
 | `projects.controller.js` | Projects Controller |
 | `reconciliation.controller.js` | Reconciliation Controller (REQ-FR-004) |
 | `recurringPayments.controller.js` | Recurring Payments Controller |

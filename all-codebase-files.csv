@@ -1,0 +1,2415 @@
+path
+D:/VIbeCode/KMainCMS/.agents/skills/audit-apply/SKILL.md
+D:/VIbeCode/KMainCMS/.agents/skills/audit-cluster/SKILL.md
+D:/VIbeCode/KMainCMS/.agents/skills/audit-run/SKILL.md
+D:/VIbeCode/KMainCMS/.agents/skills/gradle-jdk-compatibility/SKILL.md
+D:/VIbeCode/KMainCMS/.agents/skills/implementation-planning/SKILL.md
+D:/VIbeCode/KMainCMS/.agents/skills/platform-security-implementation/SKILL.md
+D:/VIbeCode/KMainCMS/.devin/rules/seed-data.md
+D:/VIbeCode/KMainCMS/.github/workflows/ci-cd.yml
+D:/VIbeCode/KMainCMS/.github/workflows/deploy-staging.yml
+D:/VIbeCode/KMainCMS/.github/workflows/deploy-vps.yml
+D:/VIbeCode/KMainCMS/.github/workflows/performance-ci.yml
+D:/VIbeCode/KMainCMS/.github/workflows/test-all.yml
+D:/VIbeCode/KMainCMS/.github/workflows/test-backend.yml
+D:/VIbeCode/KMainCMS/.github/workflows/test-frontend.yml
+D:/VIbeCode/KMainCMS/.github/workflows/test-mobile.yml
+D:/VIbeCode/KMainCMS/.gitignore
+D:/VIbeCode/KMainCMS/.vite-cache/deps/_metadata.json
+D:/VIbeCode/KMainCMS/.vite-cache/deps/axios.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/axios.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/chunk-B-1-B7_t.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/lucide-react.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/lucide-react.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/package.json
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-dom.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-dom.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-dom_client.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-dom_client.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-hook-form.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-hook-form.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-router-dom.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-router-dom.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-toastify.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react-toastify.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react_jsx-dev-runtime.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react_jsx-dev-runtime.js.map
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react_jsx-runtime.js
+D:/VIbeCode/KMainCMS/.vite-cache/deps/react_jsx-runtime.js.map
+D:/VIbeCode/KMainCMS/.windsurf/skills/audit-apply/SKILL.md
+D:/VIbeCode/KMainCMS/.windsurf/skills/audit-cluster/SKILL.md
+D:/VIbeCode/KMainCMS/.windsurf/skills/audit-run/SKILL.md
+D:/VIbeCode/KMainCMS/.windsurfrules
+D:/VIbeCode/KMainCMS/CHANGELOG.md
+D:/VIbeCode/KMainCMS/CLEANUP_SCRIPT.md
+D:/VIbeCode/KMainCMS/CONTINUE_WORK_README.md
+D:/VIbeCode/KMainCMS/Caddyfile.fixed10
+D:/VIbeCode/KMainCMS/Caddyfile.fixed9
+D:/VIbeCode/KMainCMS/DEPLOYMENT.md
+D:/VIbeCode/KMainCMS/Dockerfile
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/AUDIT_RESULTS.md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/CODEBASE_AUDIT_PROTOCOL.md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/COMBINED_AUDIT_REPORT.md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/DEEP_GAP_ANALYSIS.md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS - Copy (2).md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS - Copy.md
+D:/VIbeCode/KMainCMS/Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS.md
+D:/VIbeCode/KMainCMS/Documentation/Configuration Files/.windsurfrules
+D:/VIbeCode/KMainCMS/Documentation/DEPLOYMENT_SUMMARY.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/DEPLOYMENT.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/ENVIRONMENT_CONFIG.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/GITHUB_SECRETS_SETUP.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/QUICK_START.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/TROUBLESHOOTING.md
+D:/VIbeCode/KMainCMS/Documentation/Deployment/VPS_DEPLOYMENT_GUIDE.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/CONTINUE_WORK_README.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_36.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_37.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_38.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_38_PART2.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39_PART2.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39_PART3.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_40.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_41.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_42.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_DASHBOARD_ENDPOINTS.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_DASHBOARD_TABS.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_13.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_14.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_15.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_16.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_5.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_REDIS_RATE_LIMIT.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TODO_PROGRESS_TREASURY_CIDR.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Progress Files/TREASURY_CONTROLLER_DEPRECATION_PLAN.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/backup-database.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/backup-files.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/continue-work-simple.bat
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/continue-work-simple.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/continue-work.bat
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/continue-work.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/fix-auth-imports.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/refactor_cleaner.py
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/refactor_runner.py
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/refactor_verifier.py
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/restore-database.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/run-migrations.bat
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/run-migrations.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/run-tests.bat
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/run-tests.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/scripts/ecosystem.config.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/scripts/start_servers.bat
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/setup-backup-cron.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/setup-microservices.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/setup-production.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/setup-ssl.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/test-infra.js
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Scripts/verify-backups.sh
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/examples/Approval_Request.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/examples/Refactor_Log.md
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/examples/Refactor_Plan.json
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/examples/Refactor_Report.json
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/manifest_schema.json
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/mapping_parser.py
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/refactor_config.yaml
+D:/VIbeCode/KMainCMS/Documentation/Development Files/Tools/refactor_runner.py
+D:/VIbeCode/KMainCMS/Documentation/Implementation Plans/IMPLEMENTATION_PLAN.md
+D:/VIbeCode/KMainCMS/Documentation/Implementation Plans/LEAN_ARCHITECTURE_REPORT.md
+D:/VIbeCode/KMainCMS/Documentation/Other Files/467342361_787812843470552_2051184122699826250_n.csv
+D:/VIbeCode/KMainCMS/Documentation/Other Files/CMS2App publish profile.PublishSettings
+D:/VIbeCode/KMainCMS/Documentation/Other Files/Church workers List with departments.txt
+D:/VIbeCode/KMainCMS/Documentation/Other Files/Master_Audit _map _refactored
+D:/VIbeCode/KMainCMS/Documentation/Other Files/Microsoft.VisualStudio.Services.VSIXPackage
+D:/VIbeCode/KMainCMS/Documentation/Project Files/.gitignore
+D:/VIbeCode/KMainCMS/Documentation/Project Files/Dockerfile
+D:/VIbeCode/KMainCMS/Documentation/Project Files/README.md
+D:/VIbeCode/KMainCMS/Documentation/Project Files/package.json
+D:/VIbeCode/KMainCMS/Documentation/README.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/30 Phase To do list.txt
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/GRANULAR_TASK_LIST.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/MASTER_TODO_LIST.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TO do list
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/00_INDEX.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/01_PHASE1_runtime_crashes.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/02_PHASE2_multitenancy_base_search.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/03_PHASE2_multitenancy_user_repos.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/04_PHASE2_multitenancy_treasury_dashboard.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/05_PHASE2_multitenancy_taxstatement_security.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/06_PHASE2_multitenancy_approvals_reconciliation_model.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/07_PHASE3_controllers_security_notifications.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/08_PHASE3_controllers_approvals_payments.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/09_PHASE3_controllers_members_users.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/10_PHASE3_controllers_search_auth_dashboard_treasury.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/11_PHASE4_routes_app_payments_auth.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/12_PHASE4_routes_middleware_security.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/13_PHASE5_database_schema.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/14_PHASE6_backend_services.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/15_PHASE7_frontend_hooks.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/16_PHASE8_frontend_contexts.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/17_PHASE9_frontend_components.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/18_PHASE10_dashboard_pages.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/19_PHASE11_seo_telegram_websocket.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/20_PHASE12_mpesa_payments.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/21_PHASE13_reports_analytics.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/22_PHASE14_sms_integration.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/23_PHASE15_document_management.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/24_PHASE16_audit_logging.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/25_PHASE17_testing.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/26_PHASE18_environment_deployment.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/27_PHASE19_code_quality.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/28_PHASE20_final_verification.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/29_PHASE21_dashboard_concrete_fixes_part1.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/30_PHASE21_dashboard_concrete_fixes_part2.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/31_PHASE22_additional_concrete_fixes.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/32_APPENDIX_A_quickwins.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/33_APPENDIX_B_phase_order.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/34_APPENDIX_C_stub_inventory.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/35_APPENDIX_D_quickwins_dashboard.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/36_CLUSTER_auth_and_identity.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/37_CLUSTER_treasury_and_payments.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/38_CLUSTER_repositories_and_database.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/39_CLUSTER_frontend_components_and_hooks.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/40_CLUSTER_dashboard_pages.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/41_CLUSTER_integrations.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/42_CLUSTER_security_and_middleware.md
+D:/VIbeCode/KMainCMS/Documentation/TODO Lists/TODO/EXECUTION_SUMMARY.md
+D:/VIbeCode/KMainCMS/README.md
+D:/VIbeCode/KMainCMS/USER_LOGINS.md
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/1 Yellow green LOgo.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/AdventSans-Logo.otf_/AdventSans-Logo.otf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Claude Setup.exe
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/NotoSans-Italic-VariableFont_wdth,wght.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/NotoSans-VariableFont_wdth,wght.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/OFL.txt
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/README.txt
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Black.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-BlackItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Bold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-BoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraLight.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraLightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Italic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Light.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-LightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Medium.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-MediumItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Regular.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-SemiBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-SemiBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Thin.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ThinItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Black.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-BlackItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Bold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-BoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraLight.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraLightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Italic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Light.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-LightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Medium.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-MediumItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Regular.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-SemiBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-SemiBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Thin.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ThinItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Black.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-BlackItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Bold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-BoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraLight.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraLightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Italic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Light.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-LightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Medium.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-MediumItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Regular.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-SemiBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-SemiBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Thin.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ThinItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Black.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-BlackItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Bold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-BoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraLight.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraLightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Italic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Light.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-LightItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Medium.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-MediumItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Regular.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-SemiBold.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-SemiBoldItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Thin.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ThinItalic.ttf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-centered--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-text--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-centered--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-en-tm-text--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-circle--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.pdf
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.png
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.svg
+D:/VIbeCode/KMainCMS/assets/icons/Icons and Logos/icon.svg.txt
+D:/VIbeCode/KMainCMS/backend/.dockerignore
+D:/VIbeCode/KMainCMS/backend/.env.example
+D:/VIbeCode/KMainCMS/backend/.gitignore
+D:/VIbeCode/KMainCMS/backend/Dockerfile
+D:/VIbeCode/KMainCMS/backend/README.md
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/README.md
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/announcements.controller.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/apiHub.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/churchPlatformGateway.service.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/hybridSMS.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/notificationService.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/platformAuth.controller.test.js
+D:/VIbeCode/KMainCMS/backend/__tests__/unit/platformAuth.middleware.test.js
+D:/VIbeCode/KMainCMS/backend/app.js
+D:/VIbeCode/KMainCMS/backend/check-department-members.js
+D:/VIbeCode/KMainCMS/backend/check-tables.js
+D:/VIbeCode/KMainCMS/backend/check-users.js
+D:/VIbeCode/KMainCMS/backend/config/README.md
+D:/VIbeCode/KMainCMS/backend/config/database.js
+D:/VIbeCode/KMainCMS/backend/config/env-validation.js
+D:/VIbeCode/KMainCMS/backend/config/logging.js
+D:/VIbeCode/KMainCMS/backend/config/platformJwt.js
+D:/VIbeCode/KMainCMS/backend/controllers/BaseController.js
+D:/VIbeCode/KMainCMS/backend/controllers/README.md
+D:/VIbeCode/KMainCMS/backend/controllers/activityFeed.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/ai.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/analytics.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/announcements.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/approvals.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/auth.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/chartOfAccounts.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/chat.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/church.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/collection.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/comments.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/content.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/dashboard.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/department.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/departmentFeatures.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/departments.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/documentApproval.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/documents.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/fieldPermissions.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/gallery.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/gateway.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/manualPayment.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/members.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/mobile.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/notifications.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/palette.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/payment.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/payments.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/platform.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/platformAuth.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/projects.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/reconciliation.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/recurringPayments.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/reports.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/security.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/settings.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/sms.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsAuth.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsContacts.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsGroups.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsHub.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsPush.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/smsSync.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/sync.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/telegram.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/telegramAuth.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/telegramChurch.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/treasury.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/treasuryDashboard.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/userSettings.controller.js
+D:/VIbeCode/KMainCMS/backend/controllers/vendors.controller.js
+D:/VIbeCode/KMainCMS/backend/create-admin.js
+D:/VIbeCode/KMainCMS/backend/create-announcements-table.js
+D:/VIbeCode/KMainCMS/backend/create-database.js
+D:/VIbeCode/KMainCMS/backend/create-department-tables.js
+D:/VIbeCode/KMainCMS/backend/create-department-users.js
+D:/VIbeCode/KMainCMS/backend/create-personal-collections-table.js
+D:/VIbeCode/KMainCMS/backend/create-phase32-tables.js
+D:/VIbeCode/KMainCMS/backend/create-sms-advanced-tables.js
+D:/VIbeCode/KMainCMS/backend/create-users-direct.js
+D:/VIbeCode/KMainCMS/backend/create_admin_user.sql
+D:/VIbeCode/KMainCMS/backend/create_admin_via_api.js
+D:/VIbeCode/KMainCMS/backend/create_login_attempts.sql
+D:/VIbeCode/KMainCMS/backend/ecosystem.config.cjs
+D:/VIbeCode/KMainCMS/backend/eslint.config.js
+D:/VIbeCode/KMainCMS/backend/fix-slugs.js
+D:/VIbeCode/KMainCMS/backend/generate_hash.js
+D:/VIbeCode/KMainCMS/backend/get-users.js
+D:/VIbeCode/KMainCMS/backend/helpers/README.md
+D:/VIbeCode/KMainCMS/backend/helpers/auditLog.js
+D:/VIbeCode/KMainCMS/backend/helpers/controllerLogger.js
+D:/VIbeCode/KMainCMS/backend/helpers/departmentLeadership.js
+D:/VIbeCode/KMainCMS/backend/helpers/errorHandler.js
+D:/VIbeCode/KMainCMS/backend/helpers/fieldPermissionService.js
+D:/VIbeCode/KMainCMS/backend/helpers/finance.js
+D:/VIbeCode/KMainCMS/backend/helpers/galleryCache.js
+D:/VIbeCode/KMainCMS/backend/helpers/notify.js
+D:/VIbeCode/KMainCMS/backend/helpers/paymentSMSIntegration.js
+D:/VIbeCode/KMainCMS/backend/helpers/permissionChecker.js
+D:/VIbeCode/KMainCMS/backend/helpers/reportScheduler.js
+D:/VIbeCode/KMainCMS/backend/helpers/security.js
+D:/VIbeCode/KMainCMS/backend/helpers/treasurySMSIntegration.js
+D:/VIbeCode/KMainCMS/backend/helpers/websocket.js
+D:/VIbeCode/KMainCMS/backend/helpers/workflowEngine.js
+D:/VIbeCode/KMainCMS/backend/middleware/README.md
+D:/VIbeCode/KMainCMS/backend/middleware/auth.js
+D:/VIbeCode/KMainCMS/backend/middleware/churchContext.js
+D:/VIbeCode/KMainCMS/backend/middleware/csrf.js
+D:/VIbeCode/KMainCMS/backend/middleware/errorHandler.js
+D:/VIbeCode/KMainCMS/backend/middleware/identityGuard.js
+D:/VIbeCode/KMainCMS/backend/middleware/pagination.js
+D:/VIbeCode/KMainCMS/backend/middleware/platformAuth.js
+D:/VIbeCode/KMainCMS/backend/middleware/rateLimiter.js
+D:/VIbeCode/KMainCMS/backend/middleware/roleGuard.js
+D:/VIbeCode/KMainCMS/backend/middleware/standardResponse.js
+D:/VIbeCode/KMainCMS/backend/middleware/tenantResolver.js
+D:/VIbeCode/KMainCMS/backend/middleware/treasurySecurity.js
+D:/VIbeCode/KMainCMS/backend/middleware/upload.js
+D:/VIbeCode/KMainCMS/backend/middleware/validation.js
+D:/VIbeCode/KMainCMS/backend/migrate-gallery.js
+D:/VIbeCode/KMainCMS/backend/migrate-members.js
+D:/VIbeCode/KMainCMS/backend/migrate-settings.js
+D:/VIbeCode/KMainCMS/backend/migrate.js
+D:/VIbeCode/KMainCMS/backend/migrations/002_create_accounts.sql
+D:/VIbeCode/KMainCMS/backend/migrations/002_department_features.sql
+D:/VIbeCode/KMainCMS/backend/migrations/003_add_snapshot_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/004_gallery_schema.sql
+D:/VIbeCode/KMainCMS/backend/migrations/005_fix_missing_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/006_settings_schema.sql
+D:/VIbeCode/KMainCMS/backend/migrations/007_auth_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/008_permissions_schema.sql
+D:/VIbeCode/KMainCMS/backend/migrations/009_fix_public_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/010_fix_users_identity_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/020_platform_admin_schema.sql
+D:/VIbeCode/KMainCMS/backend/migrations/021_add_global_username_constraint.sql
+D:/VIbeCode/KMainCMS/backend/migrations/022_add_missing_church_id.sql
+D:/VIbeCode/KMainCMS/backend/migrations/023_create_members.sql
+D:/VIbeCode/KMainCMS/backend/migrations/024_departments_multitenancy.sql
+D:/VIbeCode/KMainCMS/backend/migrations/025_dashboard_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/026_mobile_parity.sql
+D:/VIbeCode/KMainCMS/backend/migrations/027_events_time_poster.sql
+D:/VIbeCode/KMainCMS/backend/migrations/028_mobile_missing_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/029_users_last_login.sql
+D:/VIbeCode/KMainCMS/backend/migrations/030_dashboard_missing_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/031_department_features.sql
+D:/VIbeCode/KMainCMS/backend/migrations/032_telegram_gallery.sql
+D:/VIbeCode/KMainCMS/backend/migrations/033_telegram_church_unique.sql
+D:/VIbeCode/KMainCMS/backend/migrations/034_department_hierarchy_leadership.sql
+D:/VIbeCode/KMainCMS/backend/migrations/035_department_obligations.sql
+D:/VIbeCode/KMainCMS/backend/migrations/036_composite_church_id_indexes.sql
+D:/VIbeCode/KMainCMS/backend/migrations/037_remittance_ledger.sql
+D:/VIbeCode/KMainCMS/backend/migrations/038_role_permission_backfill.sql
+D:/VIbeCode/KMainCMS/backend/migrations/039_users_missing_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/040_notifications_schema_alignment.sql
+D:/VIbeCode/KMainCMS/backend/migrations/041_treasury_finance_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/042_security_settings_church.sql
+D:/VIbeCode/KMainCMS/backend/migrations/043_payments_member_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/044_gallery_uploads.sql
+D:/VIbeCode/KMainCMS/backend/migrations/045_treasury_module_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/046_treasury_schema_backfill.sql
+D:/VIbeCode/KMainCMS/backend/migrations/047_collections_schema.sql
+D:/VIbeCode/KMainCMS/backend/migrations/048_gallery_member_features.sql
+D:/VIbeCode/KMainCMS/backend/migrations/049_tenant_scoping_comments_exports_telegram.sql
+D:/VIbeCode/KMainCMS/backend/migrations/050_reports_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/051_telegram_channel_posts_columns.sql
+D:/VIbeCode/KMainCMS/backend/migrations/052_approval_workflow_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/053_chat_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/054_document_approval_tables.sql
+D:/VIbeCode/KMainCMS/backend/migrations/055_department_components.sql
+D:/VIbeCode/KMainCMS/backend/migrations/056_settings_per_church_overrides.sql
+D:/VIbeCode/KMainCMS/backend/migrations/057_audit_log_church_id.sql
+D:/VIbeCode/KMainCMS/backend/migrations/058_events_category.sql
+D:/VIbeCode/KMainCMS/backend/migrations/059_departments_head_id.sql
+D:/VIbeCode/KMainCMS/backend/migrations/060_approval_requester_backfill.sql
+D:/VIbeCode/KMainCMS/backend/migrations/061_null_church_unique_holes.sql
+D:/VIbeCode/KMainCMS/backend/migrations/062_gallery_sentinel_church_backfill.sql
+D:/VIbeCode/KMainCMS/backend/migrations/README.md
+D:/VIbeCode/KMainCMS/backend/migrations/add_sms_contact_management.sql
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/README.md
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/account.controller.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/budget.controller.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/expense.controller.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/fund.controller.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/index.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/controllers/journalEntry.controller.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/Account.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/Budget.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/Expense.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/Fund.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/JournalEntry.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/models/README.md
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/README.md
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/account.repository.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/budget.repository.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/expense.repository.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/fund.repository.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/repositories/journalEntry.repository.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/README.md
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/account.routes.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/budget.routes.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/expense.routes.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/fund.routes.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/index.js
+D:/VIbeCode/KMainCMS/backend/modules/treasury/routes/journalEntry.routes.js
+D:/VIbeCode/KMainCMS/backend/package-lock.json
+D:/VIbeCode/KMainCMS/backend/package.json
+D:/VIbeCode/KMainCMS/backend/performance_benchmark.js
+D:/VIbeCode/KMainCMS/backend/performance_optimization_recommendations.md
+D:/VIbeCode/KMainCMS/backend/render.yaml
+D:/VIbeCode/KMainCMS/backend/repositories/AIRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ActivityFeedRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/AnalyticsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/AnnouncementsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ApprovalsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/AuditLogRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/AuthRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/BaseRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ChartOfAccountsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ChatRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ChurchRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/CollectionRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/CommentsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ContentRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DashboardRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentCategoriesRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentCommunityRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentFeaturesRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentFinanceRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentLeadershipRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DepartmentsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/DocumentsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/EventsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/GalleryAlbumsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/GalleryRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/GatewayRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ManualPaymentRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/MembersRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/MobileRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/MpesaRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/NotificationsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/PaletteRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/PaymentRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/PaymentsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ProjectsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/README.md
+D:/VIbeCode/KMainCMS/backend/repositories/ReconciliationRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/RecurringPaymentsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/ReportsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SMSProviderRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SMSRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SecurityRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SettingsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SnapshotRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/SyncRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/TelegramAuthRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/TelegramRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/TreasuryDashboardRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/TreasuryRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/UserRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/UserSettingsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/VendorsRepository.js
+D:/VIbeCode/KMainCMS/backend/repositories/base.repository.js
+D:/VIbeCode/KMainCMS/backend/routes/README.md
+D:/VIbeCode/KMainCMS/backend/routes/ai.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/analytics.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/announcements.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/apk.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/approvals.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/audit-logs.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/auth.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/chartOfAccounts.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/chat.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/church.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/collections.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/comments.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/content.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/dashboard.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/department-categories.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/department.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/departmentFeatures.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/department_community.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/department_finance.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/department_leadership.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/departments.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/documentApproval.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/documents.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/events.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/fieldPermissions.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/gallery.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/galleryAlbums.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/gateway.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/health.js
+D:/VIbeCode/KMainCMS/backend/routes/index.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/logs.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/manualPayment.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/members.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/mobile.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/mpesa.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/notifications.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/palette.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/payments.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/platform.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/projects.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/reconciliation.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/reports.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/security.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/settings.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/sms.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/smsAuth.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/smsContacts.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/smsGroups.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/smsHub.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/smsSync.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/sync.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/telegram.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/telegramAuth.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/telegramChurch.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/treasury.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/treasuryDashboard.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/userSettings.routes.js
+D:/VIbeCode/KMainCMS/backend/routes/users.routes.js
+D:/VIbeCode/KMainCMS/backend/scripts/README.md
+D:/VIbeCode/KMainCMS/backend/scripts/_scriptSafety.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-gallery-created-at.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-missing-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-palette-setting.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-sample-gallery-data.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-telegram-channel.js
+D:/VIbeCode/KMainCMS/backend/scripts/add-video-support.sql
+D:/VIbeCode/KMainCMS/backend/scripts/app-smoke-test.js
+D:/VIbeCode/KMainCMS/backend/scripts/apply-migration.js
+D:/VIbeCode/KMainCMS/backend/scripts/apply-migrations.js
+D:/VIbeCode/KMainCMS/backend/scripts/assign-demo-church.js
+D:/VIbeCode/KMainCMS/backend/scripts/auth-telegram.js
+D:/VIbeCode/KMainCMS/backend/scripts/auth-wrapper.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-approval-requests-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-database.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-departments-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-departments.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-documentation.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-gallery-albums-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-gallery-photos-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-members-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-mfa-status.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-missing-repository-methods.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-notification-preferences-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-notification-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-notification-types-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-notifications-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-payments-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-photo-tag-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-security-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-telegram-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-users-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-users.js
+D:/VIbeCode/KMainCMS/backend/scripts/check-website-settings-table.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-gallery-table.sql
+D:/VIbeCode/KMainCMS/backend/scripts/create-indexes.sql
+D:/VIbeCode/KMainCMS/backend/scripts/create-local-admin.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-missing-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-palette-tables.sql
+D:/VIbeCode/KMainCMS/backend/scripts/create-security-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-treasury-tables.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-user-slug-function.js
+D:/VIbeCode/KMainCMS/backend/scripts/create-website-settings-table.js
+D:/VIbeCode/KMainCMS/backend/scripts/data/README.md
+D:/VIbeCode/KMainCMS/backend/scripts/data/sda-departments.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-announcements.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-departments.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-events.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-gallery-albums.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-payments.js
+D:/VIbeCode/KMainCMS/backend/scripts/delete-test-user.js
+D:/VIbeCode/KMainCMS/backend/scripts/extract-routes-and-db.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-approval-comments.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-approval-requests-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-departments-church-slug.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-departments-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-gallery-albums-church-slug.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-gallery-albums-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-gallery-uploaded-by.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-notifications-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-table-columns.js
+D:/VIbeCode/KMainCMS/backend/scripts/fix-users-deleted-at.js
+D:/VIbeCode/KMainCMS/backend/scripts/flesh-out-repositories.js
+D:/VIbeCode/KMainCMS/backend/scripts/generate-comprehensive-seed.js
+D:/VIbeCode/KMainCMS/backend/scripts/generate-login-doc.js
+D:/VIbeCode/KMainCMS/backend/scripts/get-admin-logins.js
+D:/VIbeCode/KMainCMS/backend/scripts/probe-schema.js
+D:/VIbeCode/KMainCMS/backend/scripts/reset-admin-password.js
+D:/VIbeCode/KMainCMS/backend/scripts/reset-db.js
+D:/VIbeCode/KMainCMS/backend/scripts/reset-nonmember-passwords.js
+D:/VIbeCode/KMainCMS/backend/scripts/run-fix-migration.js
+D:/VIbeCode/KMainCMS/backend/scripts/run-migration-026.js
+D:/VIbeCode/KMainCMS/backend/scripts/run-migration.js
+D:/VIbeCode/KMainCMS/backend/scripts/run-mobile-migration.js
+D:/VIbeCode/KMainCMS/backend/scripts/run-platform-migration.js
+D:/VIbeCode/KMainCMS/backend/scripts/security_audit.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-admin.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-church-data.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-churches.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-comprehensive.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-deep-test-data.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-demo-data.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-demo-users.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-history.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-palettes.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-role-accounts.js
+D:/VIbeCode/KMainCMS/backend/scripts/seed-upcoming-events.js
+D:/VIbeCode/KMainCMS/backend/scripts/setup-test-db.js
+D:/VIbeCode/KMainCMS/backend/scripts/sync-telegram-gallery.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-all-routes.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-api.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-data.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-frontend-endpoints.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-leadership-flow.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-login.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-mobile-api.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-multiple-apis.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-sms-callback.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-sms.js
+D:/VIbeCode/KMainCMS/backend/scripts/test-sync.js
+D:/VIbeCode/KMainCMS/backend/scripts/validate-db-routes.js
+D:/VIbeCode/KMainCMS/backend/scripts/validate-route-mounting.js
+D:/VIbeCode/KMainCMS/backend/scripts/verify-admin.js
+D:/VIbeCode/KMainCMS/backend/scripts/verify-ledger-fixes.js
+D:/VIbeCode/KMainCMS/backend/security_audit.js
+D:/VIbeCode/KMainCMS/backend/seed-activity-data.js
+D:/VIbeCode/KMainCMS/backend/seed-database.js
+D:/VIbeCode/KMainCMS/backend/seed-departments.js
+D:/VIbeCode/KMainCMS/backend/server.js
+D:/VIbeCode/KMainCMS/backend/services/ActivityFeedService.js
+D:/VIbeCode/KMainCMS/backend/services/ChartOfAccountsService.js
+D:/VIbeCode/KMainCMS/backend/services/ChurchService.js
+D:/VIbeCode/KMainCMS/backend/services/ContentService.js
+D:/VIbeCode/KMainCMS/backend/services/IdentityService.js
+D:/VIbeCode/KMainCMS/backend/services/MessagingService.js
+D:/VIbeCode/KMainCMS/backend/services/MpesaService.js
+D:/VIbeCode/KMainCMS/backend/services/PaymentGatewayService.js
+D:/VIbeCode/KMainCMS/backend/services/ProjectService.js
+D:/VIbeCode/KMainCMS/backend/services/README.md
+D:/VIbeCode/KMainCMS/backend/services/ReceiptService.js
+D:/VIbeCode/KMainCMS/backend/services/ReportService.js
+D:/VIbeCode/KMainCMS/backend/services/RollingUpdateService.js
+D:/VIbeCode/KMainCMS/backend/services/SchedulingService.js
+D:/VIbeCode/KMainCMS/backend/services/SettingsService.js
+D:/VIbeCode/KMainCMS/backend/services/SmsHub.js
+D:/VIbeCode/KMainCMS/backend/services/SnapshotService.js
+D:/VIbeCode/KMainCMS/backend/services/VendorService.js
+D:/VIbeCode/KMainCMS/backend/services/aiContentService.js
+D:/VIbeCode/KMainCMS/backend/services/apiHub.js
+D:/VIbeCode/KMainCMS/backend/services/auditService.js
+D:/VIbeCode/KMainCMS/backend/services/churchPlatformGateway.service.js
+D:/VIbeCode/KMainCMS/backend/services/documentApprovalService.js
+D:/VIbeCode/KMainCMS/backend/services/hybridSMS.js
+D:/VIbeCode/KMainCMS/backend/services/kopokopo.js
+D:/VIbeCode/KMainCMS/backend/services/nameMatcher.js
+D:/VIbeCode/KMainCMS/backend/services/notificationService.js
+D:/VIbeCode/KMainCMS/backend/services/numberingService.js
+D:/VIbeCode/KMainCMS/backend/services/platformAudit.service.js
+D:/VIbeCode/KMainCMS/backend/services/redisCache.js
+D:/VIbeCode/KMainCMS/backend/services/telegramService.js
+D:/VIbeCode/KMainCMS/backend/setup-base-database.js
+D:/VIbeCode/KMainCMS/backend/setup-database.js
+D:/VIbeCode/KMainCMS/backend/setup-settings-database.js
+D:/VIbeCode/KMainCMS/backend/setup-treasury-database.js
+D:/VIbeCode/KMainCMS/backend/sync-gallery.js
+D:/VIbeCode/KMainCMS/backend/temp_hash.js
+D:/VIbeCode/KMainCMS/backend/test-all-modules.js
+D:/VIbeCode/KMainCMS/backend/test-comprehensive.js
+D:/VIbeCode/KMainCMS/backend/test-endpoints.js
+D:/VIbeCode/KMainCMS/backend/test-final-implementations.js
+D:/VIbeCode/KMainCMS/backend/test-login-simple.js
+D:/VIbeCode/KMainCMS/backend/test-login.js
+D:/VIbeCode/KMainCMS/backend/test-mpesa.js
+D:/VIbeCode/KMainCMS/backend/test-new-modules.js
+D:/VIbeCode/KMainCMS/backend/test-palette-api.js
+D:/VIbeCode/KMainCMS/backend/test-stkpush.js
+D:/VIbeCode/KMainCMS/backend/test-tasks-501-700.js
+D:/VIbeCode/KMainCMS/backend/tests/README.md
+D:/VIbeCode/KMainCMS/backend/tests/api/README.md
+D:/VIbeCode/KMainCMS/backend/tests/api/package.json
+D:/VIbeCode/KMainCMS/backend/tests/api/setup/README.md
+D:/VIbeCode/KMainCMS/backend/tests/api/setup/global-setup.js
+D:/VIbeCode/KMainCMS/backend/tests/api/setup/test-helpers.js
+D:/VIbeCode/KMainCMS/backend/tests/api/sms-sync.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/README.md
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/apiHub.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/approvals.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/auth.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/database.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/documentApprovalService.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/documents.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/health.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/notificationService.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/notifications.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/sms-auth.test.js
+D:/VIbeCode/KMainCMS/backend/tests/api/tests/tenancy.test.js
+D:/VIbeCode/KMainCMS/backend/tests/e2e/README.md
+D:/VIbeCode/KMainCMS/backend/tests/e2e/critical-workflows.test.js
+D:/VIbeCode/KMainCMS/backend/tests/e2e/user-workflows.test.js
+D:/VIbeCode/KMainCMS/backend/tests/integration/README.md
+D:/VIbeCode/KMainCMS/backend/tests/integration/documentApproval.integration.test.js
+D:/VIbeCode/KMainCMS/backend/tests/integration/smsHub.integration.test.js
+D:/VIbeCode/KMainCMS/backend/tests/jest.config.js
+D:/VIbeCode/KMainCMS/backend/tests/jobs/README.md
+D:/VIbeCode/KMainCMS/backend/tests/jobs/SnapshotJob.test.js
+D:/VIbeCode/KMainCMS/backend/tests/migrations/003_snapshot_tables.test.js
+D:/VIbeCode/KMainCMS/backend/tests/migrations/README.md
+D:/VIbeCode/KMainCMS/backend/tests/quick.test.js
+D:/VIbeCode/KMainCMS/backend/tests/services/README.md
+D:/VIbeCode/KMainCMS/backend/tests/services/RollingUpdateService.test.js
+D:/VIbeCode/KMainCMS/backend/tests/services/SnapshotService.test.js
+D:/VIbeCode/KMainCMS/backend/tests/setup.js
+D:/VIbeCode/KMainCMS/backend/tests/setup/README.md
+D:/VIbeCode/KMainCMS/backend/tests/setup/global-setup.js
+D:/VIbeCode/KMainCMS/backend/tests/setup/hibp-mock.js
+D:/VIbeCode/KMainCMS/backend/tests/setup/uuid-mock.js
+D:/VIbeCode/KMainCMS/backend/tests/simple.test.js
+D:/VIbeCode/KMainCMS/backend/tests/unit/README.md
+D:/VIbeCode/KMainCMS/backend/tests/unit/audit-regressions.test.js
+D:/VIbeCode/KMainCMS/backend/tests/unit/departmentFeatures.test.js
+D:/VIbeCode/KMainCMS/backend/update-admin.js
+D:/VIbeCode/KMainCMS/backend/utils/README.md
+D:/VIbeCode/KMainCMS/backend/utils/ResponseHandler.js
+D:/VIbeCode/KMainCMS/backend/utils/cursorPagination.js
+D:/VIbeCode/KMainCMS/backend/utils/emailService.js
+D:/VIbeCode/KMainCMS/backend/utils/errorHandler.js
+D:/VIbeCode/KMainCMS/backend/utils/mpesa.js
+D:/VIbeCode/KMainCMS/backend/utils/piiMasker.js
+D:/VIbeCode/KMainCMS/backend/utils/secretBox.js
+D:/VIbeCode/KMainCMS/check_churches_object.py
+D:/VIbeCode/KMainCMS/check_debug_logs.py
+D:/VIbeCode/KMainCMS/check_local_db.py
+D:/VIbeCode/KMainCMS/continue-work-simple.bat
+D:/VIbeCode/KMainCMS/continue-work-simple.js
+D:/VIbeCode/KMainCMS/continue-work.bat
+D:/VIbeCode/KMainCMS/continue-work.js
+D:/VIbeCode/KMainCMS/create_admin_final.py
+D:/VIbeCode/KMainCMS/create_admin_user.py
+D:/VIbeCode/KMainCMS/database/001_auth_schema.sql
+D:/VIbeCode/KMainCMS/database/002_settings_schema.sql
+D:/VIbeCode/KMainCMS/database/003_members_schema.sql
+D:/VIbeCode/KMainCMS/database/README.md
+D:/VIbeCode/KMainCMS/database/_do-not-run/README.md
+D:/VIbeCode/KMainCMS/database/_do-not-run/complete_seed.sql
+D:/VIbeCode/KMainCMS/database/_do-not-run/departments_seed_updated.sql
+D:/VIbeCode/KMainCMS/database/_do-not-run/sample_data.sql
+D:/VIbeCode/KMainCMS/database/_do-not-run/seed_church_workers.sql
+D:/VIbeCode/KMainCMS/database/activity_feed_indexes.sql
+D:/VIbeCode/KMainCMS/database/add_categories_hierarchy.sql
+D:/VIbeCode/KMainCMS/database/add_event_poster_column.sql
+D:/VIbeCode/KMainCMS/database/add_gallery_missing_columns.sql
+D:/VIbeCode/KMainCMS/database/add_indexes.sql
+D:/VIbeCode/KMainCMS/database/add_mpesa_settings.sql
+D:/VIbeCode/KMainCMS/database/add_photo_location_column.sql
+D:/VIbeCode/KMainCMS/database/add_website_settings.sql
+D:/VIbeCode/KMainCMS/database/approvals_schema.sql
+D:/VIbeCode/KMainCMS/database/auth_enhancements.sql
+D:/VIbeCode/KMainCMS/database/check_and_fix_slugs.sql
+D:/VIbeCode/KMainCMS/database/complete_schema.sql
+D:/VIbeCode/KMainCMS/database/content_schema.sql
+D:/VIbeCode/KMainCMS/database/create_department_components_tables.sql
+D:/VIbeCode/KMainCMS/database/departments_enhancements.sql
+D:/VIbeCode/KMainCMS/database/departments_schema.sql
+D:/VIbeCode/KMainCMS/database/documents_schema.sql
+D:/VIbeCode/KMainCMS/database/gallery_schema.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/README.md
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_departments.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_departments_safe.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_gallery.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_gallery_comprehensive.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_gallery_correct_order.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_gallery_fixed.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_permissions_fixed.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_remaining.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_remaining_final.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_settings_telegram.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/execute_uuid_treasury.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/standardize_uuids_all.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/standardize_uuids_departments.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/standardize_uuids_treasury.sql
+D:/VIbeCode/KMainCMS/database/migrations/_graveyard/test_syntax.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_accounting_export_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_ai_audit_logging.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_approval_status_to_department_members.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_church_slug_indexes.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_content_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_custom_report_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_department_advanced_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_department_logo_banner.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_document_approval_workflow.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_documents_advanced_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_documents_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_dynamic_departments.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_dynamic_departments_and_chat.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_financial_alerts_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_financial_immutability_triggers.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_gallery_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_gallery_analytics.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_gallery_sync.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_is_active_to_department_members.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_is_active_to_departments.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_mpesa_stk_pushes_table.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_notification_templates.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_notifications_advanced_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_notifications_uuid.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_payment_tracking.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_payments_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_performance_indexes.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_performance_summaries.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_platform_foundation.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_poster_url_to_events.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_reconciliation_audit.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_settings_advanced_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_slug_to_departments.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_slug_to_users.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_sms_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_sms_delivery_tracking.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_sms_gateways.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_sms_providers.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_sms_queue.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_tax_deductible_to_payments.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_tax_statement_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_telegram_advanced_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_telegram_auth_methods.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_tenancy_core.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_treasury_additional_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/add_treasury_advanced_tables.sql
+D:/VIbeCode/KMainCMS/database/migrations/clean_up_slugs.sql
+D:/VIbeCode/KMainCMS/database/migrations/create_approvals_audit_notifications.sql
+D:/VIbeCode/KMainCMS/database/migrations/create_event_collections.sql
+D:/VIbeCode/KMainCMS/database/migrations/create_user_preferences.sql
+D:/VIbeCode/KMainCMS/database/migrations/enable_rls_policies.sql
+D:/VIbeCode/KMainCMS/database/migrations/migrate_departments_to_features.sql
+D:/VIbeCode/KMainCMS/database/migrations/mobile_integration.sql
+D:/VIbeCode/KMainCMS/database/notifications_schema.sql
+D:/VIbeCode/KMainCMS/database/payments_schema.sql
+D:/VIbeCode/KMainCMS/database/role_hierarchy.sql
+D:/VIbeCode/KMainCMS/database/schema.sql
+D:/VIbeCode/KMainCMS/database/security_schema.sql
+D:/VIbeCode/KMainCMS/database/seed_new_tables.sql
+D:/VIbeCode/KMainCMS/database/settings_schema.sql
+D:/VIbeCode/KMainCMS/database/setup.bat
+D:/VIbeCode/KMainCMS/database/setup.sh
+D:/VIbeCode/KMainCMS/database/site_settings_schema.sql
+D:/VIbeCode/KMainCMS/database/sms_schema.sql
+D:/VIbeCode/KMainCMS/database/telegram_schema.sql
+D:/VIbeCode/KMainCMS/database/test_data/mobile_integration_test_data.sql
+D:/VIbeCode/KMainCMS/database/treasury_schema.sql
+D:/VIbeCode/KMainCMS/database/update_settings_defaults.sql
+D:/VIbeCode/KMainCMS/deploy-vps.sh
+D:/VIbeCode/KMainCMS/deploy_caddy10.py
+D:/VIbeCode/KMainCMS/deploy_caddy9.py
+D:/VIbeCode/KMainCMS/deploy_clean_caddy.py
+D:/VIbeCode/KMainCMS/docker-compose.logging.yml
+D:/VIbeCode/KMainCMS/docker-compose.microservices.yml
+D:/VIbeCode/KMainCMS/docker-compose.monitoring.yml
+D:/VIbeCode/KMainCMS/docker-compose.yml
+D:/VIbeCode/KMainCMS/docs/1000-POINT-TODO-LIST.txt
+D:/VIbeCode/KMainCMS/docs/500-POINT-TODO-LIST.md
+D:/VIbeCode/KMainCMS/docs/ADMINISTRATOR_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/BACKEND-STATUS-FINAL.md
+D:/VIbeCode/KMainCMS/docs/BACKEND_API_ENDPOINTS_STATUS.md
+D:/VIbeCode/KMainCMS/docs/CONTROLLER_REFACTORING_GAP_ANALYSIS.md
+D:/VIbeCode/KMainCMS/docs/DASHBOARD_AUDIT.md
+D:/VIbeCode/KMainCMS/docs/DEPARTMENTS_WORKFLOW.md
+D:/VIbeCode/KMainCMS/docs/DEVELOPER_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/FLESHED_OUT_FUNCTIONS_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/GEMINI_SCRIPT.md
+D:/VIbeCode/KMainCMS/docs/IMPLEMENTATION_COMPLETE.md
+D:/VIbeCode/KMainCMS/docs/IMPLEMENTATION_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/INTERACTIVE_ELEMENTS_MAP.md
+D:/VIbeCode/KMainCMS/docs/INTERACTIVE_IMPLEMENTATION_PROGRESS.md
+D:/VIbeCode/KMainCMS/docs/KMainCMS_UX_DESIGN_DOCUMENT.md
+D:/VIbeCode/KMainCMS/docs/KNOWLEDGE_BASE.md
+D:/VIbeCode/KMainCMS/docs/NAVIGATION_MAP.md
+D:/VIbeCode/KMainCMS/docs/ONBOARDING_CHECKLIST.md
+D:/VIbeCode/KMainCMS/docs/PARALLEL_IMPLEMENTATION_STRATEGY.md
+D:/VIbeCode/KMainCMS/docs/PERMISSION_AUDIT.md
+D:/VIbeCode/KMainCMS/docs/PHASE15_TESTING_QA.md
+D:/VIbeCode/KMainCMS/docs/PHASE16_DEPLOYMENT_DEVOPS.md
+D:/VIbeCode/KMainCMS/docs/RBAC-Permissions-Matrix.html
+D:/VIbeCode/KMainCMS/docs/RBAC-Permissions-Matrix.md
+D:/VIbeCode/KMainCMS/docs/SIDEBAR_ARRANGEMENTS.md
+D:/VIbeCode/KMainCMS/docs/STARTING_INSTRUCTIONS.md
+D:/VIbeCode/KMainCMS/docs/TAB_STRUCTURE_ALTERNATIVE_APPROACH.md
+D:/VIbeCode/KMainCMS/docs/TAB_STRUCTURE_EVALUATION.md
+D:/VIbeCode/KMainCMS/docs/TAB_STRUCTURE_IMPLEMENTATION_PLAN.md
+D:/VIbeCode/KMainCMS/docs/TAB_STRUCTURE_IMPLEMENTATION_PLAN_DETAILED.md
+D:/VIbeCode/KMainCMS/docs/TESTING.md
+D:/VIbeCode/KMainCMS/docs/TRAINING_MATERIALS.md
+D:/VIbeCode/KMainCMS/docs/TROUBLESHOOTING_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/USER_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/UX_DESIGN_PROMPT.md
+D:/VIbeCode/KMainCMS/docs/VIDEO_PRODUCTION_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/WORLDCLASS_UI_IMPROVEMENT_PROMPT.md
+D:/VIbeCode/KMainCMS/docs/api/API_DOCUMENTATION.md
+D:/VIbeCode/KMainCMS/docs/api/MOBILE_API_CONTRACT.md
+D:/VIbeCode/KMainCMS/docs/api/Safaricom APIs.postman_collection.json
+D:/VIbeCode/KMainCMS/docs/architecture/ARCHITECTURE.md
+D:/VIbeCode/KMainCMS/docs/architecture/MICROSERVICES_ARCHITECTURE.md
+D:/VIbeCode/KMainCMS/docs/architecture/SYSTEM_DOCUMENTATION.md
+D:/VIbeCode/KMainCMS/docs/db-routes-validation.md
+D:/VIbeCode/KMainCMS/docs/deployment/CONTAbo_DEPLOYMENT.md
+D:/VIbeCode/KMainCMS/docs/deployment/DEPLOYMENT.md
+D:/VIbeCode/KMainCMS/docs/development/DEVELOPER_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/logs/COMPLETE_FILE_INVENTORY_2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Changes Checklist - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Implementation Plan - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Phase 1-2 Verification - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Phases 1-5 Execution Verification - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Phases 15-20 - Semantic Color Mapping - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Dark Mode Remaining Work Phases - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - 1000-Item Implementation - 2026-06-16.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - 1000-Item Todo List Expansion - 2025-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - 2026-06-15.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - API 404 Fixes and Backend Configuration - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Additional Features Implementation - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Advanced Treasury Features Implementation - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Backend Module Completion - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Bug Fixes and Code Quality Improvements - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Complete Backend Implementation Summary - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Comprehensive Codebase Analysis - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Controller Refactoring - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Department Dashboard Fix - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Department Data Seeding - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Department Member Seeding - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Departments Functionality Copy - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - E2E Testing Implementation - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Final Check and Additional Configuration - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Final Implementation Summary - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Final Session Completion - 2026-06-15.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Frontend Component Expansion - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Frontend Components for All Modules - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Improvement Recommendations - 2025-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Infrastructure and Deployment Preparation - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Login Fix Session - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Member Financial Access - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Missing Functionalities Assessment - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Missing Functionalities Implementation - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Missing Treasury Features Implementation - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Module Reorganization - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Permissions System and Additional Departments - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 2 UX Implementation - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3 Complete - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3 Permission-Based UI - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3&4 Gap Fixes - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3.2 Advanced Features - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3.2 Backend Implementation - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 3.2 Frontend Components - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 4 Accessibility - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 4.2 Completion & Final Audit - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Phase 5 Mobile Responsiveness - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Rate Limiting & API Proxy Fixes - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Routing & DB Audit - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - SMS Module Completion - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - SMS Module Second Verification - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - SMS Module Verification & Fixes - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Server Startup & Login Fixes - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Session Log - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Shared Components - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - System Audit - 2026-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - TELEGRAM Module Completion - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - Treasury Module Completion - 2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - UX Design and Implementation Planning - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS - UX Issues Fix - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS_2025-01-14.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS_2026-06-15.md
+D:/VIbeCode/KMainCMS/docs/logs/KMainCMS_Upgrade_Status_Report_2026-06-23.md
+D:/VIbeCode/KMainCMS/docs/logs/PHASE1_COMPLETE_SESSION_2025-01-15.md
+D:/VIbeCode/KMainCMS/docs/logs/PHASE1_FOUNDATION_SESSION_2025-01-15.md
+D:/VIbeCode/KMainCMS/docs/logs/Parallel Tab Structure Implementation - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/QA_Static_Analysis_Report_2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/README.md
+D:/VIbeCode/KMainCMS/docs/logs/SESSION_LOG_2025-06-18.md
+D:/VIbeCode/KMainCMS/docs/logs/SMS_APP_INTEGRATION_SESSION_2025-01-15.md
+D:/VIbeCode/KMainCMS/docs/logs/Session Log - Bug Fixes and Setup - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Session Log - Dark Mode Implementation Gap Fixing - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/Session Log - Dark Mode Implementation Planning - 2026-06-20.md
+D:/VIbeCode/KMainCMS/docs/logs/Session Log - Dark Mode Phase 15 Planning - 2026-06-21.md
+D:/VIbeCode/KMainCMS/docs/logs/comprehensive_build_test_2026-06-24.md
+D:/VIbeCode/KMainCMS/docs/logs/controller_refactoring_analysis_2025-06-21.txt
+D:/VIbeCode/KMainCMS/docs/logs/department_controller_consolidation_recommendation.txt
+D:/VIbeCode/KMainCMS/docs/logs/naming_conventions_guide.txt
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_1.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_final_verification.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package05_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package06_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package07_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package08_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package16_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_01_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_02_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_03_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_08_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_11_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_12_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_15_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_package_23_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_phase1_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_phase4_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_phase5_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_refactor_tooling.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-22_routes_refactoring.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_frontend_shell_refactor.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_offline_first_android.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_offline_first_testing_qa.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_phase15_testing_qa.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_phase2_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_phase6_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_phase7_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_phase8_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_server_restart.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-23_startup_and_bugfixes.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-24_multi_phase_implementation.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-24_phase16_deployment_devops.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-24_phase17_documentation_training.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-24_phases_7_9_10_11_12.md
+D:/VIbeCode/KMainCMS/docs/logs/session_2026-06-24_project_completion.md
+D:/VIbeCode/KMainCMS/docs/logs/session_flesh_out_analytics.md
+D:/VIbeCode/KMainCMS/docs/logs/session_flesh_out_collections.md
+D:/VIbeCode/KMainCMS/docs/logs/session_flesh_out_payments.md
+D:/VIbeCode/KMainCMS/docs/logs/session_frontend_integration.md
+D:/VIbeCode/KMainCMS/docs/logs/session_frontend_integration_continued.md
+D:/VIbeCode/KMainCMS/docs/logs/sql_sanitization_audit.txt
+D:/VIbeCode/KMainCMS/docs/logs/testing_deployment_infrastructure_2026-06-24.md
+D:/VIbeCode/KMainCMS/docs/logs/testing_status_report_2026-06-24.md
+D:/VIbeCode/KMainCMS/docs/modular-architecture/01-module-overview.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/02-module-relationships.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/03-auth-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/04-telegram-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/05-content-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/06-departments-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/07-gallery-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/08-treasury-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/09-payments-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/10-sms-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/11-documents-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/12-approvals-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/13-notifications-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/14-settings-module.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/15-frontend-modules.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/16-version-control-procedures.csv
+D:/VIbeCode/KMainCMS/docs/modular-architecture/CHAT-LOG-2026-06-15.md
+D:/VIbeCode/KMainCMS/docs/modular-architecture/README.txt
+D:/VIbeCode/KMainCMS/docs/modular-architecture/SESSION-PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/ANDROID_APP_IMPLEMENTATION_TODO.md
+D:/VIbeCode/KMainCMS/docs/planning/DEPARTMENT_FEATURE_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/ERROR_HANDLING_AND_LOAD_BALANCING_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/FLUTTER_ROLE_DASHBOARDS_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/FLUTTER_WEB_PARITY.md
+D:/VIbeCode/KMainCMS/docs/planning/INTEGRATION_PLAN_REVIEW.md
+D:/VIbeCode/KMainCMS/docs/planning/KMAINCMS_GRANULATED_TODO_LIST.md
+D:/VIbeCode/KMainCMS/docs/planning/KMAINCMS_REMEDIATION_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/MIGRATION_INTEGRATION_STRATEGY.md
+D:/VIbeCode/KMainCMS/docs/planning/MISSING_FUNCTIONALITIES_IMPORT_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/MOBILE_APP_PARITY_REMEDIATION_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/MOBILE_APP_PARITY_REMEDIATION_PLAN_2026_09_22.md
+D:/VIbeCode/KMainCMS/docs/planning/MOBILE_READY_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/MODULE_INTEGRATION_STRATEGIES.md
+D:/VIbeCode/KMainCMS/docs/planning/NEXT_STEPS_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/planning/PHASE_2_IMPLEMENTATION_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/PUBLIC_GRADIENT_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/SAAS_DASHBOARD_IMPLEMENTATION_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/planning/SAAS_OWNER_DASHBOARD_IMPLEMENTATION_TODO.md
+D:/VIbeCode/KMainCMS/docs/planning/SAAS_OWNER_DASHBOARD_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/SMS_APP_INTEGRATION_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/SYSTEM_IMPROVEMENT_PLAN.md
+D:/VIbeCode/KMainCMS/docs/planning/TECHNICAL_SPECIFICATIONS.md
+D:/VIbeCode/KMainCMS/docs/planning/sms-integration-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/COMPLETE_QUERY_REPLACEMENT_LIST.md
+D:/VIbeCode/KMainCMS/docs/plans/FEATURE_IMPORT_PLAN.md
+D:/VIbeCode/KMainCMS/docs/plans/FUNCTIONALITY_VERIFICATION_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/IMPLEMENTATION_STATUS_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/KMainCMS_GRANULATED_MASTER_PLAN.md
+D:/VIbeCode/KMainCMS/docs/plans/KMainCMS_REMAINING_TASKS.md
+D:/VIbeCode/KMainCMS/docs/plans/KMainCMS_Unified_Master_Upgrade_Plan.md
+D:/VIbeCode/KMainCMS/docs/plans/KMainCMS_Upgrade_Plan_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/KMainCMS_Upgrade_TodoList_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/PARALLEL_REFACTORING_WORK_PACKAGES.md
+D:/VIbeCode/KMainCMS/docs/plans/PHASE4_REFACTORING_MANIFEST.json
+D:/VIbeCode/KMainCMS/docs/plans/POOL_QUERY_REFACTORING_LIST_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/QUERY_COUNT_VERIFICATION.md
+D:/VIbeCode/KMainCMS/docs/plans/QUERY_PACKAGES/PACKAGE_01.md
+D:/VIbeCode/KMainCMS/docs/plans/QUERY_PACKAGES/PACKAGE_02.md
+D:/VIbeCode/KMainCMS/docs/plans/QUERY_PACKAGES/PACKAGE_DISTRIBUTION.md
+D:/VIbeCode/KMainCMS/docs/plans/TODO_LIST_VERIFICATION_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/docs/plans/UNMAPPED_QUERIES.md
+D:/VIbeCode/KMainCMS/docs/plans/church-website-audit-plan-9bc58d.md
+D:/VIbeCode/KMainCMS/docs/plans/dead-code-verification.md
+D:/VIbeCode/KMainCMS/docs/plans/department-centric-redesign-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/implementation-todo.md
+D:/VIbeCode/KMainCMS/docs/plans/role-dashboards-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/sda-departments-seed-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/security-efficiency-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/ux-codebase-audit-plan.md
+D:/VIbeCode/KMainCMS/docs/plans/ux-codebase-fix-list.md
+D:/VIbeCode/KMainCMS/docs/plans/webapp-leanness-plan.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_01.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_02.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_03.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_04.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_05.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_06.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_07.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_08.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_09.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_10.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_11.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_12.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_13.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_14.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_15.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_16.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_17.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_18.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_19.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_20.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_21.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_22.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_23.md
+D:/VIbeCode/KMainCMS/docs/query_packages/PACKAGE_24.md
+D:/VIbeCode/KMainCMS/docs/query_refactoring_packages.md
+D:/VIbeCode/KMainCMS/docs/reports/2026-10-02_22-49_line-by-line-ledger.md
+D:/VIbeCode/KMainCMS/docs/reports/2026-10-03_05-56_open-issues.csv
+D:/VIbeCode/KMainCMS/docs/reports/BROKEN_LINKS_ROUTES_REPORT.md
+D:/VIbeCode/KMainCMS/docs/reports/CODEBASE_AUDIT_REPORT.md
+D:/VIbeCode/KMainCMS/docs/reports/IMPLEMENTATION_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/reports/IMPROVEMENT_RECOMMENDATIONS.md
+D:/VIbeCode/KMainCMS/docs/reports/IMPROVEMENT_RECOMMENDATIONS_REPORT.md
+D:/VIbeCode/KMainCMS/docs/reports/KMAINCMS_COMPREHENSIVE_TEST_GUIDE.md
+D:/VIbeCode/KMainCMS/docs/reports/KMAINCMS_SYSTEM_AUDIT_JUNE_2026.md
+D:/VIbeCode/KMainCMS/docs/reports/MODULARIZATION_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/reports/PROGRESS_TRACKING.md
+D:/VIbeCode/KMainCMS/docs/reports/TESTING_INFRASTRUCTURE.md
+D:/VIbeCode/KMainCMS/docs/reports/TREASURY_IMPLEMENTATION_SUMMARY.md
+D:/VIbeCode/KMainCMS/docs/reports/code-quality-audit.md
+D:/VIbeCode/KMainCMS/docs/reports/codebase-map.html
+D:/VIbeCode/KMainCMS/docs/reports/disbursement-report.pdf
+D:/VIbeCode/KMainCMS/docs/reports/employees-report.pdf
+D:/VIbeCode/KMainCMS/docs/reports/live-files.txt
+D:/VIbeCode/KMainCMS/docs/reports/security-assessment.md
+D:/VIbeCode/KMainCMS/docs/reports/users-report.pdf
+D:/VIbeCode/KMainCMS/docs/reports/ux-audit.md
+D:/VIbeCode/KMainCMS/docs/route-mounting-validation.md
+D:/VIbeCode/KMainCMS/docs/routes-and-db-calls.md
+D:/VIbeCode/KMainCMS/docs/specs/mpesa-sms-samples.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/2025-01-27-android-cms-integration.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/2025-01-27-cms-sms-integration.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/2026-07-27-worldclass-ui-redesign.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/android-connection-audit-report.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/android-role-based-dashboard-implementation.md
+D:/VIbeCode/KMainCMS/docs/superpowers/plans/cms-webapp-compatibility-analysis.md
+D:/VIbeCode/KMainCMS/fix-auth-imports.js
+D:/VIbeCode/KMainCMS/frontend/.dockerignore
+D:/VIbeCode/KMainCMS/frontend/.github/lighthouse-budget.json
+D:/VIbeCode/KMainCMS/frontend/.github/lighthouse-config.js
+D:/VIbeCode/KMainCMS/frontend/.github/lighthouserc.json
+D:/VIbeCode/KMainCMS/frontend/Dockerfile
+D:/VIbeCode/KMainCMS/frontend/PERFORMANCE_CONFIG.md
+D:/VIbeCode/KMainCMS/frontend/core/api/client.js
+D:/VIbeCode/KMainCMS/frontend/core/api/index.js
+D:/VIbeCode/KMainCMS/frontend/core/hooks/index.js
+D:/VIbeCode/KMainCMS/frontend/core/hooks/useApi.js
+D:/VIbeCode/KMainCMS/frontend/cypress.config.js
+D:/VIbeCode/KMainCMS/frontend/cypress/e2e/full-system-test.cy.js
+D:/VIbeCode/KMainCMS/frontend/e2e/basic-visual-test.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/color-palette-system.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/comprehensive-test.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/comprehensive-website-test.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/mobile-parity-member1-2026-09-22.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/mobile-parity-member1.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/user-workflows.spec.js
+D:/VIbeCode/KMainCMS/frontend/e2e/visual-test.spec.js
+D:/VIbeCode/KMainCMS/frontend/eslint.config.js
+D:/VIbeCode/KMainCMS/frontend/index.html
+D:/VIbeCode/KMainCMS/frontend/modules/announcements/api/announcementApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/auth/api/authApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/auth/hooks/useAuth.js
+D:/VIbeCode/KMainCMS/frontend/modules/dashboard/api/dashboardApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/departments/api/departmentApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/events/api/eventApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/gallery/api/galleryApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/payments/api/paymentApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/settings/api/settingsApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/sms/api/smsApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/treasury/api/treasuryApi.js
+D:/VIbeCode/KMainCMS/frontend/modules/treasury/hooks/useTreasury.js
+D:/VIbeCode/KMainCMS/frontend/modules/users/api/userApi.js
+D:/VIbeCode/KMainCMS/frontend/nginx.conf
+D:/VIbeCode/KMainCMS/frontend/package-lock.json
+D:/VIbeCode/KMainCMS/frontend/package.json
+D:/VIbeCode/KMainCMS/frontend/playwright.config.js
+D:/VIbeCode/KMainCMS/frontend/postcss.config.js
+D:/VIbeCode/KMainCMS/frontend/public/favicon.png
+D:/VIbeCode/KMainCMS/frontend/public/icon-192.png
+D:/VIbeCode/KMainCMS/frontend/public/icon-512.png
+D:/VIbeCode/KMainCMS/frontend/public/icon-maskable-192.png
+D:/VIbeCode/KMainCMS/frontend/public/icon-maskable-512.png
+D:/VIbeCode/KMainCMS/frontend/public/logo.png
+D:/VIbeCode/KMainCMS/frontend/public/manifest.json
+D:/VIbeCode/KMainCMS/frontend/public/sw.js
+D:/VIbeCode/KMainCMS/frontend/public/vite.svg
+D:/VIbeCode/KMainCMS/frontend/screenshots/basic/login-page.png
+D:/VIbeCode/KMainCMS/frontend/screenshots/basic/register-page.png
+D:/VIbeCode/KMainCMS/frontend/scripts/check-server.js
+D:/VIbeCode/KMainCMS/frontend/scripts/run-e2e.js
+D:/VIbeCode/KMainCMS/frontend/src/App-test.jsx
+D:/VIbeCode/KMainCMS/frontend/src/App.css
+D:/VIbeCode/KMainCMS/frontend/src/App.jsx
+D:/VIbeCode/KMainCMS/frontend/src/README.md
+D:/VIbeCode/KMainCMS/frontend/src/__tests__/README.md
+D:/VIbeCode/KMainCMS/frontend/src/__tests__/colorPalette.test.js
+D:/VIbeCode/KMainCMS/frontend/src/__tests__/comprehensive.test.js
+D:/VIbeCode/KMainCMS/frontend/src/__tests__/setup.js
+D:/VIbeCode/KMainCMS/frontend/src/components/ErrorBoundary.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/ProtectedRoute.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/accessibility/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/accessibility/SkipNavigation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/Breadcrumb.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/Card.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/EmptyState.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/GmailMessageList.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/Header.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/Loading.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/MobileBottomNav.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/MobileCard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/PageInfoPanel.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/PasswordConfirmationModal.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/PermissionButton.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/ProtectedComponent.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/common/Sidebar.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/StatsCard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/common/TabNavigation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/dashboard/ChurchQuickActions.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/dashboard/ChurchStatsCard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/dashboard/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/dashboard/SystemOrganismViz.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/dashboard/__tests__/comprehensive-accessibility.test.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/departments/ActivityFeed.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/departments/DepartmentCollections.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/departments/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/documentation/DocumentationManager.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/documentation/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/events/CollectionTracker.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/events/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/ApplePhotoGrid.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/GalleryNavigation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/PhotoGallery.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/PhotoLightbox.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/gallery/TelegramAuthModal.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/mobile/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/public/FeaturedAnnouncements.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/public/FeaturedPhotos.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/public/HeroSection.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/public/LiveStreamSection.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/public/MinistriesCarousel.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/public/ServiceTimes.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/seo/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/seo/SEOManager.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/NotificationSettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/PaletteSelector.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/PrivacySettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/README.md
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingBoolean.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingColor.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingInput.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingNumber.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingSelect.jsx
+D:/VIbeCode/KMainCMS/frontend/src/components/settings/SettingTextarea.jsx
+D:/VIbeCode/KMainCMS/frontend/src/config/README.md
+D:/VIbeCode/KMainCMS/frontend/src/config/churchColorPalette.js
+D:/VIbeCode/KMainCMS/frontend/src/config/colorPalettes.js
+D:/VIbeCode/KMainCMS/frontend/src/config/featureFlags.js
+D:/VIbeCode/KMainCMS/frontend/src/constants/README.md
+D:/VIbeCode/KMainCMS/frontend/src/constants/api.js
+D:/VIbeCode/KMainCMS/frontend/src/constants/permissions.js
+D:/VIbeCode/KMainCMS/frontend/src/constants/roles.js
+D:/VIbeCode/KMainCMS/frontend/src/constants/sdaDepartments.js
+D:/VIbeCode/KMainCMS/frontend/src/constants/validation.js
+D:/VIbeCode/KMainCMS/frontend/src/contexts/AuthContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/contexts/ColorPaletteContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/contexts/GalleryContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/contexts/MembersContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/contexts/README.md
+D:/VIbeCode/KMainCMS/frontend/src/contexts/SettingsContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/contexts/ToastContext.jsx
+D:/VIbeCode/KMainCMS/frontend/src/hooks/README.md
+D:/VIbeCode/KMainCMS/frontend/src/hooks/useActivityFeed.js
+D:/VIbeCode/KMainCMS/frontend/src/hooks/useChurchBranding.js
+D:/VIbeCode/KMainCMS/frontend/src/hooks/useDataFetch.js
+D:/VIbeCode/KMainCMS/frontend/src/hooks/useFeatureFlag.js
+D:/VIbeCode/KMainCMS/frontend/src/hooks/usePasswordConfirmation.js
+D:/VIbeCode/KMainCMS/frontend/src/hooks/usePermission.js
+D:/VIbeCode/KMainCMS/frontend/src/index.css
+D:/VIbeCode/KMainCMS/frontend/src/layouts/AuthLayout.jsx
+D:/VIbeCode/KMainCMS/frontend/src/layouts/DashboardLayout.jsx
+D:/VIbeCode/KMainCMS/frontend/src/layouts/PublicLayout.jsx
+D:/VIbeCode/KMainCMS/frontend/src/layouts/README.md
+D:/VIbeCode/KMainCMS/frontend/src/main.jsx
+D:/VIbeCode/KMainCMS/frontend/src/modules/sms/pages/Contacts.jsx
+D:/VIbeCode/KMainCMS/frontend/src/modules/sms/pages/Dashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/modules/sms/pages/Groups.jsx
+D:/VIbeCode/KMainCMS/frontend/src/modules/sms/pages/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/PhotoGalleryPage.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/accessibility/Accessibility.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/accessibility/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/admin/AdminDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/admin/AdminDatabase.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/admin/Documents.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/admin/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/admin/SiteSettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/analytics/Analytics.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/analytics/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/announcements/Announcements.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/announcements/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/approvals/ApprovalInbox.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/approvals/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/auth/ForgotPassword.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/auth/Login.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/auth/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/auth/Register.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/collections/MyCollections.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/collections/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/content/Content.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/content/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/CollectorDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/Dashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/DepartmentHeadDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/MemberDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/PastorDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/SuperAdminDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/dashboard/TreasurerDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/CategoryManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentActivity.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentHandover.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentHeadAllocation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentOverview.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentSettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/DepartmentsList.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/MyDepartments.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/components/ComponentAllocation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/components/DepartmentBranding.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/components/PermissionManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/departments/components/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/documentation/Documentation.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/documentation/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/events/Events.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/events/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/gallery/GalleryManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/gallery/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/members/MemberDirectory.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/members/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/mobile/Mobile.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/mobile/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/monitoring/Monitoring.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/monitoring/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/notifications/NotificationDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/notifications/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/obligations/MyObligations.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/obligations/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/payments/MyPayments.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/payments/PaymentHistory.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/payments/PaymentManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/payments/Payments.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/payments/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/PlatformDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/PlatformLogin.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/tenants/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/tenants/TenantCreate.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/tenants/TenantDetail.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/tenants/TenantList.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/platform/tenants/TenantSettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/profile/Profile.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/profile/ProfileManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/profile/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/Announcements.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/DownloadsPage.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/Privacy.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/PublicAnnouncementDetail.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/PublicHome.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/public/Terms.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/reports/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/reports/Reports.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/security/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/security/Security.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/seo/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/seo/SEO.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/telegram/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/telegram/TelegramAuth.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/telegram/TelegramChurchSettings.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/testing/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/testing/Testing.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/BankReconciliations.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Budgets.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/ChartOfAccounts.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Contributions.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Expenses.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/FinancialReports.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/FixedAssets.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Funds.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/JournalEntries.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Pledges.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Projects.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Receipts.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/RecurringPayments.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/TreasuryAnalytics.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/TreasuryDashboard.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/treasury/Vendors.jsx
+D:/VIbeCode/KMainCMS/frontend/src/pages/users/README.md
+D:/VIbeCode/KMainCMS/frontend/src/pages/users/UserManagement.jsx
+D:/VIbeCode/KMainCMS/frontend/src/router.jsx
+D:/VIbeCode/KMainCMS/frontend/src/router/README.md
+D:/VIbeCode/KMainCMS/frontend/src/router/dashboard.routes.jsx
+D:/VIbeCode/KMainCMS/frontend/src/router/public.routes.jsx
+D:/VIbeCode/KMainCMS/frontend/src/shells/AuthShell.jsx
+D:/VIbeCode/KMainCMS/frontend/src/shells/DashboardShell.jsx
+D:/VIbeCode/KMainCMS/frontend/src/shells/PlatformShell.jsx
+D:/VIbeCode/KMainCMS/frontend/src/shells/PublicShell.jsx
+D:/VIbeCode/KMainCMS/frontend/src/shells/README.md
+D:/VIbeCode/KMainCMS/frontend/src/sms/README.md
+D:/VIbeCode/KMainCMS/frontend/src/sms/SMS.jsx
+D:/VIbeCode/KMainCMS/frontend/src/styles/README.md
+D:/VIbeCode/KMainCMS/frontend/src/styles/dashboard.css
+D:/VIbeCode/KMainCMS/frontend/src/utils/README.md
+D:/VIbeCode/KMainCMS/frontend/src/utils/cache.js
+D:/VIbeCode/KMainCMS/frontend/src/utils/dateGrouping.js
+D:/VIbeCode/KMainCMS/frontend/src/utils/format.js
+D:/VIbeCode/KMainCMS/frontend/start-dev.js
+D:/VIbeCode/KMainCMS/frontend/sweep.cjs
+D:/VIbeCode/KMainCMS/frontend/tailwind.config.js
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/.last-run.json
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-085a7-y-Departments-Module-Parity-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-085a7-y-Departments-Module-Parity-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-30667-mote-Direct-Connection-Test-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-30667-mote-Direct-Connection-Test-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-618f3-ication-Session-Restoration-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-618f3-ication-Session-Restoration-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-6bc0d-l-Overview-vs-Privacy-Audit-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-6bc0d-l-Overview-vs-Privacy-Audit-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-8b7b5-Announcements-Module-Parity-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-8b7b5-Announcements-Module-Parity-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-9d2a2-Giving-Payments-Flow-Parity-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-9d2a2-Giving-Payments-Flow-Parity-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-c47e3-alendar-Registration-Parity-chromium/error-context.md
+D:/VIbeCode/KMainCMS/frontend/test-results-parity/mobile-parity-member1-2026-c47e3-alendar-Registration-Parity-mobile-chrome/error-context.md
+D:/VIbeCode/KMainCMS/frontend/vercel.json
+D:/VIbeCode/KMainCMS/frontend/verify.cjs
+D:/VIbeCode/KMainCMS/frontend/visual-test.html
+D:/VIbeCode/KMainCMS/frontend/vite-plugin-server-status.js
+D:/VIbeCode/KMainCMS/frontend/vite.config.js
+D:/VIbeCode/KMainCMS/frontend/vitest.config.js
+D:/VIbeCode/KMainCMS/insert_admin.py
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/.flutter-plugins
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/.github/workflows/flutter-ci.yml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/.metadata
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ANDROID_STUDIO_INSTRUCTIONS.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/GAP_ANALYSIS_AND_FIXES.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/PHASE_2_COMPLETION_SUMMARY.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/PHASE_3_COMPLETION_SUMMARY.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/PHASE_4_COMPLETION_SUMMARY.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/PHASE_5_COMPLETION_SUMMARY.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/TESTING_GUIDE.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/analysis_options.yaml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/analyze.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/analyze2.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/ACCESSIBILITY_GUIDE.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/ANDROID_SETTINGS_VALIDATION.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/APP_IDENTITY_GUIDE.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/FIREBASE_SETUP.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/PERMISSIONS_CLEANUP.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/PHASE_1_COMPLETION_SUMMARY.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/SIGNING_GUIDE.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/build.gradle.kts
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/proguard-rules.pro
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/debug/AndroidManifest.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/AndroidManifest.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/kotlin/com/sdachurch/sda_church_mobile/MainActivity.kt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-hdpi/ic_launcher_foreground.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-mdpi/ic_launcher_foreground.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-v21/launch_background.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xhdpi/ic_launcher_foreground.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xxhdpi/ic_launcher_foreground.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/drawable/launch_background.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/values-night/styles.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/values/colors.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/main/res/values/styles.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/profile/AndroidManifest.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/app/src/release/AndroidManifest.xml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/build.gradle.kts
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/google-services.json.example
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/gradle.properties
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/gradle/wrapper/gradle-wrapper.properties
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/android/settings.gradle.kts
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/assets/animations/.gitkeep
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/assets/images/.gitkeep
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/assets/images/app_icon.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/docs/cms-integration.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/integration_test/app_test.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Flutter/AppFrameworkInfo.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Flutter/Debug.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Flutter/Release.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.pbxproj
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/contents.xcworkspacedata
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/contents.xcworkspacedata
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/AppDelegate.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Base.lproj/LaunchScreen.storyboard
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Base.lproj/Main.storyboard
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Info.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/Runner-Bridging-Header.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/Runner/SceneDelegate.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/ios/RunnerTests/RunnerTests.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/app/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/app/app.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/app/router.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/app/theme.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/main.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/models/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/announcements_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/approvals_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/collect_payments_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/dashboard_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/department_detail_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/departments_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/dept_collections_tab.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/dept_leadership_tab.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/documents_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/events_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/forgot_password_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/gallery_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/handovers_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/login_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/members_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/my_obligations_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/notifications_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/payments_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/profile_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/screens/server_url_screen.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/api_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/auth_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/biometric_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/config.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/media_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/network_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/pull_sync_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/sms_recon_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/services/update_service.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/utils/phone_utils.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/README.md
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/custom_text_field.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/loading_button.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/main_shell.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/online_requirement_dialog.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/payment_method_card.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/lib/widgets/update_dialog.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/flutter/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/flutter/generated_plugin_registrant.cc
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/flutter/generated_plugin_registrant.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/flutter/generated_plugins.cmake
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/runner/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/runner/main.cc
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/runner/my_application.cc
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/linux/runner/my_application.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Flutter/Flutter-Debug.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Flutter/Flutter-Release.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Flutter/GeneratedPluginRegistrant.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/project.pbxproj
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner.xcworkspace/contents.xcworkspacedata
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/AppDelegate.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Base.lproj/MainMenu.xib
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Configs/AppInfo.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Configs/Debug.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Configs/Release.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Configs/Warnings.xcconfig
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/DebugProfile.entitlements
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Info.plist
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/MainFlutterWindow.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/Runner/Release.entitlements
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/macos/RunnerTests/RunnerTests.swift
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/pubspec.lock
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/pubspec.yaml
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/test/widget_test.dart
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/favicon.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/icons/Icon-192.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/icons/Icon-512.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/icons/Icon-maskable-192.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/icons/Icon-maskable-512.png
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/index.html
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/web/manifest.json
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/.gitignore
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/flutter/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/flutter/generated_plugin_registrant.cc
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/flutter/generated_plugin_registrant.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/flutter/generated_plugins.cmake
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/CMakeLists.txt
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/Runner.rc
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/flutter_window.cpp
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/flutter_window.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/main.cpp
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/resource.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/resources/app_icon.ico
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/runner.exe.manifest
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/utils.cpp
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/utils.h
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/win32_window.cpp
+D:/VIbeCode/KMainCMS/mobile/flutter/flutter-mobile/windows/runner/win32_window.h
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/assert/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/async_hooks/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/buffer/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/child_process/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/cluster/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/console/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/constants/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/crypto/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/dgram/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/diagnostics_channel/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/dns/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/domain/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/events/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/fs/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/fs/promises/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/http/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/http2/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/https/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/inspector/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/module/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/externals/net/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/polyfill.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.expo/metro/polyfill.native.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/.nvmrc
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/App.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/OFFLINE_FIRST_README.md
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/README.md
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/__mocks__/@react-native-community/netinfo.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/__mocks__/expo-sqlite.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/app.json
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/babel.config.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/generate-qr.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/index.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/metro.config.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/package-lock.json
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/package.json
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/components/EmptyState.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/components/ErrorBoundary.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/components/OfflineIndicator.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/components/SkeletonLoader.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/AnnouncementsScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/DashboardScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/EventsScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/ForgotPasswordScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/LoginScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/MembersScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/PaymentsScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/ProfileScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/RegisterScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/screens/ResetPasswordScreen.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/__tests__/offlineService.test.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/api.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/localDatabase.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/networkService.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/offlineQueueService.js
+D:/VIbeCode/KMainCMS/mobile/react-native/mobile-app/src/services/syncService.js
+D:/VIbeCode/KMainCMS/nginx/nginx.conf
+D:/VIbeCode/KMainCMS/nginx/ssl/README.md
+D:/VIbeCode/KMainCMS/package-lock.json
+D:/VIbeCode/KMainCMS/package.json
+D:/VIbeCode/KMainCMS/plans/COMPLETE_QUERY_REPLACEMENT_LIST.md
+D:/VIbeCode/KMainCMS/plans/FEATURE_IMPORT_PLAN.md
+D:/VIbeCode/KMainCMS/plans/FUNCTIONALITY_VERIFICATION_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/IMPLEMENTATION_STATUS_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/KMainCMS_GRANULATED_MASTER_PLAN.md
+D:/VIbeCode/KMainCMS/plans/KMainCMS_REMAINING_TASKS.md
+D:/VIbeCode/KMainCMS/plans/KMainCMS_Unified_Master_Upgrade_Plan.md
+D:/VIbeCode/KMainCMS/plans/KMainCMS_Upgrade_Plan_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/KMainCMS_Upgrade_TodoList_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/PARALLEL_REFACTORING_WORK_PACKAGES.md
+D:/VIbeCode/KMainCMS/plans/PHASE4_REFACTORING_MANIFEST.json
+D:/VIbeCode/KMainCMS/plans/POOL_QUERY_REFACTORING_LIST_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/QUERY_COUNT_VERIFICATION.md
+D:/VIbeCode/KMainCMS/plans/QUERY_PACKAGES/PACKAGE_01.md
+D:/VIbeCode/KMainCMS/plans/QUERY_PACKAGES/PACKAGE_02.md
+D:/VIbeCode/KMainCMS/plans/QUERY_PACKAGES/PACKAGE_DISTRIBUTION.md
+D:/VIbeCode/KMainCMS/plans/TODO_LIST_VERIFICATION_REPORT_2026-06-22.md
+D:/VIbeCode/KMainCMS/plans/UNMAPPED_QUERIES.md
+D:/VIbeCode/KMainCMS/plans/church-website-audit-plan-9bc58d.md
+D:/VIbeCode/KMainCMS/refactor_cleaner.py
+D:/VIbeCode/KMainCMS/refactor_runner.py
+D:/VIbeCode/KMainCMS/refactor_verifier.py
+D:/VIbeCode/KMainCMS/run-migrations.bat
+D:/VIbeCode/KMainCMS/run-migrations.js
+D:/VIbeCode/KMainCMS/run-tests.bat
+D:/VIbeCode/KMainCMS/run-tests.js
+D:/VIbeCode/KMainCMS/scripts-dev/dead-files.txt
+D:/VIbeCode/KMainCMS/scripts-dev/delete-dead-files.ps1
+D:/VIbeCode/KMainCMS/scripts-dev/find-dead-files.js
+D:/VIbeCode/KMainCMS/scripts-dev/verify-dead-resolve.js
+D:/VIbeCode/KMainCMS/scripts-dev/verify-dead.js
+D:/VIbeCode/KMainCMS/scripts/README.md
+D:/VIbeCode/KMainCMS/scripts/add-audit-headers.js
+D:/VIbeCode/KMainCMS/scripts/backup-database.sh
+D:/VIbeCode/KMainCMS/scripts/backup-files.sh
+D:/VIbeCode/KMainCMS/scripts/build-release-apk.js
+D:/VIbeCode/KMainCMS/scripts/generate-folder-readmes.js
+D:/VIbeCode/KMainCMS/scripts/rebrand-kmaincms.js
+D:/VIbeCode/KMainCMS/scripts/restore-database.sh
+D:/VIbeCode/KMainCMS/scripts/setup-backup-cron.sh
+D:/VIbeCode/KMainCMS/scripts/setup-production.sh
+D:/VIbeCode/KMainCMS/scripts/setup-ssl.sh
+D:/VIbeCode/KMainCMS/scripts/test-infra.js
+D:/VIbeCode/KMainCMS/scripts/validate-audit-map.py
+D:/VIbeCode/KMainCMS/scripts/verify-backups.sh
+D:/VIbeCode/KMainCMS/services/api-gateway/package.json
+D:/VIbeCode/KMainCMS/services/api-gateway/server.js
+D:/VIbeCode/KMainCMS/setup-microservices.js
+D:/VIbeCode/KMainCMS/shared/constants.js
+D:/VIbeCode/KMainCMS/shared/validators.js
+D:/VIbeCode/KMainCMS/test_admin_login.py
+D:/VIbeCode/KMainCMS/test_admin_login_fixed.py
+D:/VIbeCode/KMainCMS/test_login.py
+D:/VIbeCode/KMainCMS/todo-lists/UX_IMPROVEMENT_TODO.md
+D:/VIbeCode/KMainCMS/todo-lists/automated_executor.py
+D:/VIbeCode/KMainCMS/todo-lists/batch_processor.py
+D:/VIbeCode/KMainCMS/todo-lists/current_batch_prompt.txt
+D:/VIbeCode/KMainCMS/todo-lists/generate_prompts.py
+D:/VIbeCode/KMainCMS/todo-lists/generated_prompts.txt
+D:/VIbeCode/KMainCMS/todo-lists/sequential_processor.py
+D:/VIbeCode/KMainCMS/todo-lists/smart_batch_processor.py
+D:/VIbeCode/KMainCMS/todo-lists/todo_executor.py
+D:/VIbeCode/KMainCMS/todo-lists/todo_executor_enhanced.py
+D:/VIbeCode/KMainCMS/tools/examples/Approval_Request.md
+D:/VIbeCode/KMainCMS/tools/examples/Refactor_Log.md
+D:/VIbeCode/KMainCMS/tools/examples/Refactor_Plan.json
+D:/VIbeCode/KMainCMS/tools/examples/Refactor_Report.json
+D:/VIbeCode/KMainCMS/tools/manifest_schema.json
+D:/VIbeCode/KMainCMS/tools/mapping_parser.py
+D:/VIbeCode/KMainCMS/tools/refactor_config.yaml
+D:/VIbeCode/KMainCMS/tools/refactor_runner.py

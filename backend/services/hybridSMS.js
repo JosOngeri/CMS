@@ -1,7 +1,6 @@
 const apiHub = require('./apiHub');
-const { pool } = require('../config/database');
 const logger = require('../config/logging');
-const { decrypt } = require('../utils/secretBox');
+const smsProviderRepo = require('../repositories/SMSProviderRepository');
 
 /**
  * Hybrid SMS Service (Phase 9)
@@ -26,25 +25,19 @@ class HybridSMS {
    */
   async loadProviders() {
     try {
-      const result = await pool.query(`
-        SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active
-        FROM sms_providers
-        WHERE is_active = true
-        ORDER BY priority ASC
-      `);
+      // L780: repository decrypts enc:v1: api_keys at rest before returning rows
+      const providers = await smsProviderRepo.getActiveProviders();
 
-      for (const provider of result.rows) {
-        // L780: api_key may be enc:v1:-encrypted at rest — decrypt before use
-        provider.api_key = decrypt(provider.api_key);
+      for (const provider of providers) {
         this.registerProvider(provider);
       }
 
       // Set default provider (first active one)
-      if (result.rows.length > 0) {
-        this.defaultProvider = result.rows[0].name;
+      if (providers.length > 0) {
+        this.defaultProvider = providers[0].name;
       }
 
-      logger.info(`Loaded ${result.rows.length} SMS providers`);
+      logger.info(`Loaded ${providers.length} SMS providers`);
     } catch (error) {
       // Don't crash if table doesn't exist yet
       if (error.code === '42P01') { // relation does not exist
@@ -196,10 +189,7 @@ class HybridSMS {
    */
   async updateProviderBalance(providerId, balance) {
     try {
-      await pool.query(
-        'UPDATE sms_providers SET balance = $1 WHERE id = $2',
-        [balance, providerId]
-      );
+      await smsProviderRepo.updateBalance(providerId, balance);
     } catch (error) {
       logger.error('Failed to update provider balance:', error);
     }
@@ -234,11 +224,8 @@ class HybridSMS {
    */
   async getProviderBalance(providerId) {
     try {
-      const result = await pool.query(
-        'SELECT balance FROM sms_providers WHERE id = $1',
-        [providerId]
-      );
-      return result.rows[0]?.balance || 0;
+      const provider = await smsProviderRepo.findById(providerId);
+      return provider?.balance || 0;
     } catch (error) {
       logger.error('Failed to get provider balance:', error);
       return 0;

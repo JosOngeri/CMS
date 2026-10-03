@@ -5,7 +5,7 @@ Express middleware: auth, tenancy, CSRF, rate limits, validation, response envel
 |---|---|
 | `auth.js` | Church-user auth: Bearer/cookie JWT verification via IdentityService (5-min LRU identity cache), plus role/permission guards. |
 | `churchContext.js` | (DORMANT — commented out in app.js) Sets Postgres session vars for row-level security per request. |
-| `csrf.js` | CSRF middleware — SECURITY THEATER: any 64-char string passes; tokens are never bound to a session. |
+| `csrf.js` | CSRF middleware — session-bound double-submit token. |
 | `errorHandler.js` | Global Express error handler — maps PG/JWT error codes to statuses, scrubs schema details in prod; also notFoundHandler + asyncHandler. |
 | `identityGuard.js` | Alternative auth middleware adding is_active + MFA checks — mounted only by routes/departmentFeatures.routes.js. |
 | `pagination.js` | Pagination middleware + helpers — clamps page/limit/offset into req.query and req.pagination. |

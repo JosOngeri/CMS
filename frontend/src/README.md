@@ -7,7 +7,7 @@ React app root — providers, shells, router; feature code lives in the subfolde
 | `App.css` | — |
 | `App.jsx` | — |
 | `index.css` | — |
-| `main.jsx` | ── Server Connection Status Display ───────────────────────────────────────── |
+| `main.jsx` | ── Server Connection Status Display (dev only — never blocks render) ──────── |
 | `router.jsx` | App router with three clear boundaries: |
 
 ## Subfolders

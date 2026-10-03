@@ -1,0 +1,2469 @@
+path,area,status,loc,bytes,imported_by
+.env.example,,doc,17,642,0
+.gitignore,,doc,134,1887,0
+.windsurfrules,,doc,139,7370,0
+all-codebase-files.csv,,doc,2416,174449,0
+assets/icons/Icons and Logos/1 Yellow green LOgo.png,,doc,713,174521,0
+assets/icons/Icons and Logos/adventist-en--black.pdf,,doc,92,6526,0
+assets/icons/Icons and Logos/adventist-en--black.png,,doc,230,74906,0
+assets/icons/Icons and Logos/adventist-en--black.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--bluejay.pdf,,doc,96,6537,0
+assets/icons/Icons and Logos/adventist-en--bluejay.png,,doc,397,113897,0
+assets/icons/Icons and Logos/adventist-en--bluejay.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--campfire.pdf,,doc,94,6536,0
+assets/icons/Icons and Logos/adventist-en--campfire.png,,doc,409,105125,0
+assets/icons/Icons and Logos/adventist-en--campfire.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--cave.pdf,,doc,88,6535,0
+assets/icons/Icons and Logos/adventist-en--cave.png,,doc,393,114470,0
+assets/icons/Icons and Logos/adventist-en--cave.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--denim.pdf,,doc,89,6538,0
+assets/icons/Icons and Logos/adventist-en--denim.png,,doc,364,113478,0
+assets/icons/Icons and Logos/adventist-en--denim.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--earth.pdf,,doc,87,6537,0
+assets/icons/Icons and Logos/adventist-en--earth.png,,doc,385,114123,0
+assets/icons/Icons and Logos/adventist-en--earth.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--emperor.pdf,,doc,88,6535,0
+assets/icons/Icons and Logos/adventist-en--emperor.png,,doc,368,114376,0
+assets/icons/Icons and Logos/adventist-en--emperor.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--forest.pdf,,doc,83,6535,0
+assets/icons/Icons and Logos/adventist-en--forest.png,,doc,386,113487,0
+assets/icons/Icons and Logos/adventist-en--forest.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--grapevine.pdf,,doc,91,6536,0
+assets/icons/Icons and Logos/adventist-en--grapevine.png,,doc,391,114450,0
+assets/icons/Icons and Logos/adventist-en--grapevine.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--iris.pdf,,doc,89,6536,0
+assets/icons/Icons and Logos/adventist-en--iris.png,,doc,399,108353,0
+assets/icons/Icons and Logos/adventist-en--iris.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--lily.pdf,,doc,91,6537,0
+assets/icons/Icons and Logos/adventist-en--lily.png,,doc,401,114318,0
+assets/icons/Icons and Logos/adventist-en--lily.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--ming.pdf,,doc,88,6532,0
+assets/icons/Icons and Logos/adventist-en--ming.png,,doc,322,104211,0
+assets/icons/Icons and Logos/adventist-en--ming.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--night.pdf,,doc,87,6530,0
+assets/icons/Icons and Logos/adventist-en--night.png,,doc,285,110399,0
+assets/icons/Icons and Logos/adventist-en--night.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--scarlett.pdf,,doc,100,6541,0
+assets/icons/Icons and Logos/adventist-en--scarlett.png,,doc,376,109119,0
+assets/icons/Icons and Logos/adventist-en--scarlett.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--treefrog.pdf,,doc,95,6535,0
+assets/icons/Icons and Logos/adventist-en--treefrog.png,,doc,330,104088,0
+assets/icons/Icons and Logos/adventist-en--treefrog.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--velvet.pdf,,doc,89,6536,0
+assets/icons/Icons and Logos/adventist-en--velvet.png,,doc,388,113768,0
+assets/icons/Icons and Logos/adventist-en--velvet.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--white.pdf,,doc,85,6526,0
+assets/icons/Icons and Logos/adventist-en--white.png,,doc,213,84898,0
+assets/icons/Icons and Logos/adventist-en--white.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en--winter.pdf,,doc,87,6530,0
+assets/icons/Icons and Logos/adventist-en--winter.png,,doc,313,109765,0
+assets/icons/Icons and Logos/adventist-en--winter.svg,,doc,12,10166,0
+assets/icons/Icons and Logos/adventist-en-centered--black.pdf,,doc,87,6641,0
+assets/icons/Icons and Logos/adventist-en-centered--black.png,,doc,218,74586,0
+assets/icons/Icons and Logos/adventist-en-centered--black.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--bluejay.pdf,,doc,89,6653,0
+assets/icons/Icons and Logos/adventist-en-centered--bluejay.png,,doc,357,114873,0
+assets/icons/Icons and Logos/adventist-en-centered--bluejay.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--campfire.pdf,,doc,91,6651,0
+assets/icons/Icons and Logos/adventist-en-centered--campfire.png,,doc,373,105853,0
+assets/icons/Icons and Logos/adventist-en-centered--campfire.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--cave.pdf,,doc,102,6651,0
+assets/icons/Icons and Logos/adventist-en-centered--cave.png,,doc,349,115494,0
+assets/icons/Icons and Logos/adventist-en-centered--cave.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--denim.pdf,,doc,89,6654,0
+assets/icons/Icons and Logos/adventist-en-centered--denim.png,,doc,347,114752,0
+assets/icons/Icons and Logos/adventist-en-centered--denim.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--earth.pdf,,doc,93,6655,0
+assets/icons/Icons and Logos/adventist-en-centered--earth.png,,doc,360,115132,0
+assets/icons/Icons and Logos/adventist-en-centered--earth.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--emperor.pdf,,doc,90,6652,0
+assets/icons/Icons and Logos/adventist-en-centered--emperor.png,,doc,375,115535,0
+assets/icons/Icons and Logos/adventist-en-centered--emperor.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--forest.pdf,,doc,88,6650,0
+assets/icons/Icons and Logos/adventist-en-centered--forest.png,,doc,380,114831,0
+assets/icons/Icons and Logos/adventist-en-centered--forest.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--grapevine.pdf,,doc,92,6653,0
+assets/icons/Icons and Logos/adventist-en-centered--grapevine.png,,doc,395,115680,0
+assets/icons/Icons and Logos/adventist-en-centered--grapevine.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--iris.pdf,,doc,87,6652,0
+assets/icons/Icons and Logos/adventist-en-centered--iris.png,,doc,363,109838,0
+assets/icons/Icons and Logos/adventist-en-centered--iris.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--lily.pdf,,doc,92,6653,0
+assets/icons/Icons and Logos/adventist-en-centered--lily.png,,doc,423,115412,0
+assets/icons/Icons and Logos/adventist-en-centered--lily.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--ming.pdf,,doc,94,6651,0
+assets/icons/Icons and Logos/adventist-en-centered--ming.png,,doc,332,105410,0
+assets/icons/Icons and Logos/adventist-en-centered--ming.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--night.pdf,,doc,89,6646,0
+assets/icons/Icons and Logos/adventist-en-centered--night.png,,doc,350,111413,0
+assets/icons/Icons and Logos/adventist-en-centered--night.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--scarlett.pdf,,doc,93,6654,0
+assets/icons/Icons and Logos/adventist-en-centered--scarlett.png,,doc,356,110713,0
+assets/icons/Icons and Logos/adventist-en-centered--scarlett.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--treefrog.pdf,,doc,89,6649,0
+assets/icons/Icons and Logos/adventist-en-centered--treefrog.png,,doc,353,104819,0
+assets/icons/Icons and Logos/adventist-en-centered--treefrog.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--velvet.pdf,,doc,101,6653,0
+assets/icons/Icons and Logos/adventist-en-centered--velvet.png,,doc,349,115129,0
+assets/icons/Icons and Logos/adventist-en-centered--velvet.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--white.pdf,,doc,92,6641,0
+assets/icons/Icons and Logos/adventist-en-centered--white.png,,doc,190,86403,0
+assets/icons/Icons and Logos/adventist-en-centered--white.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-centered--winter.pdf,,doc,101,6646,0
+assets/icons/Icons and Logos/adventist-en-centered--winter.png,,doc,347,110910,0
+assets/icons/Icons and Logos/adventist-en-centered--winter.svg,,doc,12,10187,0
+assets/icons/Icons and Logos/adventist-en-text--black.pdf,,doc,82,5024,0
+assets/icons/Icons and Logos/adventist-en-text--black.png,,doc,166,51019,0
+assets/icons/Icons and Logos/adventist-en-text--black.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--bluejay.pdf,,doc,85,5036,0
+assets/icons/Icons and Logos/adventist-en-text--bluejay.png,,doc,248,77109,0
+assets/icons/Icons and Logos/adventist-en-text--bluejay.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--campfire.pdf,,doc,83,5033,0
+assets/icons/Icons and Logos/adventist-en-text--campfire.png,,doc,229,70492,0
+assets/icons/Icons and Logos/adventist-en-text--campfire.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--cave.pdf,,doc,81,5037,0
+assets/icons/Icons and Logos/adventist-en-text--cave.png,,doc,252,77315,0
+assets/icons/Icons and Logos/adventist-en-text--cave.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--denim.pdf,,doc,85,5037,0
+assets/icons/Icons and Logos/adventist-en-text--denim.png,,doc,203,77104,0
+assets/icons/Icons and Logos/adventist-en-text--denim.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--earth.pdf,,doc,86,5039,0
+assets/icons/Icons and Logos/adventist-en-text--earth.png,,doc,247,77169,0
+assets/icons/Icons and Logos/adventist-en-text--earth.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--emperor.pdf,,doc,82,5036,0
+assets/icons/Icons and Logos/adventist-en-text--emperor.png,,doc,244,77418,0
+assets/icons/Icons and Logos/adventist-en-text--emperor.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--forest.pdf,,doc,80,5035,0
+assets/icons/Icons and Logos/adventist-en-text--forest.png,,doc,239,76820,0
+assets/icons/Icons and Logos/adventist-en-text--forest.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--grapevine.pdf,,doc,84,5037,0
+assets/icons/Icons and Logos/adventist-en-text--grapevine.png,,doc,248,77481,0
+assets/icons/Icons and Logos/adventist-en-text--grapevine.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--iris.pdf,,doc,86,5038,0
+assets/icons/Icons and Logos/adventist-en-text--iris.png,,doc,235,73525,0
+assets/icons/Icons and Logos/adventist-en-text--iris.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--lily.pdf,,doc,81,5039,0
+assets/icons/Icons and Logos/adventist-en-text--lily.png,,doc,291,77611,0
+assets/icons/Icons and Logos/adventist-en-text--lily.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--ming.pdf,,doc,83,5035,0
+assets/icons/Icons and Logos/adventist-en-text--ming.png,,doc,205,70543,0
+assets/icons/Icons and Logos/adventist-en-text--ming.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--night.pdf,,doc,87,5029,0
+assets/icons/Icons and Logos/adventist-en-text--night.png,,doc,179,74499,0
+assets/icons/Icons and Logos/adventist-en-text--night.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--scarlett.pdf,,doc,84,5039,0
+assets/icons/Icons and Logos/adventist-en-text--scarlett.png,,doc,200,73936,0
+assets/icons/Icons and Logos/adventist-en-text--scarlett.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--treefrog.pdf,,doc,85,5033,0
+assets/icons/Icons and Logos/adventist-en-text--treefrog.png,,doc,206,70215,0
+assets/icons/Icons and Logos/adventist-en-text--treefrog.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--velvet.pdf,,doc,79,5037,0
+assets/icons/Icons and Logos/adventist-en-text--velvet.png,,doc,235,77006,0
+assets/icons/Icons and Logos/adventist-en-text--velvet.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--white.pdf,,doc,82,5024,0
+assets/icons/Icons and Logos/adventist-en-text--white.png,,doc,153,57057,0
+assets/icons/Icons and Logos/adventist-en-text--white.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-text--winter.pdf,,doc,91,5029,0
+assets/icons/Icons and Logos/adventist-en-text--winter.png,,doc,234,74268,0
+assets/icons/Icons and Logos/adventist-en-text--winter.svg,,doc,9,7490,0
+assets/icons/Icons and Logos/adventist-en-tm--black.pdf,,doc,91,6272,0
+assets/icons/Icons and Logos/adventist-en-tm--black.png,,doc,232,73800,0
+assets/icons/Icons and Logos/adventist-en-tm--black.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--bluejay.pdf,,doc,96,6286,0
+assets/icons/Icons and Logos/adventist-en-tm--bluejay.png,,doc,409,112034,0
+assets/icons/Icons and Logos/adventist-en-tm--bluejay.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--campfire.pdf,,doc,92,6281,0
+assets/icons/Icons and Logos/adventist-en-tm--campfire.png,,doc,383,103455,0
+assets/icons/Icons and Logos/adventist-en-tm--campfire.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--cave.pdf,,doc,97,6282,0
+assets/icons/Icons and Logos/adventist-en-tm--cave.png,,doc,439,112338,0
+assets/icons/Icons and Logos/adventist-en-tm--cave.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--denim.pdf,,doc,90,6285,0
+assets/icons/Icons and Logos/adventist-en-tm--denim.png,,doc,410,111425,0
+assets/icons/Icons and Logos/adventist-en-tm--denim.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--earth.pdf,,doc,83,6283,0
+assets/icons/Icons and Logos/adventist-en-tm--earth.png,,doc,415,112199,0
+assets/icons/Icons and Logos/adventist-en-tm--earth.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--emperor.pdf,,doc,92,6282,0
+assets/icons/Icons and Logos/adventist-en-tm--emperor.png,,doc,427,112244,0
+assets/icons/Icons and Logos/adventist-en-tm--emperor.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--forest.pdf,,doc,89,6283,0
+assets/icons/Icons and Logos/adventist-en-tm--forest.png,,doc,452,111685,0
+assets/icons/Icons and Logos/adventist-en-tm--forest.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--grapevine.pdf,,doc,84,6283,0
+assets/icons/Icons and Logos/adventist-en-tm--grapevine.png,,doc,387,112438,0
+assets/icons/Icons and Logos/adventist-en-tm--grapevine.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--iris.pdf,,doc,90,6285,0
+assets/icons/Icons and Logos/adventist-en-tm--iris.png,,doc,390,106968,0
+assets/icons/Icons and Logos/adventist-en-tm--iris.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--lily.pdf,,doc,90,6284,0
+assets/icons/Icons and Logos/adventist-en-tm--lily.png,,doc,458,112271,0
+assets/icons/Icons and Logos/adventist-en-tm--lily.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--ming.pdf,,doc,86,6280,0
+assets/icons/Icons and Logos/adventist-en-tm--ming.png,,doc,331,102465,0
+assets/icons/Icons and Logos/adventist-en-tm--ming.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--night.pdf,,doc,94,6276,0
+assets/icons/Icons and Logos/adventist-en-tm--night.png,,doc,267,108628,0
+assets/icons/Icons and Logos/adventist-en-tm--night.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--scarlett.pdf,,doc,89,6288,0
+assets/icons/Icons and Logos/adventist-en-tm--scarlett.png,,doc,370,107663,0
+assets/icons/Icons and Logos/adventist-en-tm--scarlett.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--treefrog.pdf,,doc,90,6280,0
+assets/icons/Icons and Logos/adventist-en-tm--treefrog.png,,doc,302,102449,0
+assets/icons/Icons and Logos/adventist-en-tm--treefrog.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--velvet.pdf,,doc,95,6282,0
+assets/icons/Icons and Logos/adventist-en-tm--velvet.png,,doc,411,112000,0
+assets/icons/Icons and Logos/adventist-en-tm--velvet.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--white.pdf,,doc,91,6272,0
+assets/icons/Icons and Logos/adventist-en-tm--white.png,,doc,214,83731,0
+assets/icons/Icons and Logos/adventist-en-tm--white.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm--winter.pdf,,doc,90,6276,0
+assets/icons/Icons and Logos/adventist-en-tm--winter.png,,doc,314,107930,0
+assets/icons/Icons and Logos/adventist-en-tm--winter.svg,,doc,10,9548,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--black.pdf,,doc,92,6343,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--black.png,,doc,222,73770,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--black.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.pdf,,doc,90,6355,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.png,,doc,368,113586,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--bluejay.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.pdf,,doc,79,6353,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.png,,doc,378,104741,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--campfire.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--cave.pdf,,doc,84,6354,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--cave.png,,doc,335,114236,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--cave.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--denim.pdf,,doc,86,6356,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--denim.png,,doc,300,113519,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--denim.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--earth.pdf,,doc,89,6356,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--earth.png,,doc,357,114041,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--earth.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.pdf,,doc,89,6357,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.png,,doc,346,114100,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--emperor.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--forest.pdf,,doc,82,6353,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--forest.png,,doc,325,113467,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--forest.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.pdf,,doc,87,6357,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.png,,doc,371,114212,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--grapevine.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--iris.pdf,,doc,85,6355,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--iris.png,,doc,313,108959,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--iris.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--lily.pdf,,doc,88,6356,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--lily.png,,doc,393,114387,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--lily.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--ming.pdf,,doc,91,6352,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--ming.png,,doc,281,104518,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--ming.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--night.pdf,,doc,90,6347,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--night.png,,doc,343,110107,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--night.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.pdf,,doc,86,6355,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.png,,doc,332,109569,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--scarlett.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.pdf,,doc,85,6352,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.png,,doc,300,104156,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--treefrog.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.pdf,,doc,85,6354,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.png,,doc,360,113712,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--velvet.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--white.pdf,,doc,92,6343,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--white.png,,doc,182,85441,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--white.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--winter.pdf,,doc,80,6348,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--winter.png,,doc,333,109534,0
+assets/icons/Icons and Logos/adventist-en-tm-centered--winter.svg,,doc,10,9577,0
+assets/icons/Icons and Logos/adventist-en-tm-text--black.pdf,,doc,85,4908,0
+assets/icons/Icons and Logos/adventist-en-tm-text--black.png,,doc,134,50612,0
+assets/icons/Icons and Logos/adventist-en-tm-text--black.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.pdf,,doc,84,4920,0
+assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.png,,doc,238,76166,0
+assets/icons/Icons and Logos/adventist-en-tm-text--bluejay.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--campfire.pdf,,doc,81,4918,0
+assets/icons/Icons and Logos/adventist-en-tm-text--campfire.png,,doc,265,69633,0
+assets/icons/Icons and Logos/adventist-en-tm-text--campfire.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--cave.pdf,,doc,86,4919,0
+assets/icons/Icons and Logos/adventist-en-tm-text--cave.png,,doc,241,76471,0
+assets/icons/Icons and Logos/adventist-en-tm-text--cave.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--denim.pdf,,doc,81,4920,0
+assets/icons/Icons and Logos/adventist-en-tm-text--denim.png,,doc,214,76086,0
+assets/icons/Icons and Logos/adventist-en-tm-text--denim.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--earth.pdf,,doc,81,4921,0
+assets/icons/Icons and Logos/adventist-en-tm-text--earth.png,,doc,248,76264,0
+assets/icons/Icons and Logos/adventist-en-tm-text--earth.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--emperor.pdf,,doc,87,4921,0
+assets/icons/Icons and Logos/adventist-en-tm-text--emperor.png,,doc,227,76397,0
+assets/icons/Icons and Logos/adventist-en-tm-text--emperor.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--forest.pdf,,doc,80,4918,0
+assets/icons/Icons and Logos/adventist-en-tm-text--forest.png,,doc,218,75841,0
+assets/icons/Icons and Logos/adventist-en-tm-text--forest.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.pdf,,doc,85,4920,0
+assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.png,,doc,216,76557,0
+assets/icons/Icons and Logos/adventist-en-tm-text--grapevine.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--iris.pdf,,doc,82,4920,0
+assets/icons/Icons and Logos/adventist-en-tm-text--iris.png,,doc,210,72671,0
+assets/icons/Icons and Logos/adventist-en-tm-text--iris.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--lily.pdf,,doc,80,4921,0
+assets/icons/Icons and Logos/adventist-en-tm-text--lily.png,,doc,260,76660,0
+assets/icons/Icons and Logos/adventist-en-tm-text--lily.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--ming.pdf,,doc,84,4917,0
+assets/icons/Icons and Logos/adventist-en-tm-text--ming.png,,doc,191,69560,0
+assets/icons/Icons and Logos/adventist-en-tm-text--ming.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--night.pdf,,doc,83,4912,0
+assets/icons/Icons and Logos/adventist-en-tm-text--night.png,,doc,192,73434,0
+assets/icons/Icons and Logos/adventist-en-tm-text--night.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.pdf,,doc,84,4923,0
+assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.png,,doc,218,73085,0
+assets/icons/Icons and Logos/adventist-en-tm-text--scarlett.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.pdf,,doc,85,4916,0
+assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.png,,doc,200,69453,0
+assets/icons/Icons and Logos/adventist-en-tm-text--treefrog.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--velvet.pdf,,doc,87,4921,0
+assets/icons/Icons and Logos/adventist-en-tm-text--velvet.png,,doc,239,75987,0
+assets/icons/Icons and Logos/adventist-en-tm-text--velvet.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--white.pdf,,doc,85,4908,0
+assets/icons/Icons and Logos/adventist-en-tm-text--white.png,,doc,132,56361,0
+assets/icons/Icons and Logos/adventist-en-tm-text--white.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-en-tm-text--winter.pdf,,doc,86,4912,0
+assets/icons/Icons and Logos/adventist-en-tm-text--winter.png,,doc,185,73416,0
+assets/icons/Icons and Logos/adventist-en-tm-text--winter.svg,,doc,9,7200,0
+assets/icons/Icons and Logos/adventist-symbol--black.pdf,,doc,75,2415,0
+assets/icons/Icons and Logos/adventist-symbol--black.png,,doc,91,22294,0
+assets/icons/Icons and Logos/adventist-symbol--black.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--bluejay.pdf,,doc,73,2427,0
+assets/icons/Icons and Logos/adventist-symbol--bluejay.png,,doc,116,36011,0
+assets/icons/Icons and Logos/adventist-symbol--bluejay.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--campfire.pdf,,doc,78,2423,0
+assets/icons/Icons and Logos/adventist-symbol--campfire.png,,doc,134,33608,0
+assets/icons/Icons and Logos/adventist-symbol--campfire.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--cave.pdf,,doc,76,2426,0
+assets/icons/Icons and Logos/adventist-symbol--cave.png,,doc,113,36263,0
+assets/icons/Icons and Logos/adventist-symbol--cave.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--denim.pdf,,doc,74,2427,0
+assets/icons/Icons and Logos/adventist-symbol--denim.png,,doc,129,36137,0
+assets/icons/Icons and Logos/adventist-symbol--denim.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--earth.pdf,,doc,79,2428,0
+assets/icons/Icons and Logos/adventist-symbol--earth.png,,doc,120,36259,0
+assets/icons/Icons and Logos/adventist-symbol--earth.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--emperor.pdf,,doc,73,2427,0
+assets/icons/Icons and Logos/adventist-symbol--emperor.png,,doc,163,36415,0
+assets/icons/Icons and Logos/adventist-symbol--emperor.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--forest.pdf,,doc,75,2426,0
+assets/icons/Icons and Logos/adventist-symbol--forest.png,,doc,136,36108,0
+assets/icons/Icons and Logos/adventist-symbol--forest.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--grapevine.pdf,,doc,76,2428,0
+assets/icons/Icons and Logos/adventist-symbol--grapevine.png,,doc,119,36336,0
+assets/icons/Icons and Logos/adventist-symbol--grapevine.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--iris.pdf,,doc,80,2428,0
+assets/icons/Icons and Logos/adventist-symbol--iris.png,,doc,90,34535,0
+assets/icons/Icons and Logos/adventist-symbol--iris.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--lily.pdf,,doc,78,2426,0
+assets/icons/Icons and Logos/adventist-symbol--lily.png,,doc,157,36235,0
+assets/icons/Icons and Logos/adventist-symbol--lily.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--ming.pdf,,doc,77,2423,0
+assets/icons/Icons and Logos/adventist-symbol--ming.png,,doc,121,33338,0
+assets/icons/Icons and Logos/adventist-symbol--ming.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--night.pdf,,doc,75,2419,0
+assets/icons/Icons and Logos/adventist-symbol--night.png,,doc,89,34937,0
+assets/icons/Icons and Logos/adventist-symbol--night.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--scarlett.pdf,,doc,77,2428,0
+assets/icons/Icons and Logos/adventist-symbol--scarlett.png,,doc,122,34795,0
+assets/icons/Icons and Logos/adventist-symbol--scarlett.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--treefrog.pdf,,doc,77,2423,0
+assets/icons/Icons and Logos/adventist-symbol--treefrog.png,,doc,126,33292,0
+assets/icons/Icons and Logos/adventist-symbol--treefrog.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--velvet.pdf,,doc,74,2426,0
+assets/icons/Icons and Logos/adventist-symbol--velvet.png,,doc,112,36330,0
+assets/icons/Icons and Logos/adventist-symbol--velvet.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--white.pdf,,doc,76,2415,0
+assets/icons/Icons and Logos/adventist-symbol--white.png,,doc,81,27431,0
+assets/icons/Icons and Logos/adventist-symbol--white.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol--winter.pdf,,doc,73,2419,0
+assets/icons/Icons and Logos/adventist-symbol--winter.png,,doc,94,34603,0
+assets/icons/Icons and Logos/adventist-symbol--winter.svg,,doc,9,2804,0
+assets/icons/Icons and Logos/adventist-symbol-circle--black.pdf,,doc,209,5155,0
+assets/icons/Icons and Logos/adventist-symbol-circle--black.png,,doc,124,33937,0
+assets/icons/Icons and Logos/adventist-symbol-circle--black.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.pdf,,doc,209,5167,0
+assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.png,,doc,217,47688,0
+assets/icons/Icons and Logos/adventist-symbol-circle--bluejay.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--campfire.pdf,,doc,208,5165,0
+assets/icons/Icons and Logos/adventist-symbol-circle--campfire.png,,doc,187,44292,0
+assets/icons/Icons and Logos/adventist-symbol-circle--campfire.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--cave.pdf,,doc,214,5169,0
+assets/icons/Icons and Logos/adventist-symbol-circle--cave.png,,doc,252,48071,0
+assets/icons/Icons and Logos/adventist-symbol-circle--cave.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--denim.pdf,,doc,208,5166,0
+assets/icons/Icons and Logos/adventist-symbol-circle--denim.png,,doc,193,47860,0
+assets/icons/Icons and Logos/adventist-symbol-circle--denim.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--earth.pdf,,doc,208,5167,0
+assets/icons/Icons and Logos/adventist-symbol-circle--earth.png,,doc,202,47810,0
+assets/icons/Icons and Logos/adventist-symbol-circle--earth.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--emperor.pdf,,doc,209,5166,0
+assets/icons/Icons and Logos/adventist-symbol-circle--emperor.png,,doc,193,48173,0
+assets/icons/Icons and Logos/adventist-symbol-circle--emperor.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--forest.pdf,,doc,214,5167,0
+assets/icons/Icons and Logos/adventist-symbol-circle--forest.png,,doc,236,47780,0
+assets/icons/Icons and Logos/adventist-symbol-circle--forest.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.pdf,,doc,206,5168,0
+assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.png,,doc,214,48190,0
+assets/icons/Icons and Logos/adventist-symbol-circle--grapevine.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--iris.pdf,,doc,216,5168,0
+assets/icons/Icons and Logos/adventist-symbol-circle--iris.png,,doc,211,45599,0
+assets/icons/Icons and Logos/adventist-symbol-circle--iris.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--lily.pdf,,doc,212,5167,0
+assets/icons/Icons and Logos/adventist-symbol-circle--lily.png,,doc,222,47854,0
+assets/icons/Icons and Logos/adventist-symbol-circle--lily.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--ming.pdf,,doc,208,5163,0
+assets/icons/Icons and Logos/adventist-symbol-circle--ming.png,,doc,142,44276,0
+assets/icons/Icons and Logos/adventist-symbol-circle--ming.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--night.pdf,,doc,212,5159,0
+assets/icons/Icons and Logos/adventist-symbol-circle--night.png,,doc,202,46691,0
+assets/icons/Icons and Logos/adventist-symbol-circle--night.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.pdf,,doc,206,5169,0
+assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.png,,doc,210,45950,0
+assets/icons/Icons and Logos/adventist-symbol-circle--scarlett.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.pdf,,doc,213,5162,0
+assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.png,,doc,182,43923,0
+assets/icons/Icons and Logos/adventist-symbol-circle--treefrog.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--velvet.pdf,,doc,215,5167,0
+assets/icons/Icons and Logos/adventist-symbol-circle--velvet.png,,doc,235,47789,0
+assets/icons/Icons and Logos/adventist-symbol-circle--velvet.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--white.pdf,,doc,209,5154,0
+assets/icons/Icons and Logos/adventist-symbol-circle--white.png,,doc,134,36916,0
+assets/icons/Icons and Logos/adventist-symbol-circle--white.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-circle--winter.pdf,,doc,213,5160,0
+assets/icons/Icons and Logos/adventist-symbol-circle--winter.png,,doc,195,46314,0
+assets/icons/Icons and Logos/adventist-symbol-circle--winter.svg,,doc,12,3146,0
+assets/icons/Icons and Logos/adventist-symbol-tm--black.pdf,,doc,73,2283,0
+assets/icons/Icons and Logos/adventist-symbol-tm--black.png,,doc,70,21893,0
+assets/icons/Icons and Logos/adventist-symbol-tm--black.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.pdf,,doc,75,2298,0
+assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.png,,doc,92,35251,0
+assets/icons/Icons and Logos/adventist-symbol-tm--bluejay.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--campfire.pdf,,doc,77,2292,0
+assets/icons/Icons and Logos/adventist-symbol-tm--campfire.png,,doc,132,32904,0
+assets/icons/Icons and Logos/adventist-symbol-tm--campfire.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--cave.pdf,,doc,74,2297,0
+assets/icons/Icons and Logos/adventist-symbol-tm--cave.png,,doc,123,35469,0
+assets/icons/Icons and Logos/adventist-symbol-tm--cave.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--denim.pdf,,doc,78,2297,0
+assets/icons/Icons and Logos/adventist-symbol-tm--denim.png,,doc,120,35271,0
+assets/icons/Icons and Logos/adventist-symbol-tm--denim.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--earth.pdf,,doc,73,2297,0
+assets/icons/Icons and Logos/adventist-symbol-tm--earth.png,,doc,103,35488,0
+assets/icons/Icons and Logos/adventist-symbol-tm--earth.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--emperor.pdf,,doc,76,2296,0
+assets/icons/Icons and Logos/adventist-symbol-tm--emperor.png,,doc,148,35615,0
+assets/icons/Icons and Logos/adventist-symbol-tm--emperor.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--forest.pdf,,doc,77,2296,0
+assets/icons/Icons and Logos/adventist-symbol-tm--forest.png,,doc,131,35340,0
+assets/icons/Icons and Logos/adventist-symbol-tm--forest.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.pdf,,doc,76,2298,0
+assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.png,,doc,124,35545,0
+assets/icons/Icons and Logos/adventist-symbol-tm--grapevine.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--iris.pdf,,doc,75,2299,0
+assets/icons/Icons and Logos/adventist-symbol-tm--iris.png,,doc,90,33777,0
+assets/icons/Icons and Logos/adventist-symbol-tm--iris.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--lily.pdf,,doc,74,2296,0
+assets/icons/Icons and Logos/adventist-symbol-tm--lily.png,,doc,141,35454,0
+assets/icons/Icons and Logos/adventist-symbol-tm--lily.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--ming.pdf,,doc,74,2293,0
+assets/icons/Icons and Logos/adventist-symbol-tm--ming.png,,doc,107,32603,0
+assets/icons/Icons and Logos/adventist-symbol-tm--ming.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--night.pdf,,doc,78,2288,0
+assets/icons/Icons and Logos/adventist-symbol-tm--night.png,,doc,78,34116,0
+assets/icons/Icons and Logos/adventist-symbol-tm--night.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.pdf,,doc,74,2298,0
+assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.png,,doc,104,34058,0
+assets/icons/Icons and Logos/adventist-symbol-tm--scarlett.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.pdf,,doc,73,2292,0
+assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.png,,doc,151,32547,0
+assets/icons/Icons and Logos/adventist-symbol-tm--treefrog.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--velvet.pdf,,doc,76,2296,0
+assets/icons/Icons and Logos/adventist-symbol-tm--velvet.png,,doc,117,35518,0
+assets/icons/Icons and Logos/adventist-symbol-tm--velvet.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--white.pdf,,doc,75,2284,0
+assets/icons/Icons and Logos/adventist-symbol-tm--white.png,,doc,75,26909,0
+assets/icons/Icons and Logos/adventist-symbol-tm--white.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm--winter.pdf,,doc,76,2289,0
+assets/icons/Icons and Logos/adventist-symbol-tm--winter.png,,doc,110,33840,0
+assets/icons/Icons and Logos/adventist-symbol-tm--winter.svg,,doc,9,2541,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.pdf,,doc,211,5031,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.png,,doc,109,33322,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--black.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.pdf,,doc,208,5042,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.png,,doc,216,46544,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--bluejay.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.pdf,,doc,209,5039,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.png,,doc,177,43339,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--campfire.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.pdf,,doc,213,5044,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.png,,doc,207,46871,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--cave.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.pdf,,doc,208,5042,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.png,,doc,212,46623,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--denim.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.pdf,,doc,209,5042,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.png,,doc,228,46601,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--earth.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.pdf,,doc,208,5041,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.png,,doc,222,46923,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--emperor.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.pdf,,doc,210,5043,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.png,,doc,217,46532,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--forest.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.pdf,,doc,207,5042,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.png,,doc,202,46903,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--grapevine.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.pdf,,doc,208,5043,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.png,,doc,205,44544,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--iris.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.pdf,,doc,209,5043,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.png,,doc,232,46683,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--lily.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.pdf,,doc,210,5039,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.png,,doc,136,43144,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--ming.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.pdf,,doc,210,5035,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.png,,doc,161,45537,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--night.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.pdf,,doc,208,5044,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.png,,doc,186,44885,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--scarlett.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.pdf,,doc,211,5038,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.png,,doc,164,42972,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--treefrog.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.pdf,,doc,213,5042,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.png,,doc,208,46613,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--velvet.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.pdf,,doc,209,5032,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.png,,doc,125,36077,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--white.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.pdf,,doc,206,5034,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.png,,doc,173,45049,0
+assets/icons/Icons and Logos/adventist-symbol-tm-circle--winter.svg,,doc,12,2862,0
+assets/icons/Icons and Logos/AdventSans-Logo.otf_/AdventSans-Logo.otf,,doc,3830,272820,0
+assets/icons/Icons and Logos/Claude Setup.exe,,doc,0,6989472,0
+assets/icons/Icons and Logos/icon.svg.txt,,doc,12,452,0
+"assets/icons/Icons and Logos/Noto_Sans/NotoSans-Italic-VariableFont_wdth,wght.ttf",,doc,0,2300468,0
+"assets/icons/Icons and Logos/Noto_Sans/NotoSans-VariableFont_wdth,wght.ttf",,doc,21859,2044548,0
+assets/icons/Icons and Logos/Noto_Sans/OFL.txt,,doc,94,4489,0
+assets/icons/Icons and Logos/Noto_Sans/README.txt,,doc,137,5227,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Black.ttf,,doc,4064,629912,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-BlackItalic.ttf,,doc,4515,642820,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Bold.ttf,,doc,3842,630968,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-BoldItalic.ttf,,doc,4061,644344,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraBold.ttf,,doc,3913,631288,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraBoldItalic.ttf,,doc,4025,644516,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraLight.ttf,,doc,3695,629780,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ExtraLightItalic.ttf,,doc,3965,644416,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Italic.ttf,,doc,3766,642344,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Light.ttf,,doc,3938,629564,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-LightItalic.ttf,,doc,4432,644244,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Medium.ttf,,doc,3838,631052,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-MediumItalic.ttf,,doc,3878,644256,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Regular.ttf,,doc,3901,629024,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-SemiBold.ttf,,doc,3822,631364,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-SemiBoldItalic.ttf,,doc,4012,644544,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-Thin.ttf,,doc,4528,628672,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans-ThinItalic.ttf,,doc,4297,643648,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Black.ttf,,doc,4083,629084,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-BlackItalic.ttf,,doc,4477,643588,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Bold.ttf,,doc,3814,630844,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-BoldItalic.ttf,,doc,4252,645596,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraBold.ttf,,doc,3899,630700,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraBoldItalic.ttf,,doc,4447,645584,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraLight.ttf,,doc,4149,629436,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ExtraLightItalic.ttf,,doc,4193,643560,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Italic.ttf,,doc,4209,643240,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Light.ttf,,doc,4432,629444,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-LightItalic.ttf,,doc,4938,644040,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Medium.ttf,,doc,3892,630152,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-MediumItalic.ttf,,doc,4467,645228,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Regular.ttf,,doc,4138,628576,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-SemiBold.ttf,,doc,4060,630420,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-SemiBoldItalic.ttf,,doc,4151,645360,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-Thin.ttf,,doc,4508,628884,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_Condensed-ThinItalic.ttf,,doc,4557,642916,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Black.ttf,,doc,4403,627536,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-BlackItalic.ttf,,doc,4715,642144,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Bold.ttf,,doc,4034,629716,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-BoldItalic.ttf,,doc,4547,644564,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraBold.ttf,,doc,4164,629524,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraBoldItalic.ttf,,doc,4522,644408,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraLight.ttf,,doc,4164,628228,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ExtraLightItalic.ttf,,doc,4287,641996,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Italic.ttf,,doc,4716,641748,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Light.ttf,,doc,4381,628224,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-LightItalic.ttf,,doc,4842,641960,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Medium.ttf,,doc,4116,628764,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-MediumItalic.ttf,,doc,4527,643988,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Regular.ttf,,doc,4236,627232,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-SemiBold.ttf,,doc,4080,629076,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-SemiBoldItalic.ttf,,doc,4543,644528,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-Thin.ttf,,doc,4708,627080,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_ExtraCondensed-ThinItalic.ttf,,doc,4667,640568,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Black.ttf,,doc,4085,629800,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-BlackItalic.ttf,,doc,4297,644280,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Bold.ttf,,doc,3901,631552,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-BoldItalic.ttf,,doc,4133,645760,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraBold.ttf,,doc,4047,631312,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraBoldItalic.ttf,,doc,4198,645636,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraLight.ttf,,doc,4191,630248,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ExtraLightItalic.ttf,,doc,4129,644328,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Italic.ttf,,doc,3972,643564,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Light.ttf,,doc,3999,629916,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-LightItalic.ttf,,doc,4666,644480,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Medium.ttf,,doc,3817,630684,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-MediumItalic.ttf,,doc,4008,645212,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Regular.ttf,,doc,3961,629028,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-SemiBold.ttf,,doc,3764,631084,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-SemiBoldItalic.ttf,,doc,4093,645884,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-Thin.ttf,,doc,4569,629812,0
+assets/icons/Icons and Logos/Noto_Sans/static/NotoSans_SemiCondensed-ThinItalic.ttf,,doc,4757,643972,0
+backend/.dockerignore,,doc,58,547,0
+backend/.env,,doc,96,2505,0
+backend/.env.example,,doc,100,2790,0
+backend/.gitignore,,doc,6,39,0
+backend/app.js,,script,272,9603,2
+backend/check-department-members.js,,script,25,712,0
+backend/check-tables.js,,script,25,594,0
+backend/check-users.js,,script,118,3816,0
+backend/config/database.js,,live,53,1999,147
+backend/config/env-validation.js,,live,67,1973,1
+backend/config/logging.js,,live,55,1238,28
+backend/config/platformJwt.js,,live,49,1858,2
+backend/config/README.md,,doc,10,551,0
+backend/controllers/activityFeed.controller.js,,live,122,4884,1
+backend/controllers/ai.controller.js,,live,231,7464,1
+backend/controllers/analytics.controller.js,,live,362,12809,1
+backend/controllers/announcements.controller.js,,live,256,9635,2
+backend/controllers/approvals.controller.js,,live,623,22310,1
+backend/controllers/auth.controller.js,,live,788,26744,1
+backend/controllers/BaseController.js,,live,193,5638,49
+backend/controllers/chartOfAccounts.controller.js,,live,156,4731,1
+backend/controllers/chat.controller.js,,live,95,3421,1
+backend/controllers/church.controller.js,,live,221,6014,1
+backend/controllers/collection.controller.js,,live,519,19406,1
+backend/controllers/comments.controller.js,,live,146,4918,1
+backend/controllers/content.controller.js,,live,889,29487,1
+backend/controllers/dashboard.controller.js,,live,340,11839,1
+backend/controllers/department.controller.js,,live,900,29319,2
+backend/controllers/departmentFeatures.controller.js,,live,182,6104,1
+backend/controllers/departments.controller.js,,live,731,27302,1
+backend/controllers/documentApproval.controller.js,,live,130,4113,1
+backend/controllers/documents.controller.js,,live,569,19963,1
+backend/controllers/fieldPermissions.controller.js,,live,126,4501,1
+backend/controllers/gallery.controller.js,,live,1136,39946,2
+backend/controllers/gateway.controller.js,,live,44,1322,1
+backend/controllers/manualPayment.controller.js,,live,268,8359,1
+backend/controllers/members.controller.js,,live,311,9030,1
+backend/controllers/mobile.controller.js,,live,687,19296,1
+backend/controllers/notifications.controller.js,,live,436,15024,1
+backend/controllers/palette.controller.js,,live,290,9263,1
+backend/controllers/payment.controller.js,,live,699,23121,1
+backend/controllers/payments.controller.js,,live,836,30812,1
+backend/controllers/platform.controller.js,,live,334,10975,1
+backend/controllers/platformAuth.controller.js,,live,160,5509,2
+backend/controllers/projects.controller.js,,live,376,13160,1
+backend/controllers/README.md,,doc,58,3610,0
+backend/controllers/reconciliation.controller.js,,live,76,2531,1
+backend/controllers/recurringPayments.controller.js,,live,204,6871,1
+backend/controllers/reports.controller.js,,live,569,19363,1
+backend/controllers/security.controller.js,,live,251,8243,1
+backend/controllers/settings.controller.js,,live,529,17290,1
+backend/controllers/sms.controller.js,,live,812,27378,2
+backend/controllers/smsAuth.controller.js,,live,201,7672,2
+backend/controllers/smsContacts.controller.js,,live,470,15012,1
+backend/controllers/smsGroups.controller.js,,live,466,14741,1
+backend/controllers/smsHub.controller.js,,live,120,3665,1
+backend/controllers/smsPush.controller.js,,live,225,7240,1
+backend/controllers/smsSync.controller.js,,live,169,5964,2
+backend/controllers/sync.controller.js,,live,39,1086,1
+backend/controllers/telegram.controller.js,,live,860,29728,1
+backend/controllers/telegramAuth.controller.js,,live,448,15004,1
+backend/controllers/telegramChurch.controller.js,,live,105,3631,1
+backend/controllers/treasury.controller.js,,live,1633,61245,2
+backend/controllers/treasuryDashboard.controller.js,,live,173,5845,1
+backend/controllers/userSettings.controller.js,,live,152,5449,1
+backend/controllers/vendors.controller.js,,live,140,3980,1
+backend/cookies.txt,,doc,5,135,0
+backend/create-admin.js,,script,54,1624,0
+backend/create-announcements-table.js,,script,31,930,0
+backend/create-database.js,,script,48,1288,0
+backend/create-department-tables.js,,script,1,0,0
+backend/create-department-users.js,,script,269,10026,0
+backend/create-personal-collections-table.js,,script,42,1259,0
+backend/create-phase32-tables.js,,script,409,15539,0
+backend/create-sms-advanced-tables.js,,script,75,3300,0
+backend/create-users-direct.js,,script,265,13249,0
+backend/create_admin_user.sql,,doc,33,1081,0
+backend/create_admin_via_api.js,,script,81,2923,0
+backend/create_login_attempts.sql,,doc,9,238,0
+backend/Dockerfile,,doc,28,610,0
+backend/ecosystem.config.cjs,,doc,28,689,0
+backend/eslint.config.js,,script,93,3031,0
+backend/fix-slugs.js,,script,81,2632,0
+backend/generate_hash.js,,script,15,334,0
+backend/get-users.js,,script,34,988,0
+backend/helpers/auditLog.js,,live,79,2395,4
+backend/helpers/controllerLogger.js,,live,132,4366,79
+backend/helpers/departmentLeadership.js,,live,237,8791,4
+backend/helpers/errorHandler.js,,live,176,3999,5
+backend/helpers/fieldPermissionService.js,,live,209,6378,1
+backend/helpers/finance.js,,live,368,10854,1
+backend/helpers/galleryCache.js,,live,230,6502,6
+backend/helpers/notify.js,,live,115,3672,6
+backend/helpers/paymentSMSIntegration.js,,live,267,10032,1
+backend/helpers/permissionChecker.js,,live,149,3950,5
+backend/helpers/README.md,,doc,21,1379,0
+backend/helpers/reportScheduler.js,,live,255,8581,2
+backend/helpers/security.js,,live,190,6038,13
+backend/helpers/treasurySMSIntegration.js,,live,368,13668,1
+backend/helpers/websocket.js,,live,195,5618,2
+backend/helpers/workflowEngine.js,,live,327,11622,2
+backend/login-body.json,,doc,1,50,0
+backend/logs/app.log.1,,doc,0,10514328,0
+backend/logs/app.log.2,,doc,0,5729084,0
+backend/logs/app.log.3,,doc,0,2530764,0
+backend/logs/combined.log,,doc,5186,964263,0
+backend/logs/error.log,,doc,241,375893,0
+backend/logs/pm2-error.log,,doc,5197,584287,0
+backend/logs/pm2-out.log,,doc,0,25913227,0
+backend/middleware/auth.js,,live,259,9201,62
+backend/middleware/churchContext.js,,live,87,3467,1
+backend/middleware/csrf.js,,live,110,3898,1
+backend/middleware/errorHandler.js,,live,124,3608,2
+backend/middleware/identityGuard.js,,live,70,2847,2
+backend/middleware/pagination.js,,live,73,2078,1
+backend/middleware/platformAuth.js,,live,156,4709,2
+backend/middleware/rateLimiter.js,,live,180,5612,6
+backend/middleware/README.md,,doc,20,1945,0
+backend/middleware/roleGuard.js,,live,58,1785,6
+backend/middleware/standardResponse.js,,live,23,656,1
+backend/middleware/tenantResolver.js,,live,184,7056,1
+backend/middleware/treasurySecurity.js,,live,205,7082,1
+backend/middleware/upload.js,,live,34,979,1
+backend/middleware/validation.js,,live,71,2563,4
+backend/migrate-gallery.js,,script,32,859,0
+backend/migrate-members.js,,script,33,912,0
+backend/migrate-settings.js,,script,33,919,0
+backend/migrate.js,,script,83,2920,0
+backend/migrations/002_create_accounts.sql,,doc,18,640,0
+backend/migrations/002_department_features.sql,,doc,28,1164,0
+backend/migrations/003_add_snapshot_tables.sql,,doc,52,2517,0
+backend/migrations/004_gallery_schema.sql,,doc,186,7618,0
+backend/migrations/005_fix_missing_columns.sql,,doc,30,1111,0
+backend/migrations/006_settings_schema.sql,,doc,93,5196,0
+backend/migrations/007_auth_tables.sql,,doc,93,3592,0
+backend/migrations/008_permissions_schema.sql,,doc,130,4930,0
+backend/migrations/009_fix_public_columns.sql,,doc,14,546,0
+backend/migrations/010_fix_users_identity_columns.sql,,doc,22,798,0
+backend/migrations/020_platform_admin_schema.sql,,doc,170,6310,0
+backend/migrations/021_add_global_username_constraint.sql,,doc,78,2501,0
+backend/migrations/022_add_missing_church_id.sql,,doc,12,727,0
+backend/migrations/023_create_members.sql,,doc,72,2619,0
+backend/migrations/024_departments_multitenancy.sql,,doc,22,1093,0
+backend/migrations/025_dashboard_tables.sql,,doc,107,4936,0
+backend/migrations/026_mobile_parity.sql,,doc,25,992,0
+backend/migrations/027_events_time_poster.sql,,doc,6,260,0
+backend/migrations/028_mobile_missing_tables.sql,,doc,97,3088,0
+backend/migrations/029_users_last_login.sql,,doc,16,461,0
+backend/migrations/030_dashboard_missing_tables.sql,,doc,47,1715,0
+backend/migrations/031_department_features.sql,,doc,123,5168,0
+backend/migrations/032_telegram_gallery.sql,,doc,101,4133,0
+backend/migrations/033_telegram_church_unique.sql,,doc,12,569,0
+backend/migrations/034_department_hierarchy_leadership.sql,,doc,135,7417,0
+backend/migrations/035_department_obligations.sql,,doc,109,4848,0
+backend/migrations/036_composite_church_id_indexes.sql,,doc,78,2864,0
+backend/migrations/037_remittance_ledger.sql,,doc,37,1691,0
+backend/migrations/038_role_permission_backfill.sql,,doc,150,8201,0
+backend/migrations/039_users_missing_columns.sql,,doc,11,657,0
+backend/migrations/040_notifications_schema_alignment.sql,,doc,57,2290,0
+backend/migrations/041_treasury_finance_tables.sql,,doc,360,13422,0
+backend/migrations/042_security_settings_church.sql,,doc,24,920,0
+backend/migrations/043_payments_member_columns.sql,,doc,33,2173,0
+backend/migrations/044_gallery_uploads.sql,,doc,54,1848,0
+backend/migrations/045_treasury_module_tables.sql,,doc,120,4478,0
+backend/migrations/046_treasury_schema_backfill.sql,,doc,84,3791,0
+backend/migrations/047_collections_schema.sql,,doc,41,1815,0
+backend/migrations/048_gallery_member_features.sql,,doc,25,1177,0
+backend/migrations/049_tenant_scoping_comments_exports_telegram.sql,,doc,61,2476,0
+backend/migrations/050_reports_tables.sql,,doc,68,2870,0
+backend/migrations/051_telegram_channel_posts_columns.sql,,doc,11,491,0
+backend/migrations/052_approval_workflow_tables.sql,,doc,71,3178,0
+backend/migrations/053_chat_tables.sql,,doc,29,1316,0
+backend/migrations/054_document_approval_tables.sql,,doc,39,1657,0
+backend/migrations/055_department_components.sql,,doc,41,2621,0
+backend/migrations/056_settings_per_church_overrides.sql,,doc,26,989,0
+backend/migrations/057_audit_log_church_id.sql,,doc,14,527,0
+backend/migrations/058_events_category.sql,,doc,7,412,0
+backend/migrations/059_departments_head_id.sql,,doc,9,581,0
+backend/migrations/060_approval_requester_backfill.sql,,doc,13,575,0
+backend/migrations/061_null_church_unique_holes.sql,,doc,49,1734,0
+backend/migrations/062_gallery_sentinel_church_backfill.sql,,doc,18,782,0
+backend/migrations/add_sms_contact_management.sql,,doc,155,7371,0
+backend/migrations/README.md,,doc,60,5008,0
+backend/modules/treasury/controllers/account.controller.js,,live,161,4778,1
+backend/modules/treasury/controllers/budget.controller.js,,live,239,6917,1
+backend/modules/treasury/controllers/expense.controller.js,,live,346,10981,2
+backend/modules/treasury/controllers/fund.controller.js,,live,159,4584,1
+backend/modules/treasury/controllers/index.js,,live,19,525,5
+backend/modules/treasury/controllers/journalEntry.controller.js,,live,227,6912,1
+backend/modules/treasury/controllers/README.md,,doc,11,573,0
+backend/modules/treasury/models/Account.js,,live,105,2760,2
+backend/modules/treasury/models/Budget.js,,live,223,6206,2
+backend/modules/treasury/models/Expense.js,,live,208,5318,2
+backend/modules/treasury/models/Fund.js,,live,137,3572,2
+backend/modules/treasury/models/JournalEntry.js,,live,205,5797,2
+backend/modules/treasury/models/README.md,,doc,10,361,0
+backend/modules/treasury/repositories/account.repository.js,,live,372,10970,1
+backend/modules/treasury/repositories/budget.repository.js,,live,280,9704,1
+backend/modules/treasury/repositories/expense.repository.js,,live,255,8743,1
+backend/modules/treasury/repositories/fund.repository.js,,live,142,5043,1
+backend/modules/treasury/repositories/journalEntry.repository.js,,live,306,10334,1
+backend/modules/treasury/repositories/README.md,,doc,10,416,0
+backend/modules/treasury/routes/account.routes.js,,live,75,2448,1
+backend/modules/treasury/routes/budget.routes.js,,live,88,3070,1
+backend/modules/treasury/routes/expense.routes.js,,live,105,3615,1
+backend/modules/treasury/routes/fund.routes.js,,live,70,2282,1
+backend/modules/treasury/routes/index.js,,live,29,1058,2
+backend/modules/treasury/routes/journalEntry.routes.js,,live,78,3020,1
+backend/modules/treasury/routes/README.md,,doc,11,410,0
+backend/package-lock.json,,doc,8696,324721,0
+backend/package.json,,doc,90,2608,0
+backend/performance_benchmark.js,,script,213,7357,0
+backend/performance_optimization_recommendations.md,,doc,482,12911,0
+backend/README.md,,doc,70,3102,0
+backend/render.yaml,,doc,48,1003,0
+backend/repositories/ActivityFeedRepository.js,,live,157,4817,1
+backend/repositories/AIRepository.js,,live,93,2572,2
+backend/repositories/AnalyticsRepository.js,,live,567,20731,2
+backend/repositories/AnnouncementsRepository.js,,live,282,8767,3
+backend/repositories/ApprovalsRepository.js,,live,206,7695,3
+backend/repositories/AuditLogRepository.js,,live,156,3970,3
+backend/repositories/AuthRepository.js,,live,193,5501,2
+backend/repositories/base.repository.js,,live,297,8574,5
+backend/repositories/BaseRepository.js,,live,178,5224,51
+backend/repositories/ChartOfAccountsRepository.js,,live,276,9128,2
+backend/repositories/ChatRepository.js,,live,71,2285,2
+backend/repositories/ChurchRepository.js,,live,213,6440,6
+backend/repositories/CollectionRepository.js,,live,240,9876,1
+backend/repositories/CommentsRepository.js,,live,73,2271,1
+backend/repositories/ContentRepository.js,,live,677,22557,1
+backend/repositories/DashboardRepository.js,,live,861,28579,2
+backend/repositories/DepartmentCategoriesRepository.js,,live,66,1857,1
+backend/repositories/DepartmentCommunityRepository.js,,live,10,219,1
+backend/repositories/DepartmentFeaturesRepository.js,,live,111,3896,3
+backend/repositories/DepartmentFinanceRepository.js,,live,10,215,1
+backend/repositories/DepartmentLeadershipRepository.js,,live,10,221,1
+backend/repositories/DepartmentRepository.js,,live,664,22900,3
+backend/repositories/DepartmentsRepository.js,,live,414,15002,2
+backend/repositories/DocumentsRepository.js,,live,360,11543,1
+backend/repositories/EventsRepository.js,,live,341,10729,1
+backend/repositories/GalleryAlbumsRepository.js,,live,227,8042,1
+backend/repositories/GalleryRepository.js,,live,611,22603,1
+backend/repositories/GatewayRepository.js,,live,33,968,1
+backend/repositories/ManualPaymentRepository.js,,live,253,7746,2
+backend/repositories/MembersRepository.js,,live,216,7475,1
+backend/repositories/MobileRepository.js,,live,856,26501,2
+backend/repositories/MpesaRepository.js,,live,21,518,2
+backend/repositories/NotificationsRepository.js,,live,303,10194,1
+backend/repositories/PaletteRepository.js,,live,267,8050,2
+backend/repositories/PaymentRepository.js,,live,459,15039,2
+backend/repositories/PaymentsRepository.js,,live,629,20423,2
+backend/repositories/ProjectsRepository.js,,live,260,10128,1
+backend/repositories/README.md,,doc,59,3605,0
+backend/repositories/ReconciliationRepository.js,,live,108,3357,1
+backend/repositories/RecurringPaymentsRepository.js,,live,154,5723,1
+backend/repositories/ReportsRepository.js,,live,672,22621,2
+backend/repositories/SecurityRepository.js,,live,150,5228,3
+backend/repositories/SettingsRepository.js,,live,603,20890,1
+backend/repositories/SMSProviderRepository.js,,live,216,6280,4
+backend/repositories/SMSRepository.js,,live,367,12291,1
+backend/repositories/SnapshotRepository.js,,live,128,3904,2
+backend/repositories/SyncRepository.js,,live,30,844,1
+backend/repositories/TelegramAuthRepository.js,,live,105,3194,1
+backend/repositories/TelegramRepository.js,,live,288,10037,1
+backend/repositories/TreasuryDashboardRepository.js,,live,232,7690,1
+backend/repositories/TreasuryRepository.js,,live,1086,43543,1
+backend/repositories/UserRepository.js,,live,577,17680,5
+backend/repositories/UserSettingsRepository.js,,live,232,7922,1
+backend/repositories/VendorsRepository.js,,live,106,3777,2
+backend/routes/ai.routes.js,,live,12,379,1
+backend/routes/analytics.routes.js,,live,52,2322,1
+backend/routes/announcements.routes.js,,live,41,1531,1
+backend/routes/apk.routes.js,,live,71,2395,1
+backend/routes/approvals.routes.js,,live,41,2168,1
+backend/routes/audit-logs.routes.js,,live,111,3231,1
+backend/routes/auth.routes.js,,live,98,4215,1
+backend/routes/chartOfAccounts.routes.js,,live,32,1087,1
+backend/routes/chat.routes.js,,live,14,486,1
+backend/routes/church.routes.js,,live,23,1187,1
+backend/routes/collections.routes.js,,live,46,1625,1
+backend/routes/comments.routes.js,,live,16,600,1
+backend/routes/content.routes.js,,live,82,3854,1
+backend/routes/dashboard.routes.js,,live,65,2900,1
+backend/routes/department-categories.routes.js,,live,127,3908,1
+backend/routes/department.routes.js,,live,1046,34958,1
+backend/routes/departmentFeatures.routes.js,,live,29,1495,1
+backend/routes/departments.routes.js,,live,848,30756,1
+backend/routes/department_community.routes.js,,live,871,40859,1
+backend/routes/department_finance.routes.js,,live,910,41343,1
+backend/routes/department_leadership.routes.js,,live,533,24187,3
+backend/routes/documentApproval.routes.js,,live,53,1782,1
+backend/routes/documents.routes.js,,live,48,2485,1
+backend/routes/events.routes.js,,live,835,29421,1
+backend/routes/fieldPermissions.routes.js,,live,22,834,1
+backend/routes/gallery.routes.js,,live,69,4002,1
+backend/routes/galleryAlbums.routes.js,,live,37,1633,1
+backend/routes/gateway.routes.js,,live,12,384,1
+backend/routes/health.js,,live,125,3696,1
+backend/routes/index.routes.js,,live,150,8524,1
+backend/routes/logs.routes.js,,live,27,1039,1
+backend/routes/manualPayment.routes.js,,live,34,1626,1
+backend/routes/members.routes.js,,live,28,952,1
+backend/routes/mobile.routes.js,,live,77,3253,2
+backend/routes/mpesa.routes.js,,live,146,5098,1
+backend/routes/notifications.routes.js,,live,45,2273,1
+backend/routes/palette.routes.js,,live,24,1497,1
+backend/routes/payments.routes.js,,live,83,5258,1
+backend/routes/platform.routes.js,,live,26,2315,1
+backend/routes/projects.routes.js,,live,41,1873,1
+backend/routes/README.md,,doc,64,4221,0
+backend/routes/reconciliation.routes.js,,live,16,666,1
+backend/routes/reports.routes.js,,live,69,2510,1
+backend/routes/security.routes.js,,live,33,1594,1
+backend/routes/settings.routes.js,,live,47,3324,1
+backend/routes/sms.routes.js,,live,68,3699,1
+backend/routes/smsAuth.routes.js,,live,13,473,1
+backend/routes/smsContacts.routes.js,,live,19,1052,1
+backend/routes/smsGroups.routes.js,,live,25,1349,1
+backend/routes/smsHub.routes.js,,live,53,1779,2
+backend/routes/smsSync.routes.js,,live,16,503,2
+backend/routes/sync.routes.js,,live,11,313,1
+backend/routes/telegram.routes.js,,live,74,3372,1
+backend/routes/telegramAuth.routes.js,,live,32,1669,1
+backend/routes/telegramChurch.routes.js,,live,14,527,1
+backend/routes/treasury.routes.js,,live,129,8952,1
+backend/routes/treasuryDashboard.routes.js,,live,42,1706,1
+backend/routes/users.routes.js,,live,336,9907,1
+backend/routes/userSettings.routes.js,,live,27,699,1
+backend/scripts/add-gallery-created-at.js,,script,15,406,0
+backend/scripts/add-missing-columns.js,,script,52,1515,0
+backend/scripts/add-palette-setting.js,,script,28,941,0
+backend/scripts/add-sample-gallery-data.js,,script,75,2929,0
+backend/scripts/add-telegram-channel.js,,script,41,1192,0
+backend/scripts/add-video-support.sql,,doc,11,568,0
+backend/scripts/app-smoke-test.js,,script,92,3428,0
+backend/scripts/apply-migration.js,,script,32,928,0
+backend/scripts/apply-migrations.js,,script,94,3313,0
+backend/scripts/assign-demo-church.js,,script,28,774,0
+backend/scripts/auth-telegram.js,,script,71,2205,0
+backend/scripts/auth-wrapper.js,,script,121,3977,0
+backend/scripts/check-approval-requests-columns.js,,script,17,476,0
+backend/scripts/check-columns.js,,script,20,590,0
+backend/scripts/check-database.js,,script,44,1622,0
+backend/scripts/check-departments-columns.js,,script,17,470,0
+backend/scripts/check-departments.js,,script,57,1888,0
+backend/scripts/check-documentation.js,,script,68,2194,0
+backend/scripts/check-gallery-albums-columns.js,,script,17,473,0
+backend/scripts/check-gallery-photos-columns.js,,script,17,475,0
+backend/scripts/check-members-columns.js,,script,22,720,0
+backend/scripts/check-mfa-status.js,,script,32,808,0
+backend/scripts/check-missing-repository-methods.js,,script,176,6901,0
+backend/scripts/check-notification-preferences-columns.js,,script,17,485,0
+backend/scripts/check-notification-tables.js,,script,17,510,0
+backend/scripts/check-notification-types-columns.js,,script,17,479,0
+backend/scripts/check-notifications-columns.js,,script,17,474,0
+backend/scripts/check-payments-columns.js,,script,17,467,0
+backend/scripts/check-photo-tag-columns.js,,script,17,538,0
+backend/scripts/check-security-tables.js,,script,17,517,0
+backend/scripts/check-tables.js,,script,22,648,0
+backend/scripts/check-telegram-tables.js,,script,30,730,0
+backend/scripts/check-users-columns.js,,script,17,464,0
+backend/scripts/check-users.js,,script,52,1902,0
+backend/scripts/check-website-settings-table.js,,script,17,411,0
+backend/scripts/create-gallery-table.sql,,doc,28,1354,0
+backend/scripts/create-indexes.sql,,doc,56,3145,0
+backend/scripts/create-local-admin.js,,script,118,4144,0
+backend/scripts/create-missing-tables.js,,script,266,8930,0
+backend/scripts/create-palette-tables.sql,,doc,34,1555,0
+backend/scripts/create-security-tables.js,,script,85,2736,0
+backend/scripts/create-treasury-tables.js,,script,162,5755,0
+backend/scripts/create-user-slug-function.js,,script,29,883,0
+backend/scripts/create-website-settings-table.js,,script,26,724,0
+backend/scripts/data/README.md,,doc,6,213,0
+backend/scripts/data/sda-departments.js,,script,73,4349,2
+backend/scripts/delete-test-announcements.js,,script,15,363,0
+backend/scripts/delete-test-departments.js,,script,15,358,0
+backend/scripts/delete-test-events.js,,script,15,345,0
+backend/scripts/delete-test-gallery-albums.js,,script,15,353,0
+backend/scripts/delete-test-payments.js,,script,15,375,0
+backend/scripts/delete-test-user.js,,script,15,357,0
+backend/scripts/extract-routes-and-db.js,,script,170,5772,0
+backend/scripts/fix-approval-comments.js,,script,15,358,0
+backend/scripts/fix-approval-requests-columns.js,,script,16,488,0
+backend/scripts/fix-departments-church-slug.js,,script,15,360,0
+backend/scripts/fix-departments-columns.js,,script,16,482,0
+backend/scripts/fix-gallery-albums-church-slug.js,,script,15,366,0
+backend/scripts/fix-gallery-albums-columns.js,,script,16,528,0
+backend/scripts/fix-gallery-uploaded-by.js,,script,15,361,0
+backend/scripts/fix-notifications-columns.js,,script,16,470,0
+backend/scripts/fix-table-columns.js,,script,104,3415,0
+backend/scripts/fix-users-deleted-at.js,,script,15,343,0
+backend/scripts/flesh-out-repositories.js,,script,86,2742,0
+backend/scripts/generate-comprehensive-seed.js,,script,670,31713,0
+backend/scripts/generate-login-doc.js,,script,78,3285,0
+backend/scripts/get-admin-logins.js,,script,27,738,0
+backend/scripts/probe-schema.js,,script,12,619,0
+backend/scripts/README.md,,doc,114,5465,0
+backend/scripts/reset-admin-password.js,,script,44,1307,0
+backend/scripts/reset-db.js,,script,62,2437,0
+backend/scripts/reset-nonmember-passwords.js,,script,39,1395,0
+backend/scripts/run-fix-migration.js,,script,39,1061,0
+backend/scripts/run-migration-026.js,,script,51,1636,0
+backend/scripts/run-migration.js,,script,81,2430,0
+backend/scripts/run-mobile-migration.js,,script,82,2731,0
+backend/scripts/run-platform-migration.js,,script,50,1532,0
+backend/scripts/security_audit.js,,script,364,12690,0
+backend/scripts/seed-admin.js,,script,68,2302,0
+backend/scripts/seed-church-data.js,,script,767,32276,0
+backend/scripts/seed-churches.js,,script,344,17378,0
+backend/scripts/seed-comprehensive.js,,script,145,6221,0
+backend/scripts/seed-deep-test-data.js,,script,740,39878,0
+backend/scripts/seed-demo-data.js,,script,79,3496,0
+backend/scripts/seed-demo-users.js,,script,88,2504,0
+backend/scripts/seed-history.js,,script,359,18271,0
+backend/scripts/seed-palettes.js,,script,176,5186,0
+backend/scripts/seed-role-accounts.js,,script,129,5355,0
+backend/scripts/seed-upcoming-events.js,,script,69,2685,0
+backend/scripts/setup-test-db.js,,script,97,3405,1
+backend/scripts/sync-telegram-gallery.js,,script,127,5461,0
+backend/scripts/test-all-routes.js,,script,116,2652,0
+backend/scripts/test-api.js,,script,28,524,0
+backend/scripts/test-data.js,,script,46,1364,0
+backend/scripts/test-frontend-endpoints.js,,script,73,3276,0
+backend/scripts/test-leadership-flow.js,,script,97,4239,0
+backend/scripts/test-login.js,,script,36,690,0
+backend/scripts/test-mobile-api.js,,script,66,2210,0
+backend/scripts/test-multiple-apis.js,,script,60,1538,0
+backend/scripts/test-sms-callback.js,,script,47,1378,0
+backend/scripts/test-sms.js,,script,45,1149,0
+backend/scripts/test-sync.js,,script,35,1286,0
+backend/scripts/validate-db-routes.js,,script,415,17748,0
+backend/scripts/validate-route-mounting.js,,script,210,8496,0
+backend/scripts/verify-admin.js,,script,40,1207,0
+backend/scripts/verify-ledger-fixes.js,,script,443,26305,0
+backend/scripts/_scriptSafety.js,,script,33,1357,15
+backend/security_audit.js,,script,339,11684,0
+backend/seed-activity-data.js,,script,212,7926,0
+backend/seed-database.js,,script,162,6893,1
+backend/seed-departments.js,,script,142,4738,0
+backend/server.js,,script,237,8403,8
+backend/services/ActivityFeedService.js,,live,33,896,1
+backend/services/aiContentService.js,,live,809,27558,2
+backend/services/apiHub.js,,live,174,5025,5
+backend/services/auditService.js,,live,156,4926,5
+backend/services/ChartOfAccountsService.js,,live,273,8638,1
+backend/services/churchPlatformGateway.service.js,,live,123,4732,2
+backend/services/ChurchService.js,,live,60,1505,2
+backend/services/ContentService.js,,live,56,1666,2
+backend/services/documentApprovalService.js,,live,347,11882,3
+backend/services/hybridSMS.js,,live,252,8018,4
+backend/services/IdentityService.js,,live,257,8337,7
+backend/services/kopokopo.js,,live,369,12099,1
+backend/services/MessagingService.js,,live,133,3856,2
+backend/services/MpesaService.js,,live,355,12137,2
+backend/services/nameMatcher.js,,live,292,8982,1
+backend/services/notificationService.js,,live,321,10346,6
+backend/services/numberingService.js,,live,56,1877,4
+backend/services/PaymentGatewayService.js,,live,40,1127,2
+backend/services/platformAudit.service.js,,live,13,530,3
+backend/services/ProjectService.js,,live,286,8568,1
+backend/services/README.md,,doc,36,1745,0
+backend/services/ReceiptService.js,,live,50,1724,1
+backend/services/redisCache.js,,live,263,7131,3
+backend/services/ReportService.js,,live,236,6901,1
+backend/services/RollingUpdateService.js,,live,141,5164,3
+backend/services/SchedulingService.js,,live,184,6271,1
+backend/services/SettingsService.js,,live,70,2022,1
+backend/services/SmsHub.js,,live,65,1763,2
+backend/services/SnapshotService.js,,live,218,6903,3
+backend/services/telegramService.js,,live,438,13462,1
+backend/services/VendorService.js,,live,49,1614,1
+backend/sessions/auth_status_fallback.json,,doc,1,115,0
+backend/sessions/auth_status_primary.json,,doc,1,114,0
+backend/sessions/phone_code_hash.json,,doc,1,94,0
+backend/sessions/telegram.session,,doc,1,369,0
+backend/sessions/telegram_fallback.session,,doc,1,369,0
+backend/sessions/telegram_primary.session,,doc,1,369,0
+backend/setup-base-database.js,,script,36,979,0
+backend/setup-database.js,,script,30,734,1
+backend/setup-settings-database.js,,script,49,1426,0
+backend/setup-treasury-database.js,,script,50,1445,0
+backend/sync-gallery.js,,script,28,722,0
+backend/temp_hash.js,,script,10,243,0
+backend/test-all-modules.js,,script,251,9677,0
+backend/test-comprehensive.js,,script,489,19536,0
+backend/test-endpoints.js,,script,94,3186,0
+backend/test-final-implementations.js,,script,149,5053,0
+backend/test-login-simple.js,,script,30,763,0
+backend/test-login.js,,script,16,402,0
+backend/test-mpesa.js,,script,68,2418,0
+backend/test-new-modules.js,,script,199,7461,0
+backend/test-palette-api.js,,script,27,436,0
+backend/test-stkpush.js,,script,125,4349,0
+backend/test-tasks-501-700.js,,script,193,7023,0
+backend/tests/api/package.json,,doc,37,836,0
+backend/tests/api/README.md,,doc,11,267,0
+backend/tests/api/setup/global-setup.js,,test,14,360,0
+backend/tests/api/setup/README.md,,doc,7,235,0
+backend/tests/api/setup/test-helpers.js,,dead,245,8846,3
+backend/tests/api/sms-sync.test.js,,test,440,13914,0
+backend/tests/api/tests/apiHub.test.js,,test,86,2823,0
+backend/tests/api/tests/approvals.test.js,,test,207,7667,0
+backend/tests/api/tests/auth.test.js,,test,259,10302,0
+backend/tests/api/tests/database.test.js,,test,305,10534,0
+backend/tests/api/tests/documentApprovalService.test.js,,test,79,2701,0
+backend/tests/api/tests/documents.test.js,,test,148,5290,0
+backend/tests/api/tests/health.test.js,,test,49,1990,0
+backend/tests/api/tests/notifications.test.js,,test,135,5124,0
+backend/tests/api/tests/notificationService.test.js,,test,79,2806,0
+backend/tests/api/tests/README.md,,doc,16,665,0
+backend/tests/api/tests/sms-auth.test.js,,test,385,11594,0
+backend/tests/api/tests/tenancy.test.js,,test,224,9160,0
+backend/tests/e2e/critical-workflows.test.js,,test,474,16938,0
+backend/tests/e2e/README.md,,doc,7,284,0
+backend/tests/e2e/user-workflows.test.js,,test,525,16529,0
+backend/tests/integration/documentApproval.integration.test.js,,test,281,9308,0
+backend/tests/integration/README.md,,doc,7,335,0
+backend/tests/integration/smsHub.integration.test.js,,test,211,6393,0
+backend/tests/jest.config.js,,dead,53,1335,0
+backend/tests/jobs/README.md,,doc,6,198,0
+backend/tests/jobs/SnapshotJob.test.js,,test,244,8727,0
+backend/tests/migrations/003_snapshot_tables.test.js,,test,272,10098,0
+backend/tests/migrations/README.md,,doc,6,220,0
+backend/tests/quick.test.js,,test,21,522,0
+backend/tests/README.md,,doc,21,721,0
+backend/tests/services/README.md,,doc,7,276,0
+backend/tests/services/RollingUpdateService.test.js,,test,435,14400,0
+backend/tests/services/SnapshotService.test.js,,test,307,11287,0
+backend/tests/setup/global-setup.js,,test,39,1199,0
+backend/tests/setup/hibp-mock.js,,dead,6,105,0
+backend/tests/setup/README.md,,doc,8,243,0
+backend/tests/setup/uuid-mock.js,,dead,12,370,0
+backend/tests/setup.js,,test,36,721,0
+backend/tests/simple.test.js,,test,41,1169,0
+backend/tests/unit/audit-regressions.test.js,,test,152,6083,0
+backend/tests/unit/departmentFeatures.test.js,,test,126,3774,0
+backend/tests/unit/README.md,,doc,7,281,0
+backend/update-admin.js,,script,53,1511,0
+backend/utils/cursorPagination.js,,live,243,7596,1
+backend/utils/emailService.js,,live,219,9442,3
+backend/utils/errorHandler.js,,live,60,1978,1
+backend/utils/mpesa.js,,live,358,12199,2
+backend/utils/piiMasker.js,,live,194,6284,1
+backend/utils/README.md,,doc,13,727,0
+backend/utils/ResponseHandler.js,,live,95,3140,15
+backend/utils/secretBox.js,,live,37,1628,2
+backend/__tests__/unit/announcements.controller.test.js,,test,251,8701,0
+backend/__tests__/unit/apiHub.test.js,,test,152,5929,0
+backend/__tests__/unit/churchPlatformGateway.service.test.js,,test,51,2473,0
+backend/__tests__/unit/hybridSMS.test.js,,test,178,6140,0
+backend/__tests__/unit/notificationService.test.js,,test,169,6100,0
+backend/__tests__/unit/platformAuth.controller.test.js,,test,89,3137,0
+backend/__tests__/unit/platformAuth.middleware.test.js,,test,33,1145,0
+backend/__tests__/unit/README.md,,doc,12,558,0
+Caddyfile.fixed10,,doc,45,1230,0
+Caddyfile.fixed9,,doc,43,1242,0
+CHANGELOG.md,,doc,204,9493,0
+check_churches_object.py,,doc,33,1316,0
+check_debug_logs.py,,doc,35,958,0
+check_local_db.py,,doc,10,339,0
+CLEANUP_SCRIPT.md,,doc,183,5684,0
+cms_users_export.txt,,doc,2310,198469,0
+code-files.csv,,doc,654,38760,0
+codebase-map.csv,,doc,2471,170235,0
+continue-work-simple.bat,,doc,4,48,0
+continue-work-simple.js,,doc,129,3825,0
+continue-work.bat,,doc,5,72,0
+continue-work.js,,doc,202,6016,0
+CONTINUE_WORK_README.md,,doc,99,2626,0
+create_admin_final.py,,doc,34,983,0
+create_admin_user.py,,doc,37,1198,0
+database/001_auth_schema.sql,,doc,96,3264,0
+database/002_settings_schema.sql,,doc,77,3385,0
+database/003_members_schema.sql,,doc,92,3336,0
+database/activity_feed_indexes.sql,,doc,25,991,0
+database/add_categories_hierarchy.sql,,doc,36,1640,0
+database/add_event_poster_column.sql,,doc,8,453,0
+database/add_gallery_missing_columns.sql,,doc,11,629,0
+database/add_indexes.sql,,doc,67,3179,0
+database/add_mpesa_settings.sql,,doc,93,7111,0
+database/add_photo_location_column.sql,,doc,3,148,0
+database/add_website_settings.sql,,doc,198,14216,0
+database/approvals_schema.sql,,doc,59,2874,0
+database/auth_enhancements.sql,,doc,35,1653,0
+database/check_and_fix_slugs.sql,,doc,45,1306,0
+database/complete_schema.sql,,doc,426,14661,0
+database/content_schema.sql,,doc,123,5725,0
+database/create_department_components_tables.sql,,doc,157,7095,0
+database/departments_enhancements.sql,,doc,49,2317,0
+database/departments_schema.sql,,doc,180,8596,0
+database/documents_schema.sql,,doc,77,3292,0
+database/gallery_schema.sql,,doc,97,4241,0
+database/migrations/add_accounting_export_tables.sql,,doc,36,1830,0
+database/migrations/add_ai_audit_logging.sql,,doc,122,4557,0
+database/migrations/add_approval_status_to_department_members.sql,,doc,38,1596,0
+database/migrations/add_church_slug_indexes.sql,,doc,96,3918,0
+database/migrations/add_content_advanced_tables.sql,,doc,94,4527,0
+database/migrations/add_custom_report_tables.sql,,doc,62,2892,0
+database/migrations/add_department_advanced_features.sql,,doc,65,3186,0
+database/migrations/add_department_logo_banner.sql,,doc,13,753,0
+database/migrations/add_documents_advanced_features.sql,,doc,42,2166,0
+database/migrations/add_documents_advanced_tables.sql,,doc,103,4587,0
+database/migrations/add_document_approval_workflow.sql,,doc,53,3543,0
+database/migrations/add_dynamic_departments.sql,,doc,110,6093,0
+database/migrations/add_dynamic_departments_and_chat.sql,,doc,59,2619,0
+database/migrations/add_financial_alerts_tables.sql,,doc,41,2143,0
+database/migrations/add_financial_immutability_triggers.sql,,doc,182,7099,0
+database/migrations/add_gallery_advanced_tables.sql,,doc,136,5834,0
+database/migrations/add_gallery_analytics.sql,,doc,68,3461,0
+database/migrations/add_gallery_sync.sql,,doc,79,3647,0
+database/migrations/add_is_active_to_departments.sql,,doc,18,668,0
+database/migrations/add_is_active_to_department_members.sql,,doc,32,1181,0
+database/migrations/add_mpesa_stk_pushes_table.sql,,doc,44,1801,0
+database/migrations/add_notifications_advanced_features.sql,,doc,55,2537,0
+database/migrations/add_notifications_uuid.sql,,doc,83,3366,0
+database/migrations/add_notification_templates.sql,,doc,67,3428,0
+database/migrations/add_payments_advanced_tables.sql,,doc,76,4181,0
+database/migrations/add_payment_tracking.sql,,doc,115,5235,0
+database/migrations/add_performance_indexes.sql,,doc,73,4066,0
+database/migrations/add_performance_summaries.sql,,doc,94,3682,0
+database/migrations/add_platform_foundation.sql,,doc,77,4016,0
+database/migrations/add_poster_url_to_events.sql,,doc,10,499,0
+database/migrations/add_reconciliation_audit.sql,,doc,23,891,0
+database/migrations/add_settings_advanced_features.sql,,doc,57,2555,0
+database/migrations/add_slug_to_departments.sql,,doc,50,1699,0
+database/migrations/add_slug_to_users.sql,,doc,70,2331,0
+database/migrations/add_sms_advanced_tables.sql,,doc,86,4242,0
+database/migrations/add_sms_delivery_tracking.sql,,doc,53,2247,0
+database/migrations/add_sms_gateways.sql,,doc,14,446,0
+database/migrations/add_sms_providers.sql,,doc,72,3061,0
+database/migrations/add_sms_queue.sql,,doc,78,3018,0
+database/migrations/add_tax_deductible_to_payments.sql,,doc,8,324,0
+database/migrations/add_tax_statement_tables.sql,,doc,52,2465,0
+database/migrations/add_telegram_advanced_features.sql,,doc,39,2334,0
+database/migrations/add_telegram_auth_methods.sql,,doc,20,862,0
+database/migrations/add_tenancy_core.sql,,doc,145,6564,0
+database/migrations/add_treasury_additional_tables.sql,,doc,177,8349,0
+database/migrations/add_treasury_advanced_tables.sql,,doc,166,7215,0
+database/migrations/clean_up_slugs.sql,,doc,72,2352,0
+database/migrations/create_approvals_audit_notifications.sql,,doc,76,4670,0
+database/migrations/create_event_collections.sql,,doc,76,4339,0
+database/migrations/create_user_preferences.sql,,doc,48,1765,0
+database/migrations/enable_rls_policies.sql,,doc,155,6090,0
+database/migrations/migrate_departments_to_features.sql,,doc,125,4030,0
+database/migrations/mobile_integration.sql,,doc,441,17222,0
+database/migrations/_graveyard/execute_uuid_departments.sql,,doc,71,2952,0
+database/migrations/_graveyard/execute_uuid_departments_safe.sql,,doc,76,3499,0
+database/migrations/_graveyard/execute_uuid_gallery.sql,,doc,107,5252,0
+database/migrations/_graveyard/execute_uuid_gallery_comprehensive.sql,,doc,134,6331,0
+database/migrations/_graveyard/execute_uuid_gallery_correct_order.sql,,doc,123,6238,0
+database/migrations/_graveyard/execute_uuid_gallery_fixed.sql,,doc,111,5373,0
+database/migrations/_graveyard/execute_uuid_permissions_fixed.sql,,doc,39,1691,0
+database/migrations/_graveyard/execute_uuid_remaining.sql,,doc,55,2525,0
+database/migrations/_graveyard/execute_uuid_remaining_final.sql,,doc,56,2639,0
+database/migrations/_graveyard/execute_uuid_settings_telegram.sql,,doc,29,1173,0
+database/migrations/_graveyard/execute_uuid_treasury.sql,,doc,147,7474,0
+database/migrations/_graveyard/README.md,,doc,7,320,0
+database/migrations/_graveyard/standardize_uuids_all.sql,,doc,27,1192,0
+database/migrations/_graveyard/standardize_uuids_departments.sql,,doc,50,2499,0
+database/migrations/_graveyard/standardize_uuids_treasury.sql,,doc,64,3088,0
+database/migrations/_graveyard/test_syntax.sql,,doc,36,954,0
+database/notifications_schema.sql,,doc,56,2487,0
+database/payments_schema.sql,,doc,116,4776,0
+database/README.md,,doc,28,1470,0
+database/role_hierarchy.sql,,doc,49,2544,0
+database/schema.sql,,doc,204,7467,0
+database/security_schema.sql,,doc,17,616,0
+database/seed_new_tables.sql,,doc,247,12754,0
+database/settings_schema.sql,,doc,98,6563,0
+database/setup.bat,,doc,41,1092,0
+database/setup.sh,,doc,36,969,0
+database/site_settings_schema.sql,,doc,133,12201,0
+database/sms_schema.sql,,doc,84,3761,0
+database/telegram_schema.sql,,doc,111,4699,0
+database/test_data/mobile_integration_test_data.sql,,doc,74,3240,0
+database/treasury_schema.sql,,doc,119,5085,0
+database/update_settings_defaults.sql,,doc,108,6109,0
+database/_do-not-run/complete_seed.sql,,doc,566,30848,0
+database/_do-not-run/departments_seed_updated.sql,,doc,66,3394,0
+database/_do-not-run/README.md,,doc,17,1062,0
+database/_do-not-run/sample_data.sql,,doc,51,4369,0
+database/_do-not-run/seed_church_workers.sql,,doc,463,27185,0
+deploy-vps.sh,,doc,49,1431,0
+deployment test/Mobile webapp/1.jpeg,,doc,163,46293,0
+deployment test/Mobile webapp/2.jpeg,,doc,242,58560,0
+deployment test/Mobile webapp/3.jpeg,,doc,287,83915,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.06 PM (1).jpeg,,doc,208,53198,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.06 PM.jpeg,,doc,260,74369,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.07 PM (1).jpeg,,doc,224,59598,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.07 PM (2).jpeg,,doc,151,55487,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.07 PM.jpeg,,doc,240,53438,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.08 PM (1).jpeg,,doc,224,67002,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.08 PM (2).jpeg,,doc,208,57625,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.08 PM.jpeg,,doc,224,67002,0
+deployment test/Mobile webapp/WhatsApp Image 2026-09-29 at 12.41.09 PM.jpeg,,doc,191,57004,0
+DEPLOYMENT.md,,doc,324,6521,0
+deploy_caddy10.py,,doc,48,1456,0
+deploy_caddy9.py,,doc,48,1480,0
+deploy_clean_caddy.py,,doc,49,1542,0
+docker-compose.logging.yml,,doc,74,1926,0
+docker-compose.microservices.yml,,doc,373,10568,0
+docker-compose.monitoring.yml,,doc,103,2923,0
+docker-compose.yml,,doc,136,3573,0
+Dockerfile,,doc,29,827,0
+docs/1000-POINT-TODO-LIST.txt,,doc,1076,45146,0
+docs/500-POINT-TODO-LIST.md,,doc,1060,36709,0
+docs/ADMINISTRATOR_GUIDE.md,,doc,706,14516,0
+docs/api/API_DOCUMENTATION.md,,doc,252,7100,0
+docs/api/MOBILE_API_CONTRACT.md,,doc,1141,25294,0
+docs/api/Safaricom APIs.postman_collection.json,,doc,1959,63089,0
+docs/architecture/ARCHITECTURE.md,,doc,284,7428,0
+docs/architecture/MICROSERVICES_ARCHITECTURE.md,,doc,355,10312,0
+docs/architecture/SYSTEM_DOCUMENTATION.md,,doc,679,18252,0
+docs/BACKEND-STATUS-FINAL.md,,doc,131,3685,0
+docs/BACKEND_API_ENDPOINTS_STATUS.md,,doc,124,4324,0
+docs/CONTROLLER_REFACTORING_GAP_ANALYSIS.md,,doc,233,8273,0
+docs/DASHBOARD_AUDIT.md,,doc,121,8083,0
+docs/db-routes-validation.md,,doc,693,34738,0
+docs/DEPARTMENTS_WORKFLOW.md,,doc,299,11907,0
+docs/deployment/CONTAbo_DEPLOYMENT.md,,doc,567,12472,0
+docs/deployment/DEPLOYMENT.md,,doc,191,4272,0
+docs/DEVELOPER_GUIDE.md,,doc,932,19331,0
+docs/development/DEVELOPER_GUIDE.md,,doc,313,9109,0
+docs/FLESHED_OUT_FUNCTIONS_SUMMARY.md,,doc,471,20369,0
+docs/GEMINI_SCRIPT.md,,doc,60,2175,0
+docs/IMPLEMENTATION_COMPLETE.md,,doc,687,19763,0
+docs/IMPLEMENTATION_SUMMARY.md,,doc,198,7386,0
+docs/INTERACTIVE_ELEMENTS_MAP.md,,doc,1176,43558,0
+docs/INTERACTIVE_IMPLEMENTATION_PROGRESS.md,,doc,302,9874,0
+docs/KMainCMS_UX_DESIGN_DOCUMENT.md,,doc,1387,54688,0
+docs/KNOWLEDGE_BASE.md,,doc,468,12940,0
+docs/logs/COMPLETE_FILE_INVENTORY_2026-06-21.md,,doc,451,12116,0
+docs/logs/comprehensive_build_test_2026-06-24.md,,doc,219,6465,0
+docs/logs/controller_refactoring_analysis_2025-06-21.txt,,doc,286,12201,0
+docs/logs/Dark Mode Changes Checklist - 2026-06-20.md,,doc,277,12118,0
+docs/logs/Dark Mode Implementation Plan - 2026-06-20.md,,doc,1018,34655,0
+docs/logs/Dark Mode Phase 1-2 Verification - 2026-06-21.md,,doc,144,5754,0
+docs/logs/Dark Mode Phases 1-5 Execution Verification - 2026-06-21.md,,doc,176,9140,0
+docs/logs/Dark Mode Phases 15-20 - Semantic Color Mapping - 2026-06-21.md,,doc,532,21495,0
+docs/logs/Dark Mode Remaining Work Phases - 2026-06-21.md,,doc,311,9033,0
+docs/logs/department_controller_consolidation_recommendation.txt,,doc,92,3097,0
+docs/logs/KMainCMS - 1000-Item Implementation - 2026-06-16.md,,doc,153,9708,0
+docs/logs/KMainCMS - 1000-Item Todo List Expansion - 2025-06-18.md,,doc,263,9990,0
+docs/logs/KMainCMS - 2026-06-15.md,,doc,165,6652,0
+docs/logs/KMainCMS - Additional Features Implementation - 2026-06-22.md,,doc,387,14810,0
+docs/logs/KMainCMS - Advanced Treasury Features Implementation - 2026-06-22.md,,doc,402,13525,0
+docs/logs/KMainCMS - API 404 Fixes and Backend Configuration - 2026-06-20.md,,doc,171,7917,0
+docs/logs/KMainCMS - Backend Module Completion - 2026-06-22.md,,doc,388,13079,0
+docs/logs/KMainCMS - Bug Fixes and Code Quality Improvements - 2026-06-22.md,,doc,248,8273,0
+docs/logs/KMainCMS - Complete Backend Implementation Summary - 2026-06-22.md,,doc,533,20707,0
+docs/logs/KMainCMS - Comprehensive Codebase Analysis - 2026-06-20.md,,doc,261,9255,0
+docs/logs/KMainCMS - Controller Refactoring - 2026-06-21.md,,doc,586,21921,0
+docs/logs/KMainCMS - Department Dashboard Fix - 2026-06-18.md,,doc,56,2428,0
+docs/logs/KMainCMS - Department Data Seeding - 2026-06-18.md,,doc,109,3373,0
+docs/logs/KMainCMS - Department Member Seeding - 2026-06-18.md,,doc,98,3293,0
+docs/logs/KMainCMS - Departments Functionality Copy - 2026-06-18.md,,doc,75,3439,0
+docs/logs/KMainCMS - E2E Testing Implementation - 2026-06-18.md,,doc,285,7669,0
+docs/logs/KMainCMS - Final Check and Additional Configuration - 2026-06-22.md,,doc,399,15164,0
+docs/logs/KMainCMS - Final Implementation Summary - 2026-06-22.md,,doc,360,13134,0
+docs/logs/KMainCMS - Final Session Completion - 2026-06-15.md,,doc,163,6517,0
+docs/logs/KMainCMS - Frontend Component Expansion - 2026-06-18.md,,doc,268,8903,0
+docs/logs/KMainCMS - Frontend Components for All Modules - 2026-06-18.md,,doc,260,7422,0
+docs/logs/KMainCMS - Improvement Recommendations - 2025-06-18.md,,doc,281,10496,0
+docs/logs/KMainCMS - Infrastructure and Deployment Preparation - 2026-06-22.md,,doc,328,11090,0
+docs/logs/KMainCMS - Login Fix Session - 2026-06-18.md,,doc,98,4219,0
+docs/logs/KMainCMS - Member Financial Access - 2026-06-18.md,,doc,228,7651,0
+docs/logs/KMainCMS - Missing Functionalities Assessment - 2026-06-22.md,,doc,229,8624,0
+docs/logs/KMainCMS - Missing Functionalities Implementation - 2026-06-22.md,,doc,514,16779,0
+docs/logs/KMainCMS - Missing Treasury Features Implementation - 2026-06-22.md,,doc,366,12673,0
+docs/logs/KMainCMS - Module Reorganization - 2026-06-18.md,,doc,183,5186,0
+docs/logs/KMainCMS - Permissions System and Additional Departments - 2026-06-18.md,,doc,174,6392,0
+docs/logs/KMainCMS - Phase 2 UX Implementation - 2026-06-20.md,,doc,191,7408,0
+docs/logs/KMainCMS - Phase 3 Complete - 2026-06-20.md,,doc,321,9560,0
+docs/logs/KMainCMS - Phase 3 Permission-Based UI - 2026-06-20.md,,doc,257,7210,0
+docs/logs/KMainCMS - Phase 3&4 Gap Fixes - 2026-06-20.md,,doc,282,10095,0
+docs/logs/KMainCMS - Phase 3.2 Advanced Features - 2026-06-20.md,,doc,404,11556,0
+docs/logs/KMainCMS - Phase 3.2 Backend Implementation - 2026-06-20.md,,doc,481,13893,0
+docs/logs/KMainCMS - Phase 3.2 Frontend Components - 2026-06-20.md,,doc,290,9168,0
+docs/logs/KMainCMS - Phase 4 Accessibility - 2026-06-20.md,,doc,532,27426,0
+docs/logs/KMainCMS - Phase 4.2 Completion & Final Audit - 2026-06-20.md,,doc,239,8674,0
+docs/logs/KMainCMS - Phase 5 Mobile Responsiveness - 2026-06-20.md,,doc,266,8802,0
+docs/logs/KMainCMS - Rate Limiting & API Proxy Fixes - 2026-06-21.md,,doc,204,6828,0
+docs/logs/KMainCMS - Routing & DB Audit - 2026-06-21.md,,doc,152,8309,0
+docs/logs/KMainCMS - Server Startup & Login Fixes - 2026-06-18.md,,doc,99,3399,0
+docs/logs/KMainCMS - Session Log - 2026-06-20.md,,doc,379,13388,0
+docs/logs/KMainCMS - Shared Components - 2026-06-20.md,,doc,399,9912,0
+docs/logs/KMainCMS - SMS Module Completion - 2026-06-18.md,,doc,184,6773,0
+docs/logs/KMainCMS - SMS Module Second Verification - 2026-06-18.md,,doc,156,6697,0
+docs/logs/KMainCMS - SMS Module Verification & Fixes - 2026-06-18.md,,doc,186,7660,0
+docs/logs/KMainCMS - System Audit - 2026-06-18.md,,doc,322,13874,0
+docs/logs/KMainCMS - TELEGRAM Module Completion - 2026-06-22.md,,doc,251,7900,0
+docs/logs/KMainCMS - Treasury Module Completion - 2026-06-22.md,,doc,255,8112,0
+docs/logs/KMainCMS - UX Design and Implementation Planning - 2026-06-20.md,,doc,413,14359,0
+docs/logs/KMainCMS - UX Issues Fix - 2026-06-20.md,,doc,295,8378,0
+docs/logs/KMainCMS_2025-01-14.md,,doc,85,4048,0
+docs/logs/KMainCMS_2026-06-15.md,,doc,115,5489,0
+docs/logs/KMainCMS_Upgrade_Status_Report_2026-06-23.md,,doc,401,14825,0
+docs/logs/naming_conventions_guide.txt,,doc,167,4879,0
+docs/logs/Parallel Tab Structure Implementation - 2026-06-21.md,,doc,457,23680,0
+docs/logs/PHASE1_COMPLETE_SESSION_2025-01-15.md,,doc,306,11769,0
+docs/logs/PHASE1_FOUNDATION_SESSION_2025-01-15.md,,doc,280,11939,0
+docs/logs/QA_Static_Analysis_Report_2026-06-21.md,,doc,477,29440,0
+docs/logs/README.md,,doc,21,1023,0
+docs/logs/Session Log - Bug Fixes and Setup - 2026-06-21.md,,doc,989,35099,0
+docs/logs/Session Log - Dark Mode Implementation Gap Fixing - 2026-06-21.md,,doc,88,3272,0
+docs/logs/Session Log - Dark Mode Implementation Planning - 2026-06-20.md,,doc,680,27663,0
+docs/logs/Session Log - Dark Mode Phase 15 Planning - 2026-06-21.md,,doc,531,20566,0
+docs/logs/session_2026-06-22_1.md,,doc,186,10055,0
+docs/logs/session_2026-06-22_final_verification.md,,doc,130,5021,0
+docs/logs/session_2026-06-22_package05_refactoring.md,,doc,138,5478,0
+docs/logs/session_2026-06-22_package06_refactoring.md,,doc,152,6888,0
+docs/logs/session_2026-06-22_package07_refactoring.md,,doc,111,4925,0
+docs/logs/session_2026-06-22_package08_refactoring.md,,doc,124,5652,0
+docs/logs/session_2026-06-22_package16_refactoring.md,,doc,66,2698,0
+docs/logs/session_2026-06-22_package_01_refactoring.md,,doc,86,3518,0
+docs/logs/session_2026-06-22_package_02_refactoring.md,,doc,144,6059,0
+docs/logs/session_2026-06-22_package_03_refactoring.md,,doc,124,5710,0
+docs/logs/session_2026-06-22_package_08_refactoring.md,,doc,73,3302,0
+docs/logs/session_2026-06-22_package_11_refactoring.md,,doc,77,3431,0
+docs/logs/session_2026-06-22_package_12_refactoring.md,,doc,129,5767,0
+docs/logs/session_2026-06-22_package_15_refactoring.md,,doc,121,5534,0
+docs/logs/session_2026-06-22_package_23_refactoring.md,,doc,127,5268,0
+docs/logs/session_2026-06-22_phase1_implementation.md,,doc,520,21086,0
+docs/logs/session_2026-06-22_phase4_implementation.md,,doc,355,22369,0
+docs/logs/session_2026-06-22_phase5_implementation.md,,doc,251,9242,0
+docs/logs/session_2026-06-22_refactor_tooling.md,,doc,77,3764,0
+docs/logs/session_2026-06-22_routes_refactoring.md,,doc,87,3523,0
+docs/logs/session_2026-06-23_frontend_shell_refactor.md,,doc,318,17132,0
+docs/logs/session_2026-06-23_offline_first_android.md,,doc,166,6613,0
+docs/logs/session_2026-06-23_offline_first_testing_qa.md,,doc,412,16510,0
+docs/logs/session_2026-06-23_phase15_testing_qa.md,,doc,208,8449,0
+docs/logs/session_2026-06-23_phase2_implementation.md,,doc,115,4929,0
+docs/logs/session_2026-06-23_phase6_implementation.md,,doc,211,8398,0
+docs/logs/session_2026-06-23_phase7_implementation.md,,doc,209,8022,0
+docs/logs/session_2026-06-23_phase8_implementation.md,,doc,261,10944,0
+docs/logs/session_2026-06-23_server_restart.md,,doc,48,1956,0
+docs/logs/session_2026-06-23_startup_and_bugfixes.md,,doc,125,5357,0
+docs/logs/session_2026-06-24_multi_phase_implementation.md,,doc,371,11877,0
+docs/logs/session_2026-06-24_phase16_deployment_devops.md,,doc,236,9135,0
+docs/logs/session_2026-06-24_phase17_documentation_training.md,,doc,290,8358,0
+docs/logs/session_2026-06-24_phases_7_9_10_11_12.md,,doc,316,13210,0
+docs/logs/session_2026-06-24_project_completion.md,,doc,346,10595,0
+docs/logs/session_flesh_out_analytics.md,,doc,157,7467,0
+docs/logs/session_flesh_out_collections.md,,doc,120,4924,0
+docs/logs/session_flesh_out_payments.md,,doc,152,6241,0
+docs/logs/session_frontend_integration.md,,doc,230,9734,0
+docs/logs/session_frontend_integration_continued.md,,doc,310,10604,0
+docs/logs/SESSION_LOG_2025-06-18.md,,doc,291,11304,0
+docs/logs/SMS_APP_INTEGRATION_SESSION_2025-01-15.md,,doc,241,10072,0
+docs/logs/sql_sanitization_audit.txt,,doc,162,5612,0
+docs/logs/testing_deployment_infrastructure_2026-06-24.md,,doc,308,9070,0
+docs/logs/testing_status_report_2026-06-24.md,,doc,175,5411,0
+docs/modular-architecture/01-module-overview.csv,,doc,18,5734,0
+docs/modular-architecture/02-module-relationships.csv,,doc,23,2089,0
+docs/modular-architecture/03-auth-module.csv,,doc,40,3022,0
+docs/modular-architecture/04-telegram-module.csv,,doc,39,2911,0
+docs/modular-architecture/05-content-module.csv,,doc,42,2836,0
+docs/modular-architecture/06-departments-module.csv,,doc,41,2925,0
+docs/modular-architecture/07-gallery-module.csv,,doc,41,2681,0
+docs/modular-architecture/08-treasury-module.csv,,doc,50,3215,0
+docs/modular-architecture/09-payments-module.csv,,doc,40,2548,0
+docs/modular-architecture/10-sms-module.csv,,doc,38,2309,0
+docs/modular-architecture/11-documents-module.csv,,doc,37,2361,0
+docs/modular-architecture/12-approvals-module.csv,,doc,35,2262,0
+docs/modular-architecture/13-notifications-module.csv,,doc,33,2214,0
+docs/modular-architecture/14-settings-module.csv,,doc,38,2396,0
+docs/modular-architecture/15-frontend-modules.csv,,doc,34,2836,0
+docs/modular-architecture/16-version-control-procedures.csv,,doc,45,3951,0
+docs/modular-architecture/CHAT-LOG-2026-06-15.md,,doc,36,1673,0
+docs/modular-architecture/README.txt,,doc,119,4191,0
+docs/modular-architecture/SESSION-PLAN.md,,doc,1037,45046,0
+docs/NAVIGATION_MAP.md,,doc,281,16049,0
+docs/ONBOARDING_CHECKLIST.md,,doc,260,6484,0
+docs/PARALLEL_IMPLEMENTATION_STRATEGY.md,,doc,669,16828,0
+docs/PERMISSION_AUDIT.md,,doc,240,6834,0
+docs/PHASE15_TESTING_QA.md,,doc,591,11954,0
+docs/PHASE16_DEPLOYMENT_DEVOPS.md,,doc,505,11111,0
+docs/planning/ANDROID_APP_IMPLEMENTATION_TODO.md,,doc,129,7582,0
+docs/planning/DEPARTMENT_FEATURE_PLAN.md,,doc,136,6556,0
+docs/planning/ERROR_HANDLING_AND_LOAD_BALANCING_PLAN.md,,doc,557,13657,0
+docs/planning/FLUTTER_ROLE_DASHBOARDS_PLAN.md,,doc,72,4597,0
+docs/planning/FLUTTER_WEB_PARITY.md,,doc,209,11238,0
+docs/planning/INTEGRATION_PLAN_REVIEW.md,,doc,243,8628,0
+docs/planning/KMAINCMS_GRANULATED_TODO_LIST.md,,doc,76,4423,0
+docs/planning/KMAINCMS_REMEDIATION_PLAN.md,,doc,100,3878,0
+docs/planning/MIGRATION_INTEGRATION_STRATEGY.md,,doc,90,4978,0
+docs/planning/MISSING_FUNCTIONALITIES_IMPORT_PLAN.md,,doc,479,14392,0
+docs/planning/MOBILE_APP_PARITY_REMEDIATION_PLAN.md,,doc,87,4058,0
+docs/planning/MOBILE_APP_PARITY_REMEDIATION_PLAN_2026_09_22.md,,doc,108,6345,0
+docs/planning/MOBILE_READY_PLAN.md,,doc,129,6332,0
+docs/planning/MODULE_INTEGRATION_STRATEGIES.md,,doc,1160,33081,0
+docs/planning/NEXT_STEPS_SUMMARY.md,,doc,237,8472,0
+docs/planning/PHASE_2_IMPLEMENTATION_PLAN.md,,doc,2400,73507,0
+docs/planning/PUBLIC_GRADIENT_PLAN.md,,doc,58,2235,0
+docs/planning/SAAS_DASHBOARD_IMPLEMENTATION_SUMMARY.md,,doc,264,9504,0
+docs/planning/SAAS_OWNER_DASHBOARD_IMPLEMENTATION_TODO.md,,doc,162,11590,0
+docs/planning/SAAS_OWNER_DASHBOARD_PLAN.md,,doc,454,15969,0
+docs/planning/sms-integration-plan.md,,doc,245,8152,0
+docs/planning/SMS_APP_INTEGRATION_PLAN.md,,doc,711,21316,0
+docs/planning/SYSTEM_IMPROVEMENT_PLAN.md,,doc,534,16435,0
+docs/planning/TECHNICAL_SPECIFICATIONS.md,,doc,980,25562,0
+docs/plans/2026-10-03_16-36_live-usage-test-plan.md,,doc,134,16940,0
+docs/plans/church-website-audit-plan-9bc58d.md,,doc,135,6601,0
+docs/plans/COMPLETE_QUERY_REPLACEMENT_LIST.md,,doc,72,2903,0
+docs/plans/dead-code-verification.md,,doc,327,15104,0
+docs/plans/department-centric-redesign-plan.md,,doc,352,16701,0
+docs/plans/FEATURE_IMPORT_PLAN.md,,doc,95,4744,0
+docs/plans/FUNCTIONALITY_VERIFICATION_REPORT_2026-06-22.md,,doc,69,4149,0
+docs/plans/implementation-todo.md,,doc,90,7551,0
+docs/plans/IMPLEMENTATION_STATUS_REPORT_2026-06-22.md,,doc,356,14210,0
+docs/plans/KMainCMS_GRANULATED_MASTER_PLAN.md,,doc,167,6260,0
+docs/plans/KMainCMS_REMAINING_TASKS.md,,doc,47,2812,0
+docs/plans/KMainCMS_Unified_Master_Upgrade_Plan.md,,doc,107,5577,0
+docs/plans/KMainCMS_Upgrade_Plan_2026-06-22.md,,doc,720,25195,0
+docs/plans/KMainCMS_Upgrade_TodoList_2026-06-22.md,,doc,146,5696,0
+docs/plans/PARALLEL_REFACTORING_WORK_PACKAGES.md,,doc,582,28329,0
+docs/plans/PHASE4_REFACTORING_MANIFEST.json,,doc,57,1979,0
+docs/plans/POOL_QUERY_REFACTORING_LIST_2026-06-22.md,,doc,395,12678,0
+docs/plans/QUERY_COUNT_VERIFICATION.md,,doc,369,9524,0
+docs/plans/QUERY_PACKAGES/PACKAGE_01.md,,doc,9,233,0
+docs/plans/QUERY_PACKAGES/PACKAGE_02.md,,doc,10,285,0
+docs/plans/QUERY_PACKAGES/PACKAGE_DISTRIBUTION.md,,doc,255,8675,0
+docs/plans/role-dashboards-plan.md,,doc,86,3961,0
+docs/plans/sda-departments-seed-plan.md,,doc,276,16249,0
+docs/plans/security-efficiency-plan.md,,doc,121,6499,0
+docs/plans/TODO_LIST_VERIFICATION_REPORT_2026-06-22.md,,doc,278,9706,0
+docs/plans/UNMAPPED_QUERIES.md,,doc,97,4055,0
+docs/plans/ux-codebase-audit-plan.md,,doc,180,8653,0
+docs/plans/ux-codebase-fix-list.md,,doc,61,4131,0
+docs/plans/webapp-leanness-plan.md,,doc,203,11830,0
+docs/query_packages/PACKAGE_01.md,,doc,10,297,0
+docs/query_packages/PACKAGE_02.md,,doc,11,368,0
+docs/query_packages/PACKAGE_03.md,,doc,11,371,0
+docs/query_packages/PACKAGE_04.md,,doc,23,830,0
+docs/query_packages/PACKAGE_05.md,,doc,55,1583,0
+docs/query_packages/PACKAGE_06.md,,doc,83,2572,0
+docs/query_packages/PACKAGE_07.md,,doc,50,2226,0
+docs/query_packages/PACKAGE_08.md,,doc,62,2748,0
+docs/query_packages/PACKAGE_09.md,,doc,19,667,0
+docs/query_packages/PACKAGE_10.md,,doc,23,944,0
+docs/query_packages/PACKAGE_11.md,,doc,121,5053,0
+docs/query_packages/PACKAGE_12.md,,doc,97,3285,0
+docs/query_packages/PACKAGE_13.md,,doc,25,905,0
+docs/query_packages/PACKAGE_14.md,,doc,23,822,0
+docs/query_packages/PACKAGE_15.md,,doc,25,875,0
+docs/query_packages/PACKAGE_16.md,,doc,44,1794,0
+docs/query_packages/PACKAGE_17.md,,doc,17,538,0
+docs/query_packages/PACKAGE_18.md,,doc,19,630,0
+docs/query_packages/PACKAGE_19.md,,doc,25,892,0
+docs/query_packages/PACKAGE_20.md,,doc,23,775,0
+docs/query_packages/PACKAGE_21.md,,doc,58,2470,0
+docs/query_packages/PACKAGE_22.md,,doc,55,2517,0
+docs/query_packages/PACKAGE_23.md,,doc,32,1407,0
+docs/query_packages/PACKAGE_24.md,,doc,88,4353,0
+docs/query_refactoring_packages.md,,doc,140,4804,0
+docs/RBAC-Permissions-Matrix.html,,doc,1532,76512,0
+docs/RBAC-Permissions-Matrix.md,,doc,564,30188,0
+docs/reports/2026-10-02_22-49_line-by-line-ledger.md,,doc,1483,293782,0
+docs/reports/2026-10-03_05-56_open-issues.csv,,doc,52,15861,0
+docs/reports/BROKEN_LINKS_ROUTES_REPORT.md,,doc,196,8505,0
+docs/reports/code-quality-audit.md,,doc,126,6470,0
+docs/reports/codebase-map.html,,doc,618,435797,0
+docs/reports/CODEBASE_AUDIT_REPORT.md,,doc,179,6811,0
+docs/reports/disbursement-report.pdf,,doc,46473,1641467,0
+docs/reports/employees-report.pdf,,doc,409,792370,0
+docs/reports/IMPLEMENTATION_SUMMARY.md,,doc,397,13900,0
+docs/reports/IMPROVEMENT_RECOMMENDATIONS.md,,doc,638,19285,0
+docs/reports/IMPROVEMENT_RECOMMENDATIONS_REPORT.md,,doc,529,20153,0
+docs/reports/KMAINCMS_COMPREHENSIVE_TEST_GUIDE.md,,doc,101,3996,0
+docs/reports/KMAINCMS_SYSTEM_AUDIT_JUNE_2026.md,,doc,65,4108,0
+docs/reports/live-files.txt,,doc,425,18085,0
+docs/reports/MODULARIZATION_SUMMARY.md,,doc,212,8094,0
+docs/reports/PROGRESS_TRACKING.md,,doc,270,8611,0
+docs/reports/security-assessment.md,,doc,321,23683,0
+docs/reports/TESTING_INFRASTRUCTURE.md,,doc,53,1880,0
+docs/reports/TREASURY_IMPLEMENTATION_SUMMARY.md,,doc,468,16976,0
+docs/reports/users-report.pdf,,doc,500,793854,0
+docs/reports/ux-audit.md,,doc,109,7455,0
+docs/route-mounting-validation.md,,doc,201,8473,0
+docs/routes-and-db-calls.md,,doc,1535,63045,0
+docs/SIDEBAR_ARRANGEMENTS.md,,doc,302,6074,0
+docs/specs/mpesa-sms-samples.md,,doc,127,4058,0
+docs/STARTING_INSTRUCTIONS.md,,doc,136,3301,0
+docs/superpowers/plans/2025-01-27-android-cms-integration.md,,doc,821,38603,0
+docs/superpowers/plans/2025-01-27-cms-sms-integration.md,,doc,997,45833,0
+docs/superpowers/plans/2026-07-27-worldclass-ui-redesign.md,,doc,1352,55629,0
+docs/superpowers/plans/android-connection-audit-report.md,,doc,270,11976,0
+docs/superpowers/plans/android-role-based-dashboard-implementation.md,,doc,190,8001,0
+docs/superpowers/plans/cms-webapp-compatibility-analysis.md,,doc,262,10231,0
+docs/TAB_STRUCTURE_ALTERNATIVE_APPROACH.md,,doc,379,20570,0
+docs/TAB_STRUCTURE_EVALUATION.md,,doc,151,4854,0
+docs/TAB_STRUCTURE_IMPLEMENTATION_PLAN.md,,doc,779,26826,0
+docs/TAB_STRUCTURE_IMPLEMENTATION_PLAN_DETAILED.md,,doc,263,8414,0
+docs/TESTING.md,,doc,351,8217,0
+docs/TRAINING_MATERIALS.md,,doc,989,21865,0
+docs/TROUBLESHOOTING_GUIDE.md,,doc,684,13575,0
+docs/USER_GUIDE.md,,doc,556,12440,0
+docs/UX_DESIGN_PROMPT.md,,doc,810,23900,0
+docs/VIDEO_PRODUCTION_GUIDE.md,,doc,477,13739,0
+docs/WORLDCLASS_UI_IMPROVEMENT_PROMPT.md,,doc,293,11664,0
+Documentation/Audit Reports/AUDIT_RESULTS.md,,doc,361,13284,0
+Documentation/Audit Reports/CODEBASE_AUDIT_PROTOCOL.md,,doc,57,2819,0
+Documentation/Audit Reports/COMBINED_AUDIT_REPORT.md,,doc,504,19285,0
+Documentation/Audit Reports/DEEP_GAP_ANALYSIS.md,,doc,93,5218,0
+Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS - Copy (2).md,,doc,4111,150157,0
+Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS - Copy.md,,doc,3724,162731,0
+Documentation/Audit Reports/GRANULAR_AUDIT_CLUSTERS.md,,doc,1785,196501,0
+Documentation/Configuration Files/.windsurfrules,,doc,97,4529,0
+Documentation/Deployment/DEPLOYMENT.md,,doc,324,6521,0
+Documentation/Deployment/ENVIRONMENT_CONFIG.md,,doc,411,9612,0
+Documentation/Deployment/GITHUB_SECRETS_SETUP.md,,doc,248,6404,0
+Documentation/Deployment/QUICK_START.md,,doc,226,5174,0
+Documentation/Deployment/TROUBLESHOOTING.md,,doc,625,13529,0
+Documentation/Deployment/VPS_DEPLOYMENT_GUIDE.md,,doc,769,16368,0
+Documentation/DEPLOYMENT_SUMMARY.md,,doc,321,9603,0
+Documentation/Development Files/CONTINUE_WORK_README.md,,doc,99,2626,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_36.md,,doc,93,8977,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_37.md,,doc,218,14087,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_38.md,,doc,226,13422,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_38_PART2.md,,doc,185,8125,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39.md,,doc,318,13823,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39_PART2.md,,doc,59,9285,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_39_PART3.md,,doc,98,3653,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_40.md,,doc,86,4978,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_41.md,,doc,26,4496,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_CLUSTER_42.md,,doc,111,12767,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_DASHBOARD_ENDPOINTS.md,,doc,119,4240,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_DASHBOARD_TABS.md,,doc,98,5048,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_13.md,,doc,165,8357,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_14.md,,doc,67,4304,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_15.md,,doc,92,4704,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_16.md,,doc,18,2402,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_PHASE_5.md,,doc,309,14883,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_REDIS_RATE_LIMIT.md,,doc,141,5813,0
+Documentation/Development Files/Progress Files/TODO_PROGRESS_TREASURY_CIDR.md,,doc,142,4787,0
+Documentation/Development Files/Progress Files/TREASURY_CONTROLLER_DEPRECATION_PLAN.md,,doc,219,9195,0
+Documentation/Development Files/Scripts/backup-database.sh,,doc,47,1283,0
+Documentation/Development Files/Scripts/backup-files.sh,,doc,46,1288,0
+Documentation/Development Files/Scripts/continue-work-simple.bat,,doc,4,48,0
+Documentation/Development Files/Scripts/continue-work-simple.js,,doc,129,3825,0
+Documentation/Development Files/Scripts/continue-work.bat,,doc,5,72,0
+Documentation/Development Files/Scripts/continue-work.js,,doc,202,6016,0
+Documentation/Development Files/Scripts/fix-auth-imports.js,,doc,39,1136,0
+Documentation/Development Files/Scripts/refactor_cleaner.py,,doc,27,690,0
+Documentation/Development Files/Scripts/refactor_runner.py,,doc,109,4669,0
+Documentation/Development Files/Scripts/refactor_verifier.py,,doc,48,1451,0
+Documentation/Development Files/Scripts/restore-database.sh,,doc,53,1391,0
+Documentation/Development Files/Scripts/run-migrations.bat,,doc,69,2245,0
+Documentation/Development Files/Scripts/run-migrations.js,,doc,90,2837,0
+Documentation/Development Files/Scripts/run-tests.bat,,doc,40,868,0
+Documentation/Development Files/Scripts/run-tests.js,,doc,44,1137,0
+Documentation/Development Files/Scripts/scripts/ecosystem.config.js,,doc,21,464,0
+Documentation/Development Files/Scripts/scripts/start_servers.bat,,doc,9,229,0
+Documentation/Development Files/Scripts/setup-backup-cron.sh,,doc,33,1169,0
+Documentation/Development Files/Scripts/setup-microservices.js,,doc,261,8685,0
+Documentation/Development Files/Scripts/setup-production.sh,,doc,66,1989,0
+Documentation/Development Files/Scripts/setup-ssl.sh,,doc,67,1916,0
+Documentation/Development Files/Scripts/test-infra.js,,doc,81,3189,0
+Documentation/Development Files/Scripts/verify-backups.sh,,doc,52,1440,0
+Documentation/Development Files/Tools/examples/Approval_Request.md,,doc,57,1885,0
+Documentation/Development Files/Tools/examples/Refactor_Log.md,,doc,43,1681,0
+Documentation/Development Files/Tools/examples/Refactor_Plan.json,,doc,60,3113,0
+Documentation/Development Files/Tools/examples/Refactor_Report.json,,doc,118,6187,0
+Documentation/Development Files/Tools/manifest_schema.json,,doc,91,2843,0
+Documentation/Development Files/Tools/mapping_parser.py,,doc,142,4410,0
+Documentation/Development Files/Tools/refactor_config.yaml,,doc,65,1115,0
+Documentation/Development Files/Tools/refactor_runner.py,,doc,1244,46553,0
+Documentation/Implementation Plans/IMPLEMENTATION_PLAN.md,,doc,78,4484,0
+Documentation/Implementation Plans/LEAN_ARCHITECTURE_REPORT.md,,doc,56,3431,0
+Documentation/Other Files/467342361_787812843470552_2051184122699826250_n.csv,,doc,35,801,0
+Documentation/Other Files/Church workers List with departments.txt,,doc,322,7072,0
+Documentation/Other Files/CMS2App publish profile.PublishSettings,,doc,1,1864,0
+Documentation/Other Files/Master_Audit _map _refactored,,doc,266,20016,0
+Documentation/Other Files/Microsoft.VisualStudio.Services.VSIXPackage,,doc,0,6826731,0
+Documentation/Project Files/.gitignore,,doc,89,963,0
+Documentation/Project Files/Dockerfile,,doc,26,642,0
+Documentation/Project Files/package.json,,doc,47,1271,0
+Documentation/Project Files/README.md,,doc,117,3845,0
+Documentation/README.md,,doc,255,9572,0
+Documentation/TODO Lists/30 Phase To do list.txt,,doc,1226,96378,0
+Documentation/TODO Lists/GRANULAR_TASK_LIST.md,,doc,84,4366,0
+Documentation/TODO Lists/MASTER_TODO_LIST.md,,doc,2329,193211,0
+Documentation/TODO Lists/TO do list,,doc,1,187,0
+Documentation/TODO Lists/TODO/00_INDEX.md,,doc,93,11022,0
+Documentation/TODO Lists/TODO/01_PHASE1_runtime_crashes.md,,doc,75,6853,0
+Documentation/TODO Lists/TODO/02_PHASE2_multitenancy_base_search.md,,doc,35,2982,0
+Documentation/TODO Lists/TODO/03_PHASE2_multitenancy_user_repos.md,,doc,41,3103,0
+Documentation/TODO Lists/TODO/04_PHASE2_multitenancy_treasury_dashboard.md,,doc,31,2438,0
+Documentation/TODO Lists/TODO/05_PHASE2_multitenancy_taxstatement_security.md,,doc,38,2875,0
+Documentation/TODO Lists/TODO/06_PHASE2_multitenancy_approvals_reconciliation_model.md,,doc,41,3023,0
+Documentation/TODO Lists/TODO/07_PHASE3_controllers_security_notifications.md,,doc,37,2628,0
+Documentation/TODO Lists/TODO/08_PHASE3_controllers_approvals_payments.md,,doc,37,3327,0
+Documentation/TODO Lists/TODO/09_PHASE3_controllers_members_users.md,,doc,35,2839,0
+Documentation/TODO Lists/TODO/10_PHASE3_controllers_search_auth_dashboard_treasury.md,,doc,56,5137,0
+Documentation/TODO Lists/TODO/11_PHASE4_routes_app_payments_auth.md,,doc,35,2690,0
+Documentation/TODO Lists/TODO/12_PHASE4_routes_middleware_security.md,,doc,53,4987,0
+Documentation/TODO Lists/TODO/13_PHASE5_database_schema.md,,doc,44,4240,0
+Documentation/TODO Lists/TODO/14_PHASE6_backend_services.md,,doc,39,3686,0
+Documentation/TODO Lists/TODO/15_PHASE7_frontend_hooks.md,,doc,34,3012,0
+Documentation/TODO Lists/TODO/16_PHASE8_frontend_contexts.md,,doc,40,3489,0
+Documentation/TODO Lists/TODO/17_PHASE9_frontend_components.md,,doc,49,4057,0
+Documentation/TODO Lists/TODO/18_PHASE10_dashboard_pages.md,,doc,45,2906,0
+Documentation/TODO Lists/TODO/19_PHASE11_seo_telegram_websocket.md,,doc,38,2898,0
+Documentation/TODO Lists/TODO/20_PHASE12_mpesa_payments.md,,doc,21,1429,0
+Documentation/TODO Lists/TODO/21_PHASE13_reports_analytics.md,,doc,29,1738,0
+Documentation/TODO Lists/TODO/22_PHASE14_sms_integration.md,,doc,18,1181,0
+Documentation/TODO Lists/TODO/23_PHASE15_document_management.md,,doc,14,980,0
+Documentation/TODO Lists/TODO/24_PHASE16_audit_logging.md,,doc,20,1695,0
+Documentation/TODO Lists/TODO/25_PHASE17_testing.md,,doc,31,2484,0
+Documentation/TODO Lists/TODO/26_PHASE18_environment_deployment.md,,doc,31,1888,0
+Documentation/TODO Lists/TODO/27_PHASE19_code_quality.md,,doc,24,1523,0
+Documentation/TODO Lists/TODO/28_PHASE20_final_verification.md,,doc,31,2131,0
+Documentation/TODO Lists/TODO/29_PHASE21_dashboard_concrete_fixes_part1.md,,doc,63,7474,0
+Documentation/TODO Lists/TODO/30_PHASE21_dashboard_concrete_fixes_part2.md,,doc,46,4475,0
+Documentation/TODO Lists/TODO/31_PHASE22_additional_concrete_fixes.md,,doc,42,4563,0
+Documentation/TODO Lists/TODO/32_APPENDIX_A_quickwins.md,,doc,30,2377,0
+Documentation/TODO Lists/TODO/33_APPENDIX_B_phase_order.md,,doc,27,1426,0
+Documentation/TODO Lists/TODO/34_APPENDIX_C_stub_inventory.md,,doc,21,1430,0
+Documentation/TODO Lists/TODO/35_APPENDIX_D_quickwins_dashboard.md,,doc,15,1088,0
+Documentation/TODO Lists/TODO/36_CLUSTER_auth_and_identity.md,,doc,211,15114,0
+Documentation/TODO Lists/TODO/37_CLUSTER_treasury_and_payments.md,,doc,220,16144,0
+Documentation/TODO Lists/TODO/38_CLUSTER_repositories_and_database.md,,doc,269,21361,0
+Documentation/TODO Lists/TODO/39_CLUSTER_frontend_components_and_hooks.md,,doc,286,19168,0
+Documentation/TODO Lists/TODO/40_CLUSTER_dashboard_pages.md,,doc,253,21868,0
+Documentation/TODO Lists/TODO/41_CLUSTER_integrations.md,,doc,213,12663,0
+Documentation/TODO Lists/TODO/42_CLUSTER_security_and_middleware.md,,doc,266,24440,0
+Documentation/TODO Lists/TODO/EXECUTION_SUMMARY.md,,doc,514,26876,0
+fix-auth-imports.js,,doc,39,1136,0
+frontend/.dockerignore,,doc,47,405,0
+frontend/.env,,doc,3,106,0
+frontend/core/api/client.js,,doc,229,6363,0
+frontend/core/api/index.js,,doc,7,162,0
+frontend/core/hooks/index.js,,doc,17,347,0
+frontend/core/hooks/useApi.js,,doc,203,4878,0
+frontend/cypress/e2e/full-system-test.cy.js,,doc,87,2634,0
+frontend/cypress.config.js,,doc,26,670,0
+frontend/Dockerfile,,doc,35,794,0
+frontend/e2e/basic-visual-test.spec.js,,doc,73,2436,0
+frontend/e2e/color-palette-system.spec.js,,doc,462,19619,0
+frontend/e2e/comprehensive-test.spec.js,,doc,123,4906,0
+frontend/e2e/comprehensive-website-test.spec.js,,doc,1004,39057,0
+frontend/e2e/mobile-parity-member1-2026-09-22.spec.js,,doc,148,5910,0
+frontend/e2e/mobile-parity-member1.spec.js,,doc,148,5866,0
+frontend/e2e/user-workflows.spec.js,,doc,67,2173,0
+frontend/e2e/visual-test.spec.js,,doc,120,4793,0
+frontend/eslint.config.js,,doc,92,2682,0
+frontend/index.html,,doc,40,1479,0
+frontend/modules/announcements/api/announcementApi.js,,doc,26,877,0
+frontend/modules/auth/api/authApi.js,,doc,57,2023,0
+frontend/modules/auth/hooks/useAuth.js,,doc,168,4416,0
+frontend/modules/dashboard/api/dashboardApi.js,,doc,33,1094,0
+frontend/modules/departments/api/departmentApi.js,,doc,40,1410,0
+frontend/modules/events/api/eventApi.js,,doc,29,1029,0
+frontend/modules/gallery/api/galleryApi.js,,doc,35,1364,0
+frontend/modules/payments/api/paymentApi.js,,doc,40,1309,0
+frontend/modules/settings/api/settingsApi.js,,doc,41,1262,0
+frontend/modules/sms/api/smsApi.js,,doc,38,1173,0
+frontend/modules/treasury/api/treasuryApi.js,,doc,93,3372,0
+frontend/modules/treasury/hooks/useTreasury.js,,doc,271,5744,0
+frontend/modules/users/api/userApi.js,,doc,21,564,0
+frontend/nginx.conf,,doc,42,1293,0
+frontend/package-lock.json,,doc,8064,288964,0
+frontend/package.json,,doc,66,2145,0
+frontend/PERFORMANCE_CONFIG.md,,doc,87,2763,0
+frontend/playwright-report/data/11e65a5d413401a546392d077104ed187c4c13f4.png,,doc,6,6840,0
+frontend/playwright-report/data/1c772ccaa6100ae278f1f519da0301d28644104c.md,,doc,102,3591,0
+frontend/playwright-report/data/334bb595f9bef698006beb64bb5c67b8ade07a51.md,,doc,120,4322,0
+frontend/playwright-report/data/41580ba400642465e5d488efe0fd0278ff2cef29.md,,doc,108,3688,0
+frontend/playwright-report/data/697b7302e31f49ea08b153ead668f7833126605f.md,,doc,120,4334,0
+frontend/playwright-report/data/74e3656f5dd8de1edb500c49fd4111d7358536bf.png,,doc,8,7098,0
+frontend/playwright-report/data/79f91cff655b4720f45628f20cb609f796aaa7c6.md,,doc,120,4337,0
+frontend/playwright-report/data/7c71c642f634c93f82ef26bf92a45264604ef355.png,,doc,313,62623,0
+frontend/playwright-report/data/8f6a09e1377682c18424002cea3ece2d107f1892.md,,doc,127,4439,0
+frontend/playwright-report/data/c58238811b78c113329dd5c1ac921cf2c4cabc66.png,,doc,740,15788,0
+frontend/playwright-report/data/cc68f931dd312cbe0db1c2b09a7328f7b1758e91.md,,doc,109,3755,0
+frontend/playwright-report/index.html,,doc,90,535083,0
+frontend/playwright.config.js,,doc,38,1057,0
+frontend/postcss.config.js,,doc,7,86,0
+frontend/public/favicon.png,,doc,7,2870,0
+frontend/public/icon-192.png,,doc,133,28988,0
+frontend/public/icon-512.png,,doc,479,107351,0
+frontend/public/icon-maskable-192.png,,doc,74,19071,0
+frontend/public/icon-maskable-512.png,,doc,304,73363,0
+frontend/public/logo.png,,doc,110,23973,0
+frontend/public/manifest.json,,doc,41,1427,0
+frontend/public/sw.js,,doc,92,2743,0
+frontend/public/vite.svg,,doc,2,722,0
+frontend/screenshots/basic/login-page.png,,doc,8,7098,0
+frontend/screenshots/basic/register-page.png,,doc,8,7098,0
+frontend/scripts/check-server.js,,doc,52,2078,0
+frontend/scripts/run-e2e.js,,doc,56,1932,0
+frontend/src/App-test.jsx,,test,17,402,0
+frontend/src/App.css,,doc,20,646,0
+frontend/src/App.jsx,,live,25,774,1
+frontend/src/components/accessibility/README.md,,doc,6,253,0
+frontend/src/components/accessibility/SkipNavigation.jsx,,live,27,1042,1
+frontend/src/components/common/Breadcrumb.jsx,,live,132,3871,6
+frontend/src/components/common/Card.jsx,,live,25,763,34
+frontend/src/components/common/EmptyState.jsx,,live,323,10230,33
+frontend/src/components/common/GmailMessageList.jsx,,live,265,11124,2
+frontend/src/components/common/Header.jsx,,live,190,8836,1
+frontend/src/components/common/Loading.jsx,,live,105,3117,49
+frontend/src/components/common/MobileBottomNav.jsx,,live,62,2283,1
+frontend/src/components/common/MobileCard.jsx,,live,53,2361,8
+frontend/src/components/common/PageInfoPanel.jsx,,live,256,10461,2
+frontend/src/components/common/PasswordConfirmationModal.jsx,,live,106,3376,2
+frontend/src/components/common/PermissionButton.jsx,,live,131,3838,8
+frontend/src/components/common/ProtectedComponent.jsx,,live,142,4615,2
+frontend/src/components/common/README.md,,doc,21,1122,0
+frontend/src/components/common/Sidebar.jsx,,live,222,9125,1
+frontend/src/components/common/StatsCard.jsx,,live,82,2687,2
+frontend/src/components/common/TabNavigation.jsx,,live,159,5316,4
+frontend/src/components/dashboard/ChurchQuickActions.jsx,,live,120,3824,4
+frontend/src/components/dashboard/ChurchStatsCard.jsx,,live,180,6704,5
+frontend/src/components/dashboard/README.md,,doc,12,368,0
+frontend/src/components/dashboard/SystemOrganismViz.jsx,,live,269,11816,1
+frontend/src/components/dashboard/__tests__/comprehensive-accessibility.test.jsx,,test,125,4756,0
+frontend/src/components/dashboard/__tests__/README.md,,doc,6,266,0
+frontend/src/components/departments/ActivityFeed.jsx,,live,417,16343,2
+frontend/src/components/departments/DepartmentCollections.jsx,,live,699,41088,1
+frontend/src/components/departments/README.md,,doc,7,323,0
+frontend/src/components/documentation/DocumentationManager.jsx,,live,202,7773,1
+frontend/src/components/documentation/README.md,,doc,6,206,0
+frontend/src/components/ErrorBoundary.jsx,,live,106,3870,4
+frontend/src/components/events/CollectionTracker.jsx,,live,295,12260,1
+frontend/src/components/events/README.md,,doc,6,196,0
+frontend/src/components/gallery/ApplePhotoGrid.jsx,,live,286,10853,2
+frontend/src/components/gallery/GalleryNavigation.jsx,,live,203,7215,1
+frontend/src/components/gallery/PhotoGallery.jsx,,live,583,26544,1
+frontend/src/components/gallery/PhotoLightbox.jsx,,live,497,18733,2
+frontend/src/components/gallery/README.md,,doc,10,321,0
+frontend/src/components/gallery/TelegramAuthModal.jsx,,live,262,10580,1
+frontend/src/components/mobile/README.md,,doc,7,298,0
+frontend/src/components/ProtectedRoute.jsx,,live,70,2098,2
+frontend/src/components/public/FeaturedAnnouncements.jsx,,live,133,5555,1
+frontend/src/components/public/FeaturedPhotos.jsx,,live,76,2950,1
+frontend/src/components/public/HeroSection.jsx,,live,136,7478,1
+frontend/src/components/public/LiveStreamSection.jsx,,live,129,6704,1
+frontend/src/components/public/MinistriesCarousel.jsx,,live,221,12022,1
+frontend/src/components/public/ServiceTimes.jsx,,live,210,8241,1
+frontend/src/components/README.md,,doc,20,624,0
+frontend/src/components/seo/README.md,,doc,6,186,0
+frontend/src/components/seo/SEOManager.jsx,,live,270,11507,1
+frontend/src/components/settings/NotificationSettings.jsx,,live,264,9537,1
+frontend/src/components/settings/PaletteSelector.jsx,,live,307,13658,1
+frontend/src/components/settings/PrivacySettings.jsx,,live,322,11529,1
+frontend/src/components/settings/README.md,,doc,14,446,0
+frontend/src/components/settings/SettingBoolean.jsx,,live,39,1286,1
+frontend/src/components/settings/SettingColor.jsx,,live,65,2570,1
+frontend/src/components/settings/SettingInput.jsx,,live,43,1522,1
+frontend/src/components/settings/SettingNumber.jsx,,live,47,1633,1
+frontend/src/components/settings/SettingSelect.jsx,,live,46,1583,1
+frontend/src/components/settings/SettingTextarea.jsx,,live,42,1513,1
+frontend/src/config/churchColorPalette.js,,live,201,6105,1
+frontend/src/config/colorPalettes.js,,live,300,7802,3
+frontend/src/config/featureFlags.js,,live,54,1899,1
+frontend/src/config/README.md,,doc,9,395,0
+frontend/src/constants/api.js,,live,295,10487,8
+frontend/src/constants/permissions.js,,live,470,18236,9
+frontend/src/constants/README.md,,doc,11,462,0
+frontend/src/constants/roles.js,,live,115,4532,3
+frontend/src/constants/sdaDepartments.js,,live,68,4167,1
+frontend/src/constants/validation.js,,live,72,2393,3
+frontend/src/contexts/AuthContext.jsx,,live,312,11118,103
+frontend/src/contexts/ColorPaletteContext.jsx,,live,183,6206,10
+frontend/src/contexts/GalleryContext.jsx,,live,172,5527,1
+frontend/src/contexts/MembersContext.jsx,,live,124,4059,1
+frontend/src/contexts/README.md,,doc,12,463,0
+frontend/src/contexts/SettingsContext.jsx,,live,62,2186,7
+frontend/src/contexts/ToastContext.jsx,,live,103,3798,83
+frontend/src/hooks/README.md,,doc,12,670,0
+frontend/src/hooks/useActivityFeed.js,,live,185,6014,2
+frontend/src/hooks/useChurchBranding.js,,live,79,2353,10
+frontend/src/hooks/useDataFetch.js,,live,148,4733,3
+frontend/src/hooks/useFeatureFlag.js,,live,113,4104,1
+frontend/src/hooks/usePasswordConfirmation.js,,live,82,2354,2
+frontend/src/hooks/usePermission.js,,live,157,7658,6
+frontend/src/index.css,,doc,761,22655,1
+frontend/src/layouts/AuthLayout.jsx,,live,56,2299,1
+frontend/src/layouts/DashboardLayout.jsx,,live,43,1469,1
+frontend/src/layouts/PublicLayout.jsx,,live,263,14747,1
+frontend/src/layouts/README.md,,doc,9,313,0
+frontend/src/main.jsx,,live,84,3459,0
+frontend/src/modules/sms/pages/Contacts.jsx,,live,327,13186,1
+frontend/src/modules/sms/pages/Dashboard.jsx,,live,171,9332,1
+frontend/src/modules/sms/pages/Groups.jsx,,live,263,9744,1
+frontend/src/modules/sms/pages/README.md,,doc,8,321,0
+frontend/src/pages/accessibility/Accessibility.jsx,,live,33,1155,1
+frontend/src/pages/accessibility/README.md,,doc,6,194,0
+frontend/src/pages/admin/AdminDashboard.jsx,,live,262,9963,1
+frontend/src/pages/admin/AdminDatabase.jsx,,live,83,3725,1
+frontend/src/pages/admin/Documents.jsx,,live,398,17671,1
+frontend/src/pages/admin/README.md,,doc,9,288,0
+frontend/src/pages/admin/SiteSettings.jsx,,live,848,30519,1
+frontend/src/pages/analytics/Analytics.jsx,,live,547,21099,1
+frontend/src/pages/analytics/README.md,,doc,6,202,0
+frontend/src/pages/announcements/Announcements.jsx,,live,328,13160,1
+frontend/src/pages/announcements/README.md,,doc,6,210,0
+frontend/src/pages/approvals/ApprovalInbox.jsx,,live,321,12488,1
+frontend/src/pages/approvals/README.md,,doc,6,251,0
+frontend/src/pages/auth/ForgotPassword.jsx,,live,168,6406,1
+frontend/src/pages/auth/Login.jsx,,live,194,8043,1
+frontend/src/pages/auth/README.md,,doc,8,249,0
+frontend/src/pages/auth/Register.jsx,,live,336,13715,1
+frontend/src/pages/collections/MyCollections.jsx,,live,277,11987,1
+frontend/src/pages/collections/README.md,,doc,6,208,0
+frontend/src/pages/content/Content.jsx,,live,357,14141,1
+frontend/src/pages/content/README.md,,doc,6,182,0
+frontend/src/pages/dashboard/CollectorDashboard.jsx,,live,237,10231,1
+frontend/src/pages/dashboard/Dashboard.jsx,,live,86,3008,1
+frontend/src/pages/dashboard/DepartmentHeadDashboard.jsx,,live,198,7873,1
+frontend/src/pages/dashboard/MemberDashboard.jsx,,live,307,15438,1
+frontend/src/pages/dashboard/PastorDashboard.jsx,,live,197,7683,1
+frontend/src/pages/dashboard/README.md,,doc,12,508,0
+frontend/src/pages/dashboard/SuperAdminDashboard.jsx,,live,227,8334,1
+frontend/src/pages/dashboard/TreasurerDashboard.jsx,,live,221,8454,1
+frontend/src/pages/departments/CategoryManagement.jsx,,live,238,9281,1
+frontend/src/pages/departments/components/ComponentAllocation.jsx,,live,258,10884,1
+frontend/src/pages/departments/components/DepartmentBranding.jsx,,live,372,14825,1
+frontend/src/pages/departments/components/PermissionManagement.jsx,,live,303,12755,1
+frontend/src/pages/departments/components/README.md,,doc,8,344,0
+frontend/src/pages/departments/DepartmentActivity.jsx,,live,265,10298,1
+frontend/src/pages/departments/DepartmentDashboard.jsx,,live,1976,92561,1
+frontend/src/pages/departments/DepartmentHandover.jsx,,live,347,16121,1
+frontend/src/pages/departments/DepartmentHeadAllocation.jsx,,live,296,13798,1
+frontend/src/pages/departments/DepartmentOverview.jsx,,live,293,12723,1
+frontend/src/pages/departments/DepartmentSettings.jsx,,live,319,16566,1
+frontend/src/pages/departments/DepartmentsList.jsx,,live,485,22224,1
+frontend/src/pages/departments/MyDepartments.jsx,,live,312,13777,1
+frontend/src/pages/departments/README.md,,doc,18,612,0
+frontend/src/pages/documentation/Documentation.jsx,,live,14,345,1
+frontend/src/pages/documentation/README.md,,doc,6,194,0
+frontend/src/pages/events/Events.jsx,,live,552,24379,1
+frontend/src/pages/events/README.md,,doc,6,196,0
+frontend/src/pages/gallery/GalleryManagement.jsx,,live,894,38519,1
+frontend/src/pages/gallery/README.md,,doc,6,208,0
+frontend/src/pages/members/MemberDirectory.jsx,,live,685,33004,1
+frontend/src/pages/members/README.md,,doc,6,190,0
+frontend/src/pages/mobile/Mobile.jsx,,live,33,1113,1
+frontend/src/pages/mobile/README.md,,doc,6,180,0
+frontend/src/pages/monitoring/Monitoring.jsx,,live,138,6755,1
+frontend/src/pages/monitoring/README.md,,doc,6,256,0
+frontend/src/pages/notifications/NotificationDashboard.jsx,,live,276,11424,1
+frontend/src/pages/notifications/README.md,,doc,6,218,0
+frontend/src/pages/obligations/MyObligations.jsx,,live,203,10671,1
+frontend/src/pages/obligations/README.md,,doc,6,208,0
+frontend/src/pages/payments/MyPayments.jsx,,live,196,7799,1
+frontend/src/pages/payments/PaymentHistory.jsx,,live,288,11703,1
+frontend/src/pages/payments/PaymentManagement.jsx,,live,725,33710,1
+frontend/src/pages/payments/Payments.jsx,,live,305,11565,1
+frontend/src/pages/payments/README.md,,doc,9,340,0
+frontend/src/pages/PhotoGalleryPage.jsx,,live,481,19539,1
+frontend/src/pages/platform/PlatformDashboard.jsx,,live,317,11451,1
+frontend/src/pages/platform/PlatformLogin.jsx,,live,132,4832,1
+frontend/src/pages/platform/README.md,,doc,11,273,0
+frontend/src/pages/platform/tenants/README.md,,doc,9,283,0
+frontend/src/pages/platform/tenants/TenantCreate.jsx,,live,102,6424,1
+frontend/src/pages/platform/tenants/TenantDetail.jsx,,live,319,13650,1
+frontend/src/pages/platform/tenants/TenantList.jsx,,live,205,8937,1
+frontend/src/pages/platform/tenants/TenantSettings.jsx,,live,76,5046,1
+frontend/src/pages/profile/Profile.jsx,,live,413,16409,1
+frontend/src/pages/profile/ProfileManagement.jsx,,live,562,24609,1
+frontend/src/pages/profile/README.md,,doc,7,232,0
+frontend/src/pages/public/Announcements.jsx,,live,243,9975,1
+frontend/src/pages/public/DownloadsPage.jsx,,live,168,6870,1
+frontend/src/pages/public/Privacy.jsx,,live,24,1061,1
+frontend/src/pages/public/PublicAnnouncementDetail.jsx,,live,100,3616,1
+frontend/src/pages/public/PublicHome.jsx,,live,22,733,1
+frontend/src/pages/public/Terms.jsx,,live,29,1275,1
+frontend/src/pages/README.md,,doc,38,1284,0
+frontend/src/pages/reports/README.md,,doc,6,242,0
+frontend/src/pages/reports/Reports.jsx,,live,204,8730,1
+frontend/src/pages/security/README.md,,doc,6,184,0
+frontend/src/pages/security/Security.jsx,,live,338,15817,1
+frontend/src/pages/seo/README.md,,doc,6,174,0
+frontend/src/pages/seo/SEO.jsx,,live,9,166,1
+frontend/src/pages/telegram/README.md,,doc,7,227,0
+frontend/src/pages/telegram/TelegramAuth.jsx,,live,695,28453,1
+frontend/src/pages/telegram/TelegramChurchSettings.jsx,,live,222,8277,1
+frontend/src/pages/testing/README.md,,doc,6,182,0
+frontend/src/pages/testing/Testing.jsx,,live,33,1119,1
+frontend/src/pages/treasury/BankReconciliations.jsx,,live,425,18516,1
+frontend/src/pages/treasury/Budgets.jsx,,live,498,19907,1
+frontend/src/pages/treasury/ChartOfAccounts.jsx,,live,448,18053,1
+frontend/src/pages/treasury/Contributions.jsx,,live,317,12776,1
+frontend/src/pages/treasury/Expenses.jsx,,live,586,23360,1
+frontend/src/pages/treasury/FinancialReports.jsx,,live,479,19738,1
+frontend/src/pages/treasury/FixedAssets.jsx,,live,493,21079,1
+frontend/src/pages/treasury/Funds.jsx,,live,412,16510,1
+frontend/src/pages/treasury/JournalEntries.jsx,,live,555,23548,1
+frontend/src/pages/treasury/Pledges.jsx,,live,497,20545,1
+frontend/src/pages/treasury/Projects.jsx,,live,614,24791,1
+frontend/src/pages/treasury/README.md,,doc,21,620,0
+frontend/src/pages/treasury/Receipts.jsx,,live,323,13837,1
+frontend/src/pages/treasury/RecurringPayments.jsx,,live,484,20252,1
+frontend/src/pages/treasury/TreasuryAnalytics.jsx,,live,324,13565,1
+frontend/src/pages/treasury/TreasuryDashboard.jsx,,live,459,20793,1
+frontend/src/pages/treasury/Vendors.jsx,,live,443,18118,1
+frontend/src/pages/users/README.md,,doc,6,187,0
+frontend/src/pages/users/UserManagement.jsx,,live,641,29359,1
+frontend/src/README.md,,doc,29,971,0
+frontend/src/router/dashboard.routes.jsx,,live,230,13860,1
+frontend/src/router/public.routes.jsx,,live,85,3306,1
+frontend/src/router/README.md,,doc,8,329,0
+frontend/src/router.jsx,,live,73,2060,1
+frontend/src/shells/AuthShell.jsx,,live,34,1151,1
+frontend/src/shells/DashboardShell.jsx,,live,50,1884,1
+frontend/src/shells/PlatformShell.jsx,,live,165,6753,1
+frontend/src/shells/PublicShell.jsx,,live,20,484,1
+frontend/src/shells/README.md,,doc,10,415,0
+frontend/src/sms/README.md,,doc,6,168,0
+frontend/src/sms/SMS.jsx,,live,579,22862,1
+frontend/src/styles/dashboard.css,,doc,166,3557,1
+frontend/src/styles/README.md,,doc,7,226,0
+frontend/src/utils/cache.js,,live,57,1119,1
+frontend/src/utils/dateGrouping.js,,live,537,15319,3
+frontend/src/utils/format.js,,live,59,1672,13
+frontend/src/utils/README.md,,doc,9,326,0
+frontend/src/__tests__/colorPalette.test.js,,test,103,3651,0
+frontend/src/__tests__/comprehensive.test.js,,test,785,23338,0
+frontend/src/__tests__/README.md,,doc,8,299,0
+frontend/src/__tests__/setup.js,,test,41,928,0
+frontend/start-dev.js,,doc,40,1174,0
+frontend/sweep.cjs,,doc,71,3260,0
+frontend/tailwind.config.js,,doc,133,4713,0
+frontend/test-results/.last-run.json,,doc,4,45,0
+frontend/test-results/basic-visual-test-KMainCMS-2b20a-sual-Tests-Login-page-loads-mobile-chrome/error-context.md,,doc,120,4322,0
+frontend/test-results/basic-visual-test-KMainCMS-2b20a-sual-Tests-Login-page-loads-mobile-chrome/test-failed-1.png,,doc,313,62623,0
+frontend/test-results/basic-visual-test-KMainCMS-6c41c-l-Tests-Register-page-loads-mobile-chrome/error-context.md,,doc,120,4334,0
+frontend/test-results/basic-visual-test-KMainCMS-6c41c-l-Tests-Register-page-loads-mobile-chrome/test-failed-1.png,,doc,313,62623,0
+frontend/test-results/basic-visual-test-KMainCMS-99020-l-Tests-Can-fill-login-form-chromium/error-context.md,,doc,108,3688,0
+frontend/test-results/basic-visual-test-KMainCMS-99020-l-Tests-Can-fill-login-form-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/basic-visual-test-KMainCMS-99020-l-Tests-Can-fill-login-form-mobile-chrome/error-context.md,,doc,108,3688,0
+frontend/test-results/basic-visual-test-KMainCMS-99020-l-Tests-Can-fill-login-form-mobile-chrome/test-failed-1.png,,doc,740,15788,0
+frontend/test-results/basic-visual-test-KMainCMS-9e232-n-form-elements-are-visible-chromium/error-context.md,,doc,109,3755,0
+frontend/test-results/basic-visual-test-KMainCMS-9e232-n-form-elements-are-visible-chromium/test-failed-1.png,,doc,8,7098,0
+frontend/test-results/basic-visual-test-KMainCMS-9e232-n-form-elements-are-visible-mobile-chrome/error-context.md,,doc,120,4337,0
+frontend/test-results/basic-visual-test-KMainCMS-Basic-Visual-Tests-Homepage-loads-chromium/error-context.md,,doc,102,3591,0
+frontend/test-results/basic-visual-test-KMainCMS-Basic-Visual-Tests-Homepage-loads-mobile-chrome/error-context.md,,doc,127,4439,0
+frontend/test-results/comprehensive-website-test-0258b-Quick-actions-are-available-chromium/error-context.md,,doc,230,9812,0
+frontend/test-results/comprehensive-website-test-05f2a-rd-statistics-are-displayed-chromium/error-context.md,,doc,236,9934,0
+frontend/test-results/comprehensive-website-test-05f2a-rd-statistics-are-displayed-chromium/test-failed-1.png,,doc,8,7098,0
+frontend/test-results/comprehensive-website-test-1446e-dule-Can-search-for-members-chromium/error-context.md,,doc,248,10867,0
+frontend/test-results/comprehensive-website-test-1446e-dule-Can-search-for-members-chromium/test-failed-1.png,,doc,109,17098,0
+frontend/test-results/comprehensive-website-test-1a1d8--Module-Can-compose-new-SMS-chromium/error-context.md,,doc,226,10212,0
+frontend/test-results/comprehensive-website-test-1b840--Module-Can-add-new-payment-chromium/error-context.md,,doc,236,10238,0
+frontend/test-results/comprehensive-website-test-1b840--Module-Can-add-new-payment-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-1ce7b-e-Can-create-new-department-chromium/error-context.md,,doc,236,10468,0
+frontend/test-results/comprehensive-website-test-1ce7b-e-Can-create-new-department-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-288ba-Module-Can-view-SMS-history-chromium/error-context.md,,doc,236,10387,0
+frontend/test-results/comprehensive-website-test-288ba-Module-Can-view-SMS-history-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-4eb46-S-dashboard-loads-correctly-chromium/error-context.md,,doc,236,10388,0
+frontend/test-results/comprehensive-website-test-4eb46-S-dashboard-loads-correctly-chromium/test-failed-1.png,,doc,8,7098,0
+frontend/test-results/comprehensive-website-test-4fb69-e-Can-schedule-announcement-chromium/error-context.md,,doc,236,10176,0
+frontend/test-results/comprehensive-website-test-4fb69-e-Can-schedule-announcement-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-5de76-y-dashboard-loads-correctly-chromium/error-context.md,,doc,236,10253,0
+frontend/test-results/comprehensive-website-test-5de76-y-dashboard-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-5fa01-dule-Can-register-for-event-chromium/error-context.md,,doc,236,10311,0
+frontend/test-results/comprehensive-website-test-5fa01-dule-Can-register-for-event-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-73d0d-s-directory-loads-correctly-chromium/error-context.md,,doc,236,10221,0
+frontend/test-results/comprehensive-website-test-73d0d-s-directory-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-77861-artment-settings-page-loads-chromium/error-context.md,,doc,226,10299,0
+frontend/test-results/comprehensive-website-test-8824b-ssign-members-to-department-chromium/error-context.md,,doc,236,10475,0
+frontend/test-results/comprehensive-website-test-8824b-ssign-members-to-department-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-9355f-le-Can-edit-existing-member-chromium/error-context.md,,doc,248,10869,0
+frontend/test-results/comprehensive-website-test-9355f-le-Can-edit-existing-member-chromium/test-failed-1.png,,doc,109,17098,0
+frontend/test-results/comprehensive-website-test-9b677-Events-list-loads-correctly-chromium/error-context.md,,doc,236,10316,0
+frontend/test-results/comprehensive-website-test-9b677-Events-list-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-9db9f-dule-Can-view-SMS-analytics-chromium/error-context.md,,doc,236,10389,0
+frontend/test-results/comprehensive-website-test-9db9f-dule-Can-view-SMS-analytics-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-a7e08-Can-create-new-announcement-chromium/error-context.md,,doc,230,10055,0
+frontend/test-results/comprehensive-website-test-b9ba1-Module-Can-create-new-event-chromium/error-context.md,,doc,236,10309,0
+frontend/test-results/comprehensive-website-test-b9ba1-Module-Can-create-new-event-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-ba556-ements-list-loads-correctly-chromium/error-context.md,,doc,236,10185,0
+frontend/test-results/comprehensive-website-test-ba556-ements-list-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-c4e32-tments-list-loads-correctly-chromium/error-context.md,,doc,236,10475,0
+frontend/test-results/comprehensive-website-test-c4e32-tments-list-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-c750e-rs-Module-Can-delete-member-chromium/error-context.md,,doc,248,10862,0
+frontend/test-results/comprehensive-website-test-c750e-rs-Module-Can-delete-member-chromium/test-failed-1.png,,doc,109,17098,0
+frontend/test-results/comprehensive-website-test-db639-ule-Gallery-loads-correctly-chromium/error-context.md,,doc,236,10542,0
+frontend/test-results/comprehensive-website-test-db639-ule-Gallery-loads-correctly-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-de0fd--Can-view-financial-reports-chromium/error-context.md,,doc,236,10245,0
+frontend/test-results/comprehensive-website-test-de0fd--Can-view-financial-reports-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-f42cf-ry-Module-Can-manage-budget-chromium/error-context.md,,doc,236,10236,0
+frontend/test-results/comprehensive-website-test-f42cf-ry-Module-Can-manage-budget-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-f90b2--directory-pagination-works-chromium/error-context.md,,doc,236,10221,0
+frontend/test-results/comprehensive-website-test-f90b2--directory-pagination-works-chromium/test-failed-1.png,,doc,6,6840,0
+frontend/test-results/comprehensive-website-test-fa80c-s-Module-Can-add-new-member-chromium/error-context.md,,doc,248,10863,0
+frontend/test-results/comprehensive-website-test-fa80c-s-Module-Can-add-new-member-chromium/test-failed-1.png,,doc,109,17098,0
+frontend/test-results/comprehensive-website-test-fcd9f-ery-Module-Can-upload-photo-chromium/error-context.md,,doc,236,10535,0
+frontend/test-results-parity/.last-run.json,,doc,19,733,0
+frontend/test-results-parity/mobile-parity-member1-2026-085a7-y-Departments-Module-Parity-chromium/error-context.md,,doc,24,1379,0
+frontend/test-results-parity/mobile-parity-member1-2026-085a7-y-Departments-Module-Parity-mobile-chrome/error-context.md,,doc,24,1379,0
+frontend/test-results-parity/mobile-parity-member1-2026-30667-mote-Direct-Connection-Test-chromium/error-context.md,,doc,24,1401,0
+frontend/test-results-parity/mobile-parity-member1-2026-30667-mote-Direct-Connection-Test-mobile-chrome/error-context.md,,doc,24,1401,0
+frontend/test-results-parity/mobile-parity-member1-2026-618f3-ication-Session-Restoration-chromium/error-context.md,,doc,24,1386,0
+frontend/test-results-parity/mobile-parity-member1-2026-618f3-ication-Session-Restoration-mobile-chrome/error-context.md,,doc,24,1386,0
+frontend/test-results-parity/mobile-parity-member1-2026-6bc0d-l-Overview-vs-Privacy-Audit-chromium/error-context.md,,doc,24,1394,0
+frontend/test-results-parity/mobile-parity-member1-2026-6bc0d-l-Overview-vs-Privacy-Audit-mobile-chrome/error-context.md,,doc,24,1394,0
+frontend/test-results-parity/mobile-parity-member1-2026-8b7b5-Announcements-Module-Parity-chromium/error-context.md,,doc,24,1377,0
+frontend/test-results-parity/mobile-parity-member1-2026-8b7b5-Announcements-Module-Parity-mobile-chrome/error-context.md,,doc,24,1377,0
+frontend/test-results-parity/mobile-parity-member1-2026-9d2a2-Giving-Payments-Flow-Parity-chromium/error-context.md,,doc,24,1386,0
+frontend/test-results-parity/mobile-parity-member1-2026-9d2a2-Giving-Payments-Flow-Parity-mobile-chrome/error-context.md,,doc,24,1386,0
+frontend/test-results-parity/mobile-parity-member1-2026-c47e3-alendar-Registration-Parity-chromium/error-context.md,,doc,24,1388,0
+frontend/test-results-parity/mobile-parity-member1-2026-c47e3-alendar-Registration-Parity-mobile-chrome/error-context.md,,doc,24,1388,0
+frontend/vercel.json,,doc,22,383,0
+frontend/verify.cjs,,doc,32,1542,0
+frontend/visual-test.html,,doc,416,16343,0
+frontend/vite-plugin-server-status.js,,doc,56,1874,0
+frontend/vite.config.js,,doc,72,1790,0
+frontend/vitest.config.js,,doc,12,290,0
+insert_admin.py,,doc,61,1948,0
+mobile/flutter/flutter-mobile/.flutter-plugins,,doc,56,6090,0
+mobile/flutter/flutter-mobile/.flutter-plugins-dependencies,,doc,1,16754,0
+mobile/flutter/flutter-mobile/.gitignore,,doc,50,907,0
+mobile/flutter/flutter-mobile/.metadata,,doc,46,1751,0
+mobile/flutter/flutter-mobile/analysis_options.yaml,,doc,29,1448,0
+mobile/flutter/flutter-mobile/analyze.txt,,doc,19,2984,0
+mobile/flutter/flutter-mobile/analyze2.txt,,doc,19,3044,0
+mobile/flutter/flutter-mobile/android/.gitignore,,doc,15,267,0
+mobile/flutter/flutter-mobile/android/ACCESSIBILITY_GUIDE.md,,doc,161,5594,0
+mobile/flutter/flutter-mobile/android/ANDROID_SETTINGS_VALIDATION.md,,doc,64,2538,0
+mobile/flutter/flutter-mobile/android/app/build.gradle.kts,,doc,83,2822,0
+mobile/flutter/flutter-mobile/android/app/proguard-rules.pro,,doc,54,1759,0
+mobile/flutter/flutter-mobile/android/app/src/debug/AndroidManifest.xml,,doc,18,646,0
+mobile/flutter/flutter-mobile/android/app/src/main/AndroidManifest.xml,,doc,74,3665,0
+mobile/flutter/flutter-mobile/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java,,doc,90,4379,0
+mobile/flutter/flutter-mobile/android/app/src/main/kotlin/com/sdachurch/sda_church_mobile/MainActivity.kt,,doc,6,154,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable/launch_background.xml,,doc,13,446,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-hdpi/ic_launcher_foreground.png,,doc,73,19933,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-mdpi/ic_launcher_foreground.png,,doc,49,12646,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-v21/launch_background.xml,,doc,13,450,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xhdpi/ic_launcher_foreground.png,,doc,97,27850,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xxhdpi/ic_launcher_foreground.png,,doc,173,48443,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png,,doc,247,70572,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml,,doc,10,344,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-hdpi/ic_launcher.png,,doc,31,8577,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-mdpi/ic_launcher.png,,doc,18,5975,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png,,doc,44,11196,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png,,doc,81,17463,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png,,doc,84,24237,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/values/colors.xml,,doc,4,123,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/values/styles.xml,,doc,19,1014,0
+mobile/flutter/flutter-mobile/android/app/src/main/res/values-night/styles.xml,,doc,19,1013,0
+mobile/flutter/flutter-mobile/android/app/src/profile/AndroidManifest.xml,,doc,8,385,0
+mobile/flutter/flutter-mobile/android/app/src/release/AndroidManifest.xml,,doc,17,622,0
+mobile/flutter/flutter-mobile/android/APP_IDENTITY_GUIDE.md,,doc,235,7322,0
+mobile/flutter/flutter-mobile/android/build.gradle.kts,,doc,42,1170,0
+mobile/flutter/flutter-mobile/android/FIREBASE_SETUP.md,,doc,78,2689,0
+mobile/flutter/flutter-mobile/android/google-services.json.example,,doc,41,1059,0
+mobile/flutter/flutter-mobile/android/gradle/wrapper/gradle-wrapper.jar,,doc,360,53636,0
+mobile/flutter/flutter-mobile/android/gradle/wrapper/gradle-wrapper.properties,,doc,6,206,0
+mobile/flutter/flutter-mobile/android/gradle.properties,,doc,9,490,0
+mobile/flutter/flutter-mobile/android/gradlew,,doc,161,4971,0
+mobile/flutter/flutter-mobile/android/gradlew.bat,,doc,91,2404,0
+mobile/flutter/flutter-mobile/android/key.properties,,doc,5,125,0
+mobile/flutter/flutter-mobile/android/local.properties,,doc,5,160,0
+mobile/flutter/flutter-mobile/android/PERMISSIONS_CLEANUP.md,,doc,62,2583,0
+mobile/flutter/flutter-mobile/android/PHASE_1_COMPLETION_SUMMARY.md,,doc,135,4768,0
+mobile/flutter/flutter-mobile/android/sda_church_mobile_android.iml,,doc,30,1630,0
+mobile/flutter/flutter-mobile/android/settings.gradle.kts,,doc,27,798,0
+mobile/flutter/flutter-mobile/android/SIGNING_GUIDE.md,,doc,290,7232,0
+mobile/flutter/flutter-mobile/android/upload-keystore.jks,,doc,17,2792,0
+mobile/flutter/flutter-mobile/ANDROID_STUDIO_INSTRUCTIONS.md,,doc,157,3692,0
+mobile/flutter/flutter-mobile/assets/animations/.gitkeep,,doc,1,0,0
+mobile/flutter/flutter-mobile/assets/images/.gitkeep,,doc,1,0,0
+mobile/flutter/flutter-mobile/assets/images/app_icon.png,,doc,3792,794394,0
+mobile/flutter/flutter-mobile/docs/cms-integration.md,,doc,450,14340,0
+mobile/flutter/flutter-mobile/GAP_ANALYSIS_AND_FIXES.md,,doc,354,13872,0
+mobile/flutter/flutter-mobile/integration_test/app_test.dart,,doc,24,832,0
+mobile/flutter/flutter-mobile/ios/.gitignore,,doc,35,603,0
+mobile/flutter/flutter-mobile/ios/Flutter/AppFrameworkInfo.plist,,doc,25,744,0
+mobile/flutter/flutter-mobile/ios/Flutter/Debug.xcconfig,,doc,2,31,0
+mobile/flutter/flutter-mobile/ios/Flutter/Release.xcconfig,,doc,2,31,0
+mobile/flutter/flutter-mobile/ios/Runner/AppDelegate.swift,,doc,17,555,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json,,doc,1,2097,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png,,doc,1081,271106,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png,,doc,12,3575,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png,,doc,23,5282,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png,,doc,29,7197,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png,,doc,19,4241,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png,,doc,35,6985,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png,,doc,41,10150,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png,,doc,23,5282,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png,,doc,40,9314,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png,,doc,58,14133,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@1x.png,,doc,21,6178,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-50x50@2x.png,,doc,45,11668,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@1x.png,,doc,28,6807,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-57x57@2x.png,,doc,67,13346,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png,,doc,58,14133,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png,,doc,107,22337,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@1x.png,,doc,31,8577,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-72x72@2x.png,,doc,81,17463,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png,,doc,35,8849,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png,,doc,68,18761,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png,,doc,91,20591,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/Contents.json,,doc,24,414,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png,,doc,3,68,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png,,doc,3,68,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png,,doc,3,68,0
+mobile/flutter/flutter-mobile/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md,,doc,5,340,0
+mobile/flutter/flutter-mobile/ios/Runner/Base.lproj/LaunchScreen.storyboard,,doc,38,2414,0
+mobile/flutter/flutter-mobile/ios/Runner/Base.lproj/Main.storyboard,,doc,27,1631,0
+mobile/flutter/flutter-mobile/ios/Runner/GeneratedPluginRegistrant.h,,doc,20,378,0
+mobile/flutter/flutter-mobile/ios/Runner/GeneratedPluginRegistrant.m,,doc,106,3725,0
+mobile/flutter/flutter-mobile/ios/Runner/Info.plist,,doc,82,2970,0
+mobile/flutter/flutter-mobile/ios/Runner/Runner-Bridging-Header.h,,doc,2,39,0
+mobile/flutter/flutter-mobile/ios/Runner/SceneDelegate.swift,,doc,7,82,0
+mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.pbxproj,,doc,621,24784,0
+mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/contents.xcworkspacedata,,doc,8,142,0
+mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist,,doc,9,246,0
+mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings,,doc,9,234,0
+mobile/flutter/flutter-mobile/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme,,doc,102,3934,0
+mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/contents.xcworkspacedata,,doc,8,159,0
+mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist,,doc,9,246,0
+mobile/flutter/flutter-mobile/ios/Runner.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings,,doc,9,234,0
+mobile/flutter/flutter-mobile/ios/RunnerTests/RunnerTests.swift,,doc,13,297,0
+mobile/flutter/flutter-mobile/lib/app/app.dart,,live,4,85,1
+mobile/flutter/flutter-mobile/lib/app/README.md,,doc,9,288,0
+mobile/flutter/flutter-mobile/lib/app/router.dart,,live,210,7110,1
+mobile/flutter/flutter-mobile/lib/app/theme.dart,,live,436,15732,20
+mobile/flutter/flutter-mobile/lib/main.dart,,live,72,2152,0
+mobile/flutter/flutter-mobile/lib/models/README.md,,doc,7,223,0
+mobile/flutter/flutter-mobile/lib/README.md,,doc,15,425,0
+mobile/flutter/flutter-mobile/lib/screens/announcements_screen.dart,,live,363,12078,1
+mobile/flutter/flutter-mobile/lib/screens/approvals_screen.dart,,live,306,9936,1
+mobile/flutter/flutter-mobile/lib/screens/collect_payments_screen.dart,,live,434,16146,1
+mobile/flutter/flutter-mobile/lib/screens/dashboard_screen.dart,,live,933,30126,1
+mobile/flutter/flutter-mobile/lib/screens/departments_screen.dart,,live,274,9170,1
+mobile/flutter/flutter-mobile/lib/screens/department_detail_screen.dart,,live,755,27153,1
+mobile/flutter/flutter-mobile/lib/screens/dept_collections_tab.dart,,live,999,40182,1
+mobile/flutter/flutter-mobile/lib/screens/dept_leadership_tab.dart,,live,344,11589,1
+mobile/flutter/flutter-mobile/lib/screens/documents_screen.dart,,live,255,7589,1
+mobile/flutter/flutter-mobile/lib/screens/events_screen.dart,,live,344,11061,1
+mobile/flutter/flutter-mobile/lib/screens/forgot_password_screen.dart,,live,224,7798,1
+mobile/flutter/flutter-mobile/lib/screens/gallery_screen.dart,,live,677,23212,1
+mobile/flutter/flutter-mobile/lib/screens/handovers_screen.dart,,live,224,8155,1
+mobile/flutter/flutter-mobile/lib/screens/login_screen.dart,,live,395,14281,1
+mobile/flutter/flutter-mobile/lib/screens/members_screen.dart,,live,304,10200,1
+mobile/flutter/flutter-mobile/lib/screens/my_obligations_screen.dart,,live,261,9898,1
+mobile/flutter/flutter-mobile/lib/screens/notifications_screen.dart,,live,128,4800,1
+mobile/flutter/flutter-mobile/lib/screens/payments_screen.dart,,live,626,22600,1
+mobile/flutter/flutter-mobile/lib/screens/profile_screen.dart,,live,507,16004,1
+mobile/flutter/flutter-mobile/lib/screens/README.md,,doc,26,1549,0
+mobile/flutter/flutter-mobile/lib/screens/server_url_screen.dart,,live,106,3018,1
+mobile/flutter/flutter-mobile/lib/services/api_service.dart,,live,1103,42365,20
+mobile/flutter/flutter-mobile/lib/services/auth_service.dart,,live,157,4721,5
+mobile/flutter/flutter-mobile/lib/services/biometric_service.dart,,live,95,3609,1
+mobile/flutter/flutter-mobile/lib/services/config.dart,,live,79,2667,3
+mobile/flutter/flutter-mobile/lib/services/media_service.dart,,live,177,5460,1
+mobile/flutter/flutter-mobile/lib/services/pull_sync_service.dart,,live,22,467,1
+mobile/flutter/flutter-mobile/lib/services/README.md,,doc,13,636,0
+mobile/flutter/flutter-mobile/lib/services/sms_recon_service.dart,,live,528,20832,2
+mobile/flutter/flutter-mobile/lib/utils/phone_utils.dart,,live,18,851,2
+mobile/flutter/flutter-mobile/lib/utils/README.md,,doc,6,256,0
+mobile/flutter/flutter-mobile/lib/widgets/custom_text_field.dart,,live,67,1889,4
+mobile/flutter/flutter-mobile/lib/widgets/loading_button.dart,,live,57,1596,4
+mobile/flutter/flutter-mobile/lib/widgets/main_shell.dart,,live,52,1697,1
+mobile/flutter/flutter-mobile/lib/widgets/payment_method_card.dart,,live,72,2163,1
+mobile/flutter/flutter-mobile/lib/widgets/README.md,,doc,10,411,0
+mobile/flutter/flutter-mobile/linux/.gitignore,,doc,2,19,0
+mobile/flutter/flutter-mobile/linux/CMakeLists.txt,,doc,129,4903,0
+mobile/flutter/flutter-mobile/linux/flutter/CMakeLists.txt,,doc,89,2903,0
+mobile/flutter/flutter-mobile/linux/flutter/generated_plugins.cmake,,doc,27,813,0
+mobile/flutter/flutter-mobile/linux/flutter/generated_plugin_registrant.cc,,doc,24,1062,0
+mobile/flutter/flutter-mobile/linux/flutter/generated_plugin_registrant.h,,doc,16,303,0
+mobile/flutter/flutter-mobile/linux/runner/CMakeLists.txt,,doc,27,1000,0
+mobile/flutter/flutter-mobile/linux/runner/main.cc,,doc,7,186,0
+mobile/flutter/flutter-mobile/linux/runner/my_application.cc,,doc,149,5621,0
+mobile/flutter/flutter-mobile/linux/runner/my_application.h,,doc,22,472,0
+mobile/flutter/flutter-mobile/macos/.gitignore,,doc,8,96,0
+mobile/flutter/flutter-mobile/macos/Flutter/Flutter-Debug.xcconfig,,doc,2,49,0
+mobile/flutter/flutter-mobile/macos/Flutter/Flutter-Release.xcconfig,,doc,2,49,0
+mobile/flutter/flutter-mobile/macos/Flutter/GeneratedPluginRegistrant.swift,,doc,33,1500,0
+mobile/flutter/flutter-mobile/macos/Runner/AppDelegate.swift,,doc,14,324,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png,,doc,279,102994,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png,,doc,24,5680,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png,,doc,5,520,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png,,doc,51,14142,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png,,doc,6,1066,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png,,doc,108,36406,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png,,doc,9,2218,0
+mobile/flutter/flutter-mobile/macos/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json,,doc,69,1359,0
+mobile/flutter/flutter-mobile/macos/Runner/Base.lproj/MainMenu.xib,,doc,344,24072,0
+mobile/flutter/flutter-mobile/macos/Runner/Configs/AppInfo.xcconfig,,doc,15,637,0
+mobile/flutter/flutter-mobile/macos/Runner/Configs/Debug.xcconfig,,doc,3,79,0
+mobile/flutter/flutter-mobile/macos/Runner/Configs/Release.xcconfig,,doc,3,81,0
+mobile/flutter/flutter-mobile/macos/Runner/Configs/Warnings.xcconfig,,doc,14,593,0
+mobile/flutter/flutter-mobile/macos/Runner/DebugProfile.entitlements,,doc,13,360,0
+mobile/flutter/flutter-mobile/macos/Runner/Info.plist,,doc,33,1092,0
+mobile/flutter/flutter-mobile/macos/Runner/MainFlutterWindow.swift,,doc,16,403,0
+mobile/flutter/flutter-mobile/macos/Runner/Release.entitlements,,doc,9,248,0
+mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/project.pbxproj,,doc,706,27181,0
+mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist,,doc,9,246,0
+mobile/flutter/flutter-mobile/macos/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme,,doc,100,3826,0
+mobile/flutter/flutter-mobile/macos/Runner.xcworkspace/contents.xcworkspacedata,,doc,8,159,0
+mobile/flutter/flutter-mobile/macos/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist,,doc,9,246,0
+mobile/flutter/flutter-mobile/macos/RunnerTests/RunnerTests.swift,,doc,13,302,0
+mobile/flutter/flutter-mobile/PHASE_2_COMPLETION_SUMMARY.md,,doc,192,8133,0
+mobile/flutter/flutter-mobile/PHASE_3_COMPLETION_SUMMARY.md,,doc,214,8788,0
+mobile/flutter/flutter-mobile/PHASE_4_COMPLETION_SUMMARY.md,,doc,244,9653,0
+mobile/flutter/flutter-mobile/PHASE_5_COMPLETION_SUMMARY.md,,doc,329,10417,0
+mobile/flutter/flutter-mobile/pubspec.lock,,doc,1484,45935,0
+mobile/flutter/flutter-mobile/pubspec.yaml,,doc,90,2083,0
+mobile/flutter/flutter-mobile/README.md,,doc,285,8010,0
+mobile/flutter/flutter-mobile/sda_church_mobile.iml,,doc,18,859,0
+mobile/flutter/flutter-mobile/test/widget_test.dart,,doc,23,774,0
+mobile/flutter/flutter-mobile/TESTING_GUIDE.md,,doc,201,4944,0
+mobile/flutter/flutter-mobile/web/favicon.png,,doc,14,917,0
+mobile/flutter/flutter-mobile/web/icons/Icon-192.png,,doc,20,5292,0
+mobile/flutter/flutter-mobile/web/icons/Icon-512.png,,doc,17,8252,0
+mobile/flutter/flutter-mobile/web/icons/Icon-maskable-192.png,,doc,27,5594,0
+mobile/flutter/flutter-mobile/web/icons/Icon-maskable-512.png,,doc,33,20998,0
+mobile/flutter/flutter-mobile/web/index.html,,doc,47,1585,0
+mobile/flutter/flutter-mobile/web/manifest.json,,doc,36,965,0
+mobile/flutter/flutter-mobile/windows/.gitignore,,doc,18,308,0
+mobile/flutter/flutter-mobile/windows/CMakeLists.txt,,doc,109,4278,0
+mobile/flutter/flutter-mobile/windows/flutter/CMakeLists.txt,,doc,110,3851,0
+mobile/flutter/flutter-mobile/windows/flutter/generated_plugins.cmake,,doc,31,909,0
+mobile/flutter/flutter-mobile/windows/flutter/generated_plugin_registrant.cc,,doc,33,1415,0
+mobile/flutter/flutter-mobile/windows/flutter/generated_plugin_registrant.h,,doc,16,302,0
+mobile/flutter/flutter-mobile/windows/runner/CMakeLists.txt,,doc,41,1836,0
+mobile/flutter/flutter-mobile/windows/runner/flutter_window.cpp,,doc,72,2193,0
+mobile/flutter/flutter-mobile/windows/runner/flutter_window.h,,doc,34,961,0
+mobile/flutter/flutter-mobile/windows/runner/main.cpp,,doc,44,1313,0
+mobile/flutter/flutter-mobile/windows/runner/resource.h,,doc,17,448,0
+mobile/flutter/flutter-mobile/windows/runner/resources/app_icon.ico,,doc,90,33772,0
+mobile/flutter/flutter-mobile/windows/runner/runner.exe.manifest,,doc,15,616,0
+mobile/flutter/flutter-mobile/windows/runner/Runner.rc,,doc,122,3190,0
+mobile/flutter/flutter-mobile/windows/runner/utils.cpp,,doc,66,1862,0
+mobile/flutter/flutter-mobile/windows/runner/utils.h,,doc,20,691,0
+mobile/flutter/flutter-mobile/windows/runner/win32_window.cpp,,doc,289,8822,0
+mobile/flutter/flutter-mobile/windows/runner/win32_window.h,,doc,103,3624,0
+mobile/react-native/mobile-app/.nvmrc,,doc,2,9,0
+mobile/react-native/mobile-app/App.js,,doc,185,6041,0
+mobile/react-native/mobile-app/app.json,,doc,39,908,0
+mobile/react-native/mobile-app/babel.config.js,,doc,7,113,0
+mobile/react-native/mobile-app/generate-qr.js,,doc,131,3823,0
+mobile/react-native/mobile-app/index.js,,doc,5,104,0
+mobile/react-native/mobile-app/metro.config.js,,doc,6,135,0
+mobile/react-native/mobile-app/OFFLINE_FIRST_README.md,,doc,246,7339,0
+mobile/react-native/mobile-app/package-lock.json,,doc,18447,701241,0
+mobile/react-native/mobile-app/package.json,,doc,63,2162,0
+mobile/react-native/mobile-app/README.md,,doc,94,2456,0
+mobile/react-native/mobile-app/src/components/EmptyState.js,,doc,52,1191,0
+mobile/react-native/mobile-app/src/components/ErrorBoundary.js,,doc,115,2942,0
+mobile/react-native/mobile-app/src/components/OfflineIndicator.js,,doc,104,2796,0
+mobile/react-native/mobile-app/src/components/SkeletonLoader.js,,doc,16,331,0
+mobile/react-native/mobile-app/src/screens/AnnouncementsScreen.js,,doc,265,7641,0
+mobile/react-native/mobile-app/src/screens/DashboardScreen.js,,doc,398,10351,0
+mobile/react-native/mobile-app/src/screens/EventsScreen.js,,doc,312,8693,0
+mobile/react-native/mobile-app/src/screens/ForgotPasswordScreen.js,,doc,186,4662,0
+mobile/react-native/mobile-app/src/screens/LoginScreen.js,,doc,170,4450,0
+mobile/react-native/mobile-app/src/screens/MembersScreen.js,,doc,342,9766,0
+mobile/react-native/mobile-app/src/screens/PaymentsScreen.js,,doc,401,11746,0
+mobile/react-native/mobile-app/src/screens/ProfileScreen.js,,doc,354,10073,0
+mobile/react-native/mobile-app/src/screens/RegisterScreen.js,,doc,241,6667,0
+mobile/react-native/mobile-app/src/screens/ResetPasswordScreen.js,,doc,219,5654,0
+mobile/react-native/mobile-app/src/services/api.js,,doc,620,18897,0
+mobile/react-native/mobile-app/src/services/localDatabase.js,,doc,285,8184,0
+mobile/react-native/mobile-app/src/services/networkService.js,,doc,104,2682,0
+mobile/react-native/mobile-app/src/services/offlineQueueService.js,,doc,129,3590,0
+mobile/react-native/mobile-app/src/services/syncService.js,,doc,314,9118,0
+mobile/react-native/mobile-app/src/services/__tests__/offlineService.test.js,,doc,224,7150,0
+mobile/react-native/mobile-app/__mocks__/@react-native-community/netinfo.js,,doc,33,910,0
+mobile/react-native/mobile-app/__mocks__/expo-sqlite.js,,doc,106,3162,0
+nginx/nginx.conf,,doc,123,4050,0
+nginx/ssl/README.md,,doc,51,1212,0
+package-lock.json,,doc,2964,110158,0
+package.json,,doc,47,1271,0
+plans/church-website-audit-plan-9bc58d.md,,doc,135,6601,0
+plans/COMPLETE_QUERY_REPLACEMENT_LIST.md,,doc,72,2903,0
+plans/FEATURE_IMPORT_PLAN.md,,doc,95,4744,0
+plans/FUNCTIONALITY_VERIFICATION_REPORT_2026-06-22.md,,doc,69,4149,0
+plans/IMPLEMENTATION_STATUS_REPORT_2026-06-22.md,,doc,356,14210,0
+plans/KMainCMS_GRANULATED_MASTER_PLAN.md,,doc,167,6260,0
+plans/KMainCMS_REMAINING_TASKS.md,,doc,47,2812,0
+plans/KMainCMS_Unified_Master_Upgrade_Plan.md,,doc,107,5577,0
+plans/KMainCMS_Upgrade_Plan_2026-06-22.md,,doc,720,25195,0
+plans/KMainCMS_Upgrade_TodoList_2026-06-22.md,,doc,146,5696,0
+plans/PARALLEL_REFACTORING_WORK_PACKAGES.md,,doc,582,28329,0
+plans/PHASE4_REFACTORING_MANIFEST.json,,doc,57,1979,0
+plans/POOL_QUERY_REFACTORING_LIST_2026-06-22.md,,doc,395,12678,0
+plans/QUERY_COUNT_VERIFICATION.md,,doc,369,9524,0
+plans/QUERY_PACKAGES/PACKAGE_01.md,,doc,9,233,0
+plans/QUERY_PACKAGES/PACKAGE_02.md,,doc,10,285,0
+plans/QUERY_PACKAGES/PACKAGE_DISTRIBUTION.md,,doc,255,8675,0
+plans/TODO_LIST_VERIFICATION_REPORT_2026-06-22.md,,doc,278,9706,0
+plans/UNMAPPED_QUERIES.md,,doc,97,4055,0
+README.md,,doc,117,3845,0
+refactor_cleaner.py,,doc,27,690,0
+refactor_runner.py,,doc,109,4669,0
+refactor_verifier.py,,doc,48,1451,0
+run-migrations.bat,,doc,69,2245,0
+run-migrations.js,,doc,21,699,0
+run-tests.bat,,doc,40,868,0
+run-tests.js,,doc,44,1137,0
+scripts/add-audit-headers.js,,doc,143,7961,0
+scripts/backup-database.sh,,doc,47,1283,0
+scripts/backup-files.sh,,doc,46,1288,0
+scripts/build-release-apk.js,,doc,126,4754,0
+scripts/generate-folder-readmes.js,,doc,165,7598,0
+scripts/README.md,,doc,10,473,0
+scripts/rebrand-kmaincms.js,,doc,84,2268,0
+scripts/restore-database.sh,,doc,53,1391,0
+scripts/setup-backup-cron.sh,,doc,33,1169,0
+scripts/setup-production.sh,,doc,66,1989,0
+scripts/setup-ssl.sh,,doc,67,1916,0
+scripts/test-infra.js,,doc,81,3189,0
+scripts/validate-audit-map.py,,doc,55,1855,0
+scripts/verify-backups.sh,,doc,52,1440,0
+scripts-dev/dead-files.txt,,doc,227,10143,0
+scripts-dev/delete-dead-files.ps1,,doc,36,1181,0
+scripts-dev/find-dead-files.js,,doc,45,1772,0
+scripts-dev/verify-dead-resolve.js,,doc,36,1366,0
+scripts-dev/verify-dead.js,,doc,37,1369,0
+services/api-gateway/package.json,,doc,17,393,0
+services/api-gateway/server.js,,doc,96,3265,0
+setup-microservices.js,,doc,261,8685,0
+shared/constants.js,,doc,113,2865,0
+shared/validators.js,,doc,135,3343,0
+test_admin_login.py,,doc,58,1850,0
+test_admin_login_fixed.py,,doc,58,1808,0
+test_login.py,,doc,53,1665,0
+todo-lists/automated_executor.py,,doc,644,25273,0
+todo-lists/batch_processor.py,,doc,413,16292,0
+todo-lists/current_batch_prompt.txt,,doc,46,2066,0
+todo-lists/generated_prompts.txt,,doc,27964,1073394,0
+todo-lists/generate_prompts.py,,doc,95,3172,0
+todo-lists/sequential_processor.py,,doc,247,8749,0
+todo-lists/smart_batch_processor.py,,doc,351,13457,0
+todo-lists/todo_executor.py,,doc,234,8467,0
+todo-lists/todo_executor_enhanced.py,,doc,520,19595,0
+todo-lists/UX_IMPROVEMENT_TODO.md,,doc,930,37441,0
+tools/examples/Approval_Request.md,,doc,57,1885,0
+tools/examples/Refactor_Log.md,,doc,43,1681,0
+tools/examples/Refactor_Plan.json,,doc,60,3113,0
+tools/examples/Refactor_Report.json,,doc,118,6187,0
+tools/manifest_schema.json,,doc,91,2843,0
+tools/mapping_parser.py,,doc,142,4410,0
+tools/refactor_config.yaml,,doc,65,1115,0
+tools/refactor_runner.py,,doc,109,4669,0
+USER_LOGINS.md,,doc,2407,147990,0
