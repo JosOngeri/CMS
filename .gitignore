@@ -6,11 +6,12 @@ infrastructure/
 .continue/
 .idea/
 .vscode/
-backups/
-logging/
-monitoring/
-app_logs/
-webapp_logs/
+# Root-anchored so they can't swallow src dirs like frontend/src/pages/monitoring/
+/backups/
+/logging/
+/monitoring/
+/app_logs/
+/webapp_logs/
 cookies.txt
 All code files.txt
 *.zip
