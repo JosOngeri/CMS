@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   workflow_dispatch:  # Allow manual triggering
 
+# Two pushes close together must not run deploys concurrently — a second
+# run's `pm2 restart` kills the first run's post-deploy sweeps mid-flight.
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -111,4 +117,5 @@ jobs:
         script: |
           cd /var/www/CMS/backend
           # ~400 GETs on localhost — loopback is rate-limit exempt.
-          node scripts/churchSmokeSweep.js
+          # One retry absorbs a transient restart window (e.g. pm2 cycling).
+          node scripts/churchSmokeSweep.js || { sleep 15 && node scripts/churchSmokeSweep.js; }
