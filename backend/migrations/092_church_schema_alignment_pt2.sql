@@ -199,32 +199,6 @@ ALTER TABLE sms_campaigns ADD COLUMN IF NOT EXISTS total_recipients INTEGER DEFA
 ALTER TABLE sms_campaigns ADD COLUMN IF NOT EXISTS sent_recipients INTEGER DEFAULT 0;
 ALTER TABLE sms_campaigns ADD COLUMN IF NOT EXISTS failed_recipients INTEGER DEFAULT 0;
 
--- pledges: prod uses pledge_amount; code + dev use amount
-ALTER TABLE pledges ADD COLUMN IF NOT EXISTS amount NUMERIC(12,2);
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.columns
-             WHERE table_name = 'pledges' AND column_name = 'pledge_amount') THEN
-    UPDATE pledges SET amount = pledge_amount WHERE amount IS NULL AND pledge_amount IS NOT NULL;
-  END IF;
-END $$;
-
--- department_resources: prod shape predates the title/file_type/file_size cols
-ALTER TABLE department_resources ADD COLUMN IF NOT EXISTS title VARCHAR(255);
-ALTER TABLE department_resources ADD COLUMN IF NOT EXISTS file_type VARCHAR(50);
-ALTER TABLE department_resources ADD COLUMN IF NOT EXISTS file_size INTEGER;
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.columns
-             WHERE table_name = 'department_resources' AND column_name = 'name') THEN
-    UPDATE department_resources SET title = name WHERE title IS NULL AND name IS NOT NULL;
-  END IF;
-  IF EXISTS (SELECT 1 FROM information_schema.columns
-             WHERE table_name = 'department_resources' AND column_name = 'type') THEN
-    UPDATE department_resources SET file_type = type WHERE file_type IS NULL AND type IS NOT NULL;
-  END IF;
-END $$;
-
 -- reconciliation_queue predates the STK callback insert shape
 ALTER TABLE reconciliation_queue ADD COLUMN IF NOT EXISTS mpesa_receipt VARCHAR(100);
 ALTER TABLE reconciliation_queue ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30);
