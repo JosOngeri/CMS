@@ -14,9 +14,17 @@ ALTER TABLE personal_collections
   ADD COLUMN IF NOT EXISTS purpose TEXT,
   ADD COLUMN IF NOT EXISTS fund VARCHAR(80);
 
-UPDATE personal_collections
-SET purpose = COALESCE(category, 'General collection')
-WHERE purpose IS NULL;
+-- The category column only exists on older databases — prod's table was
+-- created with purpose+fund directly, so this backfill must be conditional.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns
+             WHERE table_name = 'personal_collections' AND column_name = 'category') THEN
+    UPDATE personal_collections
+    SET purpose = COALESCE(category, 'General collection')
+    WHERE purpose IS NULL;
+  END IF;
+END $$;
 
 UPDATE personal_collections
 SET fund = 'General Fund'
