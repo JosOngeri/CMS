@@ -209,7 +209,7 @@ class AnalyticsRepository extends BaseRepository {
         c.content_type,
         COALESCE(cv.view_count, 0) as view_count,
         c.created_at
-      FROM content c
+      FROM content_items c
       LEFT JOIN (
         SELECT content_id, COUNT(*) as view_count
         FROM content_views
@@ -241,7 +241,7 @@ class AnalyticsRepository extends BaseRepository {
         EXTRACT(HOUR FROM created_at) as hour,
         EXTRACT(DOW FROM created_at) as day_of_week,
         COUNT(*) as activity_count
-      FROM activity_log
+      FROM audit_log
       WHERE created_at >= CURRENT_DATE - INTERVAL '1 day' * $1
     `;
     const params = [days];

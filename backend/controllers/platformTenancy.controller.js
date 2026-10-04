@@ -16,6 +16,7 @@ const { startImpersonation, endImpersonation, listImpersonations } = require('..
 const { importMembers } = require('../services/memberImport.service');
 const { createLogger } = require('../helpers/controllerLogger');
 const settingsRepo = require('../repositories/SettingsRepository');
+const churchSettings = require('../helpers/churchSettings');
 const { KEYS: SETTING_KEYS, SECRET_KEYS, GLOBAL_ONLY_KEYS, validateValue } = require('../constants/settingKeys');
 
 const IMPERSONATION_COOKIE_MAX_AGE = 60 * 60 * 1000; // cap cookie at 1h; token TTL is shorter anyway
@@ -506,6 +507,9 @@ class PlatformTenancyController extends BaseController {
       for (const [key, value] of entries) {
         await settingsRepo.upsert(key, String(value ?? ''), id);
       }
+      // Bust the 60s resolved-settings cache so church-side readers
+      // (login, SMS gates, feature flags) see the new values now.
+      churchSettings.clearChurchCache(id);
       await auditPlatformAction(req, {
         action: 'tenant.settings_catalog_updated',
         tenantId: id,
@@ -527,6 +531,7 @@ class PlatformTenancyController extends BaseController {
     const { id, key } = req.params;
     try {
       const deleted = await settingsRepo.deleteByKey(key, id);
+      churchSettings.clearChurchCache(id);
       await auditPlatformAction(req, {
         action: 'tenant.settings_override_removed',
         tenantId: id,
@@ -588,6 +593,8 @@ class PlatformTenancyController extends BaseController {
         if (SECRET_KEYS.has(key) && (value === '***' || value === '' || value == null)) continue;
         await settingsRepo.upsert(key, String(value ?? ''), null);
       }
+      // Global rows are every church's fallback — clear the whole cache.
+      churchSettings.clearChurchCache();
       await auditPlatformAction(req, {
         action: 'platform.settings_catalog_updated',
         details: { changed_keys: entries.map(([k]) => k) }

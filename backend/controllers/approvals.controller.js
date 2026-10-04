@@ -92,6 +92,9 @@ class ApprovalsController extends BaseController {
       return ResponseHandler.success(res, { approval });
     } catch (error) {
       this.logger.error('getApprovalById', error);
+      if (error.code === '22P02') { // malformed id for this env's id type
+        return ResponseHandler.notFound(res, 'Approval not found');
+      }
       return ResponseHandler.error(res, 'Failed to fetch approval');
     }
   }
@@ -684,6 +687,9 @@ class ApprovalsController extends BaseController {
       return ResponseHandler.success(res, result);
     } catch (error) {
       this.logger.error('getWorkflowStatus', error);
+      if (error.message === 'Approval not found' || error.code === '22P02') {
+        return ResponseHandler.notFound(res, 'Approval not found');
+      }
       return ResponseHandler.error(res, 'Failed to get workflow status');
     }
   }

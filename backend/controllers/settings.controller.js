@@ -3,6 +3,7 @@ const SettingsRepository = require('../repositories/SettingsRepository');
 const SettingsService = require('../services/SettingsService');
 const { createLogger } = require('../helpers/controllerLogger');
 const { KEYS: SETTING_KEYS, byKey: SETTING_DEFS, SECRET_KEYS, GLOBAL_ONLY_KEYS } = require('../constants/settingKeys');
+const churchSettings = require('../helpers/churchSettings');
 const SETTING_KEY_SET = new Set(SETTING_KEYS.map((k) => k.key));
 
 // Secret values (mpesa_passkey, sms_api_key) are write-only: every read
@@ -168,6 +169,7 @@ class SettingsController extends BaseController {
       const updatedSetting = await SettingsRepository.updateSetting(key, {
         value: valueToWrite, label, description, is_public, is_editable, validation_rules
       }, req.user.church_id);
+      churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { setting: updatedSetting });
     } catch (error) {
@@ -239,6 +241,7 @@ class SettingsController extends BaseController {
           errors.push({ key: settingData.key, error: error.message });
         }
       }
+      if (updated.length) churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, {
         updated,
@@ -279,6 +282,7 @@ class SettingsController extends BaseController {
       }
 
       await SettingsRepository.deleteSettingByKey(key, req.user.church_id);
+      churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { message: 'Setting deleted successfully' });
     } catch (error) {
@@ -353,6 +357,7 @@ class SettingsController extends BaseController {
           errors.push({ key: settingData.key, error: error.message });
         }
       }
+      if (imported.length) churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, {
         imported,
@@ -377,6 +382,7 @@ class SettingsController extends BaseController {
       const { category } = req.query;
 
       const rowCount = await SettingsRepository.resetToDefaults(category, req.user.church_id);
+      if (rowCount) churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { message: `Reset ${rowCount} settings to defaults` });
     } catch (error) {

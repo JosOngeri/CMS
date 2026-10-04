@@ -57,7 +57,6 @@ class ActivityFeedRepository extends BaseRepository {
         COUNT(*) as count
       FROM announcements
       WHERE department_id = $1 AND church_id = $2
-      GROUP BY 'announcements'
       
       UNION ALL
       
@@ -66,7 +65,6 @@ class ActivityFeedRepository extends BaseRepository {
         COUNT(*) as count
       FROM events
       WHERE department_id = $1 AND church_id = $2
-      GROUP BY 'events'
       
       UNION ALL
       
@@ -75,7 +73,6 @@ class ActivityFeedRepository extends BaseRepository {
         COUNT(*) as count
       FROM department_members
       WHERE department_id = $1 AND church_id = $2 AND is_active = true
-      GROUP BY 'members'
       
       UNION ALL
       
@@ -84,7 +81,7 @@ class ActivityFeedRepository extends BaseRepository {
         COUNT(*) as count
       FROM audit_log
       WHERE church_id = $2
-        AND (new_values->>'department_id' = $1 OR old_values->>'department_id' = $1)
+        AND (new_values->>'department_id' = $1::text OR old_values->>'department_id' = $1::text)
       
       UNION ALL
       
@@ -93,7 +90,6 @@ class ActivityFeedRepository extends BaseRepository {
         COUNT(*) as count
       FROM approval_requests
       WHERE department_id = $1 AND church_id = $2
-      GROUP BY 'approvals'
     `, [departmentId, churchId]);
 
     return summary.rows;
