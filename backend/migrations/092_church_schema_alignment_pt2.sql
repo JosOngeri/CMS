@@ -34,7 +34,16 @@ CREATE TABLE IF NOT EXISTS sms_template_versions (
 -- prod's telegram_auth_methods predates church scoping
 ALTER TABLE telegram_auth_methods ADD COLUMN IF NOT EXISTS church_id UUID;
 
--- prod's photo_tags predates church scoping; assignments table never shipped
+-- prod's photo_tags predates church scoping and was never covered by a
+-- migration; fresh databases need it created (prod shape) before the ALTER.
+CREATE TABLE IF NOT EXISTS photo_tags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  color VARCHAR(30) DEFAULT '#3B82F6',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  church_id UUID
+);
 ALTER TABLE photo_tags ADD COLUMN IF NOT EXISTS church_id UUID;
 CREATE TABLE IF NOT EXISTS photo_tag_assignments (
   photo_id UUID NOT NULL,
