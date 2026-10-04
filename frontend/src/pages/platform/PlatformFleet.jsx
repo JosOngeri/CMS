@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, Building2, Bell, Plug, Trash2 } from 'lucide-react'
+import { RefreshCw, AlertTriangle, Building2, Bell, Plug, Trash2, ScrollText } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -18,31 +18,35 @@ const PlatformFleet = () => {
   const [jobs, setJobs] = useState([])
   const [rules, setRules] = useState([])
   const [integrations, setIntegrations] = useState([])
+  const [logs, setLogs] = useState([])
+  const [logFilter, setLogFilter] = useState({ level: '', search: '' })
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true); else setRefreshing(true)
     try {
-      const [fleetRes, alertsRes, jobsRes, rulesRes, intRes] = await Promise.all([
+      const [fleetRes, alertsRes, jobsRes, rulesRes, intRes, logsRes] = await Promise.all([
         api.get('/api/platform/fleet'),
         api.get('/api/platform/alerts'),
         api.get('/api/platform/jobs'),
         api.get('/api/platform/alert-rules'),
         api.get('/api/platform/integrations'),
+        api.get('/api/platform/logs', { params: { limit: 100, ...(logFilter.level && { level: logFilter.level }), ...(logFilter.search && { search: logFilter.search }) } }).catch(() => ({ data: { data: [] } })),
       ])
       setFleet(fleetRes.data.data || [])
       setAlerts((alertsRes.data.data || []).filter((a) => a.status === 'active'))
       setJobs(jobsRes.data.data || [])
       setRules(rulesRes.data.data || [])
       setIntegrations(intRes.data.data || [])
+      setLogs(logsRes.data.data || [])
     } catch {
       toast.error('Failed to load fleet')
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [api, toast])
+  }, [api, toast, logFilter])
 
   useEffect(() => { load(true) }, [load])
 
@@ -281,6 +285,40 @@ const PlatformFleet = () => {
             </div>
           ))}
           {rules.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No alert rules.</p>}
+        </div>
+      </Card>
+
+      {/* 4.7 Log explorer — warn+ entries the app writes to platform_app_logs */}
+      <Card className="p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] flex items-center gap-2"><ScrollText className="h-5 w-5" /> Log Explorer</h2>
+          <div className="flex gap-2">
+            <select value={logFilter.level} onChange={(e) => setLogFilter((f) => ({ ...f, level: e.target.value }))} className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-xs text-[var(--color-text)]">
+              <option value="">All levels</option>
+              <option value="warn">Warn</option>
+              <option value="error">Error</option>
+              <option value="fatal">Fatal</option>
+            </select>
+            <input
+              type="text"
+              value={logFilter.search}
+              onChange={(e) => setLogFilter((f) => ({ ...f, search: e.target.value }))}
+              placeholder="Search message…"
+              className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-xs text-[var(--color-text)] w-44"
+            />
+          </div>
+        </div>
+        <div className="space-y-1 max-h-96 overflow-y-auto">
+          {logs.map((l) => (
+            <div key={l.id} className="flex items-start gap-3 py-1.5 border-b border-[var(--color-border)] last:border-0 text-xs">
+              <span className={`shrink-0 mt-0.5 px-2 py-0.5 rounded-full font-medium ${l.level === 'fatal' || l.level === 'error' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>{l.level}</span>
+              <div className="min-w-0">
+                <p className="text-[var(--color-text)] font-mono break-all">{l.msg || '(no message)'}</p>
+                <p className="text-[var(--color-textSecondary)]">{fmtDateTime(l.created_at)}{l.context && Object.keys(l.context).length > 0 ? ` · ${Object.keys(l.context).slice(0, 4).join(', ')}` : ''}</p>
+              </div>
+            </div>
+          ))}
+          {logs.length === 0 && <p className="text-sm text-[var(--color-textSecondary)] py-4 text-center">No warn+ log entries — quiet is good.</p>}
         </div>
       </Card>
     </div>

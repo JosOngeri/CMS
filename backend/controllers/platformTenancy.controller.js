@@ -800,6 +800,55 @@ class PlatformTenancyController extends BaseController {
       client.release();
     }
   }
+
+  // ---- 11.2 platform <-> church messaging -----------------------------------
+
+  /** Thread view; marks church-authored messages read by platform on fetch. */
+  async getTenantMessages(req, res) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT id, sender_type, sender_label, body, created_at
+           FROM platform_tenant_messages
+          WHERE church_id = $1
+          ORDER BY created_at ASC LIMIT 200`,
+        [req.params.id]
+      );
+      await pool.query(
+        `UPDATE platform_tenant_messages
+            SET read_by_platform_at = COALESCE(read_by_platform_at, CURRENT_TIMESTAMP)
+          WHERE church_id = $1 AND sender_type = 'church' AND read_by_platform_at IS NULL`,
+        [req.params.id]
+      );
+      this.success(res, rows);
+    } catch (error) {
+      if (error.code === '42P01') return this.success(res, []);
+      this.logger.error('getTenantMessages', error);
+      this.error(res, 'Failed to load messages');
+    }
+  }
+
+  async sendTenantMessage(req, res) {
+    const body = typeof req.body?.body === 'string' ? req.body.body.trim() : '';
+    if (!body || body.length > 2000) return this.badRequest(res, 'Message body required (max 2000 chars)');
+    try {
+      const church = await pool.query('SELECT id, name FROM churches WHERE id = $1', [req.params.id]);
+      if (church.rows.length === 0) return this.notFound(res, 'Church not found');
+      const { rows } = await pool.query(
+        `INSERT INTO platform_tenant_messages (church_id, sender_type, sender_label, body, read_by_platform_at)
+         VALUES ($1, 'platform', $2, $3, CURRENT_TIMESTAMP) RETURNING *`,
+        [req.params.id, req.platformUser.name || 'Platform staff', body]
+      );
+      await auditPlatformAction(req, {
+        action: 'tenant.message_sent',
+        tenantId: req.params.id,
+        details: { message_id: rows[0].id },
+      });
+      this.created(res, rows[0], `Message sent to ${church.rows[0].name}`);
+    } catch (error) {
+      this.logger.error('sendTenantMessage', error);
+      this.error(res, 'Failed to send message');
+    }
+  }
 }
 
 module.exports = new PlatformTenancyController();

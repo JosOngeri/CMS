@@ -73,6 +73,8 @@ router.use('/churches', generalLimiter, churchRoutes);
 router.use('/users', generalLimiter, clampQueryPagination(), usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);
 router.use('/announcements', generalLimiter, clampQueryPagination(), announcementsRoutes);
+// 11.2: church-side end of the platform <-> church admin thread
+router.use('/platform-messages', generalLimiter, require('./platformMessages.routes'));
 // Canonical mount: every department endpoint lives under /api/departments.
 // department.routes.js is mounted first so its member-scoped paths win before
 // the generic /:identifier routes in departments.routes.js.

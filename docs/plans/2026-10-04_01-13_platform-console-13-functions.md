@@ -216,7 +216,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   (platformAlertEngine.service, scheduler every 5min) fires rows into
   platform_alerts; rule editor on PlatformFleet; per-rule notify_channels
   (email/telegram) delivered via emailService/telegramService (mig 080).
-- [ ] 4.7 Log explorer — structured app logs into DB or file tail;
+- [x] 4.7 Log explorer — platform_app_logs (mig 085) fed by a buffered
+  pino stream on warn+ (prod only, fails silent, PII redaction kept);
+  GET /logs (level/search/from/to filters, health:read) + Log Explorer
+  card on Fleet. PARTIAL: warn+ only — info/debug stay stdout-only.
   filter by tenant/severity/time.
 
 ## 5. Payments & Financial Oversight (`/platform/payments`)
@@ -339,8 +342,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 
 - [x] 11.1 Announcements — `platform_announcements`; compose → target
   all/specific churches → shown as banner in tenant dashboards.
-- [ ] 11.2 Tenant messaging — message thread between platform staff
-  and church admins.
+- [x] 11.2 Tenant messaging — platform_tenant_messages (mig 085); GET/
+  POST /tenants/:id/messages (audited sends, auto mark-read) + thread
+  card on TenantAdmin; church-side GET/POST /api/platform-messages
+  (admin roles, church-scoped, unread-count badge endpoint). PARTIAL:
+  church app has no inbox UI yet — endpoints ready for it..
 - [x] 11.3 Status page — public GET /platform/status (no auth, exposes
   only component health + global incident titles) and a /status SPA page
   in the public shell, auto-refreshing each minute.

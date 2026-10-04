@@ -66,6 +66,9 @@ router.delete('/tenants/:id/rate-limit', authenticatePlatformUser, requirePlatfo
 router.get('/tenant-templates', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.listTemplates);
 router.post('/tenant-templates', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.createTemplate);
 router.post('/tenants/:id/apply-template', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.applyTemplate);
+// 11.2: platform <-> church admin messaging thread
+router.get('/tenants/:id/messages', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.getTenantMessages);
+router.post('/tenants/:id/messages', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.sendTenantMessage);
 router.post('/tenants/purge-demos', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeDemoTenants);
 router.get('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantById);
 router.get('/tenants/:id/stats', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantStats);
@@ -94,6 +97,8 @@ router.post('/tenants/:id/quarantine', authenticatePlatformUser, requirePlatform
 
 // ── §4 Monitoring & Health ──────────────────────────────────────────────
 router.get('/fleet', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getFleet);
+// 4.7: log explorer over platform_app_logs (read is the lightest gate in this area)
+router.get('/logs', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAppLogs);
 router.get('/jobs', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.getJobs);
 router.post('/jobs/:id/retry', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.retryJob);
 router.get('/alerts', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAlerts);

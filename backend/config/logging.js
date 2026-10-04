@@ -5,7 +5,7 @@ const pino = require('pino');
  */
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-const logger = pino({
+const loggerOpts = {
   level: process.env.LOG_LEVEL || 'info',
   redact: {
     paths: [
@@ -39,6 +39,10 @@ const logger = pino({
     ],
     remove: true
   },
+};
+
+const logger = pino({
+  ...loggerOpts,
   ...(isDevelopment && {
     transport: {
       target: 'pino-pretty',
@@ -50,5 +54,19 @@ const logger = pino({
     }
   })
 });
+
+// 4.7: outside development, mirror warn+ entries into platform_app_logs so
+// the console log explorer can query them (stdout still gets everything).
+if (!isDevelopment && process.env.DISABLE_DB_LOG_STREAM !== 'true') {
+  const { appLogDbStream } = require('./appLogDbStream');
+  const dbLogger = pino({ level: 'warn', redact: loggerOpts.redact }, appLogDbStream);
+  for (const method of ['warn', 'error', 'fatal']) {
+    const original = logger[method].bind(logger);
+    logger[method] = (...args) => {
+      original(...args);
+      try { dbLogger[method](...args); } catch { /* sink must never throw */ }
+    };
+  }
+}
 
 module.exports = logger;

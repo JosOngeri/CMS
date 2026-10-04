@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff, Zap, LayoutTemplate } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff, Zap, LayoutTemplate, MessagesSquare, Send } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -27,6 +27,8 @@ const PlatformTenantAdmin = () => {
   const [rateLimitForm, setRateLimitForm] = useState({ maxRequests: '', windowSeconds: 60 })
   const [templates, setTemplates] = useState([])
   const [templateId, setTemplateId] = useState('')
+  const [messages, setMessages] = useState([])
+  const [messageDraft, setMessageDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
@@ -46,7 +48,7 @@ const PlatformTenantAdmin = () => {
   const loadTenant = useCallback(async (id) => {
     if (!id) return
     try {
-      const [usersRes, flagsRes, quotasRes, sessRes, benchRes, rlRes, tplRes] = await Promise.all([
+      const [usersRes, flagsRes, quotasRes, sessRes, benchRes, rlRes, tplRes, msgRes] = await Promise.all([
         api.get(`/api/platform/tenants/${id}/users`),
         api.get(`/api/platform/tenants/${id}/flags`),
         api.get(`/api/platform/tenants/${id}/quotas`),
@@ -54,6 +56,7 @@ const PlatformTenantAdmin = () => {
         api.get(`/api/platform/tenants/${id}/benchmarks`).catch(() => ({ data: { data: null } })),
         api.get(`/api/platform/tenants/${id}/rate-limit`).catch(() => ({ data: { data: null } })),
         api.get('/api/platform/tenant-templates').catch(() => ({ data: { data: [] } })),
+        api.get(`/api/platform/tenants/${id}/messages`).catch(() => ({ data: { data: [] } })),
       ])
       setUsers(usersRes.data.data || [])
       setFlags(flagsRes.data.data || [])
@@ -62,6 +65,7 @@ const PlatformTenantAdmin = () => {
       setBenchmarks(benchRes.data.data || null)
       setRateLimit(rlRes.data.data || null)
       setTemplates(tplRes.data.data || [])
+      setMessages(msgRes?.data?.data || [])
     } catch {
       toast.error('Failed to load tenant details')
     }
@@ -202,6 +206,15 @@ const PlatformTenantAdmin = () => {
     const res = await api.post(`/api/platform/tenants/${churchId}/apply-template`, { templateId: Number(templateId) })
     toast.success(res.data.message || 'Template applied')
   }, null)
+
+  const sendMessage = () => act('msg', async () => {
+    const body = messageDraft.trim()
+    if (!body) return
+    await api.post(`/api/platform/tenants/${churchId}/messages`, { body })
+    setMessageDraft('')
+    const res = await api.get(`/api/platform/tenants/${churchId}/messages`)
+    setMessages(res.data.data || [])
+  }, 'Message sent to church admins')
 
   if (loading) return <FullPageLoading message="Loading tenant administration..." />
 
@@ -570,6 +583,38 @@ const PlatformTenantAdmin = () => {
               </button>
             </>
           )}
+        </div>
+      </Card>
+
+      {/* 11.2 platform <-> church admin thread */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <MessagesSquare className="h-5 w-5" /> Message this church
+        </h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+          Direct thread with this church&apos;s admins — visible to Pastor, First Elder, and Super Admin roles in the church app.
+        </p>
+        <div className="space-y-2 max-h-64 overflow-y-auto mb-3">
+          {messages.map((m) => (
+            <div key={m.id} className={`p-3 rounded-lg text-sm max-w-lg ${m.sender_type === 'platform' ? 'bg-[var(--color-primary-light)] ml-auto' : 'bg-[var(--color-background)]'}`}>
+              <p className="text-[var(--color-text)]">{m.body}</p>
+              <p className="text-xs text-[var(--color-textSecondary)] mt-1">{m.sender_label} · {fmtDateTime(m.created_at)}</p>
+            </div>
+          ))}
+          {messages.length === 0 && <p className="text-sm text-[var(--color-textSecondary)] text-center py-4">No messages yet — start the conversation.</p>}
+        </div>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={messageDraft}
+            onChange={(e) => setMessageDraft(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') sendMessage() }}
+            placeholder="Write to the church admins…"
+            className={inputCls + ' flex-1'}
+          />
+          <button onClick={sendMessage} disabled={busy === 'msg' || !messageDraft.trim()} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50 inline-flex items-center gap-2">
+            <Send className="h-4 w-4" /> Send
+          </button>
         </div>
       </Card>
     </div>

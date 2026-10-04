@@ -1000,6 +1000,41 @@ class PlatformOpsController extends BaseController {
       this.error(res, 'Export failed');
     }
   }
+
+  /**
+   * GET /logs — 4.7 log explorer over platform_app_logs (warn+ entries the
+   * app writes itself). Filters: level, search (msg ILIKE), from, to, limit.
+   */
+  async getAppLogs(req, res) {
+    try {
+      const { level, search, from, to } = req.query;
+      const limit = Math.min(Number(req.query.limit) || 200, 1000);
+      const where = [];
+      const params = [];
+      if (level && ['warn', 'error', 'fatal'].includes(level)) {
+        params.push(level); where.push(`level = $${params.length}`);
+      }
+      if (search) {
+        params.push(`%${search}%`); where.push(`msg ILIKE $${params.length}`);
+      }
+      if (from) { params.push(from); where.push(`created_at >= $${params.length}`); }
+      if (to) { params.push(to); where.push(`created_at <= $${params.length}`); }
+      params.push(limit);
+      const { rows } = await pool.query(
+        `SELECT id, level, msg, context, created_at
+           FROM platform_app_logs
+          ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+          ORDER BY created_at DESC
+          LIMIT $${params.length}`,
+        params
+      );
+      this.success(res, rows);
+    } catch (error) {
+      if (error.code === '42P01') return this.success(res, []); // pre-migration
+      this.logger.error('getAppLogs', error);
+      this.error(res, 'Failed to load logs');
+    }
+  }
 }
 
 module.exports = new PlatformOpsController();
