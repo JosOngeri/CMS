@@ -53,3 +53,11 @@ results or a mapped 404/502 — any *new* crash still fails the sweep.
 
 - Prod Daraja credentials (`MPESA_*`) — endpoint intentionally 503s until set.
 - Full sweep progression this effort: 24 → 64 (unmasked) → 3 → 1 → **0 real failures**.
+
+## Postscript — deploy workflow integration (bd65558 → 118e056)
+
+- `churchSmokeSweep.js` wired into `deploy-vps.yml` post-deploy (runs on VPS, localhost).
+- `churchMutationSweep.js` created: **420/420 POST/PUT/PATCH/DELETE on dev, no 5xx** (1 SKIP: unconfigured M-Pesa).
+- Centralized error-contract fixes: `sendError` string handling, AsyncLocalStorage PG client-error correlation (`pgClientError.js` + `pool.query`/`connect` wrappers + `standardResponse` downgrade), palette `json_object_agg` FILTER, Telegram Bot-API constructor fixes, `getDelta` scope map, input guards on iterable body fields.
+- First workflow run "failed" — diagnosed as a **concurrent-deploy race**: a second push's `pm2 restart` SIGINT'd the app mid-sweep (PM2 log 00:54:36). The follow-on deploy's sweep passed 400/400 on prod.
+- Fix: `concurrency: deploy-vps` serializes runs + one-retry wrapper on the sweep step (`118e056`). Final run `37241966046`: platform 64/64 + church 400/400 green.
