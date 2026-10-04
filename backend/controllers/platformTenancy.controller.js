@@ -15,6 +15,8 @@ const { auditPlatformAction } = require('../services/platformAudit.service');
 const { startImpersonation, endImpersonation, listImpersonations } = require('../services/platformImpersonation.service');
 const { importMembers } = require('../services/memberImport.service');
 const { createLogger } = require('../helpers/controllerLogger');
+const settingsRepo = require('../repositories/SettingsRepository');
+const { KEYS: SETTING_KEYS, SECRET_KEYS, GLOBAL_ONLY_KEYS, validateValue } = require('../constants/settingKeys');
 
 const IMPERSONATION_COOKIE_MAX_AGE = 60 * 60 * 1000; // cap cookie at 1h; token TTL is shorter anyway
 
@@ -416,6 +418,184 @@ class PlatformTenancyController extends BaseController {
     }
   }
 
+  // ── Church settings catalog (settings table — functional config) ────
+  // These endpoints operate on the `settings` key/value table where church
+  // feature config actually lives — distinct from churches.settings jsonb
+  // above, which holds tenancy metadata. Resolution: a church-scoped
+  // override row wins over the church_id IS NULL global default.
+  // Secrets (mpesa_passkey, sms_api_key) are masked to '***' on every read
+  // and accepted write-only.
+
+  _maskSetting(row, def) {
+    const isOverride = row.church_id != null;
+    return {
+      key: row.key,
+      category: row.category,
+      label: row.label || def?.label || row.key,
+      type: row.value_type || def?.type || 'string',
+      scope: def?.scope || 'both',
+      secret: !!def?.secret,
+      managed: def ? GLOBAL_ONLY_KEYS.has(row.key) : false,
+      editable: row.is_editable !== false,
+      source: isOverride ? 'override' : 'global',
+      value: def?.secret ? (row.value ? '***' : '') : row.value,
+      defaultValue: def?.secret ? '' : row.default_value,
+      validation: row.validation_rules || def?.validation || null,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  /**
+   * GET /tenants/:id/settings — resolved per-church catalog grouped by
+   * category: each entry shows effective value + whether it's a church
+   * override or the inherited global default.
+   */
+  async getTenantSettingsCatalog(req, res) {
+    const { id } = req.params;
+    try {
+      const grouped = await settingsRepo.getAll(id);
+      const catalog = {};
+      for (const def of SETTING_KEYS) {
+        catalog[def.category] = catalog[def.category] || [];
+      }
+      for (const [category, rows] of Object.entries(grouped)) {
+        catalog[category] = rows
+          .filter((r) => r.key !== 'key' && r.key !== 'value')
+          .map((r) => this._maskSetting(r, SETTING_KEYS.find((d) => d.key === r.key)));
+      }
+      this.success(res, catalog);
+    } catch (error) {
+      this.logger.error('getTenantSettingsCatalog', error);
+      this.error(res, 'Failed to fetch tenant settings catalog');
+    }
+  }
+
+  /**
+   * PUT /tenants/:id/settings — bulk upsert church overrides.
+   * Body: { settings: { 'category/key': 'value', ... } }
+   * Validates each entry against the manifest; rejects platform-managed
+   * (global-scope) keys — those change via /settings/catalog.
+   */
+  async updateTenantSettingsCatalog(req, res) {
+    const { id } = req.params;
+    const { settings } = req.body || {};
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return this.badRequest(res, 'settings must be a JSON object');
+    }
+    const entries = Object.entries(settings);
+    if (entries.length === 0) return this.badRequest(res, 'No settings provided');
+
+    const errors = [];
+    for (const [key, value] of entries) {
+      if (GLOBAL_ONLY_KEYS.has(key)) {
+        errors.push(`${key} is platform-managed and cannot be set per church`);
+        continue;
+      }
+      const err = validateValue(key, value);
+      if (err) errors.push(err);
+    }
+    if (errors.length) return this.badRequest(res, errors.join('; '));
+
+    try {
+      const church = await pool.query('SELECT id FROM churches WHERE id = $1', [id]);
+      if (!church.rows[0]) return this.notFound(res, 'Church not found');
+
+      for (const [key, value] of entries) {
+        await settingsRepo.upsert(key, String(value ?? ''), id);
+      }
+      await auditPlatformAction(req, {
+        action: 'tenant.settings_catalog_updated',
+        tenantId: id,
+        details: { changed_keys: entries.map(([k]) => k) }
+      });
+      this.success(res, { updated: entries.length }, 'Tenant settings updated');
+    } catch (error) {
+      this.logger.error('updateTenantSettingsCatalog', error);
+      this.error(res, 'Failed to update tenant settings');
+    }
+  }
+
+  /**
+   * DELETE /tenants/:id/settings/:key — drop the church override so the
+   * key reverts to the global default. :key is the name after the
+   * category slash (e.g. DELETE .../settings/site_name).
+   */
+  async deleteTenantSetting(req, res) {
+    const { id, key } = req.params;
+    try {
+      const deleted = await settingsRepo.deleteByKey(key, id);
+      await auditPlatformAction(req, {
+        action: 'tenant.settings_override_removed',
+        tenantId: id,
+        details: { key }
+      });
+      this.success(res, { key, reverted: true }, deleted
+        ? `Override removed; '${key}' now inherits the platform default`
+        : `No override existed for '${key}'`);
+    } catch (error) {
+      this.logger.error('deleteTenantSetting', error);
+      this.error(res, 'Failed to remove setting override');
+    }
+  }
+
+  /**
+   * GET /settings/catalog — all global default rows, manifest-shaped,
+   * secrets masked. This is where platform-managed keys (provider creds)
+   * are configured.
+   */
+  async getSettingsCatalog(req, res) {
+    try {
+      const grouped = await settingsRepo.getAll(null);
+      const catalog = {};
+      for (const def of SETTING_KEYS) catalog[def.category] = [];
+      for (const [category, rows] of Object.entries(grouped)) {
+        catalog[category] = (rows || [])
+          .filter((r) => r.church_id == null && r.key !== 'key' && r.key !== 'value')
+          .map((r) => this._maskSetting(r, SETTING_KEYS.find((d) => d.key === r.key)));
+      }
+      this.success(res, catalog);
+    } catch (error) {
+      this.logger.error('getSettingsCatalog', error);
+      this.error(res, 'Failed to fetch settings catalog');
+    }
+  }
+
+  /**
+   * PUT /settings/catalog — update global defaults / platform-managed
+   * keys. Body: { settings: { key: value } }
+   */
+  async updateSettingsCatalog(req, res) {
+    const { settings } = req.body || {};
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return this.badRequest(res, 'settings must be a JSON object');
+    }
+    const entries = Object.entries(settings);
+    if (entries.length === 0) return this.badRequest(res, 'No settings provided');
+
+    const errors = [];
+    for (const [key, value] of entries) {
+      const err = validateValue(key, value);
+      if (err) errors.push(err);
+    }
+    if (errors.length) return this.badRequest(res, errors.join('; '));
+
+    try {
+      for (const [key, value] of entries) {
+        // Secret fields submit the mask or empty to mean "unchanged".
+        if (SECRET_KEYS.has(key) && (value === '***' || value === '' || value == null)) continue;
+        await settingsRepo.upsert(key, String(value ?? ''), null);
+      }
+      await auditPlatformAction(req, {
+        action: 'platform.settings_catalog_updated',
+        details: { changed_keys: entries.map(([k]) => k) }
+      });
+      this.success(res, { updated: entries.length }, 'Global settings updated');
+    } catch (error) {
+      this.logger.error('updateSettingsCatalog', error);
+      this.error(res, 'Failed to update global settings');
+    }
+  }
+
   // ── 1.5 Offboarding ───────────────────────────────────────────────────
 
   /**
@@ -463,7 +643,7 @@ class PlatformTenancyController extends BaseController {
     const { id } = req.params;
     try {
       const result = await pool.query(
-        `SELECT rt.id, rt.user_id, u.email, u.role, rt.created_at, rt.expires_at,
+        `SELECT rt.id, rt.user_id, u.email, to_jsonb(u)->>'role' AS role, rt.created_at, rt.expires_at,
                 CASE WHEN rt.used THEN 'revoked' WHEN rt.expires_at < CURRENT_TIMESTAMP THEN 'expired' ELSE 'active' END AS status
          FROM refresh_tokens rt
          JOIN users u ON u.id = rt.user_id

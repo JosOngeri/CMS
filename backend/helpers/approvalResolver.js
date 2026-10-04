@@ -26,14 +26,17 @@ const fail = (message, statusCode = 400) => {
  * (users.role and user_roles) and excludes the requester.
  */
 async function listApprovers(churchId, excludeUserId = null) {
+  // users.role exists on some databases and not others — to_jsonb reads it
+  // when present and yields NULL when absent, so both schemas take one path.
   const result = await pool.query(
     `SELECT u.id, u.first_name, u.last_name, u.email,
+            to_jsonb(u)->>'role' AS legacy_role,
             (SELECT array_agg(r.name ORDER BY r.name) FROM user_roles ur
               JOIN roles r ON r.id = ur.role_id WHERE ur.user_id = u.id) AS extra_roles
      FROM users u
      WHERE u.church_id = $1 AND u.is_active = true
        AND ($2::uuid IS NULL OR u.id <> $2)
-       AND (u.role = ANY($3) OR EXISTS (
+       AND ((to_jsonb(u)->>'role') = ANY($3) OR EXISTS (
          SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
          WHERE ur.user_id = u.id AND r.name = ANY($3)))
      ORDER BY u.first_name, u.last_name`,
@@ -43,8 +46,8 @@ async function listApprovers(churchId, excludeUserId = null) {
     id: u.id,
     name: `${u.first_name} ${u.last_name}`.trim(),
     email: u.email,
-    roles: u.extra_roles && u.extra_roles.length ? u.extra_roles : (u.role ? [u.role] : []),
-    approver_roles: (u.extra_roles || [u.role]).filter(r => APPROVER_ROLE_NAMES.includes(r)),
+    roles: u.extra_roles && u.extra_roles.length ? u.extra_roles : (u.legacy_role ? [u.legacy_role] : []),
+    approver_roles: (u.extra_roles || (u.legacy_role ? [u.legacy_role] : [])).filter(r => APPROVER_ROLE_NAMES.includes(r)),
   }));
 }
 
@@ -52,7 +55,7 @@ async function userCanApprove(userId, churchId) {
   const result = await pool.query(
     `SELECT 1 FROM users u
      WHERE u.id = $1 AND u.church_id = $2 AND u.is_active = true
-       AND (u.role = ANY($3) OR EXISTS (
+       AND ((to_jsonb(u)->>'role') = ANY($3) OR EXISTS (
          SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
          WHERE ur.user_id = u.id AND r.name = ANY($3)))`,
     [userId, churchId, APPROVER_ROLE_NAMES]
@@ -66,7 +69,7 @@ async function resolveRoleToUser(churchId, roleName, excludeUserId = null) {
      FROM users u
      WHERE u.church_id = $1 AND u.is_active = true
        AND ($3::uuid IS NULL OR u.id <> $3)
-       AND (u.role = $2 OR EXISTS (
+       AND ((to_jsonb(u)->>'role') = $2 OR EXISTS (
          SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
          WHERE ur.user_id = u.id AND r.name = $2))
      ORDER BY u.created_at LIMIT 1`,
