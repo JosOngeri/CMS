@@ -89,3 +89,14 @@ jobs:
         echo "Health check FAILED after 12 attempts"
         cat /tmp/health.json 2>/dev/null || true
         exit 1
+
+    - name: Platform endpoint smoke sweep
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USERNAME }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        port: ${{ secrets.VPS_PORT || 22 }}
+        script: |
+          cd /var/www/CMS/backend
+          node scripts/platformSmokeSweep.js
