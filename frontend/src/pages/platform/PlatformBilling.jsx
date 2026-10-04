@@ -91,6 +91,33 @@ const PlatformBilling = () => {
     }
   }
 
+  const creditInvoice = async (i) => {
+    const amount = window.prompt(`Credit amount (max ${i.currency} ${Number(i.amount).toLocaleString()}):`, String(i.amount))
+    if (amount === null) return
+    const reason = window.prompt('Credit reason (audit-logged):')
+    if (!reason || reason.trim().length < 3) return toast.error('Reason required')
+    setBusy(i.id)
+    try {
+      await api.post(`/api/platform/billing/invoices/${i.id}/credit`, { amount: Number(amount), reason: reason.trim() })
+      toast.success('Credit applied')
+      await load()
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to credit invoice')
+    } finally {
+      setBusy('')
+    }
+  }
+
+  const printInvoice = async (id) => {
+    try {
+      const res = await api.get(`/api/platform/billing/invoices/${id}/print`, { responseType: 'text' })
+      const win = window.open('', '_blank', 'noopener')
+      if (win) { win.document.write(res.data); win.document.close(); win.print() }
+    } catch {
+      toast.error('Failed to load printable invoice')
+    }
+  }
+
   if (loading) return <FullPageLoading message="Loading billing..." />
 
   const inputCls = 'px-3 py-1.5 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)]'
@@ -190,12 +217,17 @@ const PlatformBilling = () => {
                   <tr key={i.id} className="border-b border-[var(--color-border)] last:border-0">
                     <td className="py-3 font-mono text-xs text-[var(--color-text)]">{i.number}</td>
                     <td className="py-3 text-[var(--color-text)]">{i.church_name}</td>
-                    <td className="py-3 text-[var(--color-text)] font-medium">{kes(i.amount)}</td>
+                    <td className="py-3 text-[var(--color-text)] font-medium">
+                      {kes(i.amount)}
+                      {Number(i.credit_amount) > 0 && <span className="block text-xs text-[var(--color-success)]">−{kes(i.credit_amount)} credited</span>}
+                    </td>
                     <td className="py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${i.status === 'paid' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : i.status === 'overdue' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : i.status === 'open' ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' : 'bg-[var(--color-border)] text-[var(--color-textSecondary)]'}`}>{i.status}</span></td>
                     <td className="py-3 text-[var(--color-textSecondary)]">{i.due_date ? fmtDateTime(i.due_date) : '—'}</td>
                     <td className="py-3">
                       <div className="flex gap-2">
                         {['open', 'overdue'].includes(i.status) && <button onClick={() => invoiceAction(i.id, 'paid')} disabled={busy === i.id} className="text-xs text-[var(--color-success)] hover:underline">mark paid</button>}
+                        {i.status !== 'void' && <button onClick={() => creditInvoice(i)} disabled={busy === i.id} className="text-xs text-[var(--color-warning)] hover:underline">credit</button>}
+                        <button onClick={() => printInvoice(i.id)} className="text-xs text-[var(--color-primary)] hover:underline">print</button>
                         {['open', 'overdue'].includes(i.status) && <button onClick={() => invoiceAction(i.id, 'void')} disabled={busy === i.id} className="text-xs text-[var(--color-error)] hover:underline">void</button>}
                       </div>
                     </td>

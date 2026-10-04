@@ -9,6 +9,9 @@ const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 const dunning = require('../services/platformDunning.service');
 const maintenanceMode = require('../middleware/maintenanceMode');
+const { startImpersonation } = require('../services/platformImpersonation.service');
+
+const IMPERSONATION_COOKIE_MAX_AGE = 60 * 60 * 1000;
 
 class PlatformBusinessController extends BaseController {
   constructor() {
@@ -198,6 +201,83 @@ class PlatformBusinessController extends BaseController {
     } catch (error) {
       this.logger.error('updateInvoiceStatus', error);
       this.error(res, 'Failed to update invoice');
+    }
+  }
+
+  /**
+   * POST /billing/invoices/:id/credit — §9.4 credit note. Capped at the
+   * invoice amount; the effective balance is amount - credit_amount.
+   */
+  async creditInvoice(req, res) {
+    const { id } = req.params;
+    const { amount, reason } = req.body || {};
+    const credit = Number(amount);
+    if (!credit || credit <= 0) return this.badRequest(res, 'amount must be positive');
+    if (!reason || reason.trim().length < 3) return this.badRequest(res, 'reason is required');
+    try {
+      const result = await pool.query(
+        `UPDATE platform_invoices
+         SET credit_amount = LEAST($2, amount),
+             credit_reason = $3,
+             credited_at = CURRENT_TIMESTAMP,
+             credited_by = $4
+         WHERE id = $1 AND status <> 'void'
+         RETURNING *`,
+        [id, credit, reason.trim(), req.platformUser.id]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Invoice not found (or voided)');
+      await auditPlatformAction(req, {
+        action: 'billing.invoice_credited',
+        tenantId: result.rows[0].church_id,
+        resourceType: 'invoice',
+        resourceId: id,
+        details: { credit_amount: result.rows[0].credit_amount, reason: reason.trim() }
+      });
+      this.success(res, result.rows[0], `Credit of ${result.rows[0].currency} ${result.rows[0].credit_amount} applied`);
+    } catch (error) {
+      this.logger.error('creditInvoice', error);
+      this.error(res, 'Failed to credit invoice');
+    }
+  }
+
+  /**
+   * GET /billing/invoices/:id/print — §9.4 printable invoice. Returns a
+   * self-contained HTML document the operator prints/saves as PDF.
+   */
+  async printInvoice(req, res) {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `SELECT i.*, c.name AS church_name, c.slug AS church_slug
+         FROM platform_invoices i JOIN churches c ON c.id = i.church_id WHERE i.id = $1`,
+        [id]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Invoice not found');
+      const inv = result.rows[0];
+      const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      const fmtDate = (d) => (d ? new Date(d).toISOString().slice(0, 10) : '—');
+      const balance = Math.max(Number(inv.amount) - Number(inv.credit_amount || 0), 0);
+      const html = `<!doctype html><html><head><meta charset="utf-8"><title>Invoice ${esc(inv.number)}</title>
+<style>body{font-family:system-ui,sans-serif;max-width:720px;margin:40px auto;color:#1f2937}h1{font-size:22px}table{width:100%;border-collapse:collapse;margin:24px 0}td,th{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.total{font-size:20px;font-weight:700}.meta{color:#6b7280;font-size:13px}.badge{display:inline-block;padding:3px 10px;border-radius:99px;border:1px solid #9ca3af;font-size:12px;text-transform:uppercase}</style>
+</head><body>
+<h1>Msabato Platform — Invoice</h1>
+<p class="meta">Invoice <strong>${esc(inv.number)}</strong> &nbsp;·&nbsp; Status <span class="badge">${esc(inv.status)}</span></p>
+<table>
+<tr><th>Bill to</th><td>${esc(inv.church_name)} (${esc(inv.church_slug)})</td></tr>
+<tr><th>Period</th><td>${fmtDate(inv.period_start)} → ${fmtDate(inv.period_end)}</td></tr>
+<tr><th>Due date</th><td>${fmtDate(inv.due_date)}</td></tr>
+<tr><th>Amount</th><td>${esc(inv.currency)} ${Number(inv.amount).toLocaleString()}</td></tr>
+${Number(inv.credit_amount) > 0 ? `<tr><th>Credit note</th><td>- ${esc(inv.currency)} ${Number(inv.credit_amount).toLocaleString()} (${esc(inv.credit_reason)})</td></tr>` : ''}
+<tr><th class="total">Balance due</th><td class="total">${esc(inv.currency)} ${balance.toLocaleString()}</td></tr>
+</table>
+${inv.notes ? `<p class="meta">Notes: ${esc(inv.notes)}</p>` : ''}
+<p class="meta">Generated ${fmtDate(new Date())} · Msabato Church Management Platform</p>
+</body></html>`;
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(html);
+    } catch (error) {
+      this.logger.error('printInvoice', error);
+      this.error(res, 'Failed to render invoice');
     }
   }
 
@@ -480,6 +560,126 @@ class PlatformBusinessController extends BaseController {
     } catch (error) {
       this.logger.error('addTicketMessage', error);
       this.error(res, 'Failed to add message');
+    }
+  }
+
+  /**
+   * POST /support/tickets/:id/grant-access — §12.2. Time-boxed
+   * impersonation of the ticket's church admin, recorded in
+   * platform_support_access. The impersonation JWT itself enforces
+   * expiry — this table is the audit link between ticket and session.
+   */
+  async grantSupportAccess(req, res) {
+    const { id } = req.params;
+    const { mode = 'readonly', ttlMinutes = 60, reason } = req.body || {};
+    if (!['readonly', 'full'].includes(mode)) {
+      return this.badRequest(res, "mode must be 'readonly' or 'full'");
+    }
+    try {
+      const ticket = await pool.query(
+        'SELECT t.*, c.name AS church_name FROM support_tickets t JOIN churches c ON c.id = t.church_id WHERE t.id = $1',
+        [id]
+      );
+      if (ticket.rows.length === 0) return this.notFound(res, 'Ticket not found');
+      const churchId = ticket.rows[0].church_id;
+
+      // Impersonate the church's admin — the account support work
+      // most often needs to see.
+      const admin = await pool.query(
+        `SELECT id, email, role FROM users
+         WHERE church_id = $1 AND is_active = true AND deleted_at IS NULL
+           AND role ILIKE '%admin%'
+         ORDER BY created_at ASC LIMIT 1`,
+        [churchId]
+      );
+      if (admin.rows.length === 0) {
+        return this.badRequest(res, 'Church has no active admin user to impersonate');
+      }
+      const target = admin.rows[0];
+
+      const { sessionId, token, expiresAt } = await startImpersonation({
+        platformUserId: req.platformUser.id,
+        churchId,
+        tenantUserId: target.id,
+        roles: target.role ? [target.role] : [],
+        mode,
+        reason: reason || `support ticket #${id}`,
+        ttlMinutes
+      });
+
+      const grant = await pool.query(
+        `INSERT INTO platform_support_access
+           (ticket_id, church_id, impersonation_id, granted_by, mode, reason, expires_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [id, churchId, sessionId, req.platformUser.id, mode, reason || `support ticket #${id}`, expiresAt]
+      );
+
+      await auditPlatformAction(req, {
+        action: 'support.access_granted',
+        tenantId: churchId,
+        resourceType: 'support_access',
+        resourceId: grant.rows[0].id,
+        details: { ticket_id: id, mode, expires_at: expiresAt, as_user: target.email }
+      });
+
+      res.cookie('jwt', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: IMPERSONATION_COOKIE_MAX_AGE
+      });
+      this.success(res, { grant: grant.rows[0], impersonating: target.email, expiresAt }, `Access granted as ${target.email} until ${expiresAt} — open the church app in a new tab`);
+    } catch (error) {
+      this.logger.error('grantSupportAccess', error);
+      this.error(res, 'Failed to grant support access');
+    }
+  }
+
+  /** GET /support/access — §12.2 list of grants (active + expired). */
+  async listSupportAccess(req, res) {
+    try {
+      const result = await pool.query(
+        `SELECT a.*, c.name AS church_name, pu.email AS granted_by_email,
+                (a.revoked_at IS NULL AND a.expires_at > CURRENT_TIMESTAMP) AS active
+         FROM platform_support_access a
+         JOIN churches c ON c.id = a.church_id
+         JOIN platform_users pu ON pu.id = a.granted_by
+         ORDER BY a.created_at DESC LIMIT 100`
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('listSupportAccess', error);
+      this.error(res, 'Failed to fetch access grants');
+    }
+  }
+
+  /** POST /support/access/:id/revoke — end the grant + its session early. */
+  async revokeSupportAccess(req, res) {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `UPDATE platform_support_access SET revoked_at = CURRENT_TIMESTAMP
+         WHERE id = $1 AND revoked_at IS NULL RETURNING impersonation_id`,
+        [id]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Grant not found or already revoked');
+      const impId = result.rows[0].impersonation_id;
+      if (impId) {
+        await pool.query(
+          `UPDATE platform_impersonations SET ended_at = CURRENT_TIMESTAMP, end_reason = 'grant_revoked'
+           WHERE id = $1 AND ended_at IS NULL`,
+          [impId]
+        );
+      }
+      await auditPlatformAction(req, {
+        action: 'support.access_revoked',
+        resourceType: 'support_access',
+        resourceId: id
+      });
+      this.success(res, null, 'Access revoked — the session row is closed (its JWT still expires on schedule)');
+    } catch (error) {
+      this.logger.error('revokeSupportAccess', error);
+      this.error(res, 'Failed to revoke access');
     }
   }
 

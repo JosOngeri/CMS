@@ -414,6 +414,106 @@ class PlatformTenancyController extends BaseController {
       this.error(res, 'Failed to update tenant settings');
     }
   }
+
+  // ── 1.5 Offboarding ───────────────────────────────────────────────────
+
+  /**
+   * POST /tenants/:id/offboard — begin the offboarding lifecycle:
+   * deactivate the church now, keep its data until retention_deadline.
+   */
+  async offboardTenant(req, res) {
+    const { id } = req.params;
+    const { reason, retentionDays = 30 } = req.body || {};
+    if (!reason || typeof reason !== 'string' || reason.trim().length < 5) {
+      return this.badRequest(res, 'A reason (min 5 chars) is required — it goes in the audit trail');
+    }
+    const days = Math.min(Math.max(Number(retentionDays) || 30, 1), 365);
+    try {
+      const result = await pool.query(
+        `UPDATE churches
+         SET is_active = false,
+             offboarded_at = CURRENT_TIMESTAMP,
+             retention_deadline = CURRENT_TIMESTAMP + ($2 || ' days')::interval,
+             offboard_reason = $3,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING id, name, offboarded_at, retention_deadline`,
+        [id, days, reason.trim()]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Church not found');
+      await auditPlatformAction(req, {
+        action: 'tenant.offboarded',
+        tenantId: id,
+        details: { reason: reason.trim(), retention_days: days }
+      });
+      this.success(res, result.rows[0], `Tenant offboarded — data retained until ${result.rows[0].retention_deadline}`);
+    } catch (error) {
+      this.logger.error('offboardTenant', error);
+      this.error(res, 'Failed to offboard tenant');
+    }
+  }
+
+  /**
+   * POST /tenants/:id/purge — permanently delete an offboarded tenant's
+   * core data + the church row. Requires the retention deadline to have
+   * passed; owner-only via the data:export permission gate.
+   */
+  async purgeTenant(req, res) {
+    const { id } = req.params;
+    const PURGE_TABLES = [
+      'roles', 'departments', 'department_subcommittees', 'members',
+      'users', 'events', 'event_attendance', 'payments', 'contributions',
+      'pledges', 'expenses', 'budgets', 'documents', 'announcements',
+      'sms_contacts', 'sms_logs', 'tenant_feature_flags',
+      'tenant_subscriptions', 'platform_invoices',
+    ];
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const church = await client.query(
+        'SELECT id, name, offboarded_at, retention_deadline FROM churches WHERE id = $1 FOR UPDATE',
+        [id]
+      );
+      if (church.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return this.notFound(res, 'Church not found');
+      }
+      const { offboarded_at, retention_deadline } = church.rows[0];
+      if (!offboarded_at) {
+        await client.query('ROLLBACK');
+        return this.badRequest(res, 'Tenant must be offboarded before it can be purged');
+      }
+      if (retention_deadline && new Date(retention_deadline) > new Date()) {
+        await client.query('ROLLBACK');
+        return this.badRequest(res, `Retention deadline ${new Date(retention_deadline).toISOString()} has not passed — purge is locked`);
+      }
+
+      const deleted = {};
+      for (const table of PURGE_TABLES) {
+        // to_regclass NULLs on a missing table — skipping is safer than
+        // try/catch because any error would abort the whole transaction.
+        const exists = await client.query('SELECT to_regclass($1) AS t', [table]);
+        if (!exists.rows[0].t) { deleted[table] = 'missing'; continue; }
+        const r = await client.query(`DELETE FROM ${table} WHERE church_id = $1`, [id]);
+        deleted[table] = r.rowCount;
+      }
+      await client.query('DELETE FROM churches WHERE id = $1', [id]);
+      await client.query('COMMIT');
+
+      await auditPlatformAction(req, {
+        action: 'tenant.purged',
+        tenantId: id,
+        details: { name: church.rows[0].name, deleted }
+      });
+      this.success(res, { deleted }, `Tenant ${church.rows[0].name} permanently purged`);
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      this.logger.error('purgeTenant', error);
+      this.error(res, `Purge failed: ${error.message}`);
+    } finally {
+      client.release();
+    }
+  }
 }
 
 module.exports = new PlatformTenancyController();

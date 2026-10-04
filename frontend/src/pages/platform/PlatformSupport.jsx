@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Inbox, Bug, HeartHandshake, Send } from 'lucide-react'
+import { Inbox, Bug, HeartHandshake, Send, KeySquare } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -28,17 +28,20 @@ const PlatformSupport = () => {
   const [reply, setReply] = useState({})
   const [openTicket, setOpenTicket] = useState(null)
   const [messages, setMessages] = useState([])
+  const [grants, setGrants] = useState([])
 
   const load = useCallback(async () => {
     try {
-      const [t, i, s] = await Promise.all([
+      const [t, i, s, g] = await Promise.all([
         api.get('/api/platform/support/tickets'),
         api.get('/api/platform/support/known-issues'),
         api.get('/api/platform/support/health-scores'),
+        api.get('/api/platform/support/access').catch(() => ({ data: { data: [] } })),
       ])
       setTickets(t.data.data || [])
       setIssues(i.data.data || [])
       setScores(s.data.data || [])
+      setGrants(g.data.data || [])
     } catch {
       toast.error('Failed to load support')
     } finally {
@@ -79,6 +82,30 @@ const PlatformSupport = () => {
       if (openTicket?.id === id) setOpenTicket({ ...openTicket, status })
     } catch {
       toast.error('Failed to update ticket')
+    }
+  }
+
+  const grantAccess = async (ticket) => {
+    const mins = window.prompt('Access duration in minutes (max 60):', '30')
+    if (mins === null) return
+    const mode = window.confirm('Full access (can make changes)? Cancel = read-only') ? 'full' : 'readonly'
+    try {
+      const res = await api.post(`/api/platform/support/tickets/${ticket.id}/grant-access`, { mode, ttlMinutes: Number(mins) || 30 })
+      toast.success(res.data.message || 'Access granted', { duration: 12000 })
+      window.open('/dashboard/overview', '_blank', 'noopener')
+      await load()
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Failed to grant access')
+    }
+  }
+
+  const revokeAccess = async (grantId) => {
+    try {
+      await api.post(`/api/platform/support/access/${grantId}/revoke`)
+      toast.success('Access revoked')
+      await load()
+    } catch {
+      toast.error('Failed to revoke')
     }
   }
 
@@ -124,9 +151,16 @@ const PlatformSupport = () => {
               <>
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-lg font-semibold text-[var(--color-text)]">{openTicket.subject}</h2>
-                  <select value={openTicket.status} onChange={(e) => setStatus(openTicket.id, e.target.value)} className="px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-xs text-[var(--color-text)]">
-                    {['open', 'in_progress', 'waiting', 'resolved', 'closed'].map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                  <div className="flex items-center gap-2">
+                    {openTicket.church_id && (
+                      <button onClick={() => grantAccess(openTicket)} className="inline-flex items-center gap-1 px-2 py-1 rounded border border-[var(--color-warning)] text-xs text-[var(--color-warning)] hover:bg-[var(--color-warning-light)]" title="Time-boxed impersonation of the church admin">
+                        <KeySquare className="h-3.5 w-3.5" /> Grant access
+                      </button>
+                    )}
+                    <select value={openTicket.status} onChange={(e) => setStatus(openTicket.id, e.target.value)} className="px-2 py-1 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-xs text-[var(--color-text)]">
+                      {['open', 'in_progress', 'waiting', 'resolved', 'closed'].map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto mb-3">
                   {messages.map((m) => (
@@ -147,6 +181,26 @@ const PlatformSupport = () => {
             )}
           </Card>
         </div>
+      )}
+
+      {/* Active access grants (12.2) */}
+      {grants.filter((g) => g.active).length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-3">Active Support Access Grants</h2>
+          <div className="space-y-2">
+            {grants.filter((g) => g.active).map((g) => (
+              <div key={g.id} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-background)]">
+                <div>
+                  <p className="text-sm font-medium text-[var(--color-text)]">{g.church_name} — ticket #{g.ticket_id}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">
+                    {g.mode} · granted by {g.granted_by_email} · expires {fmtDateTime(g.expires_at)}
+                  </p>
+                </div>
+                <button onClick={() => revokeAccess(g.id)} className="text-xs text-[var(--color-error)] hover:underline">revoke</button>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
 
       {tab === 'issues' && (

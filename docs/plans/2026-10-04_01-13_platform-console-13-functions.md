@@ -148,8 +148,12 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   "trialing"; extend/convert actions; auto-flag when expired.
 - [ ] 1.4 Tenant templates — snapshot roles/departments/categories from
   a source church; "create from template" option on TenantCreate.
-- [ ] 1.5 Offboarding flow — export → archive → retention deadline →
-  purge, with status on TenantDetail.
+- [x] 1.5 Offboarding flow — churches.offboarded_at/retention_deadline/
+  offboard_reason (migration 081); POST /tenants/:id/offboard (deactivate
+  + retention clock) and /tenants/:id/purge (owner-only via data:export,
+  blocked until retention expires, deletes curated tenant tables in a
+  transaction); lifecycle card on TenantAdmin. PARTIAL: purge covers the
+  curated export table list, not every FK-less table.
 
 ## 2. Tenant Administration (`/platform/tenant-admin`)
 
@@ -276,8 +280,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 9.2 Plans admin — CRUD tiers, feature list per tier, pricing.
 - [x] 9.3 Tenant billing — assign plan, renewal date, balance; plan
   picker on TenantDetail.
-- [ ] 9.4 Invoices — generate monthly, mark paid, credit notes; PDF or
-  printable view.
+- [x] 9.4 Invoices — generate, mark paid/void, credit notes (credit_amount
+  capped at invoice amount, audited) + printable HTML view (operator
+  prints/saves as PDF); credit + print buttons in the Invoices tab.
 - [x] 9.5 Dunning — platformDunning.service: marks open invoices
   overdue, reminder emails via emailService (3-day throttle), suspends
   tenant past grace + fires church_id-linked platform alert, auto-restores
@@ -314,8 +319,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 
 - [x] 12.1 Ticket inbox — `support_tickets` tied to churches; list,
   assign, status, reply.
-- [ ] 12.2 Support access — time-boxed impersonation granted by ticket;
-  uses F4; auto-expires.
+- [x] 12.2 Support access — platform_support_access table; grant on a
+  ticket mints a time-boxed impersonation JWT as the church's admin
+  (auto-expires via token TTL), revoke closes the session row; grants
+  list + revoke on the Support page.
 - [x] 12.3 Known issues board — issue cards linkable to tickets and
   incidents.
 - [x] 12.4 Health scores — computed per tenant (recency of logins,

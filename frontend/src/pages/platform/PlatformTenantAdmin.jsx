@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -129,6 +129,24 @@ const PlatformTenantAdmin = () => {
     await api.put(`/api/platform/tenants/${churchId}/settings`, { settings: parsed })
     await loadTenants()
   }, 'Settings pushed to tenant')
+
+  const offboard = () => act('offboard', async () => {
+    const reason = window.prompt('Offboarding reason (audit-logged):')
+    if (!reason || reason.trim().length < 5) return toast.error('Reason of 5+ characters required')
+    const days = window.prompt('Keep data for how many days before purge is allowed?', '30')
+    if (days === null) return
+    if (!window.confirm(`Offboard ${tenant?.name}? The church is deactivated NOW; data is kept ${days} days.`)) return
+    await api.post(`/api/platform/tenants/${churchId}/offboard`, { reason: reason.trim(), retentionDays: Number(days) || 30 })
+    await loadTenants()
+  }, 'Tenant offboarded')
+
+  const purge = () => act('purge', async () => {
+    if (!window.confirm(`PERMANENTLY DELETE ${tenant?.name} and all its data? This cannot be undone.`)) return
+    if (!window.confirm('Are you absolutely sure? Export the tenant first if you need the data.')) return
+    const res = await api.post(`/api/platform/tenants/${churchId}/purge`)
+    toast.success(res.data.message || 'Tenant purged')
+    setChurchId('')
+  }, null)
 
   if (loading) return <FullPageLoading message="Loading tenant administration..." />
 
@@ -335,6 +353,41 @@ const PlatformTenantAdmin = () => {
         <button onClick={applySettings} disabled={busy === 'settings' || !settingsText.trim()} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium disabled:opacity-50">
           {busy === 'settings' ? 'Pushing…' : 'Merge & push'}
         </button>
+      </Card>
+
+      {/* Offboarding lifecycle (1.5) */}
+      <Card className="p-6 border-2 border-[var(--color-error-light)]">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <ShieldOff className="h-5 w-5" /> Offboarding &amp; Deletion
+        </h2>
+        {tenant?.offboarded_at ? (
+          <>
+            <p className="text-sm text-[var(--color-text)] mb-1">
+              Offboarded {fmtDateTime(tenant.offboarded_at)} — {tenant.offboard_reason}
+            </p>
+            <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+              Data retained until <strong className="text-[var(--color-warning)]">{fmtDateTime(tenant.retention_deadline)}</strong>.
+              {tenant.retention_deadline && new Date(tenant.retention_deadline) < new Date()
+                ? ' Retention expired — purge is unlocked.'
+                : ' Purge unlocks after that date.'}
+            </p>
+            {tenant.retention_deadline && new Date(tenant.retention_deadline) < new Date() && (
+              <button onClick={purge} disabled={busy === 'purge'} className="px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-solid)] text-sm font-semibold disabled:opacity-50">
+                {busy === 'purge' ? 'Purging…' : 'PURGE — permanently delete all data'}
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+              Offboard deactivates the church immediately but keeps its data for a retention window.
+              After the deadline passes, the purge button appears and permanently deletes everything.
+            </p>
+            <button onClick={offboard} disabled={busy === 'offboard'} className="px-4 py-2 rounded-lg border border-[var(--color-error)] text-sm font-medium text-[var(--color-error)] hover:bg-[var(--color-error-light)] disabled:opacity-50">
+              {busy === 'offboard' ? 'Offboarding…' : 'Offboard this tenant'}
+            </button>
+          </>
+        )}
       </Card>
     </div>
   )

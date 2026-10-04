@@ -48,6 +48,10 @@ router.get('/tenants', authenticatePlatformUser, requirePlatformPermission('tena
 router.post('/tenants', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformController.createTenant);
 router.put('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformController.updateTenant);
 router.post('/tenants/:id/archive', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformController.archiveTenant);
+// 1.5 Offboarding lifecycle — offboard starts retention clock, purge is
+// owner-only (data:export) and locked until the retention deadline passes.
+router.post('/tenants/:id/offboard', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.offboardTenant);
+router.post('/tenants/:id/purge', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeTenant);
 router.get('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantById);
 router.get('/tenants/:id/stats', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantStats);
 router.get('/tenants/:id/activity', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantActivity);
@@ -121,6 +125,9 @@ router.put('/billing/subscriptions/:churchId', authenticatePlatformUser, require
 router.get('/billing/invoices', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.getInvoices);
 router.post('/billing/invoices', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.createInvoice);
 router.post('/billing/invoices/:id/status', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.updateInvoiceStatus);
+// 9.4 credit notes + printable invoice
+router.post('/billing/invoices/:id/credit', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.creditInvoice);
+router.get('/billing/invoices/:id/print', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.printInvoice);
 router.get('/billing/revenue', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.getRevenueReport);
 router.get('/billing/dunning', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.getDunningPreview);
 router.post('/billing/dunning/run', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.runDunning);
@@ -141,6 +148,10 @@ router.post('/support/tickets', authenticatePlatformUser, requirePlatformPermiss
 router.patch('/support/tickets/:id', authenticatePlatformUser, requirePlatformPermission('support:manage'), platformBusinessController.updateTicket);
 router.get('/support/tickets/:id/messages', authenticatePlatformUser, requirePlatformPermission('support:read'), platformBusinessController.getTicketMessages);
 router.post('/support/tickets/:id/messages', authenticatePlatformUser, requirePlatformPermission('support:manage'), platformBusinessController.addTicketMessage);
+// 12.2 time-boxed support access grants (ticket-linked impersonation)
+router.get('/support/access', authenticatePlatformUser, requirePlatformPermission('support:read'), platformBusinessController.listSupportAccess);
+router.post('/support/tickets/:id/grant-access', authenticatePlatformUser, requirePlatformPermission('tenant:impersonate'), platformBusinessController.grantSupportAccess);
+router.post('/support/access/:id/revoke', authenticatePlatformUser, requirePlatformPermission('support:manage'), platformBusinessController.revokeSupportAccess);
 router.get('/support/known-issues', authenticatePlatformUser, requirePlatformPermission('support:read'), platformBusinessController.getKnownIssues);
 router.post('/support/known-issues', authenticatePlatformUser, requirePlatformPermission('support:manage'), platformBusinessController.createKnownIssue);
 router.patch('/support/known-issues/:id', authenticatePlatformUser, requirePlatformPermission('support:manage'), platformBusinessController.updateKnownIssue);
