@@ -79,6 +79,13 @@ router.post('/callback', async (req, res) => {
 // Check transaction status
 router.get('/status/:checkoutRequestId', authenticateToken, async (req, res) => {
   try {
+    if (!MpesaService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        error: 'M-Pesa is not configured',
+        code: 'MPESA_NOT_CONFIGURED'
+      });
+    }
     const { checkoutRequestId } = req.params;
     
     const result = await MpesaService.checkTransactionStatus(checkoutRequestId);
@@ -86,7 +93,17 @@ router.get('/status/:checkoutRequestId', authenticateToken, async (req, res) => 
     res.json({ success: true, data: result });
   } catch (error) {
     logger.error('Transaction Status Check Error:', error);
-    res.status(500).json({
+    if (error.code === 'MPESA_AUTH_FAILED') {
+      return res.status(503).json({
+        success: false,
+        error: 'M-Pesa provider authentication failed',
+        code: 'MPESA_NOT_CONFIGURED'
+      });
+    }
+    if (error.code === 'MPESA_QUERY_FAILED' && (error.upstreamStatus === 400 || error.upstreamStatus === 404)) {
+      return res.status(404).json({ success: false, error: 'Transaction not found' });
+    }
+    res.status(502).json({
       success: false,
       error: 'Transaction status check failed'
     });

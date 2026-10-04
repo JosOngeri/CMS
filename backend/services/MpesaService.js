@@ -24,6 +24,14 @@ class MpesaService {
   }
 
   /**
+   * Whether the Daraja credentials needed for API calls are configured
+   * @returns {boolean}
+   */
+  isConfigured() {
+    return !!(this.consumerKey && this.consumerSecret && this.passkey && this.shortcode);
+  }
+
+  /**
    * Generate OAuth access token
    * @returns {Promise<string>} Access token
    */
@@ -41,7 +49,9 @@ class MpesaService {
       return response.data.access_token;
     } catch (error) {
       logger.error('M-Pesa OAuth Error:', error.response?.data || error.message);
-      throw new Error('Failed to get M-Pesa access token');
+      const err = new Error('Failed to get M-Pesa access token');
+      err.code = 'MPESA_AUTH_FAILED';
+      throw err;
     }
   }
 
@@ -270,7 +280,11 @@ class MpesaService {
       };
     } catch (error) {
       logger.error('Transaction Status Check Error:', error.response?.data || error.message);
-      throw new Error('Failed to check transaction status');
+      if (error.code) throw error;
+      const err = new Error('Failed to check transaction status');
+      err.code = 'MPESA_QUERY_FAILED';
+      err.upstreamStatus = error.response?.status;
+      throw err;
     }
   }
 
