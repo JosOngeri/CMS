@@ -51,8 +51,14 @@ class AppConfig {
   }
   
   // App Info
-  static const String appName = 'Msabato';
-  static const String appVersion = '1.7.0'; // keep in sync with pubspec version field
+  // Display name — 'Msabato Admin' for the admin flavor via
+  // --dart-define=APP_NAME="Msabato Admin"; defaults to the client name.
+  static const String appName =
+      String.fromEnvironment('APP_NAME', defaultValue: 'Msabato');
+  static const String appMode =
+      String.fromEnvironment('APP_MODE', defaultValue: 'client');
+  static bool get isAdminMode => appMode == 'admin';
+  static const String appVersion = '1.8.0'; // keep in sync with pubspec version field
   
   // Environment detection
   static bool get isDevelopment {

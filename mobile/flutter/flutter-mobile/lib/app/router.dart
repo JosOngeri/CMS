@@ -31,7 +31,10 @@ import '../screens/platform/platform_incidents_screen.dart';
 import '../screens/platform/platform_analytics_screen.dart';
 import '../screens/platform/platform_audit_screen.dart';
 import '../screens/platform/platform_ops_screen.dart';
+import '../screens/platform/platform_hub_screen.dart';
+import '../screens/platform/platform_area_screen.dart';
 import '../services/auth_service.dart';
+import '../services/config.dart';
 import '../services/platform_auth_service.dart';
 
 // Loading screen for auth state restoration
@@ -72,7 +75,7 @@ final _authRefreshProvider = Provider<ChangeNotifier>((ref) {
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/login',
+    initialLocation: AppConfig.isAdminMode ? '/platform-login' : '/login',
     refreshListenable: ref.watch(_authRefreshProvider),
     redirect: (context, state) {
       final authState = ref.read(authProvider);
@@ -95,7 +98,16 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Auth has settled — /loading is a dead-end route without this egress.
       if (state.matchedLocation == '/loading') {
+        if (AppConfig.isAdminMode) {
+          return isPlatformAuthed ? '/platform' : '/platform-login';
+        }
         return isAuthenticated ? '/dashboard' : '/login';
+      }
+
+      if (AppConfig.isAdminMode &&
+          !state.matchedLocation.startsWith('/platform') &&
+          state.matchedLocation != '/loading') {
+        return isPlatformAuthed ? '/platform' : '/platform-login';
       }
 
       // Protected routes - redirect to login if not authenticated.
@@ -180,6 +192,98 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/platform/ops',
             builder: (context, state) => const PlatformOpsScreen(),
+          ),
+          GoRoute(
+            path: '/platform/hub',
+            builder: (context, state) => const PlatformHubScreen(),
+          ),
+          GoRoute(
+            path: '/platform/hub/staff',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Staff & Access',
+              sources: [
+                PlatformAreaSource('Platform staff', '/users'),
+                PlatformAreaSource('Active sessions', '/auth/sessions/all'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/health',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'System Health',
+              sources: [
+                PlatformAreaSource('Fleet', '/fleet'),
+                PlatformAreaSource('Integrations', '/integrations'),
+                PlatformAreaSource('Jobs', '/jobs'),
+                PlatformAreaSource('Logs', '/logs'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/security',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Security',
+              sources: [
+                PlatformAreaSource('Security center', '/security'),
+                PlatformAreaSource('Permission audit', '/security/permission-audit'),
+                PlatformAreaSource('Credential rotation', '/security/credentials'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/data',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Data & Backups',
+              sources: [
+                PlatformAreaSource('Backups', '/data/backups'),
+                PlatformAreaSource('Storage', '/data/storage'),
+                PlatformAreaSource('Schema', '/data/schema'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/billing',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Billing',
+              sources: [
+                PlatformAreaSource('Plans', '/billing/plans'),
+                PlatformAreaSource('Subscriptions', '/billing/subscriptions'),
+                PlatformAreaSource('Invoices', '/billing/invoices'),
+                PlatformAreaSource('Revenue', '/billing/revenue'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/communication',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Communication',
+              sources: [
+                PlatformAreaSource('Announcements', '/announcements'),
+                PlatformAreaSource('Templates', '/communication/templates'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/support',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Support',
+              sources: [
+                PlatformAreaSource('Tickets', '/support/tickets'),
+                PlatformAreaSource('Known issues', '/support/known-issues'),
+                PlatformAreaSource('Health scores', '/support/health-scores'),
+              ],
+            ),
+          ),
+          GoRoute(
+            path: '/platform/hub/config',
+            builder: (context, state) => const PlatformAreaScreen(
+              title: 'Configuration',
+              sources: [
+                PlatformAreaSource('Settings catalog', '/settings/catalog'),
+                PlatformAreaSource('Feature flags', '/flags'),
+                PlatformAreaSource('Version', '/version'),
+              ],
+            ),
           ),
         ],
       ),

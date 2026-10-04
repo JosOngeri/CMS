@@ -43,17 +43,17 @@ class SDAChurchApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final theme = AppTheme.lightTheme;
-    final darkTheme = AppTheme.darkTheme;
+    final theme = AppConfig.isAdminMode ? AppTheme.adminTheme : AppTheme.lightTheme;
+    final darkTheme = AppConfig.isAdminMode ? AppTheme.adminTheme : AppTheme.darkTheme;
     
     return MaterialApp.router(
-      title: 'Msabato',
+      title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       
       // Theme
       theme: theme,
       darkTheme: darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: AppConfig.isAdminMode ? ThemeMode.dark : ThemeMode.system,
       
       // Router
       routerConfig: router,

@@ -77,6 +77,12 @@ class _PlatformDashboardScreenState extends ConsumerState<PlatformDashboardScree
         : overall == 'degraded'
             ? AppTheme.warningColor
             : AppTheme.errorColor;
+    final services = health['services'] as List<dynamic>? ?? [];
+    final unhealthyServices = services
+        .where((service) => service['status'] != 'healthy')
+        .map((service) => service['name'].toString())
+        .toList();
+    final healthBackground = healthColor.withOpacity(0.16);
 
     return RefreshIndicator(
       onRefresh: _load,
@@ -85,13 +91,18 @@ class _PlatformDashboardScreenState extends ConsumerState<PlatformDashboardScree
         children: [
           // Health banner
           Card(
-            color: overall == 'healthy' ? AppTheme.successLight : AppTheme.errorLight,
+            color: healthBackground,
             child: ListTile(
               leading: Icon(Icons.monitor_heart, color: healthColor),
               title: Text('Platform ${overall.toUpperCase()}',
                   style: TextStyle(fontWeight: FontWeight.bold, color: healthColor)),
               subtitle: Text(
-                'DB ${live['dbLatencyMs'] ?? '?'}ms · up ${live['uptimeHours'] ?? '?'}h · ${live['memoryMb'] ?? '?'}MB',
+                [
+                  'DB ${live['dbLatencyMs'] ?? '?'}ms · up ${live['uptimeHours'] ?? '?'}h · ${live['memoryMb'] ?? '?'}MB',
+                  if (unhealthyServices.isNotEmpty)
+                    'Attention: ${unhealthyServices.join(', ')}',
+                ].join('\n'),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
               ),
               trailing: IconButton(icon: const Icon(Icons.refresh), onPressed: _load),
             ),
@@ -141,8 +152,10 @@ class _PlatformDashboardScreenState extends ConsumerState<PlatformDashboardScree
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           if (_activity.isEmpty)
-            const Text('No recent activity',
-                style: TextStyle(color: AppTheme.textSecondary)),
+            Text(
+              'No recent activity',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
           ..._activity.map((a) => Card(
                 margin: const EdgeInsets.only(bottom: 6),
                 child: ListTile(
@@ -150,8 +163,13 @@ class _PlatformDashboardScreenState extends ConsumerState<PlatformDashboardScree
                   leading: const Icon(Icons.bolt, size: 18, color: AppTheme.secondaryColor),
                   title: Text(a['title']?.toString() ?? a['type']?.toString() ?? '',
                       style: const TextStyle(fontSize: 13)),
-                  subtitle: Text(a['time']?.toString() ?? '',
-                      style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                  subtitle: Text(
+                    a['time']?.toString() ?? '',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               )),
         ],
@@ -172,19 +190,28 @@ class _PlatformDashboardScreenState extends ConsumerState<PlatformDashboardScree
               Icon(icon, size: 18, color: color),
               const SizedBox(width: 6),
               Expanded(
-                  child: Text(label,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppTheme.textSecondary),
-                      overflow: TextOverflow.ellipsis)),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ]),
             const SizedBox(height: 6),
             Text(value,
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             if (subtitle != null)
-              Text(subtitle,
-                  style: const TextStyle(
-                      fontSize: 11, color: AppTheme.textSecondary)),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
           ],
         ),
       ),

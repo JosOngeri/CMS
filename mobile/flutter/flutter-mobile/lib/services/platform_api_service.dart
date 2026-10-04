@@ -201,6 +201,31 @@ class PlatformApiService {
 
   Future<List<dynamic>> getDeploys() async =>
       (await _request('GET', '/deploys'))['data'] as List<dynamic>;
+
+  Future<dynamic> getAreaData(String path) async =>
+      (await _request('GET', path))['data'];
+
+  Future<Map<String, dynamic>> getPublicStatus() async {
+    try {
+      final response = await Dio(BaseOptions(
+        baseUrl: AppConfig.effectiveApiUrl,
+        connectTimeout: AppConfig.apiTimeout,
+        receiveTimeout: AppConfig.apiTimeout,
+      )).get('/platform/status');
+      final body = response.data;
+      final data = body is Map ? body['data'] : null;
+      return data is Map<String, dynamic>
+          ? data
+          : Map<String, dynamic>.from(data is Map ? data : const {});
+    } on DioException catch (e) {
+      throw PlatformApiException(
+        e.response?.statusCode,
+        e.response?.data is Map
+            ? (e.response?.data['message'] ?? 'Server is unavailable').toString()
+            : 'Server is unavailable',
+      );
+    }
+  }
 }
 
 /// Singleton wired to the platform auth provider — a 401 logs the admin

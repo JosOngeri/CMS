@@ -93,10 +93,11 @@ class PlatformController extends BaseController {
       };
 
       const healthResult = await pool.query(`
-        SELECT service_name, status, response_time, error_rate, last_check
+        SELECT DISTINCT ON (service_name)
+               service_name, status, response_time, error_rate, last_check
         FROM platform_health
         WHERE last_check >= NOW() - INTERVAL '1 hour'
-        ORDER BY last_check DESC
+        ORDER BY service_name, last_check DESC
       `);
 
       const services = healthResult.rows.map((row) => ({

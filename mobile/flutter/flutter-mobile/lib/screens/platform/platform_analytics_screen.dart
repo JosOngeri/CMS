@@ -76,7 +76,9 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
       children: [
         TabBar(
           controller: _tab,
-          labelColor: AppTheme.primaryColor,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          indicatorColor: Theme.of(context).colorScheme.primary,
           tabs: const [Tab(text: 'Growth'), Tab(text: 'Usage'), Tab(text: 'Adoption')],
         ),
         Expanded(
@@ -95,10 +97,16 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Row(
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 1.8,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
           children: [
-            _metric('DAU', '${g['dau']}'),
-            _metric('MAU', '${g['mau']}'),
+            _metric('Daily active', '${g['dau']}'),
+            _metric('Monthly active', '${g['mau']}'),
             _metric('Active users', '${g['activeUsers']}'),
             _metric('Total users', '${g['totalUsers']}'),
           ],
@@ -137,9 +145,13 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
               title: Text(u['name']?.toString() ?? '',
                   style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: Text(
-                'KES ${u['payment_volume']} across ${u['payment_count']} payments\n'
-                '${u['members']} members · ${u['users']} users',
-                style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+                'KES ${_formatNumber(u['payment_volume'])} · ${_formatNumber(u['payment_count'])} payments\n'
+                '${_formatNumber(u['members'])} members · ${_formatNumber(u['users'])} users',
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.45,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               isThreeLine: true,
             ),
@@ -172,14 +184,31 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
                   Wrap(
                     spacing: 6,
                     runSpacing: 4,
-                    children: modules.entries
-                        .map((e) => Chip(
-                              label: Text(e.key, style: const TextStyle(fontSize: 11)),
-                              backgroundColor:
-                                  e.value == true ? AppTheme.successLight : AppTheme.borderColor,
-                              visualDensity: VisualDensity.compact,
-                            ))
-                        .toList(),
+                    children: modules.entries.map((e) {
+                      final active = e.value == true;
+                      final scheme = Theme.of(context).colorScheme;
+                      return Chip(
+                        avatar: Icon(
+                          active ? Icons.check_circle : Icons.remove_circle_outline,
+                          size: 15,
+                          color: active ? AppTheme.successColor : scheme.onSurfaceVariant,
+                        ),
+                        label: Text(
+                          e.key,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: active ? scheme.onSurface : scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        backgroundColor: active
+                            ? AppTheme.successColor.withOpacity(0.16)
+                            : scheme.surfaceContainerHighest,
+                        side: BorderSide(
+                          color: active ? AppTheme.successColor : scheme.outlineVariant,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      );
+                    }).toList(),
                   ),
                   if (used.isEmpty)
                     const Text('No modules in use',
@@ -193,20 +222,34 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
     );
   }
 
+  String _formatNumber(dynamic value) {
+    final number = value is num ? value : num.tryParse('$value') ?? 0;
+    final whole = number.round().toString();
+    return whole.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (_) => ',',
+    );
+  }
+
   Widget _metric(String label, String value) {
-    return Expanded(
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Column(
-            children: [
-              Text(value,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(label,
-                  style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
-            ],
-          ),
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(value,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
         ),
       ),
     );

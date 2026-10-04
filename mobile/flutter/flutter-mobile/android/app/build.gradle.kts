@@ -45,6 +45,23 @@ android {
         versionName = flutter.versionName
     }
 
+    // Two launchers from one codebase:
+    //   client — "Msabato"        com.sdachurch.sda_church_mobile
+    //   admin  — "Msabato Admin"  com.sdachurch.sda_church_mobile.admin
+    // Different applicationIds → both install side-by-side on one phone.
+    flavorDimensions += "app"
+    productFlavors {
+        create("client") {
+            dimension = "app"
+            manifestPlaceholders["appName"] = "Msabato"
+        }
+        create("admin") {
+            dimension = "app"
+            applicationIdSuffix = ".admin"
+            manifestPlaceholders["appName"] = "Msabato Admin"
+        }
+    }
+
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {

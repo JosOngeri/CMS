@@ -23,6 +23,8 @@ class _PlatformLoginScreenState extends ConsumerState<PlatformLoginScreen> {
   final _totpController = TextEditingController();
   bool _loading = false;
   bool _mfaRequired = false;
+  bool _checkingServer = false;
+  String? _serverStatus;
   String? _error;
 
   @override
@@ -70,7 +72,9 @@ class _PlatformLoginScreenState extends ConsumerState<PlatformLoginScreen> {
         return;
       }
       setState(() {
-        _error = e.message;
+        _error = e.statusCode == 429
+            ? '${e.message}. Wait 15 minutes before trying again.'
+            : e.message;
         _loading = false;
       });
     } catch (e) {
@@ -78,6 +82,21 @@ class _PlatformLoginScreenState extends ConsumerState<PlatformLoginScreen> {
         _error = 'Sign-in failed — check connection and server URL';
         _loading = false;
       });
+    }
+  }
+
+  Future<void> _checkServer() async {
+    setState(() {
+      _checkingServer = true;
+      _serverStatus = null;
+    });
+    try {
+      await ref.read(platformApiProvider).getPublicStatus();
+      if (mounted) setState(() => _serverStatus = 'Server reachable');
+    } on PlatformApiException catch (error) {
+      if (mounted) setState(() => _serverStatus = error.message);
+    } finally {
+      if (mounted) setState(() => _checkingServer = false);
     }
   }
 
@@ -93,11 +112,11 @@ class _PlatformLoginScreenState extends ConsumerState<PlatformLoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.admin_panel_settings,
-                      size: 64, color: AppTheme.primaryColor),
+                  Icon(Icons.admin_panel_settings,
+                      size: 64, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(height: 16),
                   const Text(
-                    'Platform Admin',
+                    'Msabato Admin',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
                   ),
@@ -173,11 +192,22 @@ class _PlatformLoginScreenState extends ConsumerState<PlatformLoginScreen> {
                                 strokeWidth: 2, color: Colors.white))
                         : const Text('Sign in', style: TextStyle(fontSize: 16)),
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('Back to church sign-in'),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _checkingServer ? null : _checkServer,
+                    icon: _checkingServer
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.cloud_outlined),
+                    label: const Text('Check server connection'),
                   ),
+                  if (_serverStatus != null) ...[
+                    const SizedBox(height: 8),
+                    Text(_serverStatus!, textAlign: TextAlign.center),
+                  ],
                 ],
               ),
             ),

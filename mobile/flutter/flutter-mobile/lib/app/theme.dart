@@ -275,6 +275,47 @@ class AppTheme {
   static const Color _darkTextSecondary = Color(0xFF9CA3AF);
   static const Color _darkBorder = Color(0xFF374151);
 
+  static ThemeData get adminTheme {
+    final base = darkTheme;
+    return base.copyWith(
+      colorScheme: base.colorScheme.copyWith(
+        primary: secondaryColor,
+        secondary: primaryColor,
+      ),
+      appBarTheme: base.appBarTheme.copyWith(
+        backgroundColor: _darkSurface,
+        centerTitle: false,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: _darkSurface,
+        indicatorColor: secondaryColor.withOpacity(0.22),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+          color: states.contains(WidgetState.selected)
+              ? secondaryColor
+              : _darkTextSecondary,
+        )),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
+          color: states.contains(WidgetState.selected)
+              ? secondaryColor
+              : _darkTextSecondary,
+          fontWeight: states.contains(WidgetState.selected)
+              ? FontWeight.w700
+              : FontWeight.w500,
+        )),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: secondaryColor,
+          foregroundColor: _darkBackground,
+          minimumSize: const Size(44, 44),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: secondaryColor,
+      ),
+    );
+  }
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
