@@ -453,6 +453,72 @@ class PlatformTenancyController extends BaseController {
     }
   }
 
+  /** PATCH /tenants/:id/demo — §7.6 flag/unflag a church as demo data. */
+  async setTenantDemo(req, res) {
+    const { id } = req.params;
+    const { isDemo } = req.body || {};
+    if (typeof isDemo !== 'boolean') return this.badRequest(res, 'isDemo boolean required');
+    try {
+      const result = await pool.query(
+        'UPDATE churches SET is_demo = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING id, name, is_demo',
+        [id, isDemo]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Church not found');
+      await auditPlatformAction(req, {
+        action: isDemo ? 'tenant.demo_flagged' : 'tenant.demo_unflagged',
+        tenantId: id
+      });
+      this.success(res, result.rows[0], isDemo ? 'Marked as demo tenant' : 'Demo flag removed');
+    } catch (error) {
+      this.logger.error('setTenantDemo', error);
+      this.error(res, 'Failed to update demo flag');
+    }
+  }
+
+  /**
+   * POST /tenants/purge-demos — §7.6 delete every demo church + its data.
+   * Demos skip the retention window by design; owner-only via data:export.
+   */
+  async purgeDemoTenants(req, res) {
+    const PURGE_TABLES = [
+      'roles', 'departments', 'department_subcommittees', 'members',
+      'users', 'events', 'event_attendance', 'payments', 'contributions',
+      'pledges', 'expenses', 'budgets', 'documents', 'announcements',
+      'sms_contacts', 'sms_logs', 'tenant_feature_flags',
+      'tenant_subscriptions', 'platform_invoices',
+    ];
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const demos = await client.query('SELECT id, name FROM churches WHERE is_demo = true FOR UPDATE');
+      if (demos.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return this.success(res, { churches: 0 }, 'No demo tenants to purge');
+      }
+      const ids = demos.rows.map((d) => d.id);
+      const deleted = {};
+      for (const table of PURGE_TABLES) {
+        const exists = await client.query('SELECT to_regclass($1) AS t', [table]);
+        if (!exists.rows[0].t) continue;
+        const r = await client.query(`DELETE FROM ${table} WHERE church_id = ANY($1)`, [ids]);
+        deleted[table] = r.rowCount;
+      }
+      await client.query('DELETE FROM churches WHERE id = ANY($1)', [ids]);
+      await client.query('COMMIT');
+      await auditPlatformAction(req, {
+        action: 'tenant.demo_purged',
+        details: { churches: demos.rows.map((d) => d.name), deleted }
+      });
+      this.success(res, { churches: demos.rows.length, deleted }, `Purged ${demos.rows.length} demo tenant(s)`);
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      this.logger.error('purgeDemoTenants', error);
+      this.error(res, `Demo purge failed: ${error.message}`);
+    } finally {
+      client.release();
+    }
+  }
+
   /**
    * POST /tenants/:id/purge — permanently delete an offboarded tenant's
    * core data + the church row. Requires the retention deadline to have

@@ -130,6 +130,14 @@ const PlatformTenantAdmin = () => {
     await loadTenants()
   }, 'Settings pushed to tenant')
 
+  const toggleDemo = () => act('demo', async () => {
+    const next = !tenant?.is_demo
+    if (next && !window.confirm(`Mark ${tenant?.name} as a DEMO tenant? Demo tenants can be bulk-purged.`)) return
+    const res = await api.patch(`/api/platform/tenants/${churchId}/demo`, { isDemo: next })
+    toast.success(res.data.message || 'Demo flag updated')
+    await loadTenants()
+  }, null)
+
   const offboard = () => act('offboard', async () => {
     const reason = window.prompt('Offboarding reason (audit-logged):')
     if (!reason || reason.trim().length < 5) return toast.error('Reason of 5+ characters required')
@@ -171,6 +179,16 @@ const PlatformTenantAdmin = () => {
           <p className="text-[var(--color-textSecondary)]">Administer users, feature flags, and quotas inside a church.</p>
         </div>
         <div className="flex items-center gap-2">
+          {churchId && (
+            <button
+              onClick={toggleDemo}
+              disabled={busy === 'demo'}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm ${tenant?.is_demo ? 'border-[var(--color-warning)] text-[var(--color-warning)] bg-[var(--color-warning-light)]' : 'border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface)]'}`}
+              title="Demo tenants are disposable test data and can be bulk-purged"
+            >
+              {tenant?.is_demo ? 'Demo ✓' : 'Mark demo'}
+            </button>
+          )}
           {churchId && (
             <a
               href={`/api/platform/tenants/${churchId}/export`}

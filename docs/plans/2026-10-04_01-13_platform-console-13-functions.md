@@ -258,7 +258,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   quota flags.
 - [x] 7.5 Schema versions — `schema_migrations` per tenant vs latest;
   drift report.
-- [ ] 7.6 Demo data — `is_demo` flagging + purge action on trial
+- [x] 7.6 Demo data — PATCH /tenants/:id/demo toggles the flag (Mark demo
+  button on TenantAdmin, demo badge on Fleet cards); POST
+  /tenants/purge-demos (owner-only) wipes all demo churches + their core
+  data in one transaction, no retention wait.
   conversion.
 
 ## 8. Disaster & Incident (`/platform/incidents`)
@@ -302,7 +305,8 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   members/users/payments/volume table on PlatformAnalytics.
   (date-range selector still open)
 - [ ] 10.5 Benchmarks — percentile rank a church vs similar sizes.
-- [ ] 10.6 Exports — monthly metrics CSV/PDF for stakeholders.
+- [x] 10.6 Exports — GET /analytics/export.csv downloads current totals +
+  tenants-per-month CSV, audited; Export button on the Analytics header.
 
 ## 11. Communication (`/platform/communication`)
 
@@ -310,10 +314,13 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   all/specific churches → shown as banner in tenant dashboards.
 - [ ] 11.2 Tenant messaging — message thread between platform staff
   and church admins.
-- [ ] 11.3 Status page — public `/status` route: component health,
-  incident history from 8.1.
-- [ ] 11.4 Templates — platform email/SMS template CRUD (welcome,
-  dunning, security notices) with variable preview.
+- [x] 11.3 Status page — public GET /platform/status (no auth, exposes
+  only component health + global incident titles) and a /status SPA page
+  in the public shell, auto-refreshing each minute.
+- [x] 11.4 Templates — platform_message_templates (migration 082, seeded
+  with welcome/dunning/security/suspension/restored bodies); list +
+  upsert endpoints; editor card on the Communication page. PARTIAL: no
+  live variable preview, and senders do not yet consume the templates.
 
 ## 12. Support Operations (`/platform/support`)
 

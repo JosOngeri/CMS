@@ -48,9 +48,18 @@ const PlatformAnalytics = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">Revenue Analytics</h1>
-        <p className="text-[var(--color-textSecondary)]">Subscription revenue estimated from each church tier and the configured tier prices.</p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Revenue Analytics</h1>
+          <p className="text-[var(--color-textSecondary)]">Subscription revenue estimated from each church tier and the configured tier prices.</p>
+        </div>
+        <a
+          href="/api/platform/analytics/export.csv"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)]"
+          title="Download monthly metrics CSV for stakeholders"
+        >
+          Export CSV
+        </a>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

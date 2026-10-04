@@ -520,6 +520,47 @@ class PlatformOpsController extends BaseController {
     }
   }
 
+  /**
+   * GET /status — §11.3 public status page. No auth: tenants need this
+   * reachable when things are broken. Deliberately reveals only component
+   * health + incident titles, never internals.
+   */
+  async getPublicStatus(req, res) {
+    try {
+      const dbCheck = await pool.query('SELECT 1 AS ok').then(() => true).catch(() => false);
+      const [maint, incidents] = await Promise.all([
+        pool.query(`SELECT value FROM platform_settings WHERE key = 'maintenance_mode'`).catch(() => ({ rows: [] })),
+        pool.query(
+          `SELECT title, severity, status, created_at, resolved_at
+           FROM platform_incidents
+           WHERE tenant_id IS NULL
+           ORDER BY created_at DESC LIMIT 10`
+        ).catch(() => ({ rows: [] })),
+      ]);
+      const maintValue = maint.rows[0]?.value || {};
+      const maintenance = maintValue.enabled === true;
+      const active = incidents.rows.filter((i) => i.status !== 'resolved');
+      const status = maintenance ? 'maintenance'
+        : active.some((i) => i.severity === 'critical') ? 'major_outage'
+        : active.length > 0 ? 'degraded'
+        : dbCheck ? 'operational' : 'major_outage';
+      this.success(res, {
+        status,
+        checked_at: new Date().toISOString(),
+        components: [
+          { name: 'API', status: 'operational' },
+          { name: 'Database', status: dbCheck ? 'operational' : 'major_outage' },
+          { name: 'Tenant access', status: maintenance ? 'maintenance' : 'operational' },
+        ],
+        maintenance: maintenance ? { enabled: true, message: maintValue.message || null, ends_at: maintValue.ends_at || null } : { enabled: false },
+        incidents: incidents.rows,
+      });
+    } catch (error) {
+      this.logger.error('getPublicStatus', error);
+      this.error(res, 'Status unavailable');
+    }
+  }
+
   /** POST /data/backups/:id/restore-staging — pg_restore into STAGING_DATABASE_URL only (7.1). */
   async restoreBackupToStaging(req, res) {
     const { id } = req.params;

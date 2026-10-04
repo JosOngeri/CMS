@@ -402,6 +402,49 @@ ${inv.notes ? `<p class="meta">Notes: ${esc(inv.notes)}</p>` : ''}
     }
   }
 
+  /** GET /analytics/export.csv — §10.6 monthly metrics for stakeholders. */
+  async exportMetricsCsv(req, res) {
+    try {
+      const [growth, totals] = await Promise.all([
+        pool.query(
+          `SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COUNT(*)::int AS new_tenants
+           FROM churches GROUP BY 1 ORDER BY 1`
+        ),
+        pool.query(
+          `SELECT
+             (SELECT COUNT(*) FROM churches WHERE is_active) AS active_churches,
+             (SELECT COUNT(*) FROM churches) AS total_churches,
+             (SELECT COUNT(*) FROM users) AS total_users,
+             (SELECT COUNT(*) FROM members) AS total_members,
+             (SELECT COALESCE(SUM(amount),0) FROM platform_invoices WHERE status = 'paid') AS collected_revenue,
+             (SELECT COUNT(*) FROM platform_invoices WHERE status = 'overdue') AS overdue_invoices`
+        ),
+      ]);
+      const t = totals.rows[0];
+      const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const lines = [
+        'metric,value',
+        `generated_at,${new Date().toISOString()}`,
+        `total_churches,${t.total_churches}`,
+        `active_churches,${t.active_churches}`,
+        `total_users,${t.total_users}`,
+        `total_members,${t.total_members}`,
+        `collected_revenue,${t.collected_revenue}`,
+        `overdue_invoices,${t.overdue_invoices}`,
+        '',
+        'month,new_tenants',
+        ...growth.rows.map((r) => `${esc(r.month)},${r.new_tenants}`),
+      ];
+      await auditPlatformAction(req, { action: 'analytics.exported', resourceType: 'analytics' });
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="msabato-metrics-${new Date().toISOString().slice(0, 10)}.csv"`);
+      res.send(lines.join('\n'));
+    } catch (error) {
+      this.logger.error('exportMetricsCsv', error);
+      this.error(res, 'Failed to export metrics');
+    }
+  }
+
   // ── §11 Communication ─────────────────────────────────────────────────
 
   /** GET/POST /announcements, PATCH /:id — platform announcements (§11.1). */
@@ -453,6 +496,59 @@ ${inv.notes ? `<p class="meta">Notes: ${esc(inv.notes)}</p>` : ''}
     } catch (error) {
       this.logger.error('updateAnnouncement', error);
       this.error(res, 'Failed to update announcement');
+    }
+  }
+
+  /** GET /communication/templates — §11.4 message template list. */
+  async getMessageTemplates(req, res) {
+    try {
+      const result = await pool.query(
+        `SELECT t.*, pu.email AS updated_by_email
+         FROM platform_message_templates t
+         LEFT JOIN platform_users pu ON pu.id = t.updated_by
+         ORDER BY t.key`
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getMessageTemplates', error);
+      this.error(res, 'Failed to fetch templates');
+    }
+  }
+
+  /** PUT /communication/templates/:key — upsert a template body/subject. */
+  async upsertMessageTemplate(req, res) {
+    const { key } = req.params;
+    const { channel = 'email', subject, body } = req.body || {};
+    if (!body || typeof body !== 'string' || !body.trim()) {
+      return this.badRequest(res, 'body is required');
+    }
+    if (!['email', 'sms'].includes(channel)) {
+      return this.badRequest(res, "channel must be 'email' or 'sms'");
+    }
+    if (!/^[a-z0-9_]{3,60}$/.test(key)) {
+      return this.badRequest(res, 'key must be 3-60 chars of a-z, 0-9, underscore');
+    }
+    try {
+      const result = await pool.query(
+        `INSERT INTO platform_message_templates (key, channel, subject, body, updated_by)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (key) DO UPDATE SET
+           channel = EXCLUDED.channel, subject = EXCLUDED.subject,
+           body = EXCLUDED.body, updated_by = EXCLUDED.updated_by,
+           updated_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [key, channel, subject || null, body.trim(), req.platformUser.id]
+      );
+      await auditPlatformAction(req, {
+        action: 'communication.template_saved',
+        resourceType: 'message_template',
+        resourceId: result.rows[0].id,
+        details: { key, channel }
+      });
+      this.success(res, result.rows[0], `Template '${key}' saved`);
+    } catch (error) {
+      this.logger.error('upsertMessageTemplate', error);
+      this.error(res, 'Failed to save template');
     }
   }
 

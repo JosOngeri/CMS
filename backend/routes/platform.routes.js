@@ -9,6 +9,9 @@ const { authenticatePlatformUser, requirePlatformPermission } = require('../midd
 const { platformAuthLimiter } = require('../middleware/rateLimiter');
 
 router.post('/auth/login', platformAuthLimiter, platformAuthController.login);
+// 11.3 public status page — deliberately unauthenticated; exposes only
+// component health + incident titles, never internals.
+router.get('/status', platformOpsController.getPublicStatus);
 router.get('/auth/me', authenticatePlatformUser, platformAuthController.getCurrentUser);
 router.post('/auth/logout', authenticatePlatformUser, platformAuthController.logout);
 
@@ -52,6 +55,9 @@ router.post('/tenants/:id/archive', authenticatePlatformUser, requirePlatformPer
 // owner-only (data:export) and locked until the retention deadline passes.
 router.post('/tenants/:id/offboard', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.offboardTenant);
 router.post('/tenants/:id/purge', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeTenant);
+// 7.6 demo-data lifecycle
+router.patch('/tenants/:id/demo', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.setTenantDemo);
+router.post('/tenants/purge-demos', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeDemoTenants);
 router.get('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantById);
 router.get('/tenants/:id/stats', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantStats);
 router.get('/tenants/:id/activity', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantActivity);
@@ -136,11 +142,15 @@ router.post('/billing/dunning/run', authenticatePlatformUser, requirePlatformPer
 router.get('/analytics/growth', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getGrowthMetrics);
 router.get('/analytics/usage', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getUsageReport);
 router.get('/analytics/adoption', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getAdoptionReport);
+router.get('/analytics/export.csv', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.exportMetricsCsv);
 
 // ── §11 Communication ───────────────────────────────────────────────────
 router.get('/announcements', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.getAnnouncements);
 router.post('/announcements', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.createAnnouncement);
 router.patch('/announcements/:id', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.updateAnnouncement);
+// 11.4 message templates (welcome, dunning, security notices)
+router.get('/communication/templates', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.getMessageTemplates);
+router.put('/communication/templates/:key', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.upsertMessageTemplate);
 
 // ── §12 Support Operations ──────────────────────────────────────────────
 router.get('/support/tickets', authenticatePlatformUser, requirePlatformPermission('support:read'), platformBusinessController.getTickets);

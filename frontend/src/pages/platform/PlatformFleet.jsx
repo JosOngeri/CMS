@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, Building2, Bell, Plug } from 'lucide-react'
+import { RefreshCw, AlertTriangle, Building2, Bell, Plug, Trash2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -45,6 +45,18 @@ const PlatformFleet = () => {
   }, [api, toast])
 
   useEffect(() => { load(true) }, [load])
+
+  const purgeDemos = async () => {
+    const demos = fleet.filter((t) => t.is_demo).length
+    if (!window.confirm(`Purge ${demos} demo tenant(s) and ALL their data? This cannot be undone.`)) return
+    try {
+      const res = await api.post('/api/platform/tenants/purge-demos')
+      toast.success(res.data.message || 'Demo tenants purged')
+      await load(false)
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Demo purge failed')
+    }
+  }
 
   const retryJob = async (id) => {
     try {
@@ -106,9 +118,16 @@ const PlatformFleet = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">Fleet & Infrastructure</h1>
           <p className="text-[var(--color-textSecondary)]">Every tenant at a glance.</p>
         </div>
-        <button onClick={() => load(false)} disabled={refreshing} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface)] disabled:opacity-50">
-          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {fleet.some((t) => t.is_demo) && (
+            <button onClick={purgeDemos} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-error)] text-[var(--color-error)] hover:bg-[var(--color-error-light)]">
+              <Trash2 className="h-4 w-4" /> Purge demos ({fleet.filter((t) => t.is_demo).length})
+            </button>
+          )}
+          <button onClick={() => load(false)} disabled={refreshing} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-[var(--color-text)] hover:bg-[var(--color-surface)] disabled:opacity-50">
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
       </div>
 
       {alerts.length > 0 && (
@@ -137,6 +156,7 @@ const PlatformFleet = () => {
                 </div>
               </div>
               <div className="flex gap-1">
+                {t.is_demo && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-accent-light)] text-[var(--color-accent)]">demo</span>}
                 {t.quarantined && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-error-light)] text-[var(--color-error)]">quarantined</span>}
                 {!t.is_active && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-warning-light)] text-[var(--color-warning)]">suspended</span>}
                 {t.is_active && !t.quarantined && <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--color-success-light)] text-[var(--color-success)]">active</span>}
