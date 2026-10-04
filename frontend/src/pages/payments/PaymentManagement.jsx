@@ -50,8 +50,9 @@ const PaymentManagement = () => {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [formData, setFormData] = useState(EMPTY_FORM())
 
-  const canManagePayments = user?.roles?.some(role => 
-    ['Super Admin', 'Pastor', 'First Elder', 'Department Head'].includes(role)
+  // Keep in sync with the backend route guards (requireRole lists Treasurer).
+  const canManagePayments = user?.roles?.some(role =>
+    ['Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'Department Head'].includes(role)
   )
 
   const paymentTypes = [
@@ -169,6 +170,23 @@ const PaymentManagement = () => {
     } catch (error) {
       console.error('Error deleting payment:', error)
       toast.error('Failed to delete payment')
+    }
+  }
+
+  // Pending rows are actionable: the treasurer confirms money received
+  // (completed) or marks the attempt dead (failed). Backend audits the change.
+  const handleStatusUpdate = async (payment, status) => {
+    const label = status === 'completed' ? 'confirm this payment as received' : 'mark this payment as failed'
+    if (!window.confirm(`Are you sure you want to ${label}?`)) return
+    try {
+      const response = await api.put(`/payments/status/${payment.id}`, { status })
+      const updated = response.data?.data || response.data?.payment
+      setPayments(payments.map(p => p.id === payment.id ? { ...p, status, ...(updated || {}) } : p))
+      if (selectedPayment?.id === payment.id) setSelectedPayment(prev => ({ ...prev, status }))
+      toast.success(status === 'completed' ? 'Payment confirmed' : 'Payment marked failed')
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      toast.error(error.response?.data?.error || 'Failed to update status')
     }
   }
 
@@ -581,6 +599,26 @@ const PaymentManagement = () => {
                   {canManagePayments && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
+                        {payment.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleStatusUpdate(payment, 'completed')}
+                              title="Confirm payment received"
+                              aria-label="Confirm payment received"
+                              className="text-[var(--color-success)] hover:opacity-80"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleStatusUpdate(payment, 'failed')}
+                              title="Mark payment failed"
+                              aria-label="Mark payment failed"
+                              className="text-[var(--color-error)] hover:opacity-80"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
                         <button
                           onClick={() => setSelectedPayment(payment)}
                           className="text-[var(--color-primary)] hover:text-[var(--color-primary)] hover:text-[var(--color-primary)]"
@@ -624,6 +662,16 @@ const PaymentManagement = () => {
               onClick={() => setSelectedPayment(payment)}
               actions={canManagePayments ? (
                 <>
+                  {payment.status === 'pending' && (
+                    <>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'completed'); }} className="flex items-center gap-1 text-sm text-[var(--color-success)] font-medium min-h-[44px] px-2">
+                        <CheckCircle className="w-4 h-4" /><span>Confirm</span>
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'failed'); }} className="flex items-center gap-1 text-sm text-[var(--color-error)] font-medium min-h-[44px] px-2">
+                        <XCircle className="w-4 h-4" /><span>Fail</span>
+                      </button>
+                    </>
+                  )}
                   <button onClick={(e) => { e.stopPropagation(); handleEdit(payment); }} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
                     <Edit className="w-4 h-4" /><span>Edit</span>
                   </button>
@@ -718,6 +766,23 @@ const PaymentManagement = () => {
                 <div>
                   <p className="text-sm text-[var(--color-textSecondary)]">Notes</p>
                   <p className="text-[var(--color-text)]">{selectedPayment.notes}</p>
+                </div>
+              )}
+
+              {canManagePayments && selectedPayment.status === 'pending' && (
+                <div className="flex gap-3 pt-2">
+                  <button
+                    onClick={() => handleStatusUpdate(selectedPayment, 'completed')}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
+                  >
+                    <CheckCircle className="w-4 h-4" /> Confirm received
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(selectedPayment, 'failed')}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
+                  >
+                    <XCircle className="w-4 h-4" /> Mark failed
+                  </button>
                 </div>
               )}
             </div>

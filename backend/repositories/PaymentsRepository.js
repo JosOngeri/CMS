@@ -128,7 +128,7 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getPaymentsWithFilters(filters) {
-    const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0 } = filters;
+    const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0, churchId } = filters;
 
     let query = `
       SELECT p.*,
@@ -143,6 +143,14 @@ class PaymentsRepository extends BaseRepository {
     `;
     const params = [];
     let paramCount = 0;
+
+    // Tenant scope first — the controller always passes churchId; without
+    // this the listing leaks every church's payments to any finance role.
+    if (churchId) {
+      paramCount++;
+      query += ` AND p.church_id = $${paramCount}`;
+      params.push(churchId);
+    }
 
     if (memberId) {
       paramCount++;
