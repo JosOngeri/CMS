@@ -211,8 +211,14 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
                     }).toList(),
                   ),
                   if (used.isEmpty)
-                    const Text('No modules in use',
-                        style: TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                    Text('No modules in use',
+                        style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: 8),
+                  const Divider(height: 1),
+                  _TenantFlags(churchId: a['id']?.toString() ?? ''),
                 ],
               ),
             ),
@@ -252,6 +258,118 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Per-tenant feature-flag switches — real tenant_feature_flags rows toggled
+/// via PUT /tenants/:id/flags, distinct from the usage-adoption chips above.
+class _TenantFlags extends ConsumerStatefulWidget {
+  final String churchId;
+
+  const _TenantFlags({required this.churchId});
+
+  @override
+  ConsumerState<_TenantFlags> createState() => _TenantFlagsState();
+}
+
+class _TenantFlagsState extends ConsumerState<_TenantFlags> {
+  List<dynamic>? _flags;
+  String? _error;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final flags =
+          await ref.read(platformApiProvider).getTenantFlags(widget.churchId);
+      if (mounted) setState(() => _flags = flags);
+    } on PlatformApiException catch (e) {
+      if (mounted) setState(() => _error = e.message);
+    }
+  }
+
+  Future<void> _toggle(Map<String, dynamic> flag, bool enabled) async {
+    if (_saving) return;
+    final flags = _flags!;
+    final index = flags.indexOf(flag);
+    setState(() {
+      _saving = true;
+      flags[index] = {...flag, 'enabled': enabled};
+    });
+    try {
+      await ref
+          .read(platformApiProvider)
+          .setTenantFlag(widget.churchId, flag['flag'].toString(), enabled);
+    } on PlatformApiException catch (e) {
+      if (mounted) {
+        flags[index] = flag;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    if (_error != null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 6),
+        child: Text('Feature flags: $_error',
+            style: TextStyle(fontSize: 11, color: scheme.error)),
+      );
+    }
+    if (_flags == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 8),
+        child: SizedBox(
+            height: 16,
+            width: 16,
+            child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 2),
+          child: Text('Feature flags',
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurfaceVariant)),
+        ),
+        ..._flags!.map((f) {
+          final flag = f as Map<String, dynamic>;
+          return SizedBox(
+            height: 32,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    flag['flag'].toString().replaceAll('_', ' '),
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                ),
+                Switch(
+                  value: flag['enabled'] == true,
+                  onChanged: (v) => _toggle(flag, v),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 }

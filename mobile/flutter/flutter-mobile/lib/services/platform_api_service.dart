@@ -131,6 +131,12 @@ class PlatformApiService {
 
   Future<void> activateTenant(String id) => _request('POST', '/tenants/$id/activate');
 
+  Future<List<dynamic>> getTenantFlags(String id) async =>
+      (await _request('GET', '/tenants/$id/flags'))['data'] as List<dynamic>;
+
+  Future<void> setTenantFlag(String id, String flag, bool enabled) =>
+      _request('PUT', '/tenants/$id/flags', body: {'flag': flag, 'enabled': enabled});
+
   // ── Payments ──────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>> getPayments({String? status, int page = 1}) async =>
