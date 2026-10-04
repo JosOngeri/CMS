@@ -5,13 +5,14 @@
  *        500 on prod because a column/table never existed there.
  * @usage  node backend/scripts/platformSmokeSweep.js [baseUrl]
  *         Runs on the VPS (reads .env for secrets) — used by deploy-vps.yml.
- *         Default base: https://cms.josongeri.co.ke
+ *         Default base: http://localhost:$PORT — keeps sweep traffic out of
+ *         the public-IP rate-limit bucket (real users key on their own IPs).
  */
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 
-const BASE = (process.argv[2] || 'https://cms.josongeri.co.ke').replace(/\/$/, '');
+const BASE = (process.argv[2] || `http://localhost:${process.env.PORT || 5000}`).replace(/\/$/, '');
 
 const STATIC_PATHS = [
   '/activity?limit=10', '/alert-rules', '/alerts', '/analytics/adoption',

@@ -42,6 +42,9 @@ const createRateLimiter = (options) => {
   const baseOptions = {
     ...limiterOptions,
     keyGenerator: (req) => ipKeyGenerator(clientIp(req)),
+    // Loopback clients are server-local tooling (smoke sweeps, probes, cron)
+    // — never throttle them; they don't represent internet abuse.
+    skip: (req) => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(clientIp(req)),
     validate: { ip: false },
     standardHeaders: true,
     legacyHeaders: false,
