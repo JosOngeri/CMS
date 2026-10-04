@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Ban, Lock, KeyRound, FileWarning, Eye, MonitorSmartphone } from 'lucide-react'
+import { Ban, Lock, KeyRound, FileWarning, Eye, MonitorSmartphone, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -17,22 +17,25 @@ const PlatformSecurity = () => {
   const [credentials, setCredentials] = useState([])
   const [requests, setRequests] = useState([])
   const [sessions, setSessions] = useState([])
+  const [permAudit, setPermAudit] = useState(null)
   const [loading, setLoading] = useState(true)
   const [newRule, setNewRule] = useState({ cidr: '', mode: 'deny', reason: '' })
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [sec, creds, reqs, sess] = await Promise.all([
+      const [sec, creds, reqs, sess, perms] = await Promise.all([
         api.get('/api/platform/security'),
         api.get('/api/platform/security/credentials'),
         api.get('/api/platform/security/data-requests'),
         api.get('/api/platform/auth/sessions/all'),
+        api.get('/api/platform/security/permission-audit'),
       ])
       setData(sec.data.data)
       setCredentials(creds.data.data || [])
       setRequests(reqs.data.data || [])
       setSessions(sess.data.data || [])
+      setPermAudit(perms.data.data || null)
     } catch {
       toast.error('Failed to load security center')
     } finally {
@@ -139,6 +142,35 @@ const PlatformSecurity = () => {
             {sessions.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No active platform sessions.</p>}
           </div>
         </Card>
+
+        {/* Permission audit (6.7) */}
+        {permAudit && (
+          <Card className="p-6">
+            <h2 className={sectionCls}><ShieldCheck className="h-5 w-5" /> Permission Audit</h2>
+            <p className="text-xs text-[var(--color-textSecondary)] mb-3">Effective access per staff member. Warnings flag drift — owner-only powers held by non-owners, or permissions outside the catalog.</p>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {permAudit.users.map((u) => (
+                <div key={u.id} className="p-3 rounded-lg bg-[var(--color-background)]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm text-[var(--color-text)] font-medium">{u.name || u.email}
+                      <span className="ml-2 text-xs text-[var(--color-textSecondary)]">{u.role} · {u.permissions_source}</span>
+                    </p>
+                    <div className="flex gap-1.5">
+                      {u.mfa_enabled && <span className="px-2 py-0.5 rounded-full text-xs bg-[var(--color-success-light)] text-[var(--color-success)]">MFA</span>}
+                      {!u.is_active && <span className="px-2 py-0.5 rounded-full text-xs bg-[var(--color-error-light)] text-[var(--color-error)]">disabled</span>}
+                    </div>
+                  </div>
+                  <p className="text-xs text-[var(--color-textSecondary)] mt-1 font-mono break-all">{u.effective.join(', ')}</p>
+                  {u.warnings.length > 0 && (
+                    <div className="mt-1.5 space-y-0.5">
+                      {u.warnings.map((w) => <p key={w} className="text-xs text-[var(--color-warning)]">⚠ {w}</p>)}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         <Card className="p-6">
           <h2 className={sectionCls}><Eye className="h-5 w-5" /> Active Impersonations</h2>

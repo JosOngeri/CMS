@@ -287,6 +287,41 @@ class PlatformBusinessController extends BaseController {
     }
   }
 
+  /** GET /analytics/adoption — per-tenant module usage counters (§10.3). */
+  async getAdoptionReport(req, res) {
+    try {
+      const result = await pool.query(
+        `SELECT c.id, c.name,
+                (SELECT COUNT(*) FROM members m WHERE m.church_id = c.id) AS members,
+                (SELECT COUNT(*) FROM payments p WHERE p.church_id = c.id) AS payments,
+                (SELECT COUNT(*) FROM events e WHERE e.church_id = c.id) AS events,
+                (SELECT COUNT(*) FROM documents d WHERE d.church_id = c.id) AS documents,
+                (SELECT COUNT(*) FROM sms_organizations s WHERE s.church_id = c.id) AS sms_orgs,
+                (SELECT COUNT(*) FROM announcements a WHERE a.church_id = c.id) AS announcements,
+                (SELECT COUNT(*) FROM departments d WHERE d.church_id = c.id) AS departments
+         FROM churches c ORDER BY c.name`
+      );
+      // Mark the modules each tenant actually uses — adoption is a set of
+      // flags, not just raw counts.
+      const rows = result.rows.map((r) => ({
+        ...r,
+        modules: {
+          members: Number(r.members) > 0,
+          payments: Number(r.payments) > 0,
+          events: Number(r.events) > 0,
+          documents: Number(r.documents) > 0,
+          sms: Number(r.sms_orgs) > 0,
+          announcements: Number(r.announcements) > 0,
+          departments: Number(r.departments) > 0,
+        },
+      }));
+      this.success(res, rows);
+    } catch (error) {
+      this.logger.error('getAdoptionReport', error);
+      this.error(res, 'Failed to compute adoption report');
+    }
+  }
+
   // ── §11 Communication ─────────────────────────────────────────────────
 
   /** GET/POST /announcements, PATCH /:id — platform announcements (§11.1). */

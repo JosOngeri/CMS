@@ -14,19 +14,22 @@ const PlatformAnalytics = () => {
   const [stats, setStats] = useState(null)
   const [growth, setGrowth] = useState(null)
   const [usage, setUsage] = useState([])
+  const [adoption, setAdoption] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [statsRes, growthRes, usageRes] = await Promise.all([
+        const [statsRes, growthRes, usageRes, adoptionRes] = await Promise.all([
           api.get('/api/platform/stats'),
           api.get('/api/platform/analytics/growth').catch(() => ({ data: { data: null } })),
           api.get('/api/platform/analytics/usage').catch(() => ({ data: { data: [] } })),
+          api.get('/api/platform/analytics/adoption').catch(() => ({ data: { data: [] } })),
         ])
         setStats(statsRes.data.data)
         setGrowth(growthRes.data.data)
         setUsage(usageRes.data.data || [])
+        setAdoption(adoptionRes.data.data || [])
       } catch (error) {
         console.error('Failed to fetch analytics:', error)
         toast.error('Failed to load analytics')
@@ -158,6 +161,38 @@ const PlatformAnalytics = () => {
                 </div>
               )
             })}
+          </div>
+        </Card>
+      )}
+
+      {/* Feature adoption (10.3) */}
+      {adoption.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">Feature Adoption</h2>
+          <p className="text-xs text-[var(--color-textSecondary)] mb-4">Which modules each church actually uses — a module lights up once the church has at least one record in it.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[var(--color-textSecondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-2 font-medium">Church</th>
+                  {['members', 'payments', 'events', 'documents', 'sms', 'announcements', 'departments'].map((m) => (
+                    <th key={m} className="pb-2 font-medium text-center capitalize">{m}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {adoption.map((t) => (
+                  <tr key={t.id} className="border-b border-[var(--color-border)] last:border-0">
+                    <td className="py-2.5 text-[var(--color-text)]">{t.name}</td>
+                    {['members', 'payments', 'events', 'documents', 'sms', 'announcements', 'departments'].map((m) => (
+                      <td key={m} className="py-2.5 text-center">
+                        <span className={`inline-block h-3 w-3 rounded-full ${t.modules?.[m] ? 'bg-[var(--color-success)]' : 'bg-[var(--color-border)]'}`} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
       )}

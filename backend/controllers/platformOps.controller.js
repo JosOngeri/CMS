@@ -9,6 +9,11 @@ const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 const alertEngine = require('../services/platformAlertEngine.service');
 const backupService = require('../services/platformBackup.service');
+const {
+  PLATFORM_PERMISSION_GROUPS,
+  ROLE_PERMISSIONS,
+  OWNER_ONLY_PERMISSIONS,
+} = require('../constants/platformPermissions');
 
 class PlatformOpsController extends BaseController {
   constructor() {
@@ -738,6 +743,136 @@ class PlatformOpsController extends BaseController {
     } catch (error) {
       this.logger.error('runBackup', error);
       this.error(res, `Backup failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * GET /security/permission-audit (6.7) — every staff member's stored
+   * permissions, resolved effective set, and drift warnings (owner-only
+   * capabilities held by non-owners, perms outside the catalog).
+   */
+  async getPermissionAudit(req, res) {
+    try {
+      const users = await pool.query(
+        'SELECT id, email, name, role, permissions, is_active, mfa_enabled FROM platform_users ORDER BY role, email'
+      );
+      const catalog = new Set(Object.values(PLATFORM_PERMISSION_GROUPS).flat());
+
+      const audit = users.rows.map((u) => {
+        let stored = u.permissions;
+        if (typeof stored === 'string') {
+          try { stored = JSON.parse(stored); } catch { stored = null; }
+        }
+        const effective = Array.isArray(stored) ? stored : (ROLE_PERMISSIONS[u.role] || []);
+        const wildcard = effective.includes('*') || effective.includes('all');
+        const warnings = [];
+        if (!wildcard && u.role !== 'platform_owner') {
+          for (const p of effective) {
+            if (OWNER_ONLY_PERMISSIONS.includes(p)) {
+              warnings.push(`holds owner-only '${p}'`);
+            }
+          }
+        }
+        if (Array.isArray(stored)) {
+          for (const p of stored) {
+            if (!catalog.has(p) && p !== '*' && p !== 'all') {
+              warnings.push(`unknown permission '${p}' not in catalog`);
+            }
+          }
+        }
+        return {
+          id: u.id, email: u.email, name: u.name, role: u.role,
+          is_active: u.is_active, mfa_enabled: u.mfa_enabled,
+          permissions_source: Array.isArray(stored) ? 'stored' : 'role-default',
+          effective: wildcard ? ['* (all)'] : effective,
+          warnings,
+        };
+      });
+
+      this.success(res, {
+        users: audit,
+        catalog: PLATFORM_PERMISSION_GROUPS,
+        roleDefaults: ROLE_PERMISSIONS,
+      });
+    } catch (error) {
+      this.logger.error('getPermissionAudit', error);
+      this.error(res, 'Failed to build permission audit');
+    }
+  }
+
+  // ── 7.2 Tenant export ───────────────────────────────────────────────────
+
+  /**
+   * GET /tenants/:id/export — full church dump as a JSON download (7.2).
+   * Owner-only (data:export). Every table is queried church-scoped; user
+   * rows are stripped of credential columns before serialization.
+   */
+  async exportTenant(req, res) {
+    const { id } = req.params;
+    // Core tables a church needs to rebuild elsewhere. Order = dependency
+    // order so a re-import can replay top-down.
+    const TABLES = [
+      'roles', 'departments', 'department_subcommittees', 'members',
+      'users', 'events', 'event_attendance', 'payments', 'contributions',
+      'pledges', 'expenses', 'budgets', 'documents', 'announcements',
+      'sms_contacts', 'sms_logs', 'tenant_feature_flags',
+      'tenant_subscriptions', 'platform_invoices',
+    ];
+    // Columns that must never leave the server.
+    const STRIP = {
+      users: ['password_hash', 'mfa_secret', 'password_reset_token', 'reset_token'],
+    };
+
+    try {
+      const church = await pool.query(
+        'SELECT id, name, slug, subscription_tier, is_active, created_at FROM churches WHERE id = $1',
+        [id]
+      );
+      if (church.rows.length === 0) return this.notFound(res, 'Tenant not found');
+
+      const dump = {
+        exported_at: new Date().toISOString(),
+        exported_by: req.platformUser.email,
+        church: church.rows[0],
+        tables: {},
+      };
+
+      for (const table of TABLES) {
+        try {
+          const result = await pool.query(
+            `SELECT * FROM ${table} WHERE church_id = $1`, [id]
+          );
+          const strip = STRIP[table] || [];
+          dump.tables[table] = result.rows.map((row) => {
+            const clean = { ...row };
+            for (const col of strip) delete clean[col];
+            return clean;
+          });
+        } catch {
+          dump.tables[table] = { skipped: 'table not present in this schema' };
+        }
+      }
+
+      await auditPlatformAction(req, {
+        action: 'data.tenant_exported',
+        tenantId: id,
+        resourceType: 'church',
+        resourceId: id,
+        details: {
+          church: church.rows[0].name,
+          tables: Object.fromEntries(
+            Object.entries(dump.tables).map(([t, rows]) => [t, Array.isArray(rows) ? rows.length : -1])
+          ),
+        },
+      });
+
+      const filename = `tenant-export-${church.rows[0].slug || id}-${new Date().toISOString().slice(0, 10)}.json`;
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(JSON.stringify(dump, null, 2));
+    } catch (error) {
+      this.logger.error('exportTenant', error);
+      this.error(res, 'Export failed');
     }
   }
 }

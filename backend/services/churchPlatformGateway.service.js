@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const { pool } = require('../config/database');
 const ChurchRepository = require('../repositories/ChurchRepository');
 const ChurchService = require('./ChurchService');
 const UserRepository = require('../repositories/UserRepository');
@@ -102,8 +103,22 @@ const getTenant = async (tenantId) => {
   return serializeTenant(church);
 };
 
+// §13.3 New-tenant defaults — platform_settings.new_tenant_defaults is a JSON
+// object merged under a fresh church's settings (explicit input still wins).
+const loadTenantDefaults = async () => {
+  try {
+    const result = await pool.query(`SELECT value FROM platform_settings WHERE key = 'new_tenant_defaults'`);
+    const value = result.rows[0]?.value;
+    return value && typeof value === 'object' ? value : {};
+  } catch {
+    return {};
+  }
+};
+
 const createTenant = async (input) => {
   const tenant = normalizeTenantInput(input);
+  const defaults = await loadTenantDefaults();
+  tenant.settings = { ...defaults, ...tenant.settings };
   const admin = normalizeAdminInput(input.admin);
   const existingTenant = await ChurchRepository.getChurchBySlugForCheck(tenant.slug);
   if (existingTenant) {

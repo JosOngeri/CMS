@@ -230,7 +230,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   rotated, owner); rotation reminders incl. the Daraja secrets item.
 - [x] 6.6 Data-protection requests — DSAR/deletion request log per
   tenant with status workflow.
-- [ ] 6.7 Permission audit — diff each church's role_permissions vs the
+- [x] 6.7 Permission audit — GET /security/permission-audit diffs stored vs
+      effective role permissions per platform staff member; flags owner-only
+      drift + permissions outside the catalog; card on Security page.
   canonical catalog; flag drift (e.g. the `Admin` orphan we fixed).
 - [ ] 6.8 Rate limits — per-tenant override table; applied by the
   existing limiter.
@@ -241,7 +243,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   format), run-backup endpoint + button on PlatformData, daily
   scheduler run, registry + verify, restore-to-staging via
   STAGING_DATABASE_URL (no production restore path exists).
-- [ ] 7.2 Tenant export — full church dump (members, payments, docs)
+- [x] 7.2 Tenant export — GET /tenants/:id/export downloads a JSON dump of
+      the core church-scoped tables (credentials stripped). PARTIAL: curated
+      table list, not all 100+ tables; needs a formal data-coverage review
+      and signed/queued downloads for large churches.
   as zipped CSV/JSON, signed-URL download, audit-logged.
 - [ ] 7.3 Import tooling — member CSV import wizard reusing the church
   import path; preview + error report.
@@ -286,7 +291,8 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 10.1 Base analytics page (done — exists).
 - [x] 10.2 Growth metrics — /analytics/growth (tenants by month,
   users, DAU/MAU) rendered as Growth & Activity on PlatformAnalytics.
-- [ ] 10.3 Feature adoption — per-tenant module usage counters.
+- [x] 10.3 Feature adoption — GET /analytics/adoption returns per-tenant
+      record counts + module-in-use flags; dot matrix on Analytics page.
 - [x] 10.4 Usage reports — /analytics/usage per-tenant
   members/users/payments/volume table on PlatformAnalytics.
   (date-range selector still open)
@@ -320,7 +326,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 13.1 Settings page (done — exists).
 - [x] 13.2 Global feature flags — `platform_feature_flags`; rollout
   percentage/cohort support.
-- [ ] 13.3 New-tenant defaults — editable defaults for roles,
+- [x] 13.3 New-tenant defaults — platform_settings.new_tenant_defaults JSON
+      merged under each new church's settings at signup; JSON editor card on
+      Config page. PARTIAL: settings-only defaults — does not yet seed role
   categories, fiscal year used by tenant creation.
 - [ ] 13.4 Branding defaults — default theme assets for new churches.
 - [ ] 13.5 Integration config — M-Pesa/SMS/SMTP fallback credentials

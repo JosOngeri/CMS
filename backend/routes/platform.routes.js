@@ -90,6 +90,7 @@ router.get('/security', authenticatePlatformUser, requirePlatformPermission('sec
 router.post('/security/ip-rules', authenticatePlatformUser, requirePlatformPermission('security:manage'), platformOpsController.createIpRule);
 router.delete('/security/ip-rules/:id', authenticatePlatformUser, requirePlatformPermission('security:manage'), platformOpsController.deleteIpRule);
 router.post('/security/unlock', authenticatePlatformUser, requirePlatformPermission('security:manage'), platformOpsController.unlockTenantUser);
+router.get('/security/permission-audit', authenticatePlatformUser, requirePlatformPermission('security:read'), platformOpsController.getPermissionAudit);
 router.get('/security/data-requests', authenticatePlatformUser, requirePlatformPermission('security:read'), platformOpsController.getDataRequests);
 router.post('/security/data-requests', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.createDataRequest);
 router.patch('/security/data-requests/:id', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.updateDataRequest);
@@ -102,6 +103,7 @@ router.post('/data/backups', authenticatePlatformUser, requirePlatformPermission
 router.post('/data/backups/run', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.runBackup);
 router.post('/data/backups/:id/verify', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.verifyBackup);
 router.post('/data/backups/:id/restore-staging', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.restoreBackupToStaging);
+router.get('/tenants/:id/export', authenticatePlatformUser, requirePlatformPermission('data:export'), platformOpsController.exportTenant);
 router.get('/data/storage', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getTenantStorage);
 router.get('/data/schema', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getSchemaVersion);
 
@@ -126,6 +128,7 @@ router.post('/billing/dunning/run', authenticatePlatformUser, requirePlatformPer
 // ── §10 Analytics & Reporting ───────────────────────────────────────────
 router.get('/analytics/growth', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getGrowthMetrics);
 router.get('/analytics/usage', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getUsageReport);
+router.get('/analytics/adoption', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getAdoptionReport);
 
 // ── §11 Communication ───────────────────────────────────────────────────
 router.get('/announcements', authenticatePlatformUser, requirePlatformPermission('communication:manage'), platformBusinessController.getAnnouncements);

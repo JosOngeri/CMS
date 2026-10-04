@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Flag, Server, Power } from 'lucide-react'
+import { Flag, Server, Power, Sparkles } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -18,18 +18,21 @@ const PlatformConfig = () => {
   const [loading, setLoading] = useState(true)
   const [newFlag, setNewFlag] = useState('')
   const [maintMsg, setMaintMsg] = useState('')
+  const [defaultsJson, setDefaultsJson] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [f, v, m] = await Promise.all([
+      const [f, v, m, s] = await Promise.all([
         api.get('/api/platform/flags'),
         api.get('/api/platform/version'),
         api.get('/api/platform/maintenance'),
+        api.get('/api/platform/settings'),
       ])
       setFlags(f.data.data || [])
       setVersion(v.data.data)
       setMaintenance(m.data.data)
       setMaintMsg(m.data.data?.message || '')
+      setDefaultsJson(JSON.stringify(s.data.data?.new_tenant_defaults || {}, null, 2))
     } catch {
       toast.error('Failed to load configuration')
     } finally {
@@ -51,6 +54,22 @@ const PlatformConfig = () => {
       toast.success(`Flag ${flag} ${enabled ? 'enabled' : 'disabled'}`)
     } catch {
       toast.error('Failed to update flag')
+    }
+  }
+
+  const saveDefaults = async () => {
+    let parsed
+    try {
+      parsed = JSON.parse(defaultsJson || '{}')
+    } catch {
+      toast.error('Defaults must be valid JSON')
+      return
+    }
+    try {
+      await api.put('/api/platform/settings', { new_tenant_defaults: parsed })
+      toast.success('New-tenant defaults saved')
+    } catch {
+      toast.error('Failed to save defaults')
     }
   }
 
@@ -98,6 +117,22 @@ const PlatformConfig = () => {
           )}
         </Card>
       )}
+
+      {/* New-tenant defaults (13.3) */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2"><Sparkles className="h-5 w-5" /> New-Tenant Defaults</h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-3">
+          JSON merged into every new church&apos;s settings at signup. E.g. {'{"subscription_tier":"free","trial_days":14,"sms_quota":50}'} — explicit signup input still wins.
+        </p>
+        <textarea
+          value={defaultsJson}
+          onChange={(e) => setDefaultsJson(e.target.value)}
+          rows={5}
+          className={`${inputCls} w-full font-mono text-xs mb-3`}
+          placeholder="{}"
+        />
+        <button onClick={saveDefaults} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium">Save defaults</button>
+      </Card>
 
       {version && (
         <Card className="p-6">

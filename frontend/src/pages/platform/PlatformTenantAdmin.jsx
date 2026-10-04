@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2 } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -152,9 +152,20 @@ const PlatformTenantAdmin = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">Tenant Administration</h1>
           <p className="text-[var(--color-textSecondary)]">Administer users, feature flags, and quotas inside a church.</p>
         </div>
-        <select value={churchId} onChange={(e) => setChurchId(e.target.value)} className={`${inputCls} max-w-xs`} aria-label="Select church">
-          {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-        </select>
+        <div className="flex items-center gap-2">
+          {churchId && (
+            <a
+              href={`/api/platform/tenants/${churchId}/export`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)]"
+              title="Download full tenant data as JSON (owner-only)"
+            >
+              <Download className="h-4 w-4" /> Export
+            </a>
+          )}
+          <select value={churchId} onChange={(e) => setChurchId(e.target.value)} className={`${inputCls} max-w-xs`} aria-label="Select church">
+            {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+        </div>
       </div>
 
       {/* Users + actions */}
