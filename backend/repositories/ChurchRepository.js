@@ -242,7 +242,7 @@ class ChurchRepository extends BaseRepository {
     const result = await this.pool.query(
       `SELECT
         'user' AS type,
-        CONCAT('User ', name, ' logged in') AS title,
+        CONCAT('User ', first_name, ' ', last_name, ' logged in') AS title,
         'User activity' AS description,
         last_login AS created_at
       FROM users
