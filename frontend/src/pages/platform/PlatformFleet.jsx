@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, Building2 } from 'lucide-react'
+import { RefreshCw, AlertTriangle, Building2, Bell } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -16,20 +16,23 @@ const PlatformFleet = () => {
   const [fleet, setFleet] = useState([])
   const [alerts, setAlerts] = useState([])
   const [jobs, setJobs] = useState([])
+  const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true); else setRefreshing(true)
     try {
-      const [fleetRes, alertsRes, jobsRes] = await Promise.all([
+      const [fleetRes, alertsRes, jobsRes, rulesRes] = await Promise.all([
         api.get('/api/platform/fleet'),
         api.get('/api/platform/alerts'),
         api.get('/api/platform/jobs'),
+        api.get('/api/platform/alert-rules'),
       ])
       setFleet(fleetRes.data.data || [])
       setAlerts((alertsRes.data.data || []).filter((a) => a.status === 'active'))
       setJobs(jobsRes.data.data || [])
+      setRules(rulesRes.data.data || [])
     } catch {
       toast.error('Failed to load fleet')
     } finally {
@@ -56,6 +59,25 @@ const PlatformFleet = () => {
       setAlerts((prev) => prev.filter((a) => a.id !== id))
     } catch {
       toast.error('Failed to resolve alert')
+    }
+  }
+
+  const toggleRule = async (rule) => {
+    try {
+      await api.patch(`/api/platform/alert-rules/${rule.id}`, { enabled: !rule.enabled })
+      setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)))
+    } catch {
+      toast.error('Failed to update rule')
+    }
+  }
+
+  const evaluateNow = async () => {
+    try {
+      const res = await api.post('/api/platform/alerts/evaluate')
+      toast.success(res.data.message || 'Evaluation complete')
+      await load(false)
+    } catch {
+      toast.error('Evaluation failed')
     }
   }
 
@@ -165,6 +187,36 @@ const PlatformFleet = () => {
           </table>
         </div>
         {failedJobs.length > 0 && <p className="mt-2 text-xs text-[var(--color-error)]">{failedJobs.length} failed job{failedJobs.length > 1 ? 's' : ''} need attention.</p>}
+      </Card>
+
+      {/* Alert rules */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] flex items-center gap-2"><Bell className="h-5 w-5" /> Alert Rules</h2>
+          <button onClick={evaluateNow} className="px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-xs text-[var(--color-text)] hover:bg-[var(--color-surface)]">Evaluate now</button>
+        </div>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-3">The scheduler evaluates enabled rules every 5 minutes. <code className="font-mono">%v</code> in a message is the measured value.</p>
+        <div className="space-y-2">
+          {rules.map((r) => (
+            <div key={r.id} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-background)]">
+              <div className="min-w-0">
+                <p className="text-sm text-[var(--color-text)]">
+                  <span className="font-mono">{r.metric} {r.comparator} {r.threshold}</span>
+                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${r.severity === 'high' || r.severity === 'critical' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>{r.severity}</span>
+                </p>
+                <p className="text-xs text-[var(--color-textSecondary)] truncate">{r.message}{r.last_fired_at ? ` · last fired ${fmtDateTime(r.last_fired_at)}` : ''}</p>
+              </div>
+              <button
+                onClick={() => toggleRule(r)}
+                className={`shrink-0 ml-3 relative w-10 h-5 rounded-full transition-colors ${r.enabled ? 'bg-[var(--color-success)]' : 'bg-[var(--color-border)]'}`}
+                aria-label={`Toggle rule ${r.metric}`}
+              >
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${r.enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+          ))}
+          {rules.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No alert rules.</p>}
+        </div>
       </Card>
     </div>
   )

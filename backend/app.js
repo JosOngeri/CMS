@@ -222,6 +222,10 @@ app.use('/uploads', (req, res) => {
 // IPs don't consume rate-limit budget; a denied IP sees 403 everywhere.
 app.use('/api', require('./middleware/platformIpRules'));
 
+// Maintenance mode (13.6) — tenant API calls get a 503 while the flag is
+// on; /api/platform/*, /api/health and CSRF stay up so ops keep working.
+app.use('/api', require('./middleware/maintenanceMode'));
+
 // Global API baseline rate limit (100 req/min per IP in prod) — per-route
 // stricter limiters still apply on top of this for sensitive mounts.
 app.use('/api', apiLimiter);

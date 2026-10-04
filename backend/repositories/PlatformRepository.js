@@ -114,7 +114,7 @@ class PlatformRepository extends BaseRepository {
 
   async getPlatformUsers() {
     const result = await this.pool.query(
-      `SELECT id, email, name, role, is_active, last_login, created_at
+      `SELECT id, email, name, role, is_active, last_login, created_at, mfa_required, mfa_enabled
        FROM platform_users ORDER BY created_at ASC`
     );
     return result.rows;
@@ -147,7 +147,7 @@ class PlatformRepository extends BaseRepository {
   }
 
   async updatePlatformUser(id, fields) {
-    const allowed = ['name', 'role', 'is_active'];
+    const allowed = ['name', 'role', 'is_active', 'mfa_required'];
     const keys = Object.keys(fields).filter(k => allowed.includes(k) && fields[k] !== undefined);
     if (keys.length === 0) return null;
 
@@ -155,7 +155,7 @@ class PlatformRepository extends BaseRepository {
     const result = await this.pool.query(
       `UPDATE platform_users SET ${setClause}, updated_at = CURRENT_TIMESTAMP
        WHERE id = $${keys.length + 1}
-       RETURNING id, email, name, role, is_active, updated_at`,
+       RETURNING id, email, name, role, is_active, mfa_required, mfa_enabled, updated_at`,
       [...keys.map(k => fields[k]), id]
     );
     return result.rows[0];

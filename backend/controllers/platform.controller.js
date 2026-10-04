@@ -271,7 +271,7 @@ class PlatformController extends BaseController {
       return this.badRequest(res, 'Invalid user id');
     }
 
-    const { name, role, is_active } = req.body || {};
+    const { name, role, is_active, mfa_required } = req.body || {};
     if (role !== undefined && !['platform_owner', ...PLATFORM_USER_ROLES].includes(role)) {
       return this.badRequest(res, 'Invalid role');
     }
@@ -294,12 +294,12 @@ class PlatformController extends BaseController {
         return this.badRequest(res, 'Cannot remove the last active platform owner');
       }
 
-      const updated = await PlatformRepository.updatePlatformUser(id, { name, role, is_active });
+      const updated = await PlatformRepository.updatePlatformUser(id, { name, role, is_active, mfa_required });
       await auditPlatformAction(req, {
         action: 'platform_user.updated',
         resourceType: 'platform_user',
         resourceId: String(id),
-        details: { changed: Object.keys({ name, role, is_active }).filter(k => ({ name, role, is_active })[k] !== undefined) },
+        details: { changed: Object.keys({ name, role, is_active, mfa_required }).filter(k => ({ name, role, is_active, mfa_required })[k] !== undefined) },
       });
 
       this.success(res, updated, 'Platform user updated');

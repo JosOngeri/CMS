@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Ban, Lock, KeyRound, FileWarning, Eye } from 'lucide-react'
+import { Ban, Lock, KeyRound, FileWarning, Eye, MonitorSmartphone } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -16,20 +16,23 @@ const PlatformSecurity = () => {
   const [data, setData] = useState(null)
   const [credentials, setCredentials] = useState([])
   const [requests, setRequests] = useState([])
+  const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [newRule, setNewRule] = useState({ cidr: '', mode: 'deny', reason: '' })
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [sec, creds, reqs] = await Promise.all([
+      const [sec, creds, reqs, sess] = await Promise.all([
         api.get('/api/platform/security'),
         api.get('/api/platform/security/credentials'),
         api.get('/api/platform/security/data-requests'),
+        api.get('/api/platform/auth/sessions/all'),
       ])
       setData(sec.data.data)
       setCredentials(creds.data.data || [])
       setRequests(reqs.data.data || [])
+      setSessions(sess.data.data || [])
     } catch {
       toast.error('Failed to load security center')
     } finally {
@@ -64,6 +67,26 @@ const PlatformSecurity = () => {
     }
   }
 
+  const revokeAllForUser = async (userId, name) => {
+    try {
+      const res = await api.post(`/api/platform/auth/users/${userId}/revoke-sessions`)
+      toast.success(res.data.message || `All sessions revoked for ${name}`)
+      load()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to revoke sessions')
+    }
+  }
+
+  const revokeSession = async (id) => {
+    try {
+      await api.post(`/api/platform/auth/sessions/${id}/revoke`)
+      toast.success('Session revoked')
+      setSessions((prev) => prev.filter((s) => s.id !== id))
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to revoke session')
+    }
+  }
+
   if (loading || !data) return <FullPageLoading message="Loading security center..." />
 
   const inputCls = 'px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)]'
@@ -95,6 +118,25 @@ const PlatformSecurity = () => {
             {data.lockedUsers.length === 0 && data.failedLogins.length === 0 && (
               <p className="text-sm text-[var(--color-textSecondary)]">No failed logins or locked accounts — quiet.</p>
             )}
+          </div>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className={sectionCls}><MonitorSmartphone className="h-5 w-5" /> Platform Sessions</h2>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {sessions.map((s) => (
+              <div key={s.id} className="flex items-center justify-between p-2 rounded bg-[var(--color-background)] text-sm">
+                <div className="min-w-0">
+                  <p className="text-[var(--color-text)] truncate">{s.name || s.email}</p>
+                  <p className="text-xs text-[var(--color-textSecondary)]">{s.ip || '?'} · since {fmtDateTime(s.created_at)}</p>
+                </div>
+                <div className="shrink-0 flex gap-3">
+                  <button onClick={() => revokeSession(s.id)} className="text-xs text-[var(--color-error)] hover:underline">revoke</button>
+                  <button onClick={() => revokeAllForUser(s.platform_user_id, s.name || s.email)} className="text-xs text-[var(--color-error)] hover:underline">revoke all</button>
+                </div>
+              </div>
+            ))}
+            {sessions.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No active platform sessions.</p>}
           </div>
         </Card>
 

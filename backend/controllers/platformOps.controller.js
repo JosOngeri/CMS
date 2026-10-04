@@ -7,6 +7,8 @@ const BaseController = require('./BaseController');
 const { pool } = require('../config/database');
 const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
+const alertEngine = require('../services/platformAlertEngine.service');
+const backupService = require('../services/platformBackup.service');
 
 class PlatformOpsController extends BaseController {
   constructor() {
@@ -47,8 +49,11 @@ class PlatformOpsController extends BaseController {
    */
   async getJobs(req, res) {
     try {
+      // Aliased to the shape the fleet page reads: name/last_run_at/last_error.
       const result = await pool.query(
-        `SELECT * FROM platform_jobs ORDER BY run_at DESC LIMIT $1`,
+        `SELECT id, job_type AS name, status, error AS last_error,
+                finished_at AS last_run_at, run_at, started_at, attempts, payload
+         FROM platform_jobs ORDER BY run_at DESC LIMIT $1`,
         [Math.min(parseInt(req.query.limit, 10) || 50, 200)]
       );
       this.success(res, result.rows);
@@ -553,6 +558,98 @@ class PlatformOpsController extends BaseController {
     } catch (error) {
       this.logger.error('updateIncident', error);
       this.error(res, 'Failed to update incident');
+    }
+  }
+
+  // ── 4.6 Alert rules ─────────────────────────────────────────────────────
+
+  /** GET /alert-rules — the rules the engine evaluates each cycle. */
+  async getAlertRules(req, res) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM platform_alert_rules ORDER BY severity DESC, id ASC'
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getAlertRules', error);
+      this.error(res, 'Failed to fetch alert rules');
+    }
+  }
+
+  /** POST /alert-rules — {metric, comparator, threshold, severity, message, cooldownMinutes} */
+  async createAlertRule(req, res) {
+    const { metric, comparator, threshold, severity, message, cooldownMinutes } = req.body || {};
+    if (!metric || !alertEngine.METRICS[metric]) {
+      return this.badRequest(res, `metric must be one of: ${Object.keys(alertEngine.METRICS).join(', ')}`);
+    }
+    if (!['>', '<', '>=', '<=', '='].includes(comparator) || typeof threshold !== 'number' || !message) {
+      return this.badRequest(res, 'comparator (>,<,>=,<=,=), numeric threshold, and message are required');
+    }
+    try {
+      const result = await pool.query(
+        `INSERT INTO platform_alert_rules (metric, comparator, threshold, severity, message, cooldown_minutes, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [metric, comparator, threshold, severity || 'medium', message,
+         Math.min(Math.max(Number(cooldownMinutes) || 60, 5), 1440), req.platformUser.id]
+      );
+      await auditPlatformAction(req, { action: 'ops.alert_rule_created', resourceType: 'alert_rule', resourceId: result.rows[0].id, details: { metric, comparator, threshold } });
+      this.created(res, result.rows[0], 'Alert rule created');
+    } catch (error) {
+      this.logger.error('createAlertRule', error);
+      this.error(res, 'Failed to create alert rule');
+    }
+  }
+
+  /** PATCH /alert-rules/:id — toggle enabled or adjust threshold/cooldown. */
+  async updateAlertRule(req, res) {
+    const { id } = req.params;
+    const { enabled, threshold, cooldownMinutes, severity, message } = req.body || {};
+    try {
+      const result = await pool.query(
+        `UPDATE platform_alert_rules SET
+           enabled = COALESCE($2, enabled),
+           threshold = COALESCE($3, threshold),
+           cooldown_minutes = COALESCE($4, cooldown_minutes),
+           severity = COALESCE($5, severity),
+           message = COALESCE($6, message)
+         WHERE id = $1 RETURNING *`,
+        [id, enabled, threshold, cooldownMinutes, severity, message]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Rule not found');
+      await auditPlatformAction(req, { action: 'ops.alert_rule_updated', resourceType: 'alert_rule', resourceId: id, details: req.body });
+      this.success(res, result.rows[0], 'Rule updated');
+    } catch (error) {
+      this.logger.error('updateAlertRule', error);
+      this.error(res, 'Failed to update rule');
+    }
+  }
+
+  /** POST /alerts/evaluate — run one engine pass on demand. */
+  async evaluateAlerts(req, res) {
+    try {
+      const summary = await alertEngine.evaluate();
+      await auditPlatformAction(req, { action: 'ops.alerts_evaluated', details: summary });
+      this.success(res, summary, `Evaluated ${summary.evaluated} rules — ${summary.fired} fired`);
+    } catch (error) {
+      this.logger.error('evaluateAlerts', error);
+      this.error(res, 'Evaluation failed');
+    }
+  }
+
+  // ── 7.1 Real backups ────────────────────────────────────────────────────
+
+  /** POST /data/backups/run — execute a pg_dump now. */
+  async runBackup(req, res) {
+    try {
+      const row = await backupService.runBackup(req.platformUser.id);
+      await auditPlatformAction(req, {
+        action: 'data.backup_executed', resourceType: 'backup', resourceId: row.id,
+        details: { size_bytes: row.size_bytes, status: row.status }
+      });
+      this.success(res, row, `Backup ${row.status} — ${(row.size_bytes / 1024 / 1024).toFixed(1)} MB`);
+    } catch (error) {
+      this.logger.error('runBackup', error);
+      this.error(res, `Backup failed: ${error.message}`);
     }
   }
 }

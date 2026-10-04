@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Building, Lock, Mail, ArrowRight } from 'lucide-react'
+import { Building, Lock, Mail, ArrowRight, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
@@ -9,6 +9,8 @@ import { FullPageLoading } from '../../components/common/Loading'
 const PlatformLogin = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [totp, setTotp] = useState('')
+  const [needsMfa, setNeedsMfa] = useState(false)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
   const { api } = useAuth()
@@ -27,7 +29,8 @@ const PlatformLogin = () => {
       
       const response = await api.post('/api/platform/auth/login', {
         email,
-        password
+        password,
+        ...(totp ? { totp } : {})
       })
 
       if (response.data.success) {
@@ -36,6 +39,12 @@ const PlatformLogin = () => {
       }
     } catch (error) {
       console.error('Platform login failed:', error)
+      // Server asks for a TOTP code — reveal the code field and let the
+      // user retry without retyping credentials.
+      if (error.response?.data?.code === 'MFA_REQUIRED' || error.response?.data?.code === 'MFA_INVALID') {
+        setNeedsMfa(true)
+        setTotp('')
+      }
       toast.error(error.response?.data?.error || 'Login failed')
     } finally {
       setLoading(false)
@@ -96,6 +105,28 @@ const PlatformLogin = () => {
                 />
               </div>
             </div>
+
+            {needsMfa && (
+              <div>
+                <label className="block text-sm font-medium text-[var(--color-text)] mb-2">
+                  Authenticator Code
+                </label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--color-textSecondary)]" />
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={totp}
+                    onChange={(e) => setTotp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full pl-10 pr-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] placeholder-[var(--color-textSecondary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] tracking-widest font-mono"
+                    placeholder="123456"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            )}
 
             <button
               type="submit"

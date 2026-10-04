@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Flag, Server } from 'lucide-react'
+import { Flag, Server, Power } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -14,17 +14,22 @@ const PlatformConfig = () => {
   const toast = useToast()
   const [flags, setFlags] = useState([])
   const [version, setVersion] = useState(null)
+  const [maintenance, setMaintenance] = useState(null)
   const [loading, setLoading] = useState(true)
   const [newFlag, setNewFlag] = useState('')
+  const [maintMsg, setMaintMsg] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [f, v] = await Promise.all([
+      const [f, v, m] = await Promise.all([
         api.get('/api/platform/flags'),
         api.get('/api/platform/version'),
+        api.get('/api/platform/maintenance'),
       ])
       setFlags(f.data.data || [])
       setVersion(v.data.data)
+      setMaintenance(m.data.data)
+      setMaintMsg(m.data.data?.message || '')
     } catch {
       toast.error('Failed to load configuration')
     } finally {
@@ -49,6 +54,16 @@ const PlatformConfig = () => {
     }
   }
 
+  const saveMaintenance = async (enabled) => {
+    try {
+      const res = await api.put('/api/platform/maintenance', { enabled, message: maintMsg })
+      setMaintenance(res.data.data)
+      toast.success(res.data.message || (enabled ? 'Maintenance ON' : 'Maintenance off'))
+    } catch {
+      toast.error('Failed to update maintenance mode')
+    }
+  }
+
   if (loading) return <FullPageLoading message="Loading configuration..." />
 
   const inputCls = 'px-3 py-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-background)] text-sm text-[var(--color-text)]'
@@ -59,6 +74,30 @@ const PlatformConfig = () => {
         <h1 className="text-2xl font-bold text-[var(--color-text)]">Feature Flags & Version</h1>
         <p className="text-[var(--color-textSecondary)]">Global flags roll out to every tenant at once.</p>
       </div>
+
+      {/* Maintenance mode (13.6) */}
+      {maintenance && (
+        <Card className={`p-6 ${maintenance.enabled ? 'border-2 border-[var(--color-warning)]' : ''}`}>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex-1 min-w-[260px]">
+              <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2"><Power className="h-5 w-5" /> Maintenance Mode</h2>
+              <p className="text-xs text-[var(--color-textSecondary)] mb-2">
+                When on, every tenant API call returns 503 with this message. This console stays up.
+              </p>
+              <input value={maintMsg} onChange={(e) => setMaintMsg(e.target.value)} className={`${inputCls} w-full`} placeholder="Message tenants see" />
+            </div>
+            <button
+              onClick={() => saveMaintenance(!maintenance.enabled)}
+              className={`px-5 py-2.5 rounded-lg text-sm font-semibold ${maintenance.enabled ? 'bg-[var(--color-error)] text-[var(--color-on-solid)]' : 'bg-[var(--color-warning)] text-[var(--color-on-solid)]'}`}
+            >
+              {maintenance.enabled ? 'Turn OFF (live again)' : 'Turn ON (take tenants down)'}
+            </button>
+          </div>
+          {maintenance.enabled && (
+            <p className="mt-3 text-sm font-medium text-[var(--color-warning)]">MAINTENANCE ACTIVE — tenants are seeing 503s right now.</p>
+          )}
+        </Card>
+      )}
 
       {version && (
         <Card className="p-6">

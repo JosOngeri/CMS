@@ -380,6 +380,40 @@ class PlatformTenancyController extends BaseController {
       this.error(res, 'Failed to update quarantine');
     }
   }
+
+  /**
+   * PUT /tenants/:id/settings — §2.5: config override. Merges the posted
+   * JSON object into churches.settings (jsonb ||). Operator-level tool —
+   * audited with the changed keys so forensics can see what was pushed.
+   * Body: { settings: { ... } }
+   */
+  async updateTenantSettings(req, res) {
+    const { id } = req.params;
+    const { settings } = req.body || {};
+    if (!settings || typeof settings !== 'object' || Array.isArray(settings)) {
+      return this.badRequest(res, 'settings must be a JSON object');
+    }
+    try {
+      const result = await pool.query(
+        `UPDATE churches
+         SET settings = COALESCE(settings, '{}'::jsonb) || $2::jsonb,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING settings`,
+        [id, JSON.stringify(settings)]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Church not found');
+      await auditPlatformAction(req, {
+        action: 'tenant.settings_overridden',
+        tenantId: id,
+        details: { changed_keys: Object.keys(settings) }
+      });
+      this.success(res, result.rows[0].settings, 'Tenant settings updated');
+    } catch (error) {
+      this.logger.error('updateTenantSettings', error);
+      this.error(res, 'Failed to update tenant settings');
+    }
+  }
 }
 
 module.exports = new PlatformTenancyController();

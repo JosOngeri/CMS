@@ -7,6 +7,8 @@ const BaseController = require('./BaseController');
 const { pool } = require('../config/database');
 const { auditPlatformAction } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
+const dunning = require('../services/platformDunning.service');
+const maintenanceMode = require('../middleware/maintenanceMode');
 
 class PlatformBusinessController extends BaseController {
   constructor() {
@@ -554,6 +556,89 @@ class PlatformBusinessController extends BaseController {
     } catch (error) {
       this.logger.error('getVersion', error);
       this.error(res, 'Failed to fetch version');
+    }
+  }
+
+  // ── 9.5 Dunning ─────────────────────────────────────────────────────────
+
+  /** GET /billing/dunning — overdue invoices + suspension preview. */
+  async getDunningPreview(req, res) {
+    try {
+      const grace = await pool.query('SELECT value FROM platform_settings WHERE key = $1', ['dunning_grace_days']);
+      const graceDays = Number(grace.rows[0]?.value ?? 14) || 14;
+      const overdue = await pool.query(
+        `SELECT i.id, i.number, i.amount, i.currency, i.due_date, i.church_id,
+                c.name AS church_name, c.is_active,
+                CURRENT_DATE - i.due_date AS days_overdue
+         FROM platform_invoices i
+         JOIN churches c ON c.id = i.church_id
+         WHERE i.status = 'overdue'
+         ORDER BY i.due_date ASC`
+      );
+      this.success(res, {
+        graceDays,
+        invoices: overdue.rows,
+        willSuspend: overdue.rows.filter((i) => i.days_overdue > graceDays && i.is_active).length
+      });
+    } catch (error) {
+      this.logger.error('getDunningPreview', error);
+      this.error(res, 'Failed to load dunning state');
+    }
+  }
+
+  /** POST /billing/dunning/run — execute one dunning pass now. */
+  async runDunning(req, res) {
+    try {
+      const summary = await dunning.run();
+      await auditPlatformAction(req, { action: 'billing.dunning_executed', details: summary });
+      this.success(res, summary,
+        `Dunning: ${summary.markedOverdue} newly overdue, ${summary.reminded} reminders, ${summary.suspended} suspended`);
+    } catch (error) {
+      this.logger.error('runDunning', error);
+      this.error(res, 'Dunning run failed');
+    }
+  }
+
+  // ── 13.6 Maintenance mode ───────────────────────────────────────────────
+
+  /** GET /maintenance — current flag state. */
+  async getMaintenance(req, res) {
+    try {
+      const r = await pool.query('SELECT value FROM platform_settings WHERE key = $1', ['maintenance_mode']);
+      this.success(res, r.rows[0]?.value || { enabled: false });
+    } catch (error) {
+      this.logger.error('getMaintenance', error);
+      this.error(res, 'Failed to fetch maintenance state');
+    }
+  }
+
+  /** PUT /maintenance — {enabled, message?, endsAt?} */
+  async setMaintenance(req, res) {
+    const { enabled, message, endsAt } = req.body || {};
+    if (typeof enabled !== 'boolean') return this.badRequest(res, 'enabled must be boolean');
+    try {
+      const current = await pool.query('SELECT value FROM platform_settings WHERE key = $1', ['maintenance_mode']);
+      const next = {
+        ...(current.rows[0]?.value || {}),
+        enabled,
+        message: message ?? current.rows[0]?.value?.message ?? 'Scheduled maintenance in progress — please try again shortly.',
+        ends_at: endsAt ?? current.rows[0]?.value?.ends_at ?? null
+      };
+      await pool.query(
+        `INSERT INTO platform_settings (key, value, description, updated_at)
+         VALUES ('maintenance_mode', $1::jsonb, 'Tenant-facing maintenance switch', CURRENT_TIMESTAMP)
+         ON CONFLICT (key) DO UPDATE SET value = $1::jsonb, updated_at = CURRENT_TIMESTAMP`,
+        [JSON.stringify(next)]
+      );
+      maintenanceMode._resetCache(); // middleware picks it up immediately, not in 30s
+      await auditPlatformAction(req, {
+        action: enabled ? 'platform.maintenance_enabled' : 'platform.maintenance_disabled',
+        details: { message: next.message, ends_at: next.ends_at }
+      });
+      this.success(res, next, enabled ? 'Maintenance mode ON — tenant API calls now return 503' : 'Maintenance mode off');
+    } catch (error) {
+      this.logger.error('setMaintenance', error);
+      this.error(res, 'Failed to update maintenance mode');
     }
   }
 }

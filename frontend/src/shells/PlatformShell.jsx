@@ -26,6 +26,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import NestedNav from '../components/common/NestedNav'
 import buildPlatformNav from '../constants/platformNav'
+import PlatformMfaSetup from '../pages/platform/PlatformMfaSetup'
 
 // Lazy-loaded platform pages — same pattern as dashboard.routes.jsx
 const PlatformDashboard = lazy(() => import('../pages/platform/PlatformDashboard'))
@@ -127,6 +128,17 @@ const PlatformShell = () => {
 
   if (!platformUser) {
     return <Navigate to="/platform/login" replace />
+  }
+
+  // mfa_required-but-not-enrolled: the middleware already confines the
+  // session to setup endpoints — the UI replaces the console entirely.
+  if (platformUser.mfa_pending) {
+    return (
+      <PlatformMfaSetup
+        email={platformUser.email}
+        onComplete={() => setPlatformUser({ ...platformUser, mfa_pending: false })}
+      />
+    )
   }
 
   return (

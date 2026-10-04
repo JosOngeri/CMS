@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -20,6 +20,7 @@ const PlatformTenantAdmin = () => {
   const [users, setUsers] = useState([])
   const [flags, setFlags] = useState([])
   const [quotas, setQuotas] = useState(null)
+  const [settingsText, setSettingsText] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
@@ -112,6 +113,22 @@ const PlatformTenantAdmin = () => {
     await api.post(`/api/platform/tenants/${churchId}/trial`, { end: true })
     await loadTenants()
   }, 'Trial ended')
+
+  const applySettings = () => act('settings', async () => {
+    let parsed
+    try {
+      parsed = JSON.parse(settingsText)
+    } catch {
+      toast.error('Invalid JSON — fix the settings object first')
+      return
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      toast.error('Settings must be a JSON object')
+      return
+    }
+    await api.put(`/api/platform/tenants/${churchId}/settings`, { settings: parsed })
+    await loadTenants()
+  }, 'Settings pushed to tenant')
 
   if (loading) return <FullPageLoading message="Loading tenant administration..." />
 
@@ -287,6 +304,27 @@ const PlatformTenantAdmin = () => {
           </div>
         </Card>
       </div>
+
+      {/* Config override (2.5) */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <Settings2 className="h-5 w-5" /> Settings Override
+        </h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-3">
+          Merges into the church&apos;s settings JSON — use to repair a broken config or push a fix.
+          Changed keys are audit-logged. Current tier: <strong className="text-[var(--color-text)]">{tenant?.subscription_tier || 'basic'}</strong>
+        </p>
+        <textarea
+          value={settingsText}
+          onChange={(e) => setSettingsText(e.target.value)}
+          placeholder='{"subscription_tier": "professional", "contact_email": "admin@church.org"}'
+          rows={4}
+          className={`${inputCls} font-mono mb-3`}
+        />
+        <button onClick={applySettings} disabled={busy === 'settings' || !settingsText.trim()} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium disabled:opacity-50">
+          {busy === 'settings' ? 'Pushing…' : 'Merge & push'}
+        </button>
+      </Card>
     </div>
   )
 }

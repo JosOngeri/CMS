@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { ShieldCheck, Plus, KeyRound, UserX, UserCheck, Copy, Check } from 'lucide-react'
+import { ShieldCheck, Plus, KeyRound, UserX, UserCheck, Copy, Check, ShieldAlert } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -58,6 +58,16 @@ const PlatformUsers = () => {
     }
   }
 
+  const toggleMfa = async (user) => {
+    try {
+      await api.patch(`/api/platform/users/${user.id}`, { mfa_required: !user.mfa_required })
+      toast.success(user.mfa_required ? 'MFA requirement removed' : 'MFA now required — user will be forced through setup at next login')
+      fetchUsers()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to update MFA requirement')
+    }
+  }
+
   const toggleActive = async (user) => {
     try {
       await api.patch(`/api/platform/users/${user.id}`, { is_active: !user.is_active })
@@ -113,6 +123,7 @@ const PlatformUsers = () => {
                   <th className="pb-3 font-medium">Name</th>
                   <th className="pb-3 font-medium">Role</th>
                   <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">MFA</th>
                   <th className="pb-3 font-medium">Last login</th>
                   <th className="pb-3 font-medium text-right">Actions</th>
                 </tr>
@@ -134,6 +145,11 @@ const PlatformUsers = () => {
                         {user.is_active ? 'Active' : 'Disabled'}
                       </span>
                     </td>
+                    <td className="py-3">
+                      <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${user.mfa_enabled ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : user.mfa_required ? 'bg-[var(--color-warning-light)] text-[var(--color-warning)]' : 'bg-[var(--color-background)] text-[var(--color-textSecondary)]'}`}>
+                        {user.mfa_enabled ? 'Enabled' : user.mfa_required ? 'Required' : 'Off'}
+                      </span>
+                    </td>
                     <td className="py-3 text-[var(--color-textSecondary)]">{user.last_login ? fmtDateTime(user.last_login) : 'Never'}</td>
                     <td className="py-3">
                       <div className="flex justify-end gap-2">
@@ -141,9 +157,14 @@ const PlatformUsers = () => {
                           <KeyRound className="h-4 w-4" />
                         </button>
                         {user.role !== 'platform_owner' && (
-                          <button onClick={() => toggleActive(user)} title={user.is_active ? 'Deactivate' : 'Reactivate'} className="p-2 rounded-lg hover:bg-[var(--color-background)] text-[var(--color-textSecondary)]">
-                            {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                          </button>
+                          <>
+                            <button onClick={() => toggleMfa(user)} title={user.mfa_required ? 'Remove MFA requirement' : 'Require MFA'} className={`p-2 rounded-lg hover:bg-[var(--color-background)] ${user.mfa_required ? 'text-[var(--color-warning)]' : 'text-[var(--color-textSecondary)]'}`}>
+                              <ShieldAlert className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => toggleActive(user)} title={user.is_active ? 'Deactivate' : 'Reactivate'} className="p-2 rounded-lg hover:bg-[var(--color-background)] text-[var(--color-textSecondary)]">
+                              {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                            </button>
+                          </>
                         )}
                       </div>
                     </td>

@@ -91,10 +91,19 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   IP rules, data/incidents/billing/comms/support/config endpoints and
   pages. Backend suite 331 green, eslint 0 errors, `vite build` clean.
   Partial coverage (endpoints/UI exist, deeper features pending):
-  4.6 alert *rules* engine, 5.3 statement upload, 6.4 tenant session
-  inventory, 7.1 scheduled pg_dump, 7.2 export generation, 9.4 credit
-  notes/PDF, 9.5 dunning automation, 10.2/10.4 growth+usage pages
+  5.3 statement upload, 6.4 tenant session inventory, 7.2 export
+  generation, 9.4 credit notes/PDF, 10.2/10.4 growth+usage pages
   (endpoints only), 12.2 ticket-granted support access.
+- **Batch 3 (must-haves)** — migration `079_platform_sessions_mfa_alerts.sql`
+  (platform_sessions, mfa cols on platform_users, alert rules + seeds,
+  settings, `overdue` invoice status). Sessions list/revoke/revoke-all
+  (3.3), RFC 6238 TOTP MFA with forced setup (3.4), alert-rules engine
+  on 5-min scheduler (4.6), real pg_dump backups daily + manual (7.1),
+  dunning service w/ reminder emails + auto-suspend (9.5), maintenance
+  mode middleware + toggle (13.6), tenant settings override (2.5).
+  Suite 339 green, eslint 0 errors, build clean.
+  Remaining partials: alert delivery channels, staging restore,
+  auto-restore on payment.
 
 ## Foundation (do first — every area depends on these)
 
@@ -114,9 +123,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   `{ platformUserId, tenantId, asUserId, expiresAt }`; frontend banner
   component shown while impersonating; "end impersonation" endpoint.
   (Build before the tasks that need it: 2.1, 11.2.)
-- [ ] F5. Seed + idempotency rule for platform tables: every new table
-  migration includes realistic seed data for all churches where the
-  rule applies (project rule), `ON CONFLICT` guards.
+- [x] F5. Seed + idempotency rule for platform tables: migrations 078/079
+  seed plans, credential rotations, alert rules, platform_settings with
+  `ON CONFLICT`/existence guards; event tables (tickets, incidents,
+  jobs, sessions) correctly start empty.
 - [x] F6. Real deploy verification — replace the echo in
   `deploy-vps.yml` with `curl /api/health` + retry, fail the run on
   non-200.
@@ -147,8 +157,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 2.4 Limits & quotas — columns on `churches` (member_cap,
   sms_credits, storage_cap, admin_seats); enforcement at member
   create / SMS send / upload.
-- [ ] 2.5 Config override — platform-editable tenant settings editor
-  (same fields churches self-edit); audit diff old→new.
+- [x] 2.5 Config override — PUT /tenants/:id/settings merges into
+  churches.settings JSON (tenant:administer, audited); Settings Override
+  card on PlatformTenantAdmin.
 - [x] 2.6 Tenant user list — church users with role, last_login,
   mfa, lockout state on TenantDetail tab.
 
@@ -157,10 +168,13 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 3.1 Platform user CRUD (done — PlatformUsers + /users routes).
 - [ ] 3.2 Role assignment UI constrained to the catalog from F1
   (dropdown of roles → permission preview).
-- [ ] 3.3 Session revocation — `platform_sessions` table or token
-  denylist; "revoke all sessions" per user.
-- [ ] 3.4 MFA enforcement — `mfa_required` flag on platform_users;
-  setup flow on next login; block API until enrolled.
+- [x] 3.3 Session revocation — `platform_sessions` (mig 079); jti-bound
+  JWTs; list own/all, revoke one, revoke-all-per-user
+  (security:manage); sessions card on PlatformSecurity.
+- [x] 3.4 MFA enforcement — mfa_required/mfa_enabled/mfa_secret on
+  platform_users (mig 079); RFC 6238 TOTP helper; login asks for code
+  (MFA_REQUIRED/MFA_INVALID); forced setup screen when mfa_pending;
+  owner toggle on PlatformUsers.
 - [ ] 3.5 Access audit view — filter platform_audit_logs by platform
   user (page exists; add actor filter).
 
@@ -176,8 +190,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   M-Pesa webhook, SMS provider, Telegram, SMTP; red/amber/green.
 - [x] 4.5 Background jobs — `platform_jobs` table or reuse existing;
   failed jobs list + retry button.
-- [ ] 4.6 Alerting — `platform_alert_rules` + `platform_alerts`
-  (table exists in migration 020); rule editor + email/Telegram notify.
+- [ ] 4.6 Alerting — `platform_alert_rules` CRUD + evaluation engine
+  (platformAlertEngine.service, scheduler every 5min) fires rows into
+  platform_alerts; rule editor on PlatformFleet.
+  REMAINING: email/Telegram delivery channels for fired alerts.
 - [ ] 4.7 Log explorer — structured app logs into DB or file tail;
   filter by tenant/severity/time.
 
@@ -214,8 +230,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 
 ## 7. Data Management (`/platform/data`)
 
-- [ ] 7.1 Backups — schedule pg_dump per DB, verify, list restore
-  points; restore action into staging only.
+- [ ] 7.1 Backups — real pg_dump via platformBackup.service (custom
+  format), run-backup endpoint + button on PlatformData, daily
+  scheduler run, registry + verify.
+  REMAINING: restore action into staging only.
 - [ ] 7.2 Tenant export — full church dump (members, payments, docs)
   as zipped CSV/JSON, signed-URL download, audit-logged.
 - [ ] 7.3 Import tooling — member CSV import wizard reusing the church
@@ -247,8 +265,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   picker on TenantDetail.
 - [ ] 9.4 Invoices — generate monthly, mark paid, credit notes; PDF or
   printable view.
-- [ ] 9.5 Dunning — overdue rules; reminder emails; grace period;
-  auto-suspend + auto-restore on payment.
+- [ ] 9.5 Dunning — platformDunning.service: marks open invoices
+  overdue, reminder emails via emailService (3-day throttle), suspends
+  tenant past grace + fires platform alert; manual run endpoint +
+  Dunning tab on PlatformBilling; scheduler every 6h.
+  REMAINING: auto-restore on payment.
 - [x] 9.6 Revenue reports — MRR, churn, LTV, collection rate on
   PlatformAnalytics.
 
@@ -294,7 +315,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [ ] 13.4 Branding defaults — default theme assets for new churches.
 - [ ] 13.5 Integration config — M-Pesa/SMS/SMTP fallback credentials
   editor (masked secrets, re-auth to reveal).
-- [ ] 13.6 Maintenance mode — flag + scheduled window + tenant-visible
+- [x] 13.6 Maintenance mode — platform_settings.maintenance_mode flag
+  (message + ends_at), maintenanceMode middleware 503s tenant API while
+  platform/health stay up, toggle card on PlatformConfig.
   banner (ties into 8.1).
 - [x] 13.7 Version & changelog — deployed SHA shown on dashboard;
   release notes page tenants can read.

@@ -168,6 +168,9 @@ if (process.env.NODE_ENV !== 'test') {
     sweepExpired();
     setInterval(sweepExpired, 24 * 60 * 60 * 1000).unref();
 
+    // Platform scheduler — alert rules (5min), dunning (6h), backups (daily).
+    require('./services/platformScheduler.service').start();
+
     // Initialize WebSocket server
     initActivityWebSocket(server);
 

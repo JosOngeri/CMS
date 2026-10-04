@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { DatabaseBackup, HardDrive, GitBranch, CheckCircle } from 'lucide-react'
+import { DatabaseBackup, HardDrive, GitBranch, CheckCircle, Play } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -16,6 +16,7 @@ const PlatformData = () => {
   const [storage, setStorage] = useState([])
   const [schema, setSchema] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [backingUp, setBackingUp] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -46,6 +47,19 @@ const PlatformData = () => {
     }
   }
 
+  const runBackup = async () => {
+    setBackingUp(true)
+    try {
+      const res = await api.post('/api/platform/data/backups/run')
+      toast.success(res.data.message || 'Backup complete')
+      await load()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Backup failed')
+    } finally {
+      setBackingUp(false)
+    }
+  }
+
   if (loading) return <FullPageLoading message="Loading data management..." />
 
   return (
@@ -68,13 +82,19 @@ const PlatformData = () => {
       )}
 
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2"><DatabaseBackup className="h-5 w-5" /> Backups</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] flex items-center gap-2"><DatabaseBackup className="h-5 w-5" /> Backups</h2>
+          <button onClick={runBackup} disabled={backingUp} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium disabled:opacity-50">
+            <Play className="h-4 w-4" /> {backingUp ? 'Running pg_dump…' : 'Run backup now'}
+          </button>
+        </div>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-3">The scheduler takes a full pg_dump daily and keeps the newest 14. Small files are auto-flagged unverified.</p>
         <div className="space-y-2">
           {backups.map((b) => (
             <div key={b.id} className="flex items-center justify-between p-3 rounded-lg bg-[var(--color-background)] text-sm">
               <div>
                 <p className="text-[var(--color-text)] font-medium">{b.scope} backup{b.church_name ? ` — ${b.church_name}` : ''}</p>
-                <p className="text-xs text-[var(--color-textSecondary)]">{fmtDateTime(b.created_at)}{b.file_path ? ` · ${b.file_path}` : ''}</p>
+                <p className="text-xs text-[var(--color-textSecondary)]">{fmtDateTime(b.created_at)}{b.size_bytes ? ` · ${(b.size_bytes / 1024 / 1024).toFixed(1)} MB` : ''}{b.file_path ? ` · ${b.file_path}` : ''}</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded-full text-xs ${b.status === 'verified' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : b.status === 'failed' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>{b.status}</span>

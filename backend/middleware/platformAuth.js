@@ -79,13 +79,42 @@ const authenticatePlatformUser = async (req, res, next) => {
 
     const platformUser = userResult.rows[0];
 
+    // Session revocation (3.3): tokens minted after 079 carry a jti that
+    // must map to a live platform_sessions row — a revoked session dies
+    // immediately rather than at JWT expiry. Legacy tokens without jti
+    // pass through (they can't be revoked, and expire naturally in 8h).
+    if (decoded.jti) {
+      const sessionResult = await pool.query(
+        `SELECT id FROM platform_sessions
+         WHERE token_jti = $1 AND revoked_at IS NULL AND expires_at > CURRENT_TIMESTAMP`,
+        [decoded.jti]
+      );
+      if (sessionResult.rows.length === 0) {
+        return res.status(401).json({ success: false, error: 'Session revoked or expired' });
+      }
+    }
+
+    // MFA enforcement (3.4): a user flagged mfa_required who hasn't
+    // enrolled yet is confined to the setup/logout endpoints until they do.
+    const mfaPending = platformUser.mfa_required === true && platformUser.mfa_enabled !== true;
+    const MFA_BYPASS_PATHS = ['/auth/mfa/setup', '/auth/mfa/enable', '/auth/logout', '/auth/me'];
+    if (mfaPending && !MFA_BYPASS_PATHS.includes(req.path)) {
+      return res.status(403).json({
+        success: false,
+        error: 'MFA setup required before continuing',
+        code: 'MFA_SETUP_REQUIRED'
+      });
+    }
+
     // Attach platform user to request
     req.platformUser = {
       id: platformUser.id,
       email: platformUser.email,
       name: platformUser.name,
       role: platformUser.role,
-      permissions: normalizePermissions(platformUser.permissions, platformUser.role)
+      permissions: normalizePermissions(platformUser.permissions, platformUser.role),
+      jti: decoded.jti || null,
+      mfa_pending: mfaPending
     };
 
     next();

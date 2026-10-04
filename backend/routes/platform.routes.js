@@ -12,6 +12,19 @@ router.post('/auth/login', platformAuthLimiter, platformAuthController.login);
 router.get('/auth/me', authenticatePlatformUser, platformAuthController.getCurrentUser);
 router.post('/auth/logout', authenticatePlatformUser, platformAuthController.logout);
 
+// 3.3 Session management — self-service list/revoke; the /all view is
+// permission-gated for the security console.
+router.get('/auth/sessions', authenticatePlatformUser, platformAuthController.listMySessions);
+router.get('/auth/sessions/all', authenticatePlatformUser, requirePlatformPermission('security:read'), platformAuthController.listAllSessions);
+router.post('/auth/sessions/:id/revoke', authenticatePlatformUser, platformAuthController.revokeSession);
+router.post('/auth/users/:userId/revoke-sessions', authenticatePlatformUser, requirePlatformPermission('security:manage'), platformAuthController.revokeUserSessions);
+
+// 3.4 MFA — setup is allowed even while mfa_pending (middleware allowlists
+// these two paths); disable requires a live code.
+router.post('/auth/mfa/setup', authenticatePlatformUser, platformAuthController.mfaSetup);
+router.post('/auth/mfa/enable', authenticatePlatformUser, platformAuthController.mfaEnable);
+router.post('/auth/mfa/disable', authenticatePlatformUser, platformAuthController.mfaDisable);
+
 router.get('/stats', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformController.getPlatformStats);
 router.get('/health', authenticatePlatformUser, requirePlatformPermission('health:read'), platformController.getPlatformHealth);
 router.get('/activity', authenticatePlatformUser, requirePlatformPermission('audit:read'), platformController.getPlatformActivity);
@@ -59,6 +72,10 @@ router.get('/jobs', authenticatePlatformUser, requirePlatformPermission('monitor
 router.post('/jobs/:id/retry', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.retryJob);
 router.get('/alerts', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAlerts);
 router.post('/alerts/:id/resolve', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.resolveAlert);
+router.post('/alerts/evaluate', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.evaluateAlerts);
+router.get('/alert-rules', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAlertRules);
+router.post('/alert-rules', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.createAlertRule);
+router.patch('/alert-rules/:id', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.updateAlertRule);
 
 // ── §5 Payments & Oversight ─────────────────────────────────────────────
 router.get('/payments', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getPaymentFeed);
@@ -79,6 +96,7 @@ router.post('/security/credentials', authenticatePlatformUser, requirePlatformPe
 // ── §7 Data Management ──────────────────────────────────────────────────
 router.get('/data/backups', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getBackups);
 router.post('/data/backups', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.recordBackup);
+router.post('/data/backups/run', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.runBackup);
 router.post('/data/backups/:id/verify', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.verifyBackup);
 router.get('/data/storage', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getTenantStorage);
 router.get('/data/schema', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getSchemaVersion);
@@ -98,6 +116,8 @@ router.get('/billing/invoices', authenticatePlatformUser, requirePlatformPermiss
 router.post('/billing/invoices', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.createInvoice);
 router.post('/billing/invoices/:id/status', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.updateInvoiceStatus);
 router.get('/billing/revenue', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.getRevenueReport);
+router.get('/billing/dunning', authenticatePlatformUser, requirePlatformPermission('billing:read'), platformBusinessController.getDunningPreview);
+router.post('/billing/dunning/run', authenticatePlatformUser, requirePlatformPermission('billing:manage'), platformBusinessController.runDunning);
 
 // ── §10 Analytics & Reporting ───────────────────────────────────────────
 router.get('/analytics/growth', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getGrowthMetrics);
@@ -123,5 +143,10 @@ router.get('/support/health-scores', authenticatePlatformUser, requirePlatformPe
 router.get('/flags', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.getPlatformFlags);
 router.put('/flags', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.setPlatformFlag);
 router.get('/version', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformBusinessController.getVersion);
+router.get('/maintenance', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformBusinessController.getMaintenance);
+router.put('/maintenance', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.setMaintenance);
+
+// ── §2.5 Config override ────────────────────────────────────────────────
+router.put('/tenants/:id/settings', authenticatePlatformUser, requirePlatformPermission('tenant:administer'), platformTenancyController.updateTenantSettings);
 
 module.exports = router;
