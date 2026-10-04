@@ -1,0 +1,183 @@
+# JosOngeri VPS - unified Caddyfile
+# Replaces nginx. Caddy serves all sites + auto-HTTPS.
+
+# Main portfolio site
+josongeri.co.ke, www.josongeri.co.ke {
+	root * /var/www/josongeri.co.ke
+	file_server
+	try_files {path} {path}/ /index.html
+	header X-Content-Type-Options "nosniff"
+	header X-Frame-Options "SAMEORIGIN"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+	encode gzip
+}
+
+# Quotation Management System (QMS)
+quotation.josongeri.co.ke {
+	# API + WebSocket (Socket.IO) -> backend :5001
+	handle /api/* {
+		reverse_proxy localhost:5001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+	handle /api-docs* {
+		reverse_proxy localhost:5001 {
+			header_up Host {host}
+		}
+	}
+	handle /socket.io/* {
+		reverse_proxy localhost:5001 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+		}
+	}
+	handle /health {
+		reverse_proxy localhost:5001
+	}
+	# Frontend SPA
+	handle {
+		root * /var/www/qms/frontend/dist
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+	@static path *.js *.css *.png *.jpg *.jpeg *.gif *.ico *.svg *.woff *.woff2 *.ttf *.eot
+	header @static Cache-Control "public, max-age=31536000, immutable"
+	header X-Content-Type-Options "nosniff"
+	header X-Frame-Options "DENY"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+	encode gzip
+}
+
+# CMS (kmaincms) - multi-tenant CMS
+cms.josongeri.co.ke {
+	handle /api/* {
+		reverse_proxy localhost:5005 {
+			header_up Host {host}
+			header_up X-Tenant-Slug "kiserian-main-sda"
+			header_up X-Forwarded-For {remote}
+		}
+	}
+	handle /uploads/* {
+		reverse_proxy localhost:5005
+	}
+	# Hashed build assets: a missing chunk must 404 — serving index.html
+	# here is what turns a stale deploy into "MIME type text/html" errors
+	# and lets the service worker cache HTML as JS.
+	handle /assets/* {
+		root * /var/www/CMS/frontend/dist-new
+		file_server
+		header Cache-Control "public, immutable, max-age=31536000"
+	}
+	# Shell files (index.html, sw.js, manifest, icons, SPA fallbacks)
+	# revalidate every load so a deploy's new asset manifest is picked up
+	# immediately. sw.js in particular must never sit under immutable.
+	handle {
+		root * /var/www/CMS/frontend/dist-new
+		try_files {path} /index.html
+		file_server
+		header Cache-Control "no-cache"
+	}
+	header X-Frame-Options "SAMEORIGIN"
+	header X-Content-Type-Options "nosniff"
+	encode gzip
+}
+
+# Harriet app
+harriet.josongeri.co.ke {
+	handle /api/* {
+		reverse_proxy localhost:5002 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+	handle /uploads/* {
+		reverse_proxy localhost:5002
+	}
+	handle {
+		root * /var/www/harriet/frontend/dist
+		try_files {path} /index.html
+		file_server
+	}
+	header X-Frame-Options "SAMEORIGIN"
+	header X-Content-Type-Options "nosniff"
+	header Referrer-Policy "strict-origin-when-cross-origin"
+	encode gzip
+}
+
+# SMS Platform - Next.js web :3002 + API :5000
+sms.josongeri.co.ke, smsapp.josongeri.co.ke {
+	handle /api/* {
+		reverse_proxy localhost:5000 {
+			header_up Host {host}
+			header_up X-Real-IP {remote}
+			header_up X-Forwarded-For {remote}
+			header_up X-Forwarded-Proto {scheme}
+		}
+	}
+	handle {
+		reverse_proxy localhost:3002
+	}
+	encode gzip
+}
+
+# EHCSL
+ehcsl.josongeri.co.ke {
+	root * /var/www/subdomains/ehcsl
+	file_server
+	try_files {path} {path}/ /index.html
+	encode gzip
+}
+
+# Plotnest / parealty
+parealty.co.ke {
+	root * /home/deploy/plotnest/public
+	file_server
+	try_files {path} {path}/ /index.html
+	encode gzip
+}
+
+# Placeholder subdomains (until individual projects are uploaded)
+churchcms.josongeri.co.ke, kiserianchurch.josongeri.co.ke, pesatrail.josongeri.co.ke, plotnest.josongeri.co.ke, miraglobal.josongeri.co.ke, churchapp.josongeri.co.ke, telegramdrive.josongeri.co.ke, android.josongeri.co.ke, mvp.josongeri.co.ke {
+	root * /var/www/subdomains/placeholder
+	file_server
+	try_files {path} {path}/ /index.html
+}
+
+# Msabato CMS domain
+msabato.co.ke, www.msabato.co.ke {
+	handle /api/* {
+		reverse_proxy localhost:5005 {
+			header_up Host {host}
+			header_up X-Tenant-Slug kiserian-main-sda
+			header_up X-Forwarded-For {remote}
+		}
+	}
+	handle /uploads/* {
+		reverse_proxy localhost:5005
+	}
+	# Hashed build assets: a missing chunk must 404 — serving index.html
+	# here is what turns a stale deploy into "MIME type text/html" errors
+	# and lets the service worker cache HTML as JS.
+	handle /assets/* {
+		root * /var/www/CMS/frontend/dist-new
+		file_server
+		header Cache-Control "public, immutable, max-age=31536000"
+	}
+	# Shell files (index.html, sw.js, manifest, icons, SPA fallbacks)
+	# revalidate every load so a deploy's new asset manifest is picked up
+	# immediately. sw.js in particular must never sit under immutable.
+	handle {
+		root * /var/www/CMS/frontend/dist-new
+		try_files {path} /index.html
+		file_server
+		header Cache-Control "no-cache"
+	}
+	header X-Frame-Options SAMEORIGIN
+	header X-Content-Type-Options nosniff
+	encode gzip
+}

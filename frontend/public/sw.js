@@ -1,9 +1,10 @@
-const CACHE_NAME = 'msabato-v2';
+// Bump CACHE_NAME on every behavior change — activate purges old caches,
+// including entries where a missing chunk was once cached as HTML.
+const CACHE_NAME = 'msabato-v3';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.ico',
   '/logo.png'
 ];
 
@@ -18,7 +19,10 @@ const NEVER_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      // Cache each URL independently — one missing file (e.g. a renamed
+      // icon) must not sink the whole precache, or the offline shell
+      // silently never installs.
+      .then((cache) => Promise.allSettled(urlsToCache.map((u) => cache.add(u))))
       .then(() => self.skipWaiting())
   );
 });
@@ -48,11 +52,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first for built static assets (hashed filenames = safe to cache hard)
+  // Cache-first for built static assets (hashed filenames = safe to cache hard).
+  // Only cache responses that are actually code — a misconfigured SPA fallback
+  // can answer a missing chunk with text/html, and caching THAT poisons the
+  // entry until the next cache bump.
   if (url.pathname.startsWith('/assets/') || /\.(js|css|png|jpe?g|svg|woff2?|ttf|ico)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cached) => cached || fetch(request).then((response) => {
-        if (response.ok) {
+        const type = response.headers.get('content-type') || '';
+        const isCode = type.includes('javascript') || type.includes('css') || type.startsWith('image/') || type.includes('font');
+        if (response.ok && isCode) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         }
@@ -62,10 +71,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-first for HTML navigation with offline fallback to cached shell
+  // Network-first for HTML navigation with offline fallback to cached shell.
+  // Always resolve to a real Response — a failed fetch + empty cache must not
+  // leave respondWith() holding undefined (that's the "network error" blank page).
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      fetch(request)
+        .catch(() => caches.match('/index.html'))
+        .then((response) => response || caches.match('/'))
+        .then((response) => response || new Response(
+          '<!doctype html><title>Offline</title><h1>You are offline</h1><p>The app could not be loaded. Check your connection and retry.</p>',
+          { status: 503, headers: { 'Content-Type': 'text/html' } }
+        ))
     );
     return;
   }
