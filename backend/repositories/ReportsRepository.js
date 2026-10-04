@@ -119,8 +119,8 @@ class ReportsRepository extends BaseRepository {
       SELECT
         d.name as department_name,
         COUNT(DISTINCT dm.member_id) as member_count,
-        COUNT(DISTINCT dm.id) as total_members,
-        COUNT(DISTINCT CASE WHEN dm.is_active = true THEN dm.id END) as active_members
+        COUNT(DISTINCT dm.user_id) as total_members,
+        COUNT(DISTINCT CASE WHEN dm.is_active = true THEN dm.user_id END) as active_members
       FROM departments d
       LEFT JOIN department_members dm ON d.id = dm.department_id
       WHERE d.id = $1
@@ -128,7 +128,7 @@ class ReportsRepository extends BaseRepository {
     const params = [departmentId];
 
     if (startDate && endDate) {
-      query += ` AND dm.joined_date BETWEEN $2 AND $3`;
+      query += ` AND dm.joined_at BETWEEN $2 AND $3`;
       params.push(startDate, endDate);
     }
 
@@ -149,7 +149,7 @@ class ReportsRepository extends BaseRepository {
         DATE_TRUNC('day', attendance_date) as date,
         COUNT(*) as total_attendance,
         COUNT(DISTINCT member_id) as unique_members
-      FROM attendance
+      FROM member_attendance
       WHERE 1=1
     `;
     const params = [];
@@ -175,7 +175,7 @@ class ReportsRepository extends BaseRepository {
       SELECT
         d.name as department_name,
         COUNT(DISTINCT dm.user_id) as member_count,
-        COUNT(DISTINCT dm.id) as total_members,
+        COUNT(DISTINCT dm.user_id) as total_members,
         COUNT(DISTINCT dmeet.id) as meeting_count,
         COUNT(DISTINCT dtask.id) as task_count,
         COUNT(DISTINCT dres.id) as resource_count

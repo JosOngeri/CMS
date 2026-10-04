@@ -69,7 +69,8 @@ class NotificationsRepository extends BaseRepository {
     const params = [];
 
     if (churchId) {
-      query += ` AND church_id = $1`;
+      // global types (church_id NULL) belong to every church
+      query += ` AND (church_id = $1 OR church_id IS NULL)`;
       params.push(churchId);
     }
 

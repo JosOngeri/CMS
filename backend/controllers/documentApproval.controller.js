@@ -104,6 +104,9 @@ class DocumentApprovalController extends BaseController {
       this.success(res, request);
     } catch (error) {
       this.logger.error('getApprovalRequest', error);
+      if (error.code === '22P02') {
+        return this.notFound(res, 'Approval request not found');
+      }
       this.error(res, 'Failed to get approval request');
     }
   }

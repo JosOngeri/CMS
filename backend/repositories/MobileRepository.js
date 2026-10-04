@@ -547,7 +547,7 @@ class MobileRepository extends BaseRepository {
 
     const query = `
       INSERT INTO sms_campaigns (
-        name, template_id, scheduled_date, target_audience,
+        name, template_id, scheduled_for, target_audience,
         created_by, status, source, created_at
       ) VALUES ($1, $2, $3, $4, $5, 'scheduled', $6, $7)
       RETURNING *
@@ -572,7 +572,7 @@ class MobileRepository extends BaseRepository {
         c.id,
         c.name,
         c.status,
-        c.scheduled_date,
+        c.scheduled_for AS scheduled_date,
         c.total_recipients,
         c.sent_recipients,
         c.failed_recipients,
@@ -601,7 +601,7 @@ class MobileRepository extends BaseRepository {
         id,
         name,
         status,
-        scheduled_date,
+        scheduled_for AS scheduled_date,
         total_recipients,
         sent_recipients,
         failed_recipients,

@@ -6,48 +6,35 @@ class PaletteRepository extends BaseRepository {
   }
 
   async getAllWithColors(churchId = null) {
-    let query = `
+    // Tenant isolation: scoped callers see only their church's palettes;
+    // unscoped callers (e.g. system email branding) see only global palettes.
+    const params = churchId ? [churchId] : [];
+    const query = `
       SELECT cp.*,
         json_object_agg(cpc.color_key, cpc.color_value) as colors
        FROM color_palettes cp
        LEFT JOIN color_palette_colors cpc ON cp.id = cpc.palette_id
+       WHERE ${churchId ? 'cp.church_id = $1' : 'cp.church_id IS NULL'}
        GROUP BY cp.id
+       ORDER BY cp.is_default DESC, cp.display_name ASC
     `;
-    const params = [];
-
-    // Tenant isolation: scoped callers see only their church's palettes;
-    // unscoped callers (e.g. system email branding) see only global palettes.
-    if (churchId) {
-      query += ` WHERE cp.church_id = $1`;
-      params.push(churchId);
-    } else {
-      query += ` WHERE cp.church_id IS NULL`;
-    }
-
-    query += ` ORDER BY cp.is_default DESC, cp.display_name ASC`;
 
     const result = await this.pool.query(query, params);
     return result.rows;
   }
 
   async getPaletteWithColors(paletteId, churchId = null) {
-    let query = `
+    // Unscoped reads can only open global palettes — never a tenant's
+    const params = churchId ? [paletteId, churchId] : [paletteId];
+    const query = `
       SELECT cp.*,
         json_object_agg(cpc.color_key, cpc.color_value) as colors
        FROM color_palettes cp
        LEFT JOIN color_palette_colors cpc ON cp.id = cpc.palette_id
        WHERE cp.id = $1
+         AND ${churchId ? 'cp.church_id = $2' : 'cp.church_id IS NULL'}
        GROUP BY cp.id
     `;
-    const params = [paletteId];
-
-    if (churchId) {
-      query += ` AND cp.church_id = $2`;
-      params.push(churchId);
-    } else {
-      // Unscoped reads can only open global palettes — never a tenant's
-      query += ` AND cp.church_id IS NULL`;
-    }
 
     const result = await this.pool.query(query, params);
     return result.rows[0];

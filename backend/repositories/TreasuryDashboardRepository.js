@@ -40,10 +40,10 @@ class TreasuryDashboardRepository extends BaseRepository {
 
   async getRecentTransactions(limit = 10, churchId = null) {
     let query = `
-      SELECT t.*, a.account_name, c.category_name
+      SELECT t.*, a.account_name, c.name AS category_name
       FROM transactions t
       LEFT JOIN accounts a ON t.account_id = a.id
-      LEFT JOIN categories c ON t.category_id = c.id
+      LEFT JOIN payment_categories c ON t.category_id = c.id
       WHERE 1=1
     `;
     const params = [];

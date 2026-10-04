@@ -318,6 +318,9 @@ class PaymentController extends BaseController {
       });
     } catch (error) {
       this.logger.error('checkPaymentStatus', error);
+      if (error.code === '22P02') {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
       res.status(500).json({
         success: false,
         error: 'Payment status check failed',

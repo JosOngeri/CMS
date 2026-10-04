@@ -305,9 +305,9 @@ class DocumentsRepository extends BaseRepository {
 
   async fullTextSearch(query, churchId = null) {
     let sql = `SELECT d.*,
-              ts_rank(to_tsvector('english', COALESCE(d.title, '') || ' ' || COALESCE(d.content, '')), plainto_tsquery('english', $1)) as rank
+              ts_rank(to_tsvector('english', COALESCE(d.name, '') || ' ' || COALESCE(d.description, '')), plainto_tsquery('english', $1)) as rank
        FROM documents d
-       WHERE to_tsvector('english', COALESCE(d.title, '') || ' ' || COALESCE(d.content, '')) @@ plainto_tsquery('english', $1)`;
+       WHERE to_tsvector('english', COALESCE(d.name, '') || ' ' || COALESCE(d.description, '')) @@ plainto_tsquery('english', $1)`;
     const params = [query];
 
     if (churchId) {

@@ -6,10 +6,10 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 const paletteController = new PaletteController();
 
 // Public routes — static segments before /:id or they are shadowed
-router.get('/', (req, res) => paletteController.getPalettes(req, res));
-router.get('/default', (req, res) => paletteController.getDefaultPalette(req, res));
-router.get('/name/:name', (req, res) => paletteController.getPaletteByName(req, res));
-router.get('/:id', (req, res) => paletteController.getPalette(req, res));
+router.get('/', authenticateToken, (req, res) => paletteController.getPalettes(req, res));
+router.get('/default', authenticateToken, (req, res) => paletteController.getDefaultPalette(req, res));
+router.get('/name/:name', authenticateToken, (req, res) => paletteController.getPaletteByName(req, res));
+router.get('/:id', authenticateToken, (req, res) => paletteController.getPalette(req, res));
 
 // Protected routes (require authentication)
 router.post('/:id/apply', authenticateToken, (req, res) => paletteController.applyPalette(req, res));
