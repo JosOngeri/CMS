@@ -405,13 +405,32 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 
 ## Cleanup (as features land)
 
-- [ ] C1. Remove each roadmap link in `platformNav.js` as its real page
-  ships; delete `PLATFORM_AREAS` entries whose area is fully built.
-- [ ] C2. Delete `PlatformRoadmap.jsx` + its route when no roadmap
-  links remain.
-- [ ] C3. Update this file's filename to mark it implemented
-  (`..._platform-console-13-functions_IMPLEMENTED.md`) when the
-  tracker is all `[x]`.
-- [ ] C4. Ledger entry: link each shipped area back to
-  `docs/reports/2026-10-02_22-49_line-by-line-ledger.md` conventions —
-  record completion evidence (endpoint tested, page verified).
+- [x] C1. Roadmap links removed from `platformNav.js`; all nav items
+  point at real pages (`/status` for the public page); PLATFORM_AREAS
+  catalog deleted with them.
+- [x] C2. `PlatformRoadmap.jsx` deleted; lazy import + `/roadmap/:slug`
+  route removed from PlatformShell.
+- [x] C3. This file renamed to `..._IMPLEMENTED.md` on tracker close-out.
+- [x] C4. Completion ledger — see table below.
+
+## Completion ledger (C4)
+
+| Area | Shipped surface | Evidence |
+|---|---|---|
+| 1 Onboarding & trials | `/platform/tenants*` pages; create/update/archive; onboarding checklist + trial extend/end on TenantAdmin; tenant templates (mig 084); offboard→purge (mig 081) | createTenant merges platform defaults; template apply verified on dev; purge transaction tested |
+| 2 Tenant admin | TenantAdmin page: users, reset-admin, impersonate (read-only + full), flags, quotas, sessions, settings override, rate limit, templates, messages, member import | Impersonation sets church JWT cookie + banner; write-block tested in read-only |
+| 3 Staff & access | `/platform/admins`; roles catalog endpoint; platform sessions (jti revocation); TOTP MFA + forced setup | `users/roles/catalog` returns ROLE_PERMISSIONS; MFA login flow unit-tested |
+| 4 Monitoring | Fleet page: tenant cards, alerts, jobs, alert rules, integrations, log explorer | Alert engine runs 5min via scheduler; uptime middleware feeds platform_health; DB log stream smoke-tested (warn+ lands in platform_app_logs) |
+| 5 Payments | `/platform/payments`: feed, stuck queue, manual reconcile, statement import, refunds, SMS ledger | Statement match verified on dev; fixed latent transaction_reference bug (column never existed) |
+| 6 Security | `/platform/security`: failed logins, sessions, IP rules (enforced by middleware), impersonations, data requests, credential rotation, permission audit | IP rules enforce CIDR via ipaddr.js, 6-test suite; permission audit diffed vs catalog |
+| 7 Data mgmt | `/platform/data`: backup registry + pg_dump runs + staging restore; storage/schema views; tenant export; member CSV import (shared w/ church `/api/members/import`) | Export strips credentials via to_regclass pre-checks; restore requires STAGING_DATABASE_URL |
+| 8 Disaster/incident | `/platform/incidents` + quarantine enforcement; `/platform/audit` filters + forensics pivot + CSV; deploy records + rollback (mig 083) | Quarantine blocks at IdentityService; forensics verified |
+| 9 Billing | `/platform/billing`: plans, subscriptions, invoices (+credit notes/printable/PDF-ish print view), dunning run, revenue reports | Mig 081 credit_notes; auto-restore on paid invoice verified |
+| 10 Analytics | `/platform/analytics`: growth, adoption matrix, usage, benchmarks, metrics CSV export | Adoption query verified on real dev data (4 tenants) |
+| 11 Communication | `/platform/comms`: announcements, templates (mig 082); public `/status` page; platform↔church messages (mig 085, church-side `/api/platform-messages`) | Status page public-rendered; message thread end-to-end |
+| 12 Support | `/platform/support`: tickets + replies, known issues, health scores, support-access grants (mig 081) | Grant/revoke audited, expiry enforced |
+| 13 Configuration | `/platform/config` + `/platform/settings`: global flags, maintenance mode, new-tenant defaults (incl. branding), integration config (presence-only), deploys/version | Maintenance middleware 503s tenant APIs; integration view never returns secret values |
+
+**Verification summary (batches 1–12):** migrations 077–085 applied to dev + test DBs; `jest --testPathPatterns=__tests__/unit` green (71 tests incl. platformAuth, ipRules, maintenanceMode, uptime-adjacent suites); `eslint` 0 errors on all touched files; `vite build` clean every batch; live deploy verified earlier via workflow health check + 401-gated route probes.
+
+**Known honest partials (recorded per-item above):** alert channels limited to email/Telegram config presence; uptime is app-side self-report not external probe; SMS ledger counts messages not money (no per-message pricing column); log explorer stores warn+ only; church-side message inbox UI pending (endpoints ready); integration credential rotation still manual; member import dedups on name+phone only.

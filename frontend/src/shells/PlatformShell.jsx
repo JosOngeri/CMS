@@ -8,8 +8,8 @@
  *
  * Navigation lives in constants/platformNav.js — rail entries whose
  * `sections` open a second panel; every panel section is one of the 13
- * SaaS function areas, and unbuilt features link to PlatformRoadmap so
- * the console doubles as the build roadmap.
+ * SaaS function areas. Every link resolves to a real page — the
+ * PlatformRoadmap placeholder was retired once all areas shipped.
  *
  * FILES IT TALKS TO
  * -----------------
@@ -39,7 +39,6 @@ const PlatformMonitoring = lazy(() => import('../pages/platform/PlatformMonitori
 const PlatformAuditLog   = lazy(() => import('../pages/platform/PlatformAuditLog'))
 const PlatformUsers      = lazy(() => import('../pages/platform/PlatformUsers'))
 const PlatformSettings   = lazy(() => import('../pages/platform/PlatformSettings'))
-const PlatformRoadmap    = lazy(() => import('../pages/platform/PlatformRoadmap'))
 const PlatformTenantAdmin = lazy(() => import('../pages/platform/PlatformTenantAdmin'))
 const PlatformFleet      = lazy(() => import('../pages/platform/PlatformFleet'))
 const PlatformPayments   = lazy(() => import('../pages/platform/PlatformPayments'))
@@ -333,7 +332,6 @@ const PlatformShell = () => {
               <Route path="comms" element={<PlatformComms />} />
               <Route path="support" element={<PlatformSupport />} />
               <Route path="config" element={<PlatformConfig />} />
-              <Route path="roadmap/:slug" element={<PlatformRoadmap />} />
               <Route path="*" element={<Navigate to="/platform" replace />} />
             </Routes>
           </Suspense>
