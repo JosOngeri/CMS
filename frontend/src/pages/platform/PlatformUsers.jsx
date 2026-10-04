@@ -17,6 +17,7 @@ const PlatformUsers = () => {
   const { api } = useAuth()
   const toast = useToast()
   const [users, setUsers] = useState([])
+  const [rolesCatalog, setRolesCatalog] = useState([])
   const [loading, setLoading] = useState(true)
   const [forbidden, setForbidden] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
@@ -26,8 +27,12 @@ const PlatformUsers = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await api.get('/api/platform/users')
-      setUsers(response.data.data || [])
+      const [usersRes, rolesRes] = await Promise.all([
+        api.get('/api/platform/users'),
+        api.get('/api/platform/users/roles/catalog'),
+      ])
+      setUsers(usersRes.data.data || [])
+      setRolesCatalog(rolesRes.data.data?.assignable || [])
     } catch (error) {
       if (error.response?.status === 403) {
         setForbidden(true)
@@ -55,6 +60,16 @@ const PlatformUsers = () => {
       fetchUsers()
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to create user')
+    }
+  }
+
+  const changeRole = async (user, role) => {
+    try {
+      await api.patch(`/api/platform/users/${user.id}`, { role })
+      toast.success(`${user.name} is now ${ROLE_LABELS[role] || role}`)
+      fetchUsers()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to change role')
     }
   }
 
@@ -136,9 +151,22 @@ const PlatformUsers = () => {
                       <p className="text-xs text-[var(--color-textSecondary)]">{user.email}</p>
                     </td>
                     <td className="py-3">
-                      <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                        {ROLE_LABELS[user.role] || user.role}
-                      </span>
+                      {user.role === 'platform_owner' || rolesCatalog.length === 0 ? (
+                        <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                          {ROLE_LABELS[user.role] || user.role}
+                        </span>
+                      ) : (
+                        <select
+                          value={user.role}
+                          onChange={(e) => changeRole(user, e.target.value)}
+                          className="text-xs rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-1 text-[var(--color-text)]"
+                          title="Change role — options come from the platform permission catalog"
+                        >
+                          {rolesCatalog.map((r) => (
+                            <option key={r.role} value={r.role}>{ROLE_LABELS[r.role] || r.role} ({r.permissionCount} perms)</option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td className="py-3">
                       <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${user.is_active ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : 'bg-[var(--color-error-light)] text-[var(--color-error)]'}`}>
@@ -191,10 +219,16 @@ const PlatformUsers = () => {
               </label>
               <label className="block text-sm text-[var(--color-text)]">Role
                 <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="mt-1 w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] p-3">
-                  <option value="platform_admin">Admin — manage churches and settings</option>
-                  <option value="support_staff">Support — read-only access</option>
+                  {rolesCatalog.map((r) => (
+                    <option key={r.role} value={r.role}>{ROLE_LABELS[r.role] || r.role} — {r.permissionCount} permissions</option>
+                  ))}
                 </select>
               </label>
+              {rolesCatalog.length > 0 && (
+                <div className="rounded-lg bg-[var(--color-background)] p-3 text-xs text-[var(--color-textSecondary)]">
+                  Grants: {(rolesCatalog.find((r) => r.role === form.role)?.permissions || []).join(', ')}
+                </div>
+              )}
               <p className="text-xs text-[var(--color-textSecondary)]">A temporary password is generated and shown once — share it with the admin securely.</p>
               <div className="flex justify-end gap-3">
                 <button type="button" onClick={() => setShowCreate(false)} className="rounded-lg border border-[var(--color-border)] px-4 py-2">Cancel</button>

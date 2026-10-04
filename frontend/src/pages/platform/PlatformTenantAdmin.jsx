@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff, Zap, LayoutTemplate } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -23,6 +23,10 @@ const PlatformTenantAdmin = () => {
   const [settingsText, setSettingsText] = useState('')
   const [tenantSessions, setTenantSessions] = useState([])
   const [benchmarks, setBenchmarks] = useState(null)
+  const [rateLimit, setRateLimit] = useState(null)
+  const [rateLimitForm, setRateLimitForm] = useState({ maxRequests: '', windowSeconds: 60 })
+  const [templates, setTemplates] = useState([])
+  const [templateId, setTemplateId] = useState('')
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
@@ -42,18 +46,22 @@ const PlatformTenantAdmin = () => {
   const loadTenant = useCallback(async (id) => {
     if (!id) return
     try {
-      const [usersRes, flagsRes, quotasRes, sessRes, benchRes] = await Promise.all([
+      const [usersRes, flagsRes, quotasRes, sessRes, benchRes, rlRes, tplRes] = await Promise.all([
         api.get(`/api/platform/tenants/${id}/users`),
         api.get(`/api/platform/tenants/${id}/flags`),
         api.get(`/api/platform/tenants/${id}/quotas`),
         api.get(`/api/platform/tenants/${id}/sessions`).catch(() => ({ data: { data: [] } })),
         api.get(`/api/platform/tenants/${id}/benchmarks`).catch(() => ({ data: { data: null } })),
+        api.get(`/api/platform/tenants/${id}/rate-limit`).catch(() => ({ data: { data: null } })),
+        api.get('/api/platform/tenant-templates').catch(() => ({ data: { data: [] } })),
       ])
       setUsers(usersRes.data.data || [])
       setFlags(flagsRes.data.data || [])
       setQuotas(quotasRes.data.data || null)
       setTenantSessions(sessRes.data.data || [])
       setBenchmarks(benchRes.data.data || null)
+      setRateLimit(rlRes.data.data || null)
+      setTemplates(tplRes.data.data || [])
     } catch {
       toast.error('Failed to load tenant details')
     }
@@ -166,6 +174,33 @@ const PlatformTenantAdmin = () => {
     const res = await api.post(`/api/platform/tenants/${churchId}/purge`)
     toast.success(res.data.message || 'Tenant purged')
     setChurchId('')
+  }, null)
+
+  const saveRateLimit = () => act('ratelimit', async () => {
+    await api.put(`/api/platform/tenants/${churchId}/rate-limit`, {
+      maxRequests: Number(rateLimitForm.maxRequests),
+      windowSeconds: Number(rateLimitForm.windowSeconds) || 60,
+    })
+    await loadTenant(churchId)
+  }, 'Rate limit saved')
+
+  const removeRateLimit = () => act('ratelimit', async () => {
+    await api.delete(`/api/platform/tenants/${churchId}/rate-limit`)
+    await loadTenant(churchId)
+  }, 'Override removed — global limit applies')
+
+  const captureTemplate = () => act('tpl-capture', async () => {
+    const name = window.prompt('Template name:', `${tenant?.name} structure`)
+    if (!name) return
+    const res = await api.post('/api/platform/tenant-templates', { name, sourceChurchId: churchId })
+    toast.success(res.data.message || 'Template captured')
+    await loadTenant(churchId)
+  }, null)
+
+  const applyTemplate = () => act('tpl-apply', async () => {
+    if (!templateId) return toast.error('Pick a template first')
+    const res = await api.post(`/api/platform/tenants/${churchId}/apply-template`, { templateId: Number(templateId) })
+    toast.success(res.data.message || 'Template applied')
   }, null)
 
   if (loading) return <FullPageLoading message="Loading tenant administration..." />
@@ -484,6 +519,58 @@ const PlatformTenantAdmin = () => {
             </button>
           </>
         )}
+      </Card>
+
+      {/* 6.8 per-tenant rate-limit override */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <Zap className="h-5 w-5" /> Rate Limit Override
+        </h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+          {rateLimit
+            ? `This tenant is capped at ${rateLimit.max_requests} requests / ${rateLimit.window_seconds}s (overrides the global limit).`
+            : 'No override — the global API limit applies.'}
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="text-xs text-[var(--color-textSecondary)]">Max requests
+            <input type="number" min="10" max="100000" value={rateLimitForm.maxRequests} onChange={(e) => setRateLimitForm({ ...rateLimitForm, maxRequests: e.target.value })} placeholder={rateLimit ? String(rateLimit.max_requests) : 'e.g. 500'} className={inputCls + ' mt-1 w-32'} />
+          </label>
+          <label className="text-xs text-[var(--color-textSecondary)]">Per (seconds)
+            <input type="number" min="10" max="3600" value={rateLimitForm.windowSeconds} onChange={(e) => setRateLimitForm({ ...rateLimitForm, windowSeconds: e.target.value })} className={inputCls + ' mt-1 w-24'} />
+          </label>
+          <button onClick={saveRateLimit} disabled={busy === 'ratelimit' || !rateLimitForm.maxRequests} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">Save override</button>
+          {rateLimit && (
+            <button onClick={removeRateLimit} disabled={busy === 'ratelimit'} className="px-4 py-2 rounded-lg border border-[var(--color-error)] text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] disabled:opacity-50">Remove override</button>
+          )}
+        </div>
+      </Card>
+
+      {/* 1.4 tenant templates */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <LayoutTemplate className="h-5 w-5" /> Structure Templates
+        </h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+          Capture this church&apos;s departments + roles as a reusable template, or apply an existing template here (existing names are skipped).
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <button onClick={captureTemplate} disabled={busy === 'tpl-capture'} className="px-4 py-2 rounded-lg border border-[var(--color-primary)] text-sm text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] disabled:opacity-50">
+            {busy === 'tpl-capture' ? 'Capturing…' : 'Capture as template'}
+          </button>
+          {templates.length > 0 && (
+            <>
+              <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className={inputCls + ' w-64'}>
+                <option value="">Apply a template…</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name} ({t.department_count} depts, {t.role_count} roles)</option>
+                ))}
+              </select>
+              <button onClick={applyTemplate} disabled={busy === 'tpl-apply' || !templateId} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
+                {busy === 'tpl-apply' ? 'Applying…' : 'Apply template'}
+              </button>
+            </>
+          )}
+        </div>
       </Card>
     </div>
   )

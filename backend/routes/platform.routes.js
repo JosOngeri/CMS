@@ -43,6 +43,8 @@ router.put('/settings', authenticatePlatformUser, requirePlatformPermission('set
 // Platform staff accounts — gated by staff:manage, which today only the
 // owner wildcard grants (see constants/platformPermissions.js).
 router.get('/users', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.listPlatformUsers);
+// 3.2: role catalog drives the assignment UI (register before /users/:id)
+router.get('/users/roles/catalog', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.listPlatformRoles);
 router.post('/users', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.createPlatformUser);
 router.patch('/users/:id', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.updatePlatformUser);
 router.post('/users/:id/reset-password', authenticatePlatformUser, requirePlatformPermission('staff:manage'), platformController.resetPlatformUserPassword);
@@ -57,6 +59,13 @@ router.post('/tenants/:id/offboard', authenticatePlatformUser, requirePlatformPe
 router.post('/tenants/:id/purge', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeTenant);
 // 7.6 demo-data lifecycle
 router.patch('/tenants/:id/demo', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.setTenantDemo);
+// 6.8: per-tenant rate-limit overrides + 1.4: tenant templates
+router.get('/tenants/:id/rate-limit', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.getTenantRateLimit);
+router.put('/tenants/:id/rate-limit', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.setTenantRateLimit);
+router.delete('/tenants/:id/rate-limit', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.deleteTenantRateLimit);
+router.get('/tenant-templates', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.listTemplates);
+router.post('/tenant-templates', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.createTemplate);
+router.post('/tenants/:id/apply-template', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.applyTemplate);
 router.post('/tenants/purge-demos', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeDemoTenants);
 router.get('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantById);
 router.get('/tenants/:id/stats', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantStats);

@@ -146,8 +146,12 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   configured, first service scheduled; progress bar on TenantDetail.
 - [x] 1.3 Trials — `trial_ends_at` on `churches`; list filter
   "trialing"; extend/convert actions; auto-flag when expired.
-- [ ] 1.4 Tenant templates — snapshot roles/departments/categories from
-  a source church; "create from template" option on TenantCreate.
+- [x] 1.4 Tenant templates — tenant_templates (mig 084) snapshots a
+  church's departments+roles via POST /tenant-templates; "capture as
+  template" + "apply template" on TenantAdmin; "start from template"
+  select on TenantCreate step 4 (applied post-create, name-conflicts
+  skipped). PARTIAL: snapshot covers departments+roles (no separate
+  categories table exists).
 - [x] 1.5 Offboarding flow — churches.offboarded_at/retention_deadline/
   offboard_reason (migration 081); POST /tenants/:id/offboard (deactivate
   + retention clock) and /tenants/:id/purge (owner-only via data:export,
@@ -176,8 +180,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 ## 3. Platform Staff (`/platform/staff`)
 
 - [x] 3.1 Platform user CRUD (done — PlatformUsers + /users routes).
-- [ ] 3.2 Role assignment UI constrained to the catalog from F1
-  (dropdown of roles → permission preview).
+- [x] 3.2 Role assignment UI constrained to the catalog from F1 —
+  GET /users/roles/catalog returns ROLE_PERMISSIONS-derived assignable
+  roles; PlatformUsers renders create-form + per-row role selects from
+  it with permission-count/permission-list preview; backend re-validates
+  against PLATFORM_USER_ROLES.
 - [x] 3.3 Session revocation — `platform_sessions` (mig 079); jti-bound
   JWTs; list own/all, revoke one, revoke-all-per-user
   (security:manage); sessions card on PlatformSecurity.
@@ -252,8 +259,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
       effective role permissions per platform staff member; flags owner-only
       drift + permissions outside the catalog; card on Security page.
   canonical catalog; flag drift (e.g. the `Admin` orphan we fixed).
-- [ ] 6.8 Rate limits — per-tenant override table; applied by the
-  existing limiter.
+- [x] 6.8 Rate limits — tenant_rate_limits (mig 084); tenantRateLimiter
+  middleware layered after apiLimiter, keyed on resolved req.church_id,
+  sliding-window with 60s-cached override map, fails open; GET/PUT/
+  DELETE /tenants/:id/rate-limit + card on TenantAdmin.
 
 ## 7. Data Management (`/platform/data`)
 
@@ -362,7 +371,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
       merged under each new church's settings at signup; JSON editor card on
       Config page. PARTIAL: settings-only defaults — does not yet seed role
   categories, fiscal year used by tenant creation.
-- [ ] 13.4 Branding defaults — default theme assets for new churches.
+- [x] 13.4 Branding defaults — new_tenant_defaults.branding seeded in
+  mig 084 (theme/primaryColor/secondaryColor/logoUrl/faviconUrl);
+  gateway merges it into settings.branding on tenant create; editable
+  via the defaults JSON editor on Config.
 - [x] 13.5 Integration config — GET /integrations/config reports env-var
   PRESENCE per integration (M-Pesa/SMS/SMTP/Telegram/backups/secrets —
   values never exposed) + editable non-secret integration_fallbacks;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, Building, CheckCircle, Copy, Check, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../contexts/AuthContext'
@@ -36,9 +36,17 @@ const TenantCreate = () => {
   const toast = useToast()
   const navigate = useNavigate()
   const [form, setForm] = useState(initialForm)
+  const [templates, setTemplates] = useState([])
+  const [templateId, setTemplateId] = useState('')
   const [step, setStep] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [created, setCreated] = useState(null)
+
+  useEffect(() => {
+    api.get('/api/platform/tenant-templates')
+      .then((res) => setTemplates(res.data.data || []))
+      .catch(() => {}) // templates are optional — never block onboarding
+  }, [api])
 
   const slugSuggestion = useMemo(() => form.name
     .toLowerCase()
@@ -93,7 +101,16 @@ const TenantCreate = () => {
           email: form.adminEmail
         }
       })
-      setCreated(response.data.data)
+      const church = response.data.data
+      if (templateId && church?.id) {
+        try {
+          const tplRes = await api.post(`/api/platform/tenants/${church.id}/apply-template`, { templateId: Number(templateId) })
+          church.templateApplied = tplRes.data.data
+        } catch (error) {
+          toast.error(`Church created but template failed: ${error.response?.data?.error || error.message}`)
+        }
+      }
+      setCreated(church)
       toast.success('Church created successfully')
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to create church')
@@ -111,7 +128,10 @@ const TenantCreate = () => {
           <CheckCircle className="h-8 w-8 text-[var(--color-success)]" />
           <div>
             <h1 className="text-2xl font-bold text-[var(--color-text)]">{created.name} is live</h1>
-            <p className="text-[var(--color-textSecondary)]">The church was created along with its first administrator.</p>
+            <p className="text-[var(--color-textSecondary)]">
+              The church was created along with its first administrator.
+              {created.templateApplied && ` Template applied: ${created.templateApplied.departmentsCreated} departments, ${created.templateApplied.rolesCreated} roles.`}
+            </p>
           </div>
         </div>
 
@@ -206,6 +226,16 @@ const TenantCreate = () => {
         </div>}
         {step === 4 && <div className="space-y-4">
           <h2 className="font-semibold text-[var(--color-text)]">Subscription and review</h2>
+          {templates.length > 0 && (
+            <label className="block text-sm text-[var(--color-text)]">Start from template
+              <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className={inputClass}>
+                <option value="">Blank church — no template</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.name} — {t.department_count} departments, {t.role_count} roles</option>
+                ))}
+              </select>
+            </label>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block text-sm text-[var(--color-text)]">Plan<select value={form.subscriptionTier} onChange={(event) => updateField('subscriptionTier', event.target.value)} className={inputClass}><option value="free">Free</option><option value="basic">Basic</option><option value="professional">Professional</option><option value="enterprise">Enterprise</option></select></label>
             <label className="block text-sm text-[var(--color-text)]">Billing cycle<select value={form.billingCycle} onChange={(event) => updateField('billingCycle', event.target.value)} className={inputClass}><option value="monthly">Monthly</option><option value="annual">Annual</option></select></label>

@@ -233,6 +233,8 @@ app.use('/api', require('./middleware/uptimeMetrics'));
 // Global API baseline rate limit (100 req/min per IP in prod) — per-route
 // stricter limiters still apply on top of this for sensitive mounts.
 app.use('/api', apiLimiter);
+// 6.8: per-tenant override ceilings layered over the global limiter (tenantResolver at ~L203 sets req.church_id)
+app.use('/api', require('./middleware/tenantRateLimiter').tenantRateLimiter);
 
 // Normalize every JSON API response through ResponseHandler while preserving
 // legacy named top-level fields during the route-response migration.

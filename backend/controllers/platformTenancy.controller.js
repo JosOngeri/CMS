@@ -631,6 +631,175 @@ class PlatformTenancyController extends BaseController {
       client.release();
     }
   }
+
+  // ---- 6.8 per-tenant rate-limit overrides ---------------------------------
+
+  async getTenantRateLimit(req, res) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT trl.church_id, trl.max_requests, trl.window_seconds, trl.note, trl.updated_at, c.name AS church_name
+           FROM tenant_rate_limits trl JOIN churches c ON c.id = trl.church_id
+          WHERE trl.church_id = $1`,
+        [req.params.id]
+      );
+      this.success(res, rows[0] || null);
+    } catch (error) {
+      this.logger.error('getTenantRateLimit', error);
+      this.error(res, 'Failed to load rate limit');
+    }
+  }
+
+  async setTenantRateLimit(req, res) {
+    const { maxRequests, windowSeconds = 60, note } = req.body || {};
+    const max = Number.parseInt(maxRequests, 10);
+    const window = Number.parseInt(windowSeconds, 10);
+    if (!Number.isInteger(max) || max < 10 || max > 100000 || !Number.isInteger(window) || window < 10 || window > 3600) {
+      return this.badRequest(res, 'maxRequests 10-100000, windowSeconds 10-3600');
+    }
+    try {
+      const church = await pool.query('SELECT id FROM churches WHERE id = $1', [req.params.id]);
+      if (church.rows.length === 0) return this.notFound(res, 'Church not found');
+      const { rows } = await pool.query(
+        `INSERT INTO tenant_rate_limits (church_id, max_requests, window_seconds, note, updated_by)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (church_id) DO UPDATE SET
+           max_requests = EXCLUDED.max_requests, window_seconds = EXCLUDED.window_seconds,
+           note = EXCLUDED.note, updated_by = EXCLUDED.updated_by, updated_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [req.params.id, max, window, note || null, req.platformUser.id]
+      );
+      await auditPlatformAction(req, {
+        action: 'tenant.rate_limit_set',
+        tenantId: req.params.id,
+        details: { max_requests: max, window_seconds: window },
+      });
+      this.success(res, rows[0], `Rate limit set to ${max} req/${window}s`);
+    } catch (error) {
+      this.logger.error('setTenantRateLimit', error);
+      this.error(res, 'Failed to set rate limit');
+    }
+  }
+
+  async deleteTenantRateLimit(req, res) {
+    try {
+      const { rowCount } = await pool.query('DELETE FROM tenant_rate_limits WHERE church_id = $1', [req.params.id]);
+      if (rowCount === 0) return this.notFound(res, 'No override for this tenant');
+      await auditPlatformAction(req, {
+        action: 'tenant.rate_limit_removed',
+        tenantId: req.params.id,
+      });
+      this.success(res, { removed: true }, 'Override removed — global limit applies');
+    } catch (error) {
+      this.logger.error('deleteTenantRateLimit', error);
+      this.error(res, 'Failed to remove rate limit');
+    }
+  }
+
+  // ---- 1.4 tenant templates -------------------------------------------------
+
+  /** Snapshot a church's departments + roles into a reusable template. */
+  async createTemplate(req, res) {
+    const { name, description, sourceChurchId } = req.body || {};
+    if (!name || !sourceChurchId) return this.badRequest(res, 'name and sourceChurchId are required');
+    try {
+      const source = await pool.query('SELECT id, name FROM churches WHERE id = $1', [sourceChurchId]);
+      if (source.rows.length === 0) return this.notFound(res, 'Source church not found');
+      const [depts, roles] = await Promise.all([
+        pool.query(
+          `SELECT name, description, category, dept_type FROM departments
+            WHERE church_id = $1 AND is_active = true ORDER BY name`,
+          [sourceChurchId]
+        ),
+        pool.query(
+          `SELECT name, description FROM roles WHERE church_id = $1 ORDER BY name`,
+          [sourceChurchId]
+        ),
+      ]);
+      const snapshot = { departments: depts.rows, roles: roles.rows };
+      const { rows } = await pool.query(
+        `INSERT INTO tenant_templates (name, description, source_church_id, snapshot, created_by)
+         VALUES ($1, $2, $3, $4, $5) RETURNING id, name, created_at`,
+        [name, description || null, sourceChurchId, JSON.stringify(snapshot), req.platformUser.id]
+      );
+      await auditPlatformAction(req, {
+        action: 'tenant_template.created',
+        tenantId: sourceChurchId,
+        details: { template: name, departments: depts.rows.length, roles: roles.rows.length },
+      });
+      this.created(res, { ...rows[0], counts: { departments: depts.rows.length, roles: roles.rows.length } },
+        `Template "${name}" captured (${depts.rows.length} departments, ${roles.rows.length} roles)`);
+    } catch (error) {
+      this.logger.error('createTemplate', error);
+      this.error(res, 'Failed to create template');
+    }
+  }
+
+  async listTemplates(req, res) {
+    try {
+      const { rows } = await pool.query(
+        `SELECT t.id, t.name, t.description, t.created_at, c.name AS source_church_name,
+                jsonb_array_length(COALESCE(t.snapshot->'departments', '[]'::jsonb)) AS department_count,
+                jsonb_array_length(COALESCE(t.snapshot->'roles', '[]'::jsonb)) AS role_count
+           FROM tenant_templates t
+           LEFT JOIN churches c ON c.id = t.source_church_id
+          ORDER BY t.created_at DESC`
+      );
+      this.success(res, rows);
+    } catch (error) {
+      this.logger.error('listTemplates', error);
+      this.error(res, 'Failed to list templates');
+    }
+  }
+
+  /** Apply a template's departments + roles to an existing (usually new) tenant. */
+  async applyTemplate(req, res) {
+    const { id } = req.params; // church id
+    const { templateId } = req.body || {};
+    if (!templateId) return this.badRequest(res, 'templateId is required');
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const church = await client.query('SELECT id, name FROM churches WHERE id = $1', [id]);
+      if (church.rows.length === 0) { await client.query('ROLLBACK'); return this.notFound(res, 'Church not found'); }
+      const tpl = await client.query('SELECT id, name, snapshot FROM tenant_templates WHERE id = $1', [templateId]);
+      if (tpl.rows.length === 0) { await client.query('ROLLBACK'); return this.notFound(res, 'Template not found'); }
+
+      const { departments = [], roles = [] } = tpl.rows[0].snapshot || {};
+      let createdDepts = 0; let createdRoles = 0;
+      for (const d of departments) {
+        const r = await client.query(
+          `INSERT INTO departments (church_id, name, description, category, dept_type)
+           SELECT $1, $2, $3, $4, $5
+            WHERE NOT EXISTS (SELECT 1 FROM departments WHERE church_id = $1 AND name = $2)`,
+          [id, d.name, d.description || null, d.category || null, d.dept_type || 'ministry']
+        );
+        createdDepts += r.rowCount;
+      }
+      for (const role of roles) {
+        const r = await client.query(
+          `INSERT INTO roles (church_id, name, description)
+           SELECT $1, $2, $3
+            WHERE NOT EXISTS (SELECT 1 FROM roles WHERE church_id = $1 AND name = $2)`,
+          [id, role.name, role.description || null]
+        );
+        createdRoles += r.rowCount;
+      }
+      await client.query('COMMIT');
+      await auditPlatformAction(req, {
+        action: 'tenant_template.applied',
+        tenantId: id,
+        details: { template: tpl.rows[0].name, departments_created: createdDepts, roles_created: createdRoles },
+      });
+      this.success(res, { departmentsCreated: createdDepts, rolesCreated: createdRoles },
+        `Template applied: ${createdDepts} departments, ${createdRoles} roles created`);
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      this.logger.error('applyTemplate', error);
+      this.error(res, 'Failed to apply template');
+    } finally {
+      client.release();
+    }
+  }
 }
 
 module.exports = new PlatformTenancyController();

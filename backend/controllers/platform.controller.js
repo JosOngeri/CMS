@@ -256,6 +256,28 @@ class PlatformController extends BaseController {
    * Platform user management — owner-only (routes gate with
    * requirePlatformRole). Covers onboarding support/admin staff.
    */
+  /**
+   * 3.2 — Role catalog for the staff-assignment UI. Returns each assignable
+   * role with the permission set it grants so the frontend never hardcodes
+   * role names (single source: constants/platformPermissions.js).
+   */
+  async listPlatformRoles(req, res) {
+    try {
+      const roles = PLATFORM_USER_ROLES.map((role) => ({
+        role,
+        permissions: ROLE_PERMISSIONS[role] || [],
+        permissionCount: (ROLE_PERMISSIONS[role] || []).length,
+      }));
+      this.success(res, {
+        assignable: roles,
+        privileged: [{ role: 'platform_owner', permissions: ROLE_PERMISSIONS.platform_owner || ['*'], permissionCount: (ROLE_PERMISSIONS.platform_owner || ['*']).length }],
+      });
+    } catch (error) {
+      this.logger.error('listPlatformRoles', error);
+      this.error(res, 'Failed to load roles');
+    }
+  }
+
   async listPlatformUsers(req, res) {
     try {
       const users = await PlatformRepository.getPlatformUsers();
