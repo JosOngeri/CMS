@@ -5,7 +5,8 @@ jest.mock('../../config/database', () => ({
 }));
 jest.mock('../../services/platformAudit.service', () => ({
   logPlatformAudit: jest.fn(),
-  auditPlatformAction: jest.fn()
+  auditPlatformAction: jest.fn(),
+  normalizeIp: jest.fn((ip) => ip.replace(/:\d+$/, ''))
 }));
 jest.mock('bcryptjs', () => ({
   compare: jest.fn()
@@ -57,7 +58,7 @@ describe('PlatformAuthController', () => {
     bcrypt.compare.mockResolvedValue(true);
     const req = {
       body: { email: 'OWNER@EXAMPLE.COM', password: 'correct-password' },
-      ip: '127.0.0.1',
+      ip: '154.159.252.97:29174',
       headers: { 'user-agent': 'jest' },
       get: jest.fn(() => 'jest')
     };
@@ -72,8 +73,9 @@ describe('PlatformAuthController', () => {
       expect.objectContaining({ expiresIn: '8h', issuer: 'msabato-platform', audience: 'platform' })
     );
     expect(res.cookie).toHaveBeenCalledWith('platform_session', 'signed-platform-token', expect.objectContaining({ httpOnly: true }));
+    expect(pool.query.mock.calls[1][1][2]).toBe('154.159.252.97');
     expect(auditPlatformAction).toHaveBeenCalledWith(
-      expect.objectContaining({ ip: '127.0.0.1' }),
+      expect.objectContaining({ ip: '154.159.252.97:29174' }),
       expect.objectContaining({ action: 'platform_auth.login_succeeded' })
     );
     expect(res.status).toHaveBeenCalledWith(200);

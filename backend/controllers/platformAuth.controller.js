@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { pool } = require('../config/database');
 const { getPlatformJwtSecret, PLATFORM_JWT_SIGN_OPTIONS } = require('../config/platformJwt');
-const { auditPlatformAction } = require('../services/platformAudit.service');
+const { auditPlatformAction, normalizeIp } = require('../services/platformAudit.service');
 const { createLogger } = require('../helpers/controllerLogger');
 const totp = require('../helpers/totp');
 
@@ -115,7 +115,7 @@ class PlatformAuthController extends BaseController {
         PLATFORM_JWT_SIGN_OPTIONS
       );
 
-      const clientIp = (req.ip || '').replace('::ffff:', '').slice(0, 45);
+      const clientIp = normalizeIp(req.ip);
       await pool.query(
         `INSERT INTO platform_sessions (platform_user_id, token_jti, ip, user_agent, expires_at)
          VALUES ($1, $2, NULLIF($3, '')::inet, $4, $5)`,

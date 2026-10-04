@@ -57,4 +57,4 @@ const auditPlatformAction = async (req, { actorId = null, action, resourceType =
   }
 };
 
-module.exports = { logPlatformAudit, auditPlatformAction };
+module.exports = { logPlatformAudit, auditPlatformAction, normalizeIp };
