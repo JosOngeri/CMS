@@ -93,20 +93,21 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
   }
 
   /// Escalate keeps the request pending but hands responsibility to the
-  /// church's First Elder — mirrors the web inbox's Escalate action.
+  /// church's configured approver role (default First Elder) — mirrors the
+  /// web inbox's Escalate action.
   Future<void> _handleEscalate(Map<String, dynamic> approval) async {
     final id = approval['id']?.toString();
     if (id == null || _apiService == null) return;
 
     setState(() => _processing.add(id));
-    final result = await _apiService!.delegateRequest(id, delegateRole: 'First Elder');
+    final result = await _apiService!.delegateRequest(id);
 
     if (!mounted) return;
     setState(() => _processing.remove(id));
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Request escalated to First Elder')),
+        const SnackBar(content: Text('Request escalated')),
       );
       _loadApprovals();
     } else {

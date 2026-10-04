@@ -112,16 +112,17 @@ const ApprovalInbox = () => {
     }
   };
 
-  // Escalate = delegate to the church's First Elder. The request stays
-  // pending but becomes that user's responsibility, and they get notified.
+  // Escalate = delegate to the church's configured approver role
+  // (settings.approvals.escalate_role, default First Elder). The request
+  // stays pending but becomes that user's responsibility, and they get
+  // notified.
   const handleEscalate = async (approvalId) => {
     setActioningId(approvalId);
     try {
       await api.put(`/approvals/${approvalId}/delegate`, {
-        delegate_role: 'First Elder',
         comment: comments[approvalId] || undefined,
       });
-      toast.success('Request escalated to First Elder');
+      toast.success('Request escalated');
       await refresh();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to escalate request');
@@ -252,7 +253,7 @@ const ApprovalInbox = () => {
               <button
                 onClick={() => handleEscalate(approval.id)}
                 disabled={isActioning}
-                title="Escalate to First Elder"
+                title="Escalate to church approver"
                 className="px-3 py-2 text-sm rounded border border-[var(--color-border)] text-[var(--color-text)] disabled:opacity-50 inline-flex items-center gap-1"
               >
                 <Forward size={14} /> Escalate
