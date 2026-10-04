@@ -31,6 +31,8 @@ router.get('/activity', authenticatePlatformUser, requirePlatformPermission('aud
 
 router.get('/audit-logs', authenticatePlatformUser, requirePlatformPermission('audit:read'), platformController.getAuditLogs);
 router.get('/audit-logs/actions', authenticatePlatformUser, requirePlatformPermission('audit:read'), platformController.getAuditActions);
+router.get('/audit-logs/forensics', authenticatePlatformUser, requirePlatformPermission('audit:read'), platformController.getAuditForensics);
+router.get('/audit-logs/export', authenticatePlatformUser, requirePlatformPermission('audit:export'), platformController.exportAuditLogs);
 
 router.get('/settings', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformController.getSettings);
 router.put('/settings', authenticatePlatformUser, requirePlatformPermission('settings:manage'), platformController.updateSettings);
@@ -73,6 +75,7 @@ router.post('/jobs/:id/retry', authenticatePlatformUser, requirePlatformPermissi
 router.get('/alerts', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAlerts);
 router.post('/alerts/:id/resolve', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.resolveAlert);
 router.post('/alerts/evaluate', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.evaluateAlerts);
+router.get('/integrations', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getIntegrations);
 router.get('/alert-rules', authenticatePlatformUser, requirePlatformPermission('health:read'), platformOpsController.getAlertRules);
 router.post('/alert-rules', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.createAlertRule);
 router.patch('/alert-rules/:id', authenticatePlatformUser, requirePlatformPermission('monitoring:manage'), platformOpsController.updateAlertRule);
@@ -98,6 +101,7 @@ router.get('/data/backups', authenticatePlatformUser, requirePlatformPermission(
 router.post('/data/backups', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.recordBackup);
 router.post('/data/backups/run', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.runBackup);
 router.post('/data/backups/:id/verify', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.verifyBackup);
+router.post('/data/backups/:id/restore-staging', authenticatePlatformUser, requirePlatformPermission('data:manage'), platformOpsController.restoreBackupToStaging);
 router.get('/data/storage', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getTenantStorage);
 router.get('/data/schema', authenticatePlatformUser, requirePlatformPermission('data:read'), platformOpsController.getSchemaVersion);
 

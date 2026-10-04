@@ -8,6 +8,8 @@
  */
 const { pool } = require('../config/database');
 const logger = require('../config/logging');
+const emailService = require('../utils/emailService');
+const telegramService = require('./telegramService');
 
 // Metric name -> query returning a single `value` number.
 const METRICS = {
@@ -43,6 +45,53 @@ const measure = async (metric) => {
   if (!query) return null;
   const result = await pool.query(query);
   return Number(result.rows[0]?.value ?? 0);
+};
+
+// -- Delivery (4.6 remainder): a fired alert reaches operators via the
+//    channels named on the rule. Delivery failures never break the loop --
+//    the console alert row already exists, so nothing is silently lost.
+const readSetting = async (key, fallback) => {
+  const r = await pool.query('SELECT value FROM platform_settings WHERE key = $1', [key]);
+  return r.rows[0]?.value ?? fallback;
+};
+
+const emailRecipients = async () => {
+  const configured = await readSetting('alert_email_recipients', []);
+  if (Array.isArray(configured) && configured.length > 0) return configured;
+  const owners = await pool.query(
+    "SELECT email FROM platform_users WHERE role = 'platform_owner' AND is_active = true"
+  );
+  return owners.rows.map((o) => o.email);
+};
+
+const deliver = async (rule, alertMessage) => {
+  const channels = Array.isArray(rule.notify_channels) ? rule.notify_channels : [];
+
+  if (channels.includes('email')) {
+    try {
+      const recipients = await emailRecipients();
+      for (const to of recipients) {
+        await emailService.sendEmail({
+          to,
+          subject: `[${rule.severity.toUpperCase()}] Platform alert: ${rule.metric}`,
+          html: `<p>${alertMessage}</p><p style="color:#888">Rule #${rule.id} — KMain CMS platform console</p>`,
+        });
+      }
+    } catch (error) {
+      logger.warn(`alertEngine email delivery failed for rule ${rule.id}: ${error.message}`);
+    }
+  }
+
+  if (channels.includes('telegram')) {
+    try {
+      const chatId = await readSetting('alert_telegram_chat_id', '');
+      if (chatId) {
+        await telegramService.postMessage(chatId, `<b>[${rule.severity.toUpperCase()}]</b> ${alertMessage}`);
+      }
+    } catch (error) {
+      logger.warn(`alertEngine telegram delivery failed for rule ${rule.id}: ${error.message}`);
+    }
+  }
 };
 
 /**
@@ -82,6 +131,7 @@ const evaluate = async () => {
       'UPDATE platform_alert_rules SET last_fired_at = CURRENT_TIMESTAMP WHERE id = $1',
       [rule.id]
     );
+    await deliver(rule, rule.message.replace('%v', String(value)));
     fired += 1;
   }
 

@@ -184,7 +184,7 @@ export const buildPlatformNav = ({ isOwner }) => [
         items: [
           { path: '/platform/tenants', icon: ListChecks, label: 'All Churches' },
           { path: '/platform/tenants/create', icon: PlusCircle, label: 'New Church' },
-          { path: '/platform/roadmap/tenant-onboarding', icon: Clock, label: 'Onboarding & Trials' },
+          { path: '/platform/tenant-admin', icon: Clock, label: 'Onboarding & Trials' },
         ],
       },
       {
@@ -204,8 +204,8 @@ export const buildPlatformNav = ({ isOwner }) => [
         title: 'Platform Staff',
         items: [
           ...(isOwner ? [{ path: '/platform/admins', icon: ShieldCheck, label: 'Admins' }] : []),
-          { path: '/platform/roadmap/platform-staff', icon: KeyRound, label: 'Roles & Access' },
-          { path: '/platform/roadmap/platform-staff', icon: Eye, label: 'Sessions & MFA' },
+          { path: '/platform/admins', icon: KeyRound, label: 'Roles & Access' },
+          { path: '/platform/security', icon: Eye, label: 'Sessions & MFA' },
         ],
       },
     ],
@@ -218,8 +218,8 @@ export const buildPlatformNav = ({ isOwner }) => [
         items: [
           { path: '/platform/monitoring', icon: Activity, label: 'Monitoring' },
           { path: '/platform/fleet', icon: Server, label: 'Fleet & Infrastructure' },
-          { path: '/platform/roadmap/monitoring', icon: Plug, label: 'Integrations & Jobs' },
-          { path: '/platform/roadmap/monitoring', icon: FileSearch, label: 'Logs & Alerts' },
+          { path: '/platform/fleet', icon: Plug, label: 'Integrations & Jobs' },
+          { path: '/platform/audit', icon: FileSearch, label: 'Logs & Alerts' },
         ],
       },
       {
@@ -227,7 +227,7 @@ export const buildPlatformNav = ({ isOwner }) => [
         items: [
           { path: '/platform/payments', icon: CreditCard, label: 'Payment Feed' },
           { path: '/platform/payments', icon: AlertOctagon, label: 'Failed & Stuck' },
-          { path: '/platform/roadmap/payments-oversight', icon: SearchCheck, label: 'Reconciliation' },
+          { path: '/platform/payments', icon: SearchCheck, label: 'Reconciliation' },
         ],
       },
       {
@@ -251,7 +251,7 @@ export const buildPlatformNav = ({ isOwner }) => [
         items: [
           { path: '/platform/incidents', icon: Siren, label: 'Incident Playbook' },
           { path: '/platform/incidents', icon: Ban, label: 'Tenant Quarantine' },
-          { path: '/platform/roadmap/disaster', icon: Undo2, label: 'Rollback & Forensics' },
+          { path: '/platform/audit', icon: Undo2, label: 'Rollback & Forensics' },
         ],
       },
     ],
@@ -271,9 +271,9 @@ export const buildPlatformNav = ({ isOwner }) => [
         title: 'Analytics & Reporting',
         items: [
           { path: '/platform/analytics', icon: BarChart3, label: 'Analytics' },
-          { path: '/platform/roadmap/analytics-growth', icon: UserPlus, label: 'Growth & Adoption' },
-          { path: '/platform/roadmap/analytics-growth', icon: PieChart, label: 'Usage & Benchmarks' },
-          { path: '/platform/roadmap/analytics-growth', icon: FileDown, label: 'Exports' },
+          { path: '/platform/analytics', icon: UserPlus, label: 'Growth & Adoption' },
+          { path: '/platform/analytics', icon: PieChart, label: 'Usage & Benchmarks' },
+          { path: '/platform/roadmap/analytics-exports', icon: FileDown, label: 'Exports' },
         ],
       },
       {
@@ -309,7 +309,7 @@ export const buildPlatformNav = ({ isOwner }) => [
           { path: '/platform/settings', icon: Settings, label: 'Settings' },
           { path: '/platform/config', icon: Flag, label: 'Feature Flags' },
           { path: '/platform/roadmap/platform-config', icon: Palette, label: 'Branding & Defaults' },
-          { path: '/platform/roadmap/platform-config', icon: Power, label: 'Maintenance Mode' },
+          { path: '/platform/config', icon: Power, label: 'Maintenance Mode' },
           { path: '/platform/config', icon: FileClock, label: 'Version & Changelog' },
         ],
       },
@@ -320,6 +320,16 @@ export const buildPlatformNav = ({ isOwner }) => [
 // Roadmap slugs used above that don't have a PLATFORM_AREAS entry yet get
 // a generic area — this keeps the nav complete while areas can be added
 // incrementally.
+PLATFORM_AREAS['analytics-exports'] = {
+  title: 'Metrics Export',
+  description: 'Monthly SaaS metrics export — MRR, churn, growth — as CSV/PDF for board reporting.',
+  functions: [
+    'Scheduled monthly metrics snapshot',
+    'CSV/PDF export of revenue + growth + usage',
+    'Audit-logged export downloads',
+  ],
+};
+
 PLATFORM_AREAS['analytics-growth'] = {
   title: 'Analytics & Reporting',
   description: 'Measure growth, adoption, and usage across tenants.',

@@ -12,13 +12,21 @@ const PlatformAnalytics = () => {
   const { api } = useAuth()
   const toast = useToast()
   const [stats, setStats] = useState(null)
+  const [growth, setGrowth] = useState(null)
+  const [usage, setUsage] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get('/api/platform/stats')
-        setStats(response.data.data)
+        const [statsRes, growthRes, usageRes] = await Promise.all([
+          api.get('/api/platform/stats'),
+          api.get('/api/platform/analytics/growth').catch(() => ({ data: { data: null } })),
+          api.get('/api/platform/analytics/usage').catch(() => ({ data: { data: [] } })),
+        ])
+        setStats(statsRes.data.data)
+        setGrowth(growthRes.data.data)
+        setUsage(usageRes.data.data || [])
       } catch (error) {
         console.error('Failed to fetch analytics:', error)
         toast.error('Failed to load analytics')
@@ -118,6 +126,72 @@ const PlatformAnalytics = () => {
           </div>
         </div>
       </Card>
+
+      {/* Growth (10.2) */}
+      {growth && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Growth & Activity</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {[
+              { label: 'Total users', value: growth.totalUsers?.toLocaleString() },
+              { label: 'Active users', value: growth.activeUsers?.toLocaleString() },
+              { label: 'DAU (24h)', value: growth.dau?.toLocaleString() },
+              { label: 'MAU (30d)', value: growth.mau?.toLocaleString() },
+            ].map((m) => (
+              <div key={m.label} className="p-4 rounded-lg bg-[var(--color-background)]">
+                <p className="text-2xl font-bold text-[var(--color-text)]">{m.value ?? '—'}</p>
+                <p className="text-xs text-[var(--color-textSecondary)]">{m.label}</p>
+              </div>
+            ))}
+          </div>
+          <h3 className="text-sm font-semibold text-[var(--color-text)] mb-2">Tenants onboarded per month</h3>
+          <div className="space-y-2">
+            {(growth.tenantsByMonth || []).map((row) => {
+              const max = Math.max(...growth.tenantsByMonth.map((t) => Number(t.tenants)), 1)
+              return (
+                <div key={row.month} className="flex items-center gap-3 text-sm">
+                  <span className="w-20 text-[var(--color-textSecondary)] font-mono">{row.month}</span>
+                  <div className="flex-1 h-4 rounded bg-[var(--color-background)] overflow-hidden">
+                    <div className="h-full rounded bg-[var(--color-accent)]" style={{ width: `${(Number(row.tenants) / max) * 100}%` }} />
+                  </div>
+                  <span className="w-8 text-right text-[var(--color-text)]">{row.tenants}</span>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+
+      {/* Usage (10.4) */}
+      {usage.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4">Usage by Tenant</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[var(--color-textSecondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-2 font-medium">Church</th>
+                  <th className="pb-2 font-medium text-right">Members</th>
+                  <th className="pb-2 font-medium text-right">Users</th>
+                  <th className="pb-2 font-medium text-right">Payments</th>
+                  <th className="pb-2 font-medium text-right">Volume</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usage.map((t) => (
+                  <tr key={t.id} className="border-b border-[var(--color-border)] last:border-0">
+                    <td className="py-2.5 text-[var(--color-text)]">{t.name}</td>
+                    <td className="py-2.5 text-right text-[var(--color-textSecondary)]">{Number(t.members).toLocaleString()}</td>
+                    <td className="py-2.5 text-right text-[var(--color-textSecondary)]">{Number(t.users).toLocaleString()}</td>
+                    <td className="py-2.5 text-right text-[var(--color-textSecondary)]">{Number(t.payment_count).toLocaleString()}</td>
+                    <td className="py-2.5 text-right font-medium text-[var(--color-text)]">{fmtKES(Number(t.payment_volume))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

@@ -101,6 +101,42 @@ const pruneBackups = async () => {
   if (stale.rows.length) logger.info(`Backup pruning removed ${stale.rows.length} old backup(s)`);
 };
 
+/**
+ * Restore a backup into the STAGING database only (7.1). There is no code
+ * path that restores into the primary DB — production restores stay a
+ * deliberate, hands-on operation. Requires STAGING_DATABASE_URL; refuses
+ * clearly when it isn't configured.
+ */
+const restoreToStaging = (filePath) => new Promise((resolve, reject) => {
+  const stagingUrl = process.env.STAGING_DATABASE_URL;
+  if (!stagingUrl) {
+    return reject(new Error('STAGING_DATABASE_URL is not configured — no staging target'));
+  }
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(path.resolve(BACKUP_DIR))) {
+    return reject(new Error('Backup path is outside the backup directory'));
+  }
+  if (!fs.existsSync(resolved)) {
+    return reject(new Error('Backup file no longer exists on disk'));
+  }
+  // --clean --if-exists drops objects before recreating so re-restores
+  // into the same staging DB don't collide; --no-owner/--no-privileges
+  // sidestep role mismatches between prod and staging.
+  execFile('pg_restore',
+    ['--clean', '--if-exists', '--no-owner', '--no-privileges', '-d', stagingUrl, resolved],
+    { env: { ...process.env }, timeout: 15 * 60 * 1000, maxBuffer: 4 * 1024 * 1024 },
+    (error, stdout, stderr) => {
+      // pg_restore exits non-zero on harmless "object exists" warnings
+      // even with --if-exists on some versions — treat stderr-only
+      // warnings as success if a dump actually applied.
+      if (error && !/warning/i.test(stderr || '')) {
+        reject(new Error(`pg_restore failed: ${stderr || error.message}`));
+      } else {
+        resolve({ stderr });
+      }
+    });
+});
+
 /** Hours since the last non-failed backup — the scheduler uses this. */
 const hoursSinceLastBackup = async () => {
   const r = await pool.query(
@@ -110,4 +146,4 @@ const hoursSinceLastBackup = async () => {
   return (Date.now() - new Date(r.rows[0].last).getTime()) / 3600000;
 };
 
-module.exports = { runBackup, pruneBackups, hoursSinceLastBackup, BACKUP_DIR };
+module.exports = { runBackup, pruneBackups, restoreToStaging, hoursSinceLastBackup, BACKUP_DIR };

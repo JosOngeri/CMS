@@ -102,8 +102,14 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   dunning service w/ reminder emails + auto-suspend (9.5), maintenance
   mode middleware + toggle (13.6), tenant settings override (2.5).
   Suite 339 green, eslint 0 errors, build clean.
-  Remaining partials: alert delivery channels, staging restore,
-  auto-restore on payment.
+- **Batch 4 (partials + next slice)** — migration `080` (alert
+  notify_channels, delivery settings, church_id on platform_alerts).
+  Closed all three batch-3 partials: email/Telegram delivery for fired
+  alerts, pg_restore into STAGING_DATABASE_URL only, dunning
+  auto-restore on payment. New: audit actor/IP/date filters + CSV
+  export + forensics pivot (3.5, 8.4), integration health derived from
+  real signals (4.4), growth/usage sections on PlatformAnalytics
+  (10.2, 10.4).
 
 ## Foundation (do first — every area depends on these)
 
@@ -175,8 +181,8 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   platform_users (mig 079); RFC 6238 TOTP helper; login asks for code
   (MFA_REQUIRED/MFA_INVALID); forced setup screen when mfa_pending;
   owner toggle on PlatformUsers.
-- [ ] 3.5 Access audit view — filter platform_audit_logs by platform
-  user (page exists; add actor filter).
+- [x] 3.5 Access audit view — audit page now filters by actor
+  (email/name ILIKE), exact IP, and from/to dates.
 
 ## 4. Monitoring & Health (`/platform/monitoring*`)
 
@@ -186,14 +192,15 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   `/api/platform/fleet` endpoint.
 - [ ] 4.3 Uptime & latency — request timing middleware writing
   aggregates; chart per endpoint.
-- [ ] 4.4 Integration health — last-success/failure timestamps for
-  M-Pesa webhook, SMS provider, Telegram, SMTP; red/amber/green.
+- [x] 4.4 Integration health — GET /platform/integrations derives
+  red/amber/green/unconfigured from real signals (payments/mpesa_receipt,
+  sms_logs, telegram_posts, EMAIL_* env config); card on PlatformFleet.
 - [x] 4.5 Background jobs — `platform_jobs` table or reuse existing;
   failed jobs list + retry button.
-- [ ] 4.6 Alerting — `platform_alert_rules` CRUD + evaluation engine
+- [x] 4.6 Alerting — `platform_alert_rules` CRUD + evaluation engine
   (platformAlertEngine.service, scheduler every 5min) fires rows into
-  platform_alerts; rule editor on PlatformFleet.
-  REMAINING: email/Telegram delivery channels for fired alerts.
+  platform_alerts; rule editor on PlatformFleet; per-rule notify_channels
+  (email/telegram) delivered via emailService/telegramService (mig 080).
 - [ ] 4.7 Log explorer — structured app logs into DB or file tail;
   filter by tenant/severity/time.
 
@@ -230,10 +237,10 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 
 ## 7. Data Management (`/platform/data`)
 
-- [ ] 7.1 Backups — real pg_dump via platformBackup.service (custom
+- [x] 7.1 Backups — real pg_dump via platformBackup.service (custom
   format), run-backup endpoint + button on PlatformData, daily
-  scheduler run, registry + verify.
-  REMAINING: restore action into staging only.
+  scheduler run, registry + verify, restore-to-staging via
+  STAGING_DATABASE_URL (no production restore path exists).
 - [ ] 7.2 Tenant export — full church dump (members, payments, docs)
   as zipped CSV/JSON, signed-URL download, audit-logged.
 - [ ] 7.3 Import tooling — member CSV import wizard reusing the church
@@ -253,8 +260,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   returns 503 notice for that tenant only.
 - [ ] 8.3 Rollback tooling — deploy tag/record list; document manual
   rollback steps (automated rollback optional).
-- [ ] 8.4 Forensic views — audit log pivot: all actions by actor/IP in a
-  window; export to CSV.
+- [x] 8.4 Forensic views — GET /audit-logs/forensics pivots
+  actors/IPs/actions for a date window; GET /audit-logs/export streams CSV
+  (audit:export); forensics panel + export button on the audit page.
 
 ## 9. Billing & Revenue (`/platform/billing`)
 
@@ -265,21 +273,23 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   picker on TenantDetail.
 - [ ] 9.4 Invoices — generate monthly, mark paid, credit notes; PDF or
   printable view.
-- [ ] 9.5 Dunning — platformDunning.service: marks open invoices
+- [x] 9.5 Dunning — platformDunning.service: marks open invoices
   overdue, reminder emails via emailService (3-day throttle), suspends
-  tenant past grace + fires platform alert; manual run endpoint +
-  Dunning tab on PlatformBilling; scheduler every 6h.
-  REMAINING: auto-restore on payment.
+  tenant past grace + fires church_id-linked platform alert, auto-restores
+  on payment (each pass + instantly on invoice-marked-paid); manual run
+  endpoint + Dunning tab on PlatformBilling; scheduler every 6h.
 - [x] 9.6 Revenue reports — MRR, churn, LTV, collection rate on
   PlatformAnalytics.
 
 ## 10. Analytics & Reporting (`/platform/analytics*`)
 
 - [x] 10.1 Base analytics page (done — exists).
-- [ ] 10.2 Growth metrics — tenants added/churned, total users, DAU/MAU.
+- [x] 10.2 Growth metrics — /analytics/growth (tenants by month,
+  users, DAU/MAU) rendered as Growth & Activity on PlatformAnalytics.
 - [ ] 10.3 Feature adoption — per-tenant module usage counters.
-- [ ] 10.4 Usage reports — payments volume, SMS sent, members per
-  tenant; date-range selector.
+- [x] 10.4 Usage reports — /analytics/usage per-tenant
+  members/users/payments/volume table on PlatformAnalytics.
+  (date-range selector still open)
 - [ ] 10.5 Benchmarks — percentile rank a church vs similar sizes.
 - [ ] 10.6 Exports — monthly metrics CSV/PDF for stakeholders.
 

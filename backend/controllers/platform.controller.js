@@ -138,13 +138,59 @@ class PlatformController extends BaseController {
     const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 100) : 25;
     const action = typeof req.query.action === 'string' ? req.query.action.trim().slice(0, 100) : null;
     const resourceType = typeof req.query.resourceType === 'string' ? req.query.resourceType.trim().slice(0, 50) : null;
+    const actor = typeof req.query.actor === 'string' ? req.query.actor.trim().slice(0, 100) : null;
+    const ip = typeof req.query.ip === 'string' ? req.query.ip.trim().slice(0, 45) : null;
+    const from = typeof req.query.from === 'string' ? req.query.from.trim().slice(0, 30) : null;
+    const to = typeof req.query.to === 'string' ? req.query.to.trim().slice(0, 30) : null;
 
     try {
-      const { logs, total } = await PlatformRepository.getAuditLogs({ action, resourceType, page, limit });
+      const { logs, total } = await PlatformRepository.getAuditLogs({ action, resourceType, actor, ip, from, to, page, limit });
       this.success(res, { logs, pagination: this.buildPaginationMeta(total, page, limit) });
     } catch (error) {
       this.logger.error('getAuditLogs', error);
       this.error(res, 'Failed to fetch audit logs');
+    }
+  }
+
+  /** GET /audit-logs/forensics — actor/IP/action pivot for a window (8.4). */
+  async getAuditForensics(req, res) {
+    const from = typeof req.query.from === 'string' ? req.query.from.trim().slice(0, 30) : null;
+    const to = typeof req.query.to === 'string' ? req.query.to.trim().slice(0, 30) : null;
+    try {
+      const data = await PlatformRepository.getAuditForensics({ from, to });
+      this.success(res, data);
+    } catch (error) {
+      this.logger.error('getAuditForensics', error);
+      this.error(res, 'Failed to build forensic view');
+    }
+  }
+
+  /** GET /audit-logs/export — CSV download of filtered audit rows (8.4, audit:export). */
+  async exportAuditLogs(req, res) {
+    const pick = (k) => (typeof req.query[k] === 'string' ? req.query[k].trim().slice(0, 100) : null);
+    try {
+      const rows = await PlatformRepository.getAuditLogsForExport({
+        action: pick('action'), resourceType: pick('resourceType'),
+        actor: pick('actor'), ip: pick('ip'), from: pick('from'), to: pick('to'),
+      });
+      const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const header = 'id,created_at,actor_email,actor_name,action,resource_type,resource_id,ip_address,details\n';
+      const csv = header + rows.map((r) =>
+        [r.id, r.created_at?.toISOString?.() || r.created_at, r.actor_email || 'system',
+         r.actor_name || '', r.action, r.resource_type || '', r.resource_id || '',
+         r.ip_address || '', JSON.stringify(r.details ?? {})].map(esc).join(',')
+      ).join('\n');
+      await auditPlatformAction(req, {
+        action: 'audit.logs_exported',
+        resourceType: 'audit_log',
+        details: { rows: rows.length, filters: req.query }
+      });
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="platform-audit-${new Date().toISOString().slice(0, 10)}.csv"`);
+      res.send(csv);
+    } catch (error) {
+      this.logger.error('exportAuditLogs', error);
+      this.error(res, 'Failed to export audit logs');
     }
   }
 

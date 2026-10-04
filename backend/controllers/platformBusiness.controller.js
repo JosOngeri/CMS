@@ -182,6 +182,18 @@ class PlatformBusinessController extends BaseController {
       );
       if (result.rows.length === 0) return this.notFound(res, 'Invoice not found');
       await auditPlatformAction(req, { action: 'billing.invoice_updated', tenantId: result.rows[0].church_id, resourceType: 'invoice', resourceId: id, details: { status } });
+      // Instant auto-restore (9.5): paying the last overdue invoice lifts
+      // a dunning suspension without waiting for the next scheduled pass.
+      if (status === 'paid') {
+        try {
+          const { restored } = await dunning.restorePaidTenants(result.rows[0].church_id);
+          if (restored > 0) {
+            return this.success(res, result.rows[0], 'Invoice paid — tenant reactivated');
+          }
+        } catch (restoreError) {
+          this.logger.warn('updateInvoiceStatus: auto-restore check failed', restoreError);
+        }
+      }
       this.success(res, result.rows[0], `Invoice ${status}`);
     } catch (error) {
       this.logger.error('updateInvoiceStatus', error);

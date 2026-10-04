@@ -460,6 +460,87 @@ class PlatformOpsController extends BaseController {
     }
   }
 
+  /**
+   * GET /integrations — last-success/failure signals per external
+   * integration (4.4). Derived from real tables — no synthetic pings.
+   * status: green | amber | red | unconfigured | unknown.
+   */
+  async getIntegrations(req, res) {
+    const daysAgo = (rows, col) => rows[0]?.[col]
+      ? Math.floor((Date.now() - new Date(rows[0][col]).getTime()) / 86400000)
+      : null;
+    const pick = (lastSuccessAt, lastFailAt, failures24h, opts = {}) => {
+      if (opts.unconfigured) return { status: 'unconfigured', detail: opts.detail };
+      if (!lastSuccessAt && !lastFailAt) return { status: 'unknown', detail: opts.detail || 'No traffic recorded yet' };
+      const age = daysAgo([{ t: lastSuccessAt }], 't');
+      let status = 'green';
+      if (failures24h > 5 || (lastFailAt && !lastSuccessAt)) status = 'red';
+      else if (failures24h > 0 || age === null || age > 14) status = 'amber';
+      return { status, last_success_at: lastSuccessAt, last_failure_at: lastFailAt, failures_24h: failures24h, detail: opts.detail };
+    };
+
+    try {
+      const [mpesaOk, mpesaStuck, smsRecent, smsFailed, tgLast, tgCfg] = await Promise.all([
+        pool.query(`SELECT MAX(created_at) AS t FROM payments WHERE status = 'completed' AND mpesa_receipt IS NOT NULL`),
+        pool.query(`SELECT COUNT(*)::int AS n, MAX(created_at) AS t FROM payments WHERE status = 'pending' AND created_at < CURRENT_TIMESTAMP - INTERVAL '24 hours'`),
+        pool.query(`SELECT MAX(sent_at) AS t FROM sms_logs WHERE status IN ('delivered','sent')`),
+        pool.query(`SELECT COUNT(*)::int AS n, MAX(sent_at) AS t FROM sms_logs WHERE status IN ('failed','error') AND sent_at > CURRENT_TIMESTAMP - INTERVAL '24 hours'`),
+        pool.query(`SELECT MAX(posted_at) AS t FROM telegram_posts`),
+        pool.query(`SELECT COUNT(*)::int AS n FROM telegram_settings WHERE bot_token IS NOT NULL AND bot_token != ''`),
+      ]);
+
+      const integrations = [
+        { name: 'M-Pesa payments', key: 'mpesa', ...pick(
+            mpesaOk.rows[0].t,
+            null,
+            mpesaStuck.rows[0].n,
+            { detail: mpesaStuck.rows[0].n > 0 ? `${mpesaStuck.rows[0].n} payment(s) stuck pending >24h` : 'Receiving payments' }) },
+        { name: 'SMS provider', key: 'sms', ...pick(
+            smsRecent.rows[0].t,
+            smsFailed.rows[0].t,
+            smsFailed.rows[0].n,
+            { detail: 'Derived from sms_logs delivery records' }) },
+        { name: 'Telegram', key: 'telegram', ...(tgCfg.rows[0].n === 0
+            ? { status: 'unconfigured', detail: 'No bot token in telegram_settings' }
+            : pick(tgLast.rows[0].t, null, 0, { detail: 'Last channel post' })) },
+        { name: 'Email (SMTP)', key: 'email', ...(process.env.EMAIL_USER && process.env.EMAIL_PASS
+            ? { status: 'unknown', detail: 'SMTP configured — sends are not logged, so health cannot be measured' }
+            : { status: 'unconfigured', detail: 'EMAIL_USER/EMAIL_PASS not set — outbound email disabled' }) },
+      ];
+
+      this.success(res, integrations);
+    } catch (error) {
+      this.logger.error('getIntegrations', error);
+      this.error(res, 'Failed to compute integration health');
+    }
+  }
+
+  /** POST /data/backups/:id/restore-staging — pg_restore into STAGING_DATABASE_URL only (7.1). */
+  async restoreBackupToStaging(req, res) {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('SELECT * FROM platform_backups WHERE id = $1', [id]);
+      const backup = result.rows[0];
+      if (!backup) return this.notFound(res, 'Backup not found');
+      if (!['completed', 'verified'].includes(backup.status)) {
+        return this.badRequest(res, 'Only completed or verified backups can be restored');
+      }
+      await backupService.restoreToStaging(backup.file_path);
+      await auditPlatformAction(req, {
+        action: 'data.backup_restored_staging',
+        resourceType: 'backup',
+        resourceId: id,
+        details: { file: backup.file_path }
+      });
+      this.success(res, null, 'Backup restored into the staging database');
+    } catch (error) {
+      this.logger.error('restoreBackupToStaging', error);
+      this.error(res, error.message.includes('STAGING_DATABASE_URL')
+        ? 'Staging restore is not configured — set STAGING_DATABASE_URL on the server'
+        : 'Restore failed');
+    }
+  }
+
   /** GET /data/storage — §7.4 per-tenant storage usage. */
   async getTenantStorage(req, res) {
     try {
@@ -578,19 +659,22 @@ class PlatformOpsController extends BaseController {
 
   /** POST /alert-rules — {metric, comparator, threshold, severity, message, cooldownMinutes} */
   async createAlertRule(req, res) {
-    const { metric, comparator, threshold, severity, message, cooldownMinutes } = req.body || {};
+    const { metric, comparator, threshold, severity, message, cooldownMinutes, notifyChannels } = req.body || {};
     if (!metric || !alertEngine.METRICS[metric]) {
       return this.badRequest(res, `metric must be one of: ${Object.keys(alertEngine.METRICS).join(', ')}`);
     }
     if (!['>', '<', '>=', '<=', '='].includes(comparator) || typeof threshold !== 'number' || !message) {
       return this.badRequest(res, 'comparator (>,<,>=,<=,=), numeric threshold, and message are required');
     }
+    const channels = Array.isArray(notifyChannels)
+      ? notifyChannels.filter((c) => ['email', 'telegram'].includes(c))
+      : [];
     try {
       const result = await pool.query(
-        `INSERT INTO platform_alert_rules (metric, comparator, threshold, severity, message, cooldown_minutes, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        `INSERT INTO platform_alert_rules (metric, comparator, threshold, severity, message, cooldown_minutes, notify_channels, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [metric, comparator, threshold, severity || 'medium', message,
-         Math.min(Math.max(Number(cooldownMinutes) || 60, 5), 1440), req.platformUser.id]
+         Math.min(Math.max(Number(cooldownMinutes) || 60, 5), 1440), channels, req.platformUser.id]
       );
       await auditPlatformAction(req, { action: 'ops.alert_rule_created', resourceType: 'alert_rule', resourceId: result.rows[0].id, details: { metric, comparator, threshold } });
       this.created(res, result.rows[0], 'Alert rule created');
@@ -603,7 +687,10 @@ class PlatformOpsController extends BaseController {
   /** PATCH /alert-rules/:id — toggle enabled or adjust threshold/cooldown. */
   async updateAlertRule(req, res) {
     const { id } = req.params;
-    const { enabled, threshold, cooldownMinutes, severity, message } = req.body || {};
+    const { enabled, threshold, cooldownMinutes, severity, message, notifyChannels } = req.body || {};
+    const channels = Array.isArray(notifyChannels)
+      ? notifyChannels.filter((c) => ['email', 'telegram'].includes(c))
+      : null;
     try {
       const result = await pool.query(
         `UPDATE platform_alert_rules SET
@@ -611,9 +698,10 @@ class PlatformOpsController extends BaseController {
            threshold = COALESCE($3, threshold),
            cooldown_minutes = COALESCE($4, cooldown_minutes),
            severity = COALESCE($5, severity),
-           message = COALESCE($6, message)
+           message = COALESCE($6, message),
+           notify_channels = COALESCE($7, notify_channels)
          WHERE id = $1 RETURNING *`,
-        [id, enabled, threshold, cooldownMinutes, severity, message]
+        [id, enabled, threshold, cooldownMinutes, severity, message, channels]
       );
       if (result.rows.length === 0) return this.notFound(res, 'Rule not found');
       await auditPlatformAction(req, { action: 'ops.alert_rule_updated', resourceType: 'alert_rule', resourceId: id, details: req.body });

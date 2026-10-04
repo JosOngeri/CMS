@@ -37,6 +37,15 @@ const PlatformData = () => {
 
   useEffect(() => { load() }, [load])
 
+  const restoreStaging = async (id) => {
+    try {
+      const res = await api.post(`/api/platform/data/backups/${id}/restore-staging`)
+      toast.success(res.data.message || 'Restored into staging')
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Restore failed')
+    }
+  }
+
   const verifyBackup = async (id) => {
     try {
       await api.post(`/api/platform/data/backups/${id}/verify`)
@@ -101,10 +110,13 @@ const PlatformData = () => {
                 {b.status === 'completed' && (
                   <button onClick={() => verifyBackup(b.id)} className="inline-flex items-center gap-1 text-xs text-[var(--color-success)] hover:underline"><CheckCircle className="h-3 w-3" />verify</button>
                 )}
+                {['completed', 'verified'].includes(b.status) && (
+                  <button onClick={() => restoreStaging(b.id)} className="inline-flex items-center gap-1 text-xs text-[var(--color-primary)] hover:underline">restore to staging</button>
+                )}
               </div>
             </div>
           ))}
-          {backups.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No backups recorded. Record runs here when the backup job lands (tracked in the plan doc).</p>}
+          {backups.length === 0 && <p className="text-sm text-[var(--color-textSecondary)]">No backups recorded yet — the scheduler runs pg_dump daily, or use Run backup now.</p>}
         </div>
       </Card>
 

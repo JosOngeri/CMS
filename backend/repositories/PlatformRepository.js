@@ -70,7 +70,7 @@ class PlatformRepository extends BaseRepository {
     return { ...result.rows[0], tierBreakdown: tierResult.rows };
   }
 
-  async getAuditLogs({ action, resourceType, page, limit }) {
+  async getAuditLogs({ action, resourceType, actor, ip, from, to, page, limit }) {
     const conditions = [];
     const values = [];
 
@@ -81,6 +81,22 @@ class PlatformRepository extends BaseRepository {
     if (resourceType) {
       values.push(resourceType);
       conditions.push(`pa.resource_type = $${values.length}`);
+    }
+    if (actor) {
+      values.push(`%${actor}%`);
+      conditions.push(`(pu.email ILIKE $${values.length} OR pu.name ILIKE $${values.length})`);
+    }
+    if (ip) {
+      values.push(ip);
+      conditions.push(`pa.ip_address::text = $${values.length}`);
+    }
+    if (from) {
+      values.push(from);
+      conditions.push(`pa.created_at >= $${values.length}`);
+    }
+    if (to) {
+      values.push(to);
+      conditions.push(`pa.created_at <= $${values.length}`);
     }
 
     values.push(limit, (page - 1) * limit);
@@ -110,6 +126,76 @@ class PlatformRepository extends BaseRepository {
       'SELECT DISTINCT action FROM platform_audit_logs ORDER BY action'
     );
     return result.rows.map(row => row.action);
+  }
+
+  /**
+   * Forensic pivot (8.4) — for a time window: every actor/IP combo with
+   * counts, plus the action histogram. Lets an operator answer "what did
+   * X do from Y between these dates" without paging raw rows.
+   */
+  async getAuditForensics({ from, to }) {
+    const conditions = [];
+    const values = [];
+    if (from) {
+      values.push(from);
+      conditions.push(`pa.created_at >= $${values.length}`);
+    }
+    if (to) {
+      values.push(to);
+      conditions.push(`pa.created_at <= $${values.length}`);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const [byActor, byIp, byAction] = await Promise.all([
+      this.pool.query(
+        `SELECT pa.user_id, COALESCE(pu.email, 'system') AS actor, COUNT(*)::int AS events
+         FROM platform_audit_logs pa LEFT JOIN platform_users pu ON pa.user_id = pu.id
+         ${where}
+         GROUP BY pa.user_id, pu.email ORDER BY events DESC LIMIT 20`,
+        values
+      ),
+      this.pool.query(
+        `SELECT pa.ip_address::text AS ip, COUNT(*)::int AS events,
+                COUNT(DISTINCT user_id)::int AS actors
+         FROM platform_audit_logs pa ${where}
+         GROUP BY pa.ip_address ORDER BY events DESC LIMIT 20`,
+        values
+      ),
+      this.pool.query(
+        `SELECT pa.action, COUNT(*)::int AS events
+         FROM platform_audit_logs pa ${where}
+         GROUP BY pa.action ORDER BY events DESC LIMIT 30`,
+        values
+      ),
+    ]);
+
+    return { byActor: byActor.rows, byIp: byIp.rows, byAction: byAction.rows };
+  }
+
+  /** All rows matching the filters, no pagination — CSV export only. */
+  async getAuditLogsForExport({ action, resourceType, actor, ip, from, to }) {
+    const conditions = [];
+    const values = [];
+    if (action) { values.push(`%${action}%`); conditions.push(`pa.action ILIKE $${values.length}`); }
+    if (resourceType) { values.push(resourceType); conditions.push(`pa.resource_type = $${values.length}`); }
+    if (actor) { values.push(`%${actor}%`); conditions.push(`(pu.email ILIKE $${values.length} OR pu.name ILIKE $${values.length})`); }
+    if (ip) { values.push(ip); conditions.push(`pa.ip_address::text = $${values.length}`); }
+    if (from) { values.push(from); conditions.push(`pa.created_at >= $${values.length}`); }
+    if (to) { values.push(to); conditions.push(`pa.created_at <= $${values.length}`); }
+    const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    const result = await this.pool.query(
+      `SELECT pa.id, pa.action, pa.resource_type, pa.resource_id, pa.details,
+              pa.ip_address::text, pa.created_at,
+              pu.name AS actor_name, pu.email AS actor_email
+       FROM platform_audit_logs pa
+       LEFT JOIN platform_users pu ON pa.user_id = pu.id
+       ${whereClause}
+       ORDER BY pa.created_at DESC
+       LIMIT 10000`,
+      values
+    );
+    return result.rows;
   }
 
   async getPlatformUsers() {

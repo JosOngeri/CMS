@@ -5,6 +5,7 @@
  *   overdue beyond grace period       -> church suspended (is_active=false)
  *                                        + alert + audit entry
  *   tenant_subscriptions              -> 'past_due' alongside
+ *   all invoices settled              -> church reactivated, alert resolved
  *
  * Runs from the platform scheduler (daily) and the manual
  * POST /billing/dunning/run endpoint. Reminder emails go through the
@@ -105,9 +106,9 @@ const run = async () => {
       [church.church_id]
     );
     await pool.query(
-      `INSERT INTO platform_alerts (alert_type, severity, message, service_affected, status)
-       VALUES ('dunning_suspend', 'high', $1, 'billing', 'active')`,
-      [`Church "${church.church_name}" auto-suspended — invoice overdue beyond ${graceDays}-day grace`]
+      `INSERT INTO platform_alerts (alert_type, severity, message, service_affected, status, church_id)
+       VALUES ('dunning_suspend', 'high', $1, 'billing', 'active', $2)`,
+      [`Church "${church.church_name}" auto-suspended — invoice overdue beyond ${graceDays}-day grace`, church.church_id]
     );
     await pool.query(
       `INSERT INTO platform_audit_logs (user_id, action, resource_type, resource_id, details)
@@ -117,7 +118,63 @@ const run = async () => {
     summary.suspended += 1;
   }
 
+  // 4) auto-restore: a suspended-by-dunning tenant with no open/overdue
+  //    invoices left gets reactivated (payment arrived or was waived).
+  summary.restored = (await restorePaidTenants()).restored;
+
   return summary;
 };
 
-module.exports = { run };
+/**
+ * Reactivate tenants whose suspension traces to dunning and who no longer
+ * owe anything. Runs at the end of every dunning pass, and is also called
+ * directly when an invoice is marked paid so restore is instant.
+ */
+const restorePaidTenants = async (churchId = null) => {
+  const params = [];
+  let churchFilter = '';
+  if (churchId) {
+    params.push(churchId);
+    churchFilter = 'AND c.id = $1';
+  }
+  const candidates = await pool.query(
+    `SELECT c.id, c.name
+     FROM churches c
+     WHERE c.is_active = false ${churchFilter}
+       AND NOT EXISTS (
+         SELECT 1 FROM platform_invoices i
+         WHERE i.church_id = c.id AND i.status IN ('open', 'overdue'))
+       AND EXISTS (
+         SELECT 1 FROM platform_alerts a
+         WHERE a.alert_type = 'dunning_suspend' AND a.status = 'active'
+           AND a.church_id = c.id)`,
+    params
+  );
+
+  for (const church of candidates.rows) {
+    await pool.query(
+      'UPDATE churches SET is_active = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [church.id]
+    );
+    await pool.query(
+      `UPDATE tenant_subscriptions SET status = 'active', updated_at = CURRENT_TIMESTAMP
+       WHERE church_id = $1 AND status = 'past_due'`,
+      [church.id]
+    );
+    await pool.query(
+      `UPDATE platform_alerts SET status = 'resolved', resolved_at = CURRENT_TIMESTAMP,
+              resolution_notes = 'auto-restored on payment'
+       WHERE alert_type = 'dunning_suspend' AND status = 'active' AND church_id = $1`,
+      [church.id]
+    );
+    await pool.query(
+      `INSERT INTO platform_audit_logs (user_id, action, resource_type, resource_id, details)
+       VALUES (NULL, 'billing.tenant_auto_restored', 'church', $1, $2)`,
+      [church.id, JSON.stringify({ church_name: church.name, actor: 'dunning-restore' })]
+    );
+  }
+
+  return { restored: candidates.rows.length };
+};
+
+module.exports = { run, restorePaidTenants };

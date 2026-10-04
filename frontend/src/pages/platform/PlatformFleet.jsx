@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, AlertTriangle, Building2, Bell } from 'lucide-react'
+import { RefreshCw, AlertTriangle, Building2, Bell, Plug } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -17,22 +17,25 @@ const PlatformFleet = () => {
   const [alerts, setAlerts] = useState([])
   const [jobs, setJobs] = useState([])
   const [rules, setRules] = useState([])
+  const [integrations, setIntegrations] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const load = useCallback(async (initial = false) => {
     if (initial) setLoading(true); else setRefreshing(true)
     try {
-      const [fleetRes, alertsRes, jobsRes, rulesRes] = await Promise.all([
+      const [fleetRes, alertsRes, jobsRes, rulesRes, intRes] = await Promise.all([
         api.get('/api/platform/fleet'),
         api.get('/api/platform/alerts'),
         api.get('/api/platform/jobs'),
         api.get('/api/platform/alert-rules'),
+        api.get('/api/platform/integrations'),
       ])
       setFleet(fleetRes.data.data || [])
       setAlerts((alertsRes.data.data || []).filter((a) => a.status === 'active'))
       setJobs(jobsRes.data.data || [])
       setRules(rulesRes.data.data || [])
+      setIntegrations(intRes.data.data || [])
     } catch {
       toast.error('Failed to load fleet')
     } finally {
@@ -68,6 +71,17 @@ const PlatformFleet = () => {
       setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)))
     } catch {
       toast.error('Failed to update rule')
+    }
+  }
+
+  const toggleChannel = async (rule, channel) => {
+    const current = Array.isArray(rule.notify_channels) ? rule.notify_channels : []
+    const next = current.includes(channel) ? current.filter((c) => c !== channel) : [...current, channel]
+    try {
+      await api.patch(`/api/platform/alert-rules/${rule.id}`, { notifyChannels: next })
+      setRules((prev) => prev.map((r) => (r.id === rule.id ? { ...r, notify_channels: next } : r)))
+    } catch {
+      toast.error('Failed to update channels')
     }
   }
 
@@ -189,6 +203,26 @@ const PlatformFleet = () => {
         {failedJobs.length > 0 && <p className="mt-2 text-xs text-[var(--color-error)]">{failedJobs.length} failed job{failedJobs.length > 1 ? 's' : ''} need attention.</p>}
       </Card>
 
+      {/* Integration health (4.4) */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-4 flex items-center gap-2"><Plug className="h-5 w-5" /> Integration Health</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {integrations.map((i) => {
+            const tone = i.status === 'green' ? 'bg-[var(--color-success)]' : i.status === 'amber' ? 'bg-[var(--color-warning)]' : i.status === 'red' ? 'bg-[var(--color-error)]' : 'bg-[var(--color-border)]'
+            return (
+              <div key={i.key} className="p-3 rounded-lg bg-[var(--color-background)]">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`h-2.5 w-2.5 rounded-full ${tone}`} />
+                  <p className="text-sm font-medium text-[var(--color-text)]">{i.name}</p>
+                </div>
+                <p className="text-xs text-[var(--color-textSecondary)]">{i.detail || i.status}</p>
+                {i.last_success_at && <p className="text-xs text-[var(--color-textSecondary)] mt-1">Last ok: {fmtDateTime(i.last_success_at)}</p>}
+              </div>
+            )
+          })}
+        </div>
+      </Card>
+
       {/* Alert rules */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
@@ -205,13 +239,24 @@ const PlatformFleet = () => {
                   <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${r.severity === 'high' || r.severity === 'critical' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>{r.severity}</span>
                 </p>
                 <p className="text-xs text-[var(--color-textSecondary)] truncate">{r.message}{r.last_fired_at ? ` · last fired ${fmtDateTime(r.last_fired_at)}` : ''}</p>
+                <div className="flex gap-2 mt-1">
+                  {['email', 'telegram'].map((ch) => {
+                    const on = (r.notify_channels || []).includes(ch)
+                    return (
+                      <button key={ch} onClick={() => toggleChannel(r, ch)}
+                        className={`px-2 py-0.5 rounded text-xs border ${on ? 'border-[var(--color-primary)] text-[var(--color-primary)] bg-[var(--color-primary-light)]' : 'border-[var(--color-border)] text-[var(--color-textSecondary)]'}`}>
+                        {ch}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
               <button
                 onClick={() => toggleRule(r)}
                 className={`shrink-0 ml-3 relative w-10 h-5 rounded-full transition-colors ${r.enabled ? 'bg-[var(--color-success)]' : 'bg-[var(--color-border)]'}`}
                 aria-label={`Toggle rule ${r.metric}`}
               >
-                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${r.enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-[var(--color-surface)] transition-transform ${r.enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </button>
             </div>
           ))}
