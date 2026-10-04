@@ -630,13 +630,19 @@ class PlatformOpsController extends BaseController {
   async getPublicStatus(req, res) {
     try {
       const dbCheck = await pool.query('SELECT 1 AS ok').then(() => true).catch(() => false);
-      const [maint, incidents] = await Promise.all([
+      const [maint, incidents, externalProbe] = await Promise.all([
         pool.query(`SELECT value FROM platform_settings WHERE key = 'maintenance_mode'`).catch(() => ({ rows: [] })),
         pool.query(
           `SELECT title, severity, status, created_at, resolved_at
            FROM platform_incidents
            WHERE tenant_id IS NULL
            ORDER BY created_at DESC LIMIT 10`
+        ).catch(() => ({ rows: [] })),
+        // Latest uptimeProbe row — 'api.external' means the cron is firing;
+        // a stale probe (>15 min old) is itself a warning sign.
+        pool.query(
+          `SELECT status, response_time, last_check FROM platform_health
+            WHERE service_name = 'api.external' ORDER BY last_check DESC LIMIT 1`
         ).catch(() => ({ rows: [] })),
       ]);
       const maintValue = maint.rows[0]?.value || {};
@@ -653,6 +659,14 @@ class PlatformOpsController extends BaseController {
           { name: 'API', status: 'operational' },
           { name: 'Database', status: dbCheck ? 'operational' : 'major_outage' },
           { name: 'Tenant access', status: maintenance ? 'maintenance' : 'operational' },
+          ...(() => {
+            const probe = externalProbe.rows[0];
+            if (!probe) return [{ name: 'External probe', status: 'unknown' }];
+            const staleMs = Date.now() - new Date(probe.last_check).getTime();
+            const probeStatus = staleMs > 15 * 60 * 1000 ? 'degraded'
+              : probe.status === 'healthy' ? 'operational' : 'major_outage';
+            return [{ name: 'External probe', status: probeStatus }];
+          })(),
         ],
         maintenance: maintenance ? { enabled: true, message: maintValue.message || null, ends_at: maintValue.ends_at || null } : { enabled: false },
         incidents: incidents.rows,
