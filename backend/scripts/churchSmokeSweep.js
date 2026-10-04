@@ -88,11 +88,14 @@ const run = async () => {
   console.log(`Sweeping ${routes.length} church GET routes on :${PORT}`);
 
   const failures = [];
+  let limited = 0;
   for (const p of routes) {
     const url = `http://localhost:${PORT}${fill(p)}`;
     try {
       const res = await fetch(url, { headers });
-      if (res.status >= 500) {
+      if (res.status === 429) {
+        limited++;
+      } else if (res.status >= 500) {
         const body = (await res.text()).slice(0, 100).replace(/\n/g, ' ');
         failures.push(`${res.status} ${p} -> ${body}`);
         console.log('FAIL', res.status, p);
@@ -105,6 +108,7 @@ const run = async () => {
   }
 
   await pool.end();
+  if (limited) console.log(`RATE-LIMITED (uncounted): ${limited} routes hit 429`);
   if (failures.length) {
     console.log(`\nSWEEP FAILED: ${failures.length}/${routes.length} 5xx`);
     failures.forEach((f) => console.log('  ' + f));

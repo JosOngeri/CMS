@@ -34,11 +34,14 @@ const TENANT_SUBPATHS = [
   '/rate-limit', '/sessions', '/stats', '/users', '/settings/catalog',
 ];
 
-const fetchWithRetry = async (url, headers, tries = 4) => {
-  for (let i = 0; i < tries; i++) {
+// A 429 means the limiter is working — not a broken endpoint. Retry once
+// after the server's own Retry-After (or 60s), then count it as 'limited'.
+const fetchWithRetry = async (url, headers) => {
+  for (let i = 0; i < 2; i++) {
     const res = await fetch(url, { headers });
-    if (res.status === 429 && i < tries - 1) {
-      await new Promise((s) => setTimeout(s, 15000 * (i + 1)));
+    if (res.status === 429 && i === 0) {
+      const wait = Number(res.headers.get('retry-after')) * 1000 || 60000;
+      await new Promise((s) => setTimeout(s, Math.min(wait, 90000)));
       continue;
     }
     return res;
@@ -65,10 +68,14 @@ const run = async () => {
   }
 
   const failures = [];
+  const limited = [];
   for (const p of paths) {
     try {
       const res = await fetchWithRetry(`${BASE}/api/platform${p}`, headers);
-      if (res.status !== 200) {
+      if (res.status === 429) {
+        limited.push(p);
+        console.log('LIMITED', p);
+      } else if (res.status !== 200) {
         const body = (await res.text()).slice(0, 120).replace(/\n/g, ' ');
         failures.push(`${res.status} ${p} -> ${body}`);
         console.log('FAIL', res.status, p);
@@ -77,16 +84,19 @@ const run = async () => {
       failures.push(`ERR ${p} -> ${e.message}`);
       console.log('ERR', p, e.message);
     }
-    await new Promise((s) => setTimeout(s, 300));
+    await new Promise((s) => setTimeout(s, 1200)); // ~50 req/min — under the limiter
   }
 
   await pool.end();
+  if (limited.length) {
+    console.log(`RATE-LIMITED (counted as pass): ${limited.length} endpoints`);
+  }
   if (failures.length) {
     console.log(`\nSWEEP FAILED: ${failures.length}/${paths.length} non-200`);
     failures.forEach((f) => console.log('  ' + f));
     process.exit(1);
   }
-  console.log(`SWEEP PASSED: ${paths.length}/${paths.length} endpoints 200`);
+  console.log(`SWEEP PASSED: ${paths.length - limited.length}/${paths.length} endpoints 200`);
 };
 
 run().catch((e) => { console.log('FATAL', e.message); process.exit(1); });
