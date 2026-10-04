@@ -85,6 +85,10 @@ class TreasuryRepository extends BaseRepository {
       params.push(filters.endDate);
     }
 
+    // ORDER BY must precede LIMIT/OFFSET — the previous order produced a
+    // syntax error whenever a limit was supplied.
+    query += ` ORDER BY t.transaction_date DESC`;
+
     if (filters.limit) {
       paramCount++;
       query += ` LIMIT $${paramCount}`;
@@ -96,8 +100,6 @@ class TreasuryRepository extends BaseRepository {
       query += ` OFFSET $${paramCount}`;
       params.push(filters.offset);
     }
-
-    query += ` ORDER BY t.transaction_date DESC`;
 
     const result = await this.pool.query(query, params);
     return result.rows;

@@ -6,6 +6,16 @@ const { authenticateToken, requireRole } = require('../middleware/auth');
 // All routes require authentication
 router.use(authenticateToken);
 
+// Every report exposes church-wide aggregates (finances, attendance, SMS) —
+// gate the whole router to roles holding reports.view in migration 038;
+// members never see these pages in the UI and must not reach them by API.
+const REPORT_READ_ROLES = [
+  'Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'Elder',
+  'Church Board Member', 'Department Head', 'Assistant Department Head',
+  'Deacon', 'Deaconess', 'Subcommittee Head',
+];
+router.use(requireRole(REPORT_READ_ROLES));
+
 // Financial reports
 router.get('/financial', reportsController.getFinancialReport);
 

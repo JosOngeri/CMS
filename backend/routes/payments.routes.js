@@ -40,11 +40,13 @@ const memberInitiationOrFinance = (req, res, next) => {
   return requireRole(['Super Admin', 'Pastor', 'Treasurer'])(req, res, next);
 };
 
-router.get('/', paymentsController.getPayments);
+// GET / is the church-wide payments list (member names, phones, M-Pesa
+// receipts) — finance roles only. Members use GET /my-payments (own rows).
+router.get('/', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.getPayments);
 router.post('/', memberInitiationOrFinance, paymentsController.createPayment);
 
 // Payments – legacy sub-paths
-router.get('/payments', paymentsController.getPayments);
+router.get('/payments', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.getPayments);
 router.post('/payments', memberInitiationOrFinance, paymentsController.createPayment);
 router.put('/payments/:id/status', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePaymentStatus);
 router.put('/status/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePaymentStatus); // Alias for frontend compatibility

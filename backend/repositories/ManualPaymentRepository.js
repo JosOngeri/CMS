@@ -23,22 +23,28 @@ class ManualPaymentRepository extends BaseRepository {
       status
     } = data;
 
+    // Live payments schema: reference_number (searchable), initiated_by,
+    // notes — there is no receipt_number or recorded_by column. The generated
+    // receipt number is the canonical lookup key; an external reference
+    // (cheque/bank ref) is preserved in notes so it stays searchable.
+    const mergedNotes = [reference_number ? `External ref: ${reference_number}` : null, notes]
+      .filter(Boolean).join(' — ') || null;
+
     const result = await this.pool.query(
-      `INSERT INTO payments 
-       (member_id, church_id, amount, payment_method, reference_number, 
-        notes, payment_date, payment_type, receipt_number, recorded_by, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      `INSERT INTO payments
+       (member_id, church_id, amount, payment_method, reference_number,
+        notes, payment_date, payment_type, initiated_by, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         member_id || null,
         church_id,
         amount,
         payment_method,
-        reference_number || null,
-        notes || null,
+        receipt_number || reference_number || null,
+        mergedNotes,
         payment_date || new Date().toISOString(),
         payment_type,
-        receipt_number,
         recorded_by,
         status || 'verified'
       ]
@@ -91,7 +97,7 @@ class ManualPaymentRepository extends BaseRepository {
              u.first_name || ' ' || u.last_name as recorded_by_name
       FROM payments p
       LEFT JOIN members m ON p.member_id = m.id
-      LEFT JOIN users u ON p.recorded_by = u.id
+      LEFT JOIN users u ON p.initiated_by = u.id
       WHERE p.church_id = $1
       AND p.payment_method IN ('cash', 'bank_transfer', 'cheque', 'mobile_money_manual')
     `;
@@ -132,9 +138,9 @@ class ManualPaymentRepository extends BaseRepository {
              c.name as church_name
       FROM payments p
       LEFT JOIN members m ON p.member_id = m.id
-      LEFT JOIN users u ON p.recorded_by = u.id
+      LEFT JOIN users u ON p.initiated_by = u.id
       LEFT JOIN churches c ON p.church_id = c.id
-      WHERE p.receipt_number = $1 AND p.church_id = $2`,
+      WHERE p.reference_number = $1 AND p.church_id = $2`,
       [receiptNumber, churchId]
     );
     return result.rows[0];
@@ -155,9 +161,9 @@ class ManualPaymentRepository extends BaseRepository {
              c.phone as church_phone
       FROM payments p
       LEFT JOIN members m ON p.member_id = m.id
-      LEFT JOIN users u ON p.recorded_by = u.id
+      LEFT JOIN users u ON p.initiated_by = u.id
       LEFT JOIN churches c ON p.church_id = c.id
-      WHERE p.receipt_number = $1 AND p.church_id = $2`,
+      WHERE p.reference_number = $1 AND p.church_id = $2`,
       [receiptNumber, churchId]
     );
     return result.rows[0];

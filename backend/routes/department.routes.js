@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, requireRole } = require('../middleware/auth');
 const departmentController = require('../controllers/department.controller');
 const activityFeedController = require('../controllers/activityFeed.controller');
 const departmentRepository = require('../repositories/DepartmentRepository');
@@ -112,8 +112,11 @@ router.get('/subcommittees', authenticateToken, async (req, res) => {
 });
 
 // Aggregate: all department leadership rows for the caller's church.
-// Saves the N+1 of GET /:id/leadership per dept (DepartmentHeadAllocation).
-router.get('/leadership', authenticateToken, async (req, res) => {
+// Saves the N+1 of GET /:id/leadership per dept (DepartmentHeadAllocation —
+// admin-gated page; rows include leader emails, so membership stays out).
+router.get('/leadership', authenticateToken,
+  requireRole(['Super Admin', 'Admin', 'Pastor', 'First Elder']),
+  async (req, res) => {
   try {
     const r = await pool.query(
       `SELECT dl.*, u.first_name || ' ' || u.last_name AS user_name, u.email AS user_email,
@@ -135,8 +138,11 @@ router.get('/leadership', authenticateToken, async (req, res) => {
   }
 });
 
-// Aggregate: all handovers for the caller's church (DepartmentHeadAllocation).
-router.get('/handovers', authenticateToken, async (req, res) => {
+// Aggregate: all handovers for the caller's church (DepartmentHeadAllocation —
+// admin-gated page; collectors use /handovers/mine instead).
+router.get('/handovers', authenticateToken,
+  requireRole(['Super Admin', 'Admin', 'Pastor', 'First Elder']),
+  async (req, res) => {
   try {
     const r = await pool.query(
       `SELECT h.*, ou.first_name || ' ' || ou.last_name AS outgoing_name,

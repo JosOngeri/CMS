@@ -6,6 +6,18 @@ const { createLogger } = require('../helpers/controllerLogger');
 
 const logger = createLogger('audit-logs.routes');
 
+// Reject non-UUID params before the role checks query the DB — a bad value
+// crashed the department-head check with invalid_text_representation (500).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+for (const paramName of ['id', 'departmentId']) {
+  router.param(paramName, (req, res, next, value) => {
+    if (!UUID_RE.test(value)) {
+      return res.status(400).json({ success: false, error: `Invalid ${paramName} format` });
+    }
+    next();
+  });
+}
+
 // Get audit logs (admin only)
 router.get('/', authenticateToken, requireRole(['Super Admin', 'Pastor', 'First Elder']), async (req, res) => {
   try {

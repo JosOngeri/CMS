@@ -6,6 +6,18 @@ const { authenticateToken } = require('../middleware/auth');
 // All collection routes require authentication
 router.use(authenticateToken);
 
+// Reject non-UUID :id/:contributionId before they hit pg — a bad value
+// previously crashed the handler with invalid_text_representation (500).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+for (const paramName of ['id', 'contributionId']) {
+  router.param(paramName, (req, res, next, value) => {
+    if (!UUID_RE.test(value)) {
+      return res.status(400).json({ success: false, error: `Invalid ${paramName} format` });
+    }
+    next();
+  });
+}
+
 // Personal collections routes
 router.get('/', collectionController.getCollections);
 router.get('/my-collections', collectionController.getMyCollections);

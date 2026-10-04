@@ -317,4 +317,30 @@ WHERE m.email IS NOT NULL AND m.email <> ''
     WHERE c.member_id = m.id AND c.contact_type = 'email'
   );
 
+
+-- ============================================================
+-- SECTION 12: transactions.category_id type alignment
+-- The column was created as INTEGER but joins against
+-- income_categories.id / expense_categories.id which are UUID.
+-- Every join crashed with "operator does not exist: integer = uuid".
+-- No live rows populate category_id, so a plain type change is safe.
+-- ============================================================
+
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'transactions' AND column_name = 'category_id'
+      AND data_type <> 'uuid'
+  ) THEN
+    -- Drop any stale integer values (none expected — verified empty in dev)
+    UPDATE transactions SET category_id = NULL
+    WHERE category_id IS NOT NULL
+      AND category_id::text !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$';
+    ALTER TABLE transactions
+      ALTER COLUMN category_id TYPE uuid
+      USING category_id::text::uuid;
+  END IF;
+END $$;
+
 COMMIT;
