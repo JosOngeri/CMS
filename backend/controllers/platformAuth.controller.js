@@ -144,6 +144,9 @@ class PlatformAuthController extends BaseController {
       });
 
       this.success(res, {
+        // Bearer token for non-cookie clients (mobile admin app). The web
+        // console keeps using the httpOnly platform_session cookie.
+        token,
         user: {
           id: platformUser.id,
           email: platformUser.email,

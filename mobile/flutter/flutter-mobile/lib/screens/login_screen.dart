@@ -368,6 +368,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       label: const Text('Configure Server URL'),
                     ),
 
+                    // Platform admins sign into the separate superadmin realm
+                    TextButton.icon(
+                      onPressed: () => context.go('/platform-login'),
+                      icon: const Icon(Icons.admin_panel_settings_outlined),
+                      label: const Text('Platform Admin sign-in'),
+                    ),
+
                     const SizedBox(height: 16),
                     
                     // Biometric Login Button (only when the user enabled it)

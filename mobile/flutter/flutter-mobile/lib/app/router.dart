@@ -21,7 +21,18 @@ import '../screens/notifications_screen.dart';
 import '../screens/collect_payments_screen.dart';
 import '../screens/gallery_screen.dart';
 import '../widgets/main_shell.dart';
+import '../widgets/platform_shell.dart';
+import '../screens/platform/platform_login_screen.dart';
+import '../screens/platform/platform_dashboard_screen.dart';
+import '../screens/platform/platform_tenants_screen.dart';
+import '../screens/platform/platform_tenant_detail_screen.dart';
+import '../screens/platform/platform_payments_screen.dart';
+import '../screens/platform/platform_incidents_screen.dart';
+import '../screens/platform/platform_analytics_screen.dart';
+import '../screens/platform/platform_audit_screen.dart';
+import '../screens/platform/platform_ops_screen.dart';
 import '../services/auth_service.dart';
+import '../services/platform_auth_service.dart';
 
 // Loading screen for auth state restoration
 class LoadingScreen extends StatelessWidget {
@@ -52,6 +63,7 @@ final _authRefreshProvider = Provider<ChangeNotifier>((ref) {
   final notifier = _AuthRefresh();
   ref
     ..listen(authProvider, (_, __) => notifier.ping())
+    ..listen(platformAuthProvider, (_, __) => notifier.ping())
     ..onDispose(notifier.dispose);
   return notifier;
 });
@@ -64,8 +76,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: ref.watch(_authRefreshProvider),
     redirect: (context, state) {
       final authState = ref.read(authProvider);
-      final isLoading = authState.isLoading;
+      final platformAuth = ref.read(platformAuthProvider);
+      final isLoading = authState.isLoading || platformAuth.isLoading;
       final isAuthenticated = authState.isAuthenticated;
+      final isPlatformAuthed = platformAuth.isAuthenticated;
 
       debugPrint('=== Router: Redirect check - Location: ${state.matchedLocation}, isLoading: $isLoading, isAuthenticated: $isAuthenticated ===');
 
@@ -95,6 +109,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
+      // Platform-admin realm — separate auth, separate login screen.
+      final isPlatformPath = state.matchedLocation.startsWith('/platform');
+      if (isPlatformPath && !isPlatformAuthed) {
+        return '/platform-login';
+      }
+      if (state.matchedLocation == '/platform-login' && isPlatformAuthed) {
+        return '/platform';
+      }
+
       // Login route - redirect to dashboard if already authenticated
       if (state.matchedLocation == '/login' && isAuthenticated) {
         debugPrint('=== Router: Redirecting to /dashboard (already authenticated) ===');
@@ -112,6 +135,53 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/platform-login',
+        builder: (context, state) => const PlatformLoginScreen(),
+      ),
+      // Platform-admin section — shell provides the drawer/nav chrome.
+      ShellRoute(
+        builder: (context, state, child) => PlatformShell(child: child),
+        routes: [
+          GoRoute(
+            path: '/platform',
+            builder: (context, state) => const PlatformDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/platform/tenants',
+            builder: (context, state) => const PlatformTenantsScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => PlatformTenantDetailScreen(
+                  tenantId: state.pathParameters['id']!,
+                  seed: state.extra as Map<String, dynamic>?,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/platform/payments',
+            builder: (context, state) => const PlatformPaymentsScreen(),
+          ),
+          GoRoute(
+            path: '/platform/incidents',
+            builder: (context, state) => const PlatformIncidentsScreen(),
+          ),
+          GoRoute(
+            path: '/platform/analytics',
+            builder: (context, state) => const PlatformAnalyticsScreen(),
+          ),
+          GoRoute(
+            path: '/platform/audit',
+            builder: (context, state) => const PlatformAuditScreen(),
+          ),
+          GoRoute(
+            path: '/platform/ops',
+            builder: (context, state) => const PlatformOpsScreen(),
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
