@@ -453,6 +453,57 @@ class PlatformTenancyController extends BaseController {
     }
   }
 
+  // ── 6.4 Tenant session oversight ───────────────────────────────────────
+  // Church sessions are refresh_tokens rows; revoking marks them used so
+  // the refresh flow refuses them. Access JWTs still live out their TTL.
+
+  /** GET /tenants/:id/sessions — refresh-token sessions per church user. */
+  async getTenantSessions(req, res) {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `SELECT rt.id, rt.user_id, u.email, u.role, rt.created_at, rt.expires_at,
+                CASE WHEN rt.used THEN 'revoked' WHEN rt.expires_at < CURRENT_TIMESTAMP THEN 'expired' ELSE 'active' END AS status
+         FROM refresh_tokens rt
+         JOIN users u ON u.id = rt.user_id
+         WHERE u.church_id = $1
+         ORDER BY rt.created_at DESC LIMIT 200`,
+        [id]
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getTenantSessions', error);
+      this.error(res, 'Failed to fetch tenant sessions');
+    }
+  }
+
+  /** POST /tenants/:id/users/:userId/revoke-sessions — force logout. */
+  async revokeTenantUserSessions(req, res) {
+    const { id, userId } = req.params;
+    try {
+      const user = await pool.query(
+        'SELECT id, email FROM users WHERE id = $1 AND church_id = $2',
+        [userId, id]
+      );
+      if (user.rows.length === 0) return this.notFound(res, 'User not found in this church');
+      const result = await pool.query(
+        'UPDATE refresh_tokens SET used = true WHERE user_id = $1 AND used = false',
+        [userId]
+      );
+      await auditPlatformAction(req, {
+        action: 'security.tenant_sessions_revoked',
+        tenantId: id,
+        resourceType: 'tenant_user',
+        resourceId: userId,
+        details: { email: user.rows[0].email, revoked: result.rowCount }
+      });
+      this.success(res, { revoked: result.rowCount }, `Revoked ${result.rowCount} session(s) for ${user.rows[0].email}`);
+    } catch (error) {
+      this.logger.error('revokeTenantUserSessions', error);
+      this.error(res, 'Failed to revoke sessions');
+    }
+  }
+
   /** PATCH /tenants/:id/demo — §7.6 flag/unflag a church as demo data. */
   async setTenantDemo(req, res) {
     const { id } = req.params;

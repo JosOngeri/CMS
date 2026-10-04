@@ -76,6 +76,11 @@ router.get('/tenants/:id/quotas', authenticatePlatformUser, requirePlatformPermi
 router.put('/tenants/:id/quotas', authenticatePlatformUser, requirePlatformPermission('tenant:administer'), platformTenancyController.setTenantQuotas);
 router.put('/tenants/:id/onboarding', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.updateTenantOnboarding);
 router.post('/tenants/:id/trial', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.updateTenantTrial);
+// 6.4 tenant session oversight
+router.get('/tenants/:id/sessions', authenticatePlatformUser, requirePlatformPermission('security:read'), platformTenancyController.getTenantSessions);
+router.post('/tenants/:id/users/:userId/revoke-sessions', authenticatePlatformUser, requirePlatformPermission('security:manage'), platformTenancyController.revokeTenantUserSessions);
+// 10.5 per-tenant benchmarks vs the fleet
+router.get('/tenants/:id/benchmarks', authenticatePlatformUser, requirePlatformPermission('metrics:read'), platformBusinessController.getTenantBenchmarks);
 router.post('/tenants/:id/quarantine', authenticatePlatformUser, requirePlatformPermission('incidents:manage'), platformTenancyController.setTenantQuarantine);
 
 // ── §4 Monitoring & Health ──────────────────────────────────────────────
@@ -171,6 +176,8 @@ router.get('/support/health-scores', authenticatePlatformUser, requirePlatformPe
 router.get('/flags', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.getPlatformFlags);
 router.put('/flags', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.setPlatformFlag);
 router.get('/version', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformBusinessController.getVersion);
+router.get('/deploys', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformBusinessController.getDeploys);
+router.get('/integrations/config', authenticatePlatformUser, requirePlatformPermission('settings:manage'), platformBusinessController.getIntegrationConfig);
 router.get('/maintenance', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformBusinessController.getMaintenance);
 router.put('/maintenance', authenticatePlatformUser, requirePlatformPermission('flags:manage'), platformBusinessController.setMaintenance);
 

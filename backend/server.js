@@ -171,6 +171,11 @@ if (process.env.NODE_ENV !== 'test') {
     // Platform scheduler — alert rules (5min), dunning (6h), backups (daily).
     require('./services/platformScheduler.service').start();
 
+    // 8.3 Record this boot as a deploy so operators can see history and
+    // know which commit to roll back to. No-op if unchanged.
+    require('./services/platformDeploys.service').recordBoot()
+      .catch(e => logger.error('Deploy record failed:', e));
+
     // Initialize WebSocket server
     initActivityWebSocket(server);
 

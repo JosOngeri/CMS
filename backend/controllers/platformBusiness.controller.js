@@ -402,6 +402,55 @@ ${inv.notes ? `<p class="meta">Notes: ${esc(inv.notes)}</p>` : ''}
     }
   }
 
+  /**
+   * GET /tenants/:id/benchmarks — §10.5 percentile rank of a church vs all
+   * other active churches on the metrics that matter.
+   */
+  async getTenantBenchmarks(req, res) {
+    const { id } = req.params;
+    try {
+      const result = await pool.query(
+        `WITH metrics AS (
+           SELECT c.id,
+                  (SELECT COUNT(*) FROM members m WHERE m.church_id = c.id) AS members,
+                  (SELECT COUNT(*) FROM users u WHERE u.church_id = c.id AND u.deleted_at IS NULL) AS users,
+                  (SELECT COUNT(*) FROM users u WHERE u.church_id = c.id
+                     AND u.last_login > CURRENT_TIMESTAMP - INTERVAL '30 days') AS active_users_30d,
+                  (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.church_id = c.id
+                     AND p.created_at > CURRENT_TIMESTAMP - INTERVAL '90 days') AS payment_volume_90d,
+                  (SELECT COUNT(*) FROM events e WHERE e.church_id = c.id) AS events
+           FROM churches c WHERE c.is_active = true
+         ),
+         ranked AS (
+           SELECT *,
+             ROUND(100 * PERCENT_RANK() OVER (ORDER BY members)) AS members_pct,
+             ROUND(100 * PERCENT_RANK() OVER (ORDER BY users)) AS users_pct,
+             ROUND(100 * PERCENT_RANK() OVER (ORDER BY active_users_30d)) AS engagement_pct,
+             ROUND(100 * PERCENT_RANK() OVER (ORDER BY payment_volume_90d)) AS revenue_pct,
+             ROUND(100 * PERCENT_RANK() OVER (ORDER BY events)) AS events_pct
+           FROM metrics
+         )
+         SELECT * FROM ranked WHERE id = $1`,
+        [id]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Church not found (or inactive)');
+      const r = result.rows[0];
+      this.success(res, {
+        church_id: r.id,
+        vs_active_churches: {
+          members: { value: Number(r.members), percentile: Number(r.members_pct) },
+          users: { value: Number(r.users), percentile: Number(r.users_pct) },
+          engagement_30d: { value: Number(r.active_users_30d), percentile: Number(r.engagement_pct) },
+          payment_volume_90d: { value: Number(r.payment_volume_90d), percentile: Number(r.revenue_pct) },
+          events: { value: Number(r.events), percentile: Number(r.events_pct) },
+        },
+      });
+    } catch (error) {
+      this.logger.error('getTenantBenchmarks', error);
+      this.error(res, 'Failed to compute benchmarks');
+    }
+  }
+
   /** GET /analytics/export.csv — §10.6 monthly metrics for stakeholders. */
   async exportMetricsCsv(req, res) {
     try {
@@ -899,6 +948,45 @@ ${inv.notes ? `<p class="meta">Notes: ${esc(inv.notes)}</p>` : ''}
     } catch (error) {
       this.logger.error('getVersion', error);
       this.error(res, 'Failed to fetch version');
+    }
+  }
+
+  /** GET /deploys — §8.3 deploy history (written at every boot). */
+  async getDeploys(req, res) {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM platform_deploys ORDER BY deployed_at DESC LIMIT 30'
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getDeploys', error);
+      this.error(res, 'Failed to fetch deploys');
+    }
+  }
+
+  /**
+   * GET /integrations/config — §13.5 integration configuration view.
+   * Reports which env-provided credentials are PRESENT (never values)
+   * plus the editable non-secret fallbacks from platform_settings.
+   */
+  async getIntegrationConfig(req, res) {
+    const presence = (vars) => vars.map((v) => ({ env: v, set: Boolean(process.env[v]) }));
+    try {
+      const fallbacks = await pool.query(
+        `SELECT value FROM platform_settings WHERE key = 'integration_fallbacks'`
+      );
+      this.success(res, {
+        mpesa: presence(['MPESA_CONSUMER_KEY', 'MPESA_CONSUMER_SECRET', 'MPESA_SHORTCODE', 'MPESA_PASSKEY']),
+        sms: presence(['JOSMS_API_KEY', 'JOSMS_API_URL']),
+        smtp: presence(['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_USER', 'EMAIL_PASS']),
+        telegram: presence(['TELEGRAM_BOT_TOKEN']),
+        backups: presence(['PLATFORM_BACKUP_DIR', 'STAGING_DATABASE_URL']),
+        secrets: presence(['PLATFORM_JWT_SECRET', 'REFRESH_TOKEN_SECRET']),
+        fallbacks: fallbacks.rows[0]?.value || {},
+      });
+    } catch (error) {
+      this.logger.error('getIntegrationConfig', error);
+      this.error(res, 'Failed to load integration config');
     }
   }
 

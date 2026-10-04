@@ -21,6 +21,8 @@ const PlatformTenantAdmin = () => {
   const [flags, setFlags] = useState([])
   const [quotas, setQuotas] = useState(null)
   const [settingsText, setSettingsText] = useState('')
+  const [tenantSessions, setTenantSessions] = useState([])
+  const [benchmarks, setBenchmarks] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
@@ -40,14 +42,18 @@ const PlatformTenantAdmin = () => {
   const loadTenant = useCallback(async (id) => {
     if (!id) return
     try {
-      const [usersRes, flagsRes, quotasRes] = await Promise.all([
+      const [usersRes, flagsRes, quotasRes, sessRes, benchRes] = await Promise.all([
         api.get(`/api/platform/tenants/${id}/users`),
         api.get(`/api/platform/tenants/${id}/flags`),
         api.get(`/api/platform/tenants/${id}/quotas`),
+        api.get(`/api/platform/tenants/${id}/sessions`).catch(() => ({ data: { data: [] } })),
+        api.get(`/api/platform/tenants/${id}/benchmarks`).catch(() => ({ data: { data: null } })),
       ])
       setUsers(usersRes.data.data || [])
       setFlags(flagsRes.data.data || [])
       setQuotas(quotasRes.data.data || null)
+      setTenantSessions(sessRes.data.data || [])
+      setBenchmarks(benchRes.data.data || null)
     } catch {
       toast.error('Failed to load tenant details')
     }
@@ -137,6 +143,12 @@ const PlatformTenantAdmin = () => {
     toast.success(res.data.message || 'Demo flag updated')
     await loadTenants()
   }, null)
+
+  const revokeUserSessions = (userId, email) => act(`sess-${userId}`, async () => {
+    if (!window.confirm(`Force-logout ${email}? All their sessions are revoked.`)) return
+    await api.post(`/api/platform/tenants/${churchId}/users/${userId}/revoke-sessions`)
+    await loadTenant(churchId)
+  }, `Sessions revoked`)
 
   const offboard = () => act('offboard', async () => {
     const reason = window.prompt('Offboarding reason (audit-logged):')
@@ -348,6 +360,72 @@ const PlatformTenantAdmin = () => {
             <button onClick={() => extendTrial(14)} disabled={busy === 'trial'} className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)] disabled:opacity-50">+14 days</button>
             <button onClick={() => extendTrial(30)} disabled={busy === 'trial'} className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)] disabled:opacity-50">+30 days</button>
             <button onClick={endTrial} disabled={busy === 'trial'} className="px-3 py-2 rounded-lg border border-[var(--color-error)] text-sm text-[var(--color-error)] hover:bg-[var(--color-error-light)] disabled:opacity-50">End trial</button>
+          </div>
+        </Card>
+      </div>
+
+      {/* Benchmarks (10.5) + tenant sessions (6.4) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {benchmarks && (
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+              <Gauge className="h-5 w-5" /> Benchmarks
+            </h2>
+            <p className="text-xs text-[var(--color-textSecondary)] mb-4">Percentile rank vs all other active churches — 90 means &quot;ahead of 90% of the fleet&quot;.</p>
+            <div className="space-y-3">
+              {[
+                ['members', 'Members'],
+                ['users', 'User accounts'],
+                ['engagement_30d', '30-day engagement'],
+                ['payment_volume_90d', 'Payment volume (90d)'],
+                ['events', 'Events'],
+              ].map(([key, label]) => {
+                const m = benchmarks.vs_active_churches?.[key]
+                if (!m) return null
+                return (
+                  <div key={key}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-[var(--color-text)]">{label}</span>
+                      <span className="text-[var(--color-textSecondary)]">{m.value.toLocaleString()} · P{m.percentile}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-[var(--color-background)] overflow-hidden">
+                      <div className={`h-full rounded-full ${m.percentile >= 50 ? 'bg-[var(--color-success)]' : m.percentile >= 25 ? 'bg-[var(--color-warning)]' : 'bg-[var(--color-error)]'}`} style={{ width: `${Math.max(m.percentile, 2)}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
+        )}
+
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5" /> User Sessions
+          </h2>
+          <p className="text-xs text-[var(--color-textSecondary)] mb-4">Refresh-token sessions. Revoking forces the user to log in again on next token refresh.</p>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {(() => {
+              const byUser = {}
+              tenantSessions.forEach((s) => {
+                if (!byUser[s.user_id]) byUser[s.user_id] = { email: s.email, role: s.role, active: 0, total: 0 }
+                byUser[s.user_id].total += 1
+                if (s.status === 'active') byUser[s.user_id].active += 1
+              })
+              const entries = Object.entries(byUser)
+              return entries.length === 0
+                ? <p className="text-sm text-[var(--color-textSecondary)]">No sessions recorded.</p>
+                : entries.map(([uid, u]) => (
+                  <div key={uid} className="flex items-center justify-between p-2.5 rounded-lg bg-[var(--color-background)]">
+                    <div>
+                      <p className="text-sm font-medium text-[var(--color-text)]">{u.email}</p>
+                      <p className="text-xs text-[var(--color-textSecondary)]">{u.role} · {u.active} active / {u.total} total</p>
+                    </div>
+                    {u.active > 0 && (
+                      <button onClick={() => revokeUserSessions(uid, u.email)} disabled={busy === `sess-${uid}`} className="text-xs text-[var(--color-error)] hover:underline disabled:opacity-50">force logout</button>
+                    )}
+                  </div>
+                ))
+            })()}
           </div>
         </Card>
       </div>

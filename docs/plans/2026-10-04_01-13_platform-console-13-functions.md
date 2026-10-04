@@ -228,7 +228,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   across platform + all tenants.
 - [x] 6.3 IP blocking — `platform_ip_rules (ip/cidr, allow|deny,
   reason)`; enforcement middleware on both auth stacks.
-- [ ] 6.4 Session oversight — list active sessions per tenant user;
+- [x] 6.4 Session oversight — GET /tenants/:id/sessions lists
+  refresh-token sessions per church user; POST
+  /tenants/:id/users/:userId/revoke-sessions forces logout (audited);
+  sessions card on TenantAdmin. PARTIAL: access JWTs already issued live
+  out their TTL — revocation acts at refresh level.
   force-logout.
 - [x] 6.5 Credential rotation tracker — secrets registry (name, last
   rotated, owner); rotation reminders incl. the Daraja secrets item.
@@ -270,7 +274,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   incident → broadcast banner → resolve; status enum.
 - [x] 8.2 Tenant quarantine — `quarantined` flag on churches; middleware
   returns 503 notice for that tenant only.
-- [ ] 8.3 Rollback tooling — deploy tag/record list; document manual
+- [x] 8.3 Rollback tooling — platform_deploys (migration 083) records
+  version+sha at every server boot; GET /deploys + history card on Config
+  with the manual rollback note (checkout previous sha, rebuild, restart).
   rollback steps (automated rollback optional).
 - [x] 8.4 Forensic views — GET /audit-logs/forensics pivots
   actors/IPs/actions for a date window; GET /audit-logs/export streams CSV
@@ -304,7 +310,9 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 10.4 Usage reports — /analytics/usage per-tenant
   members/users/payments/volume table on PlatformAnalytics.
   (date-range selector still open)
-- [ ] 10.5 Benchmarks — percentile rank a church vs similar sizes.
+- [x] 10.5 Benchmarks — GET /tenants/:id/benchmarks computes PERCENT_RANK
+  vs all active churches (members, users, 30d engagement, 90d payment
+  volume, events); percentile bars on TenantAdmin.
 - [x] 10.6 Exports — GET /analytics/export.csv downloads current totals +
   tenants-per-month CSV, audited; Export button on the Analytics header.
 
@@ -345,8 +353,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
       Config page. PARTIAL: settings-only defaults — does not yet seed role
   categories, fiscal year used by tenant creation.
 - [ ] 13.4 Branding defaults — default theme assets for new churches.
-- [ ] 13.5 Integration config — M-Pesa/SMS/SMTP fallback credentials
-  editor (masked secrets, re-auth to reveal).
+- [x] 13.5 Integration config — GET /integrations/config reports env-var
+  PRESENCE per integration (M-Pesa/SMS/SMTP/Telegram/backups/secrets —
+  values never exposed) + editable non-secret integration_fallbacks;
+  card on Config. PARTIAL: no credential rotation workflow — presence
+  view + fallbacks only.
 - [x] 13.6 Maintenance mode — platform_settings.maintenance_mode flag
   (message + ends_at), maintenanceMode middleware 503s tenant API while
   platform/health stay up, toggle card on PlatformConfig.

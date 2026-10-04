@@ -9,7 +9,7 @@ const { pool } = require('../config/database');
 const { ROLE_PERMISSIONS } = require('../constants/platformPermissions');
 
 const PLATFORM_USER_ROLES = ['platform_admin', 'support_staff'];
-const EDITABLE_SETTINGS = new Set(['platform_name', 'support_email', 'tier_pricing', 'trial_days', 'new_tenant_defaults']);
+const EDITABLE_SETTINGS = new Set(['platform_name', 'support_email', 'tier_pricing', 'trial_days', 'new_tenant_defaults', 'integration_fallbacks']);
 
 /**
  * Platform Controller (SaaS Owner Dashboard)

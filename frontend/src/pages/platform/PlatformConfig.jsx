@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Flag, Server, Power, Sparkles } from 'lucide-react'
+import { Flag, Server, Power, Sparkles, Plug, History } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -19,20 +19,28 @@ const PlatformConfig = () => {
   const [newFlag, setNewFlag] = useState('')
   const [maintMsg, setMaintMsg] = useState('')
   const [defaultsJson, setDefaultsJson] = useState('')
+  const [deploys, setDeploys] = useState([])
+  const [intConfig, setIntConfig] = useState(null)
+  const [fallbacksJson, setFallbacksJson] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [f, v, m, s] = await Promise.all([
+      const [f, v, m, s, d, i] = await Promise.all([
         api.get('/api/platform/flags'),
         api.get('/api/platform/version'),
         api.get('/api/platform/maintenance'),
         api.get('/api/platform/settings'),
+        api.get('/api/platform/deploys').catch(() => ({ data: { data: [] } })),
+        api.get('/api/platform/integrations/config').catch(() => ({ data: { data: null } })),
       ])
       setFlags(f.data.data || [])
       setVersion(v.data.data)
       setMaintenance(m.data.data)
       setMaintMsg(m.data.data?.message || '')
       setDefaultsJson(JSON.stringify(s.data.data?.new_tenant_defaults || {}, null, 2))
+      setDeploys(d.data.data || [])
+      setIntConfig(i.data.data || null)
+      setFallbacksJson(JSON.stringify(i.data.data?.fallbacks || {}, null, 2))
     } catch {
       toast.error('Failed to load configuration')
     } finally {
@@ -54,6 +62,22 @@ const PlatformConfig = () => {
       toast.success(`Flag ${flag} ${enabled ? 'enabled' : 'disabled'}`)
     } catch {
       toast.error('Failed to update flag')
+    }
+  }
+
+  const saveFallbacks = async () => {
+    let parsed
+    try {
+      parsed = JSON.parse(fallbacksJson || '{}')
+    } catch {
+      toast.error('Fallbacks must be valid JSON')
+      return
+    }
+    try {
+      await api.put('/api/platform/settings', { integration_fallbacks: parsed })
+      toast.success('Integration fallbacks saved')
+    } catch {
+      toast.error('Failed to save fallbacks')
     }
   }
 
@@ -133,6 +157,55 @@ const PlatformConfig = () => {
         />
         <button onClick={saveDefaults} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium">Save defaults</button>
       </Card>
+
+      {/* Integration config (13.5) — presence only, values never shown */}
+      {intConfig && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2"><Plug className="h-5 w-5" /> Integrations</h2>
+          <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+            Which env-provided credentials are set on the server — values are never displayed.
+            Fallbacks are non-secret provider names stored in settings.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {Object.entries({ mpesa: 'M-Pesa', sms: 'SMS', smtp: 'Email (SMTP)', telegram: 'Telegram', backups: 'Backups', secrets: 'Platform secrets' }).map(([key, label]) => (
+              <div key={key} className="p-3 rounded-lg bg-[var(--color-background)]">
+                <p className="text-sm font-medium text-[var(--color-text)] mb-1">{label}</p>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                  {(intConfig[key] || []).map((v) => (
+                    <span key={v.env} className={`text-xs font-mono ${v.set ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}`}>
+                      {v.set ? '●' : '○'} {v.env}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <textarea
+            value={fallbacksJson}
+            onChange={(e) => setFallbacksJson(e.target.value)}
+            rows={3}
+            className={`${inputCls} w-full font-mono text-xs mb-3`}
+            placeholder='{"sms_fallback_provider": null}'
+          />
+          <button onClick={saveFallbacks} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm font-medium">Save fallbacks</button>
+        </Card>
+      )}
+
+      {/* Deploy history (8.3) */}
+      {deploys.length > 0 && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2"><History className="h-5 w-5" /> Deploy History</h2>
+          <p className="text-xs text-[var(--color-textSecondary)] mb-3">Recorded at each server boot. To roll back: checkout the previous sha on the VPS, rebuild, restart.</p>
+          <div className="space-y-1.5 max-h-56 overflow-y-auto">
+            {deploys.map((d) => (
+              <div key={d.id} className="flex items-center justify-between text-sm p-2 rounded bg-[var(--color-background)]">
+                <span className="font-mono text-[var(--color-text)]">{d.version}{d.sha ? ` · ${d.sha}` : ''}</span>
+                <span className="text-xs text-[var(--color-textSecondary)]">{d.environment} · {new Date(d.deployed_at).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {version && (
         <Card className="p-6">
