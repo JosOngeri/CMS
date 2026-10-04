@@ -138,7 +138,13 @@ class PaymentsController extends BaseController {
           category,
           notes: req.body.notes || null,
           paymentType: 'mpesa',
-          currency: 'KES'
+          currency: 'KES',
+          // Persist the itemized split for the payment-detail quickview —
+          // previously only the flattened `category` string survived.
+          paymentItems: req.body.payment_items.map(item => ({
+            category_name: item.category_name || 'general',
+            amount: parseFloat(item.amount || 0)
+          }))
         });
 
         // Actually send the M-Pesa STK push — creating the record alone

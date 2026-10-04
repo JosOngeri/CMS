@@ -218,9 +218,12 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async createPayment(paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes, churchId = null, paymentDate = null) {
-    const columns = 'payment_method_id, member_id, amount, payment_type, reference_number, transaction_id, processed_by, notes';
-    const values = '$1, $2, $3, $4, $5, $6, $7, $8';
-    const params = [paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes];
+    const columns = 'payment_method_id, member_id, amount, payment_type, reference_number, transaction_id, processed_by, notes, payment_items';
+    const values = '$1, $2, $3, $4, $5, $6, $7, $8, $9';
+    // Manual entries are single-category — still stored as an items array so
+    // the detail quickview renders the same breakdown shape for every row.
+    const params = [paymentMethodId, memberId, amount, paymentType, referenceNumber, transactionId, processedBy, notes,
+      JSON.stringify([{ category_name: paymentType || 'general', amount: parseFloat(amount || 0) }])];
 
     let extraCols = '';
     let extraVals = '';
@@ -244,14 +247,16 @@ class PaymentsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createPaymentFromFrontend({ userId, churchId, churchSlug, phoneNumber, amount, category, notes, paymentType, currency }) {
+  async createPaymentFromFrontend({ userId, churchId, churchSlug, phoneNumber, amount, category, notes, paymentType, currency, paymentItems = null }) {
     const result = await this.pool.query(
       `INSERT INTO payments (
         user_id, church_id, church_slug, phone_number, amount, category, notes,
-        payment_type, currency, status, payment_date, initiated_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', CURRENT_TIMESTAMP, $1)
+        payment_type, currency, status, payment_date, initiated_by, payment_items
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', CURRENT_TIMESTAMP, $1, $10)
        RETURNING *`,
-      [userId, churchId, churchSlug, phoneNumber, amount, category, notes, paymentType, currency]
+      [userId, churchId, churchSlug, phoneNumber, amount, category, notes, paymentType, currency,
+       // Keep the real [{category_name, amount}] split — the quickview shows it.
+       paymentItems ? JSON.stringify(paymentItems) : null]
     );
     return result.rows[0];
   }
