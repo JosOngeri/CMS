@@ -12,7 +12,9 @@ class NotificationService {
     this.notificationQueue = new Map();
     this.batchInterval = 5000; // 5 seconds batch interval
     this.batchTimer = null; // Store interval reference for cleanup
-    this.startBatchProcessor();
+    // Not under test: a 5s interval doing pool queries will eventually fire
+    // inside Jest's teardown window and crash the worker on exit.
+    if (process.env.NODE_ENV !== 'test') this.startBatchProcessor();
   }
 
   setIo(io) {
@@ -208,6 +210,10 @@ class NotificationService {
         }
       }
     }, this.batchInterval);
+    // Never let this timer alone keep the process alive — the HTTP listener
+    // does that in production, and unref'd stops Jest flagging a leaked
+    // handle after suites finish.
+    this.batchTimer.unref?.();
   }
 
   /**

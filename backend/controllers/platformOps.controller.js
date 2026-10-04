@@ -991,8 +991,13 @@ class PlatformOpsController extends BaseController {
             for (const col of strip) delete clean[col];
             return clean;
           });
-        } catch {
-          dump.tables[table] = { skipped: 'table not present in this schema' };
+        } catch (tableErr) {
+          // 42P01 = table genuinely absent (expected); anything else is a
+          // real failure we must not disguise as "not present".
+          this.logger.warn('exportTenant', `skipping ${table}: ${tableErr.message}`);
+          dump.tables[table] = tableErr.code === '42P01'
+            ? { skipped: 'table not present in this schema' }
+            : { skipped: `export error: ${tableErr.message}` };
         }
       }
 
