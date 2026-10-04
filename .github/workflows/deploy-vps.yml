@@ -63,11 +63,14 @@ jobs:
           pm2 restart kmaincms-backend
           # Caddy serves frontend/dist-new directly — no proxy restart needed
 
-          # External uptime probe: pings /api/health every 5 min from the VPS
-          # itself and records 'api.external' rows in platform_health.
+          # External uptime probe: pings the PUBLIC /api/health every 5 min
+          # and records 'api.external' rows in platform_health — a stale
+          # probe row (>15 min) surfaces as degraded on the status page.
+          # Log goes under the project dir: the deploy user can't write /var/log.
           # Idempotent — strips any previous entry before re-adding.
+          mkdir -p logs
           (crontab -l 2>/dev/null | grep -v 'uptimeProbe\.js'; \
-            echo '*/5 * * * * cd /var/www/CMS && node backend/scripts/uptimeProbe.js >> /var/log/uptime-probe.log 2>&1') | crontab -
+            echo '*/5 * * * * cd /var/www/CMS && PROBE_URL=https://cms.josongeri.co.ke/api/health node backend/scripts/uptimeProbe.js >> logs/uptime-probe.log 2>&1') | crontab -
           
     - name: Verify deployment
       run: |

@@ -17,8 +17,11 @@
 require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { pool } = require('../config/database');
 
+// PROBE_URL should point at the public domain when set — that exercises
+// Caddy + TLS too, not just the app. Fall back to the app port directly.
 const base = (process.env.PROBE_URL || '').trim() ||
-  `${(process.env.PUBLIC_BASE_URL || process.env.APP_URL || 'http://localhost:5000').replace(/\/+$/, '')}/api/health`;
+  `${(process.env.PUBLIC_BASE_URL || process.env.APP_URL ||
+     `http://localhost:${process.env.PORT || 5000}`).replace(/\/+$/, '')}/api/health`;
 
 const run = async () => {
   const started = process.hrtime.bigint();
