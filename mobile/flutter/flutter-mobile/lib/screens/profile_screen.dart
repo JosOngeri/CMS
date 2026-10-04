@@ -231,8 +231,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(userProvider);
-    
+    ref.watch(userProvider); // rebuild when the user object changes
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
@@ -241,7 +241,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
-              if (mounted) {
+              if (context.mounted) {
                 context.go('/login');
               }
             },

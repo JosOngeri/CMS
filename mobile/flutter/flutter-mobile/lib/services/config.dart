@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 class AppConfig {
-  // Development URLs
+  // Development URL — used by web dev builds only; native dev builds go
+  // through the production URL or the runtime override below.
   static const String _localDevApiUrl = 'http://localhost:5005/api';
-  static const String _emulatorApiUrl = 'http://10.0.2.2:5005/api';
-  static const String _physicalDeviceApiUrl = 'http://192.168.1.100:5005/api'; // Update with your local IP
 
   // Production (CMS) - configurable via environment variable
   // Set API_URL environment variable to override this default
