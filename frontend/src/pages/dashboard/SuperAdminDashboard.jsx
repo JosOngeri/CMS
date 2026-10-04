@@ -159,7 +159,7 @@ const SuperAdminDashboard = () => {
           changeType="neutral"
           icon={Users}
           statType="members"
-          linkTo="/dashboard/users"
+          linkTo="/dashboard/members"
         />
         <ChurchStatsCard
           title="Active Departments"

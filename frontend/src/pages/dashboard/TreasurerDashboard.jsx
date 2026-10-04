@@ -124,6 +124,8 @@ const TreasurerDashboard = () => {
 
       {/* Money totals */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Each card deep-links to the page that lists the rows behind the
+            number — Payment Management honours ?status= / ?period= params. */}
         <ChurchStatsCard
           title="Total Balance"
           value={fmtKES(stats.totalBalance)}
@@ -136,20 +138,20 @@ const TreasurerDashboard = () => {
         <ChurchStatsCard
           title="Pending Payments"
           value={stats.pendingPayments}
-          change="Need matching"
+          change="Awaiting confirmation"
           changeType={stats.pendingPayments > 0 ? 'negative' : 'positive'}
           icon={Clock}
           statType="default"
-          linkTo="/dashboard/treasury/reconciliations"
+          linkTo="/dashboard/payments/management?status=pending"
         />
         <ChurchStatsCard
           title="Monthly Income"
           value={fmtKES(stats.monthlyIncome)}
-          change="Money received"
+          change="Payments received"
           changeType="positive"
           icon={TrendingUp}
           statType="financial"
-          linkTo="/dashboard/treasury/reports"
+          linkTo="/dashboard/payments/management?status=completed&period=month"
         />
         <ChurchStatsCard
           title="Monthly Expenses"
@@ -187,7 +189,7 @@ const TreasurerDashboard = () => {
       <Card>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Transactions</h2>
-          <Link to="/dashboard/treasury/journal-entries" className="text-sm text-[var(--color-primary)] flex items-center gap-1">
+          <Link to="/dashboard/payments/management" className="text-sm text-[var(--color-primary)] flex items-center gap-1">
             View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

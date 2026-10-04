@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt, X } from 'lucide-react'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -36,10 +37,13 @@ const PaymentManagement = () => {
   const [members, setMembers] = useState([])
   const [paymentMethodRows, setPaymentMethodRows] = useState([])
   const [loading, setLoading] = useState(true)
+  // Deep-link support: ?status=pending&period=month pre-applies the list
+  // filters so dashboard stat cards land on exactly the rows they count.
+  const [searchParams] = useSearchParams()
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterStatus, setFilterStatus] = useState(() => searchParams.get('status') || 'all')
   const [filterMethod, setFilterMethod] = useState('all')
-  const [filterPeriod, setFilterPeriod] = useState('all')
+  const [filterPeriod, setFilterPeriod] = useState(() => searchParams.get('period') || 'all')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingPayment, setEditingPayment] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)

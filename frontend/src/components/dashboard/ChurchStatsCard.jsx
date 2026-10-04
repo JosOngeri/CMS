@@ -14,7 +14,7 @@
  * - ColorPaletteContext.jsx → reads church colours for icon backgrounds
  */
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, RefreshCw, AlertCircle, Users, DollarSign, Calendar, Heart, Building, TrendingUp } from 'lucide-react'
 import { useColorPalette } from '../../contexts/ColorPaletteContext'
 
@@ -35,6 +35,7 @@ const ChurchStatsCard = ({
   className = ''
 }) => {
   const { colors } = useColorPalette()
+  const navigate = useNavigate()
 
   // Church-specific visual metaphors for each stat type
   const getStatTypeStyles = (type) => {
@@ -91,7 +92,7 @@ const ChurchStatsCard = ({
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           if (onClick) onClick()
-          else if (linkTo) window.location.href = linkTo
+          else if (linkTo) navigate(linkTo)
         }
       }}
       aria-label={`${title}: ${value}. ${change ? `${changeType === 'positive' ? 'increased by' : 'decreased by'} ${change}` : ''}. ${linkTo || onClick ? 'Click to view details.' : ''}`}

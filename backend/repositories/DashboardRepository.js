@@ -20,9 +20,10 @@ class DashboardRepository extends BaseRepository {
          WHERE event_date >= CURRENT_DATE AND church_id = $1
        ),
        financial_stats AS (
-         SELECT SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS total_income
-         FROM transactions
-         WHERE status = 'approved' AND church_id = $1
+         -- Completed payments = the same rows Payment Management lists.
+         SELECT SUM(amount) AS total_income
+         FROM payments
+         WHERE status = 'completed' AND church_id = $1
        ),
        announcement_stats AS (
          SELECT COUNT(*) AS recent_announcements_count
@@ -597,34 +598,41 @@ class DashboardRepository extends BaseRepository {
     const churchFilter = churchId ? 'AND church_id = $1' : '';
     if (churchId) params.push(churchId);
 
-    const transactionsQuery = `
+    // Stats are computed from the same tables the destination pages list, so
+    // a number on the overview always matches what the treasurer sees after
+    // clicking through:
+    //   totalBalance    → completed payments − paid expenses (all time); the
+    //                     rows live on Payment Management and Expenses
+    //   monthlyIncome   → completed payments this month (Payment Management)
+    //   monthlyExpenses → expenses this month (Expenses page)
+    //   pendingPayments → pending payments (Payment Management)
+    // NOTE: `church_accounts`/`transactions` are shadowed legacy tables —
+    // no page lists them, so stats must not read from them.
+    const totalsQuery = `
       SELECT
-        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) -
-        COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) as total_balance,
-        COALESCE(SUM(CASE WHEN transaction_type = 'income' AND created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN amount ELSE 0 END), 0) as monthly_income,
-        COALESCE(SUM(CASE WHEN transaction_type = 'expense' AND created_at >= DATE_TRUNC('month', CURRENT_DATE) THEN amount ELSE 0 END), 0) as monthly_expenses
-      FROM transactions
-      WHERE status = 'approved'
-      ${churchFilter}
+        (SELECT COALESCE(SUM(amount), 0) FROM payments
+         WHERE status = 'completed' ${churchFilter})
+        -
+        (SELECT COALESCE(SUM(amount), 0) FROM expenses
+         WHERE status = 'paid' ${churchFilter}) AS total_balance,
+        (SELECT COALESCE(SUM(amount), 0) FROM payments
+         WHERE status = 'completed'
+           AND created_at >= DATE_TRUNC('month', CURRENT_DATE) ${churchFilter}) AS monthly_income,
+        (SELECT COALESCE(SUM(amount), 0) FROM expenses
+         WHERE expense_date >= DATE_TRUNC('month', CURRENT_DATE)
+           AND status <> 'rejected' ${churchFilter}) AS monthly_expenses,
+        (SELECT COUNT(*) FROM payments
+         WHERE status = 'pending' ${churchFilter}) AS pending_payments
     `;
 
-    const pendingPaymentsQuery = `
-      SELECT COUNT(*) as pending_payments
-      FROM payments
-      WHERE status = 'pending'
-      ${churchFilter}
-    `;
-
-    const [txResult, pendingResult] = await Promise.all([
-      this.pool.query(transactionsQuery, [...params]),
-      this.pool.query(pendingPaymentsQuery, [...params])
-    ]);
+    const result = await this.pool.query(totalsQuery, params);
+    const row = result.rows[0] || {};
 
     return {
-      totalBalance: parseFloat(txResult.rows[0]?.total_balance) || 0,
-      pendingPayments: parseInt(pendingResult.rows[0]?.pending_payments) || 0,
-      monthlyIncome: parseFloat(txResult.rows[0]?.monthly_income) || 0,
-      monthlyExpenses: parseFloat(txResult.rows[0]?.monthly_expenses) || 0
+      totalBalance: parseFloat(row.total_balance) || 0,
+      pendingPayments: parseInt(row.pending_payments) || 0,
+      monthlyIncome: parseFloat(row.monthly_income) || 0,
+      monthlyExpenses: parseFloat(row.monthly_expenses) || 0
     };
   }
 
@@ -687,30 +695,43 @@ class DashboardRepository extends BaseRepository {
     };
   }
 
-  // Recent transactions for Treasurer
+  // Recent money activity for the Treasurer dashboard. Sourced from payments
+  // (money in) and expenses (money out) — the same rows listed on Payment
+  // Management and the Expenses page, so the feed never shows phantom entries.
   async getTransactions(limit = 20, churchId = null) {
-    let query = `
-      SELECT t.*,
-             CASE
-               WHEN t.transaction_type = 'income' THEN m.first_name || ' ' || m.last_name
-               ELSE t.description
-             END as description
-      FROM transactions t
-      LEFT JOIN members m ON t.member_id = m.id
-      WHERE t.status = 'approved'
+    const params = [limit];
+    // Table-qualified filters — payments joins members which also has church_id.
+    const paymentsChurch = churchId ? 'AND p.church_id = $2' : '';
+    const expensesChurch = churchId ? 'AND e.church_id = $2' : '';
+    if (churchId) params.push(churchId);
+
+    const paymentsQuery = `
+      SELECT p.id, 'income' AS type,
+             'Payment from ' || COALESCE(m.first_name || ' ' || m.last_name, 'Unknown member') AS title,
+             COALESCE(p.payment_method::text, 'M-Pesa') AS description,
+             p.amount, p.created_at AS time
+      FROM payments p
+      LEFT JOIN members m ON p.member_id = m.id
+      WHERE p.status = 'completed' ${paymentsChurch}
     `;
-    const params = [];
 
-    if (churchId) {
-      query += ` AND t.church_id = $1`;
-      params.push(churchId);
-    }
+    const expensesQuery = `
+      SELECT e.id, 'expense' AS type,
+             e.description AS title,
+             'Expense' AS description,
+             e.amount, e.created_at AS time
+      FROM expenses e
+      WHERE e.status <> 'rejected' ${expensesChurch}
+    `;
 
-    query += ` ORDER BY t.created_at DESC LIMIT $${params.length + 1}`;
-    params.push(limit);
+    const [payments, expenses] = await Promise.all([
+      this.pool.query(`${paymentsQuery} ORDER BY p.created_at DESC LIMIT $1`, params),
+      this.pool.query(`${expensesQuery} ORDER BY e.created_at DESC LIMIT $1`, params).catch(() => ({ rows: [] }))
+    ]);
 
-    const result = await this.pool.query(query, params);
-    return result.rows;
+    return [...payments.rows, ...expenses.rows]
+      .sort((a, b) => new Date(b.time) - new Date(a.time))
+      .slice(0, limit);
   }
 
   // Get user's departments for Department Head dashboard
