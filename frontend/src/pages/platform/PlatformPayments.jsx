@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CreditCard, AlertOctagon, CheckCircle, XCircle, Undo2, MessageSquareText } from 'lucide-react'
+import { CreditCard, AlertOctagon, CheckCircle, XCircle, Undo2, MessageSquareText, FileUp } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { fmtDateTime } from '../../utils/format'
+import { csvToObjects } from '../../utils/csv'
 
 /**
  * §5 Payments & Oversight — cross-tenant payment feed + the stuck-payment
@@ -62,6 +63,37 @@ const PlatformPayments = () => {
     }
   }
 
+  const [reconResult, setReconResult] = useState(null)
+
+  // M-Pesa statement CSV -> {reference, amount, date} rows for the matcher.
+  const importStatement = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const text = await file.text()
+    const { objects } = csvToObjects(text)
+    const rows = objects.map((o) => ({
+      reference: o.receipt_no || o.receipt || o.transaction_receipt || o.reference || '',
+      amount: o.paid_in || o.paidin || o.amount || '',
+      date: o.completion_time || o.completion || o.date || '',
+    })).filter((r) => r.reference)
+    if (rows.length === 0) {
+      toast.error('No receipt numbers found — is this an M-Pesa statement CSV?')
+      return
+    }
+    setBusy('statement')
+    try {
+      const res = await api.post('/api/platform/payments/reconcile-statement', { rows })
+      setReconResult(res.data.data)
+      toast.success(res.data.message || 'Statement reconciled')
+      await load()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Statement reconciliation failed')
+    } finally {
+      setBusy('')
+    }
+  }
+
   const decideRefund = async (id, decision) => {
     const note = window.prompt(`Reason for ${decision} (audit-logged):`)
     if (note === null) return
@@ -93,8 +125,33 @@ const PlatformPayments = () => {
           <button onClick={() => setTab('stuck')} className={tabCls('stuck')}><AlertOctagon className="h-4 w-4 inline mr-1" />Stuck ({stuck.length})</button>
           <button onClick={() => setTab('refunds')} className={tabCls('refunds')}><Undo2 className="h-4 w-4 inline mr-1" />Refunds ({refunds.filter((r) => r.status === 'pending').length})</button>
           <button onClick={() => setTab('sms')} className={tabCls('sms')}><MessageSquareText className="h-4 w-4 inline mr-1" />SMS ledger</button>
+          <label className={`${tabCls('x')} inline-flex items-center cursor-pointer border border-[var(--color-border)] ${busy === 'statement' ? 'opacity-50' : ''}`}>
+            <FileUp className="h-4 w-4 inline mr-1" />{busy === 'statement' ? 'Reconciling…' : 'Import statement'}
+            <input type="file" accept=".csv,text/csv" onChange={importStatement} disabled={busy === 'statement'} className="hidden" />
+          </label>
         </div>
       </div>
+
+      {reconResult && (
+        <Card className="p-6 border-2 border-[var(--color-primary-light)]">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">Last reconciliation</h2>
+            <button onClick={() => setReconResult(null)} className="text-xs text-[var(--color-textSecondary)] hover:underline">dismiss</button>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div className="p-3 rounded-lg bg-[var(--color-success-light)]"><p className="text-2xl font-bold text-[var(--color-success)]">{reconResult.completedNow?.length || 0}</p><p className="text-xs text-[var(--color-textSecondary)]">marked paid</p></div>
+            <div className="p-3 rounded-lg bg-[var(--color-background)]"><p className="text-2xl font-bold text-[var(--color-text)]">{reconResult.alreadySettled?.length || 0}</p><p className="text-xs text-[var(--color-textSecondary)]">already settled</p></div>
+            <div className="p-3 rounded-lg bg-[var(--color-warning-light)]"><p className="text-2xl font-bold text-[var(--color-warning)]">{reconResult.unmatched?.length || 0}</p><p className="text-xs text-[var(--color-textSecondary)]">statement unmatched</p></div>
+            <div className="p-3 rounded-lg bg-[var(--color-error-light)]"><p className="text-2xl font-bold text-[var(--color-error)]">{reconResult.stillPending?.length || 0}</p><p className="text-xs text-[var(--color-textSecondary)]">still pending</p></div>
+          </div>
+          {reconResult.unmatched?.length > 0 && (
+            <details className="mt-3 text-xs text-[var(--color-textSecondary)]">
+              <summary className="cursor-pointer">Unmatched statement rows ({reconResult.unmatched.length})</summary>
+              <pre className="mt-2 p-3 rounded bg-[var(--color-background)] overflow-x-auto">{reconResult.unmatched.map((u) => `${u.reference}  ${u.amount}  ${u.date}`).join('\n')}</pre>
+            </details>
+          )}
+        </Card>
+      )}
 
       {tab === 'feed' && (
         <Card className="p-6">

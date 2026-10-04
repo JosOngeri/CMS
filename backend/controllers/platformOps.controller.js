@@ -146,8 +146,9 @@ class PlatformOpsController extends BaseController {
     try {
       const result = await pool.query(
         `SELECT p.id, p.church_id, c.name AS church_name, p.amount, p.currency,
-                p.status, p.payment_method, p.transaction_reference, p.created_at,
-                p.member_id, p.user_id
+                p.status, p.payment_method,
+                COALESCE(p.mpesa_receipt_number, p.mpesa_receipt, p.reference_number) AS transaction_reference,
+                p.created_at, p.member_id, p.user_id
          FROM payments p
          JOIN churches c ON c.id = p.church_id
          ${clauses.length ? 'WHERE ' + clauses.join(' AND ') : ''}
@@ -173,7 +174,9 @@ class PlatformOpsController extends BaseController {
     try {
       const result = await pool.query(
         `SELECT p.id, p.church_id, c.name AS church_name, p.amount, p.currency,
-                p.status, p.transaction_reference, p.created_at,
+                p.status,
+                COALESCE(p.mpesa_receipt_number, p.mpesa_receipt, p.reference_number) AS transaction_reference,
+                p.created_at,
                 CURRENT_TIMESTAMP - p.created_at AS stuck_for
          FROM payments p
          JOIN churches c ON c.id = p.church_id
@@ -998,6 +1001,87 @@ class PlatformOpsController extends BaseController {
     } catch (error) {
       this.logger.error('exportTenant', error);
       this.error(res, 'Export failed');
+    }
+  }
+
+  /**
+   * POST /payments/reconcile-statement — 5.3 M-Pesa statement import.
+   * Accepts normalized rows (frontend parses the CSV): {reference, amount,
+   * date}. Matches payments by transaction_reference; pending matches are
+   * auto-completed, the rest come back classified for review.
+   */
+  async reconcileStatement(req, res) {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows.slice(0, 5000) : [];
+    if (rows.length === 0) return this.badRequest(res, 'rows[] required — parsed M-Pesa statement entries');
+    const refs = [...new Set(rows.map((r) => String(r.reference || '').trim()).filter(Boolean))];
+    if (refs.length === 0) return this.badRequest(res, 'No transaction references found in rows');
+
+    try {
+      const { rows: payments } = await pool.query(
+        `SELECT p.id, p.church_id, c.name AS church_name, p.amount, p.status,
+                COALESCE(p.mpesa_receipt_number, p.mpesa_receipt, p.reference_number) AS transaction_reference,
+                p.created_at
+           FROM payments p JOIN churches c ON c.id = p.church_id
+          WHERE p.mpesa_receipt_number = ANY($1::text[])
+             OR p.mpesa_receipt = ANY($1::text[])
+             OR p.reference_number = ANY($1::text[])`,
+        [refs]
+      );
+      const byRef = new Map(payments.map((p) => [p.transaction_reference, p]));
+
+      const completedNow = [];
+      const alreadySettled = [];
+      const unmatched = [];
+      for (const row of rows) {
+        const ref = String(row.reference || '').trim();
+        if (!ref) continue;
+        const p = byRef.get(ref);
+        if (!p) { unmatched.push({ reference: ref, amount: row.amount, date: row.date }); continue; }
+        if (p.status === 'pending') {
+          completedNow.push(p);
+        } else {
+          alreadySettled.push({ reference: ref, status: p.status, church: p.church_name });
+        }
+      }
+
+      if (completedNow.length > 0) {
+        await pool.query(
+          `UPDATE payments SET status = 'completed', updated_at = CURRENT_TIMESTAMP
+            WHERE id = ANY($1::uuid[])`,
+          [completedNow.map((p) => p.id)]
+        );
+      }
+
+      // Pending payments NOT covered by this statement — still stuck.
+      const stillPending = await pool.query(
+        `SELECT p.id, c.name AS church_name, p.amount,
+                COALESCE(p.mpesa_receipt_number, p.mpesa_receipt, p.reference_number) AS transaction_reference,
+                p.created_at
+           FROM payments p JOIN churches c ON c.id = p.church_id
+          WHERE p.status = 'pending'
+            AND p.created_at < CURRENT_TIMESTAMP - INTERVAL '24 hours'
+          ORDER BY p.created_at LIMIT 100`
+      );
+
+      await auditPlatformAction(req, {
+        action: 'payments.statement_reconciled',
+        details: {
+          statement_rows: rows.length,
+          completed_now: completedNow.length,
+          already_settled: alreadySettled.length,
+          unmatched: unmatched.length,
+        },
+      });
+
+      this.success(res, {
+        completedNow: completedNow.map((p) => ({ id: p.id, reference: p.transaction_reference, church: p.church_name, amount: p.amount })),
+        alreadySettled,
+        unmatched,
+        stillPending: stillPending.rows,
+      }, `Reconciled ${completedNow.length} payment(s) from ${rows.length} statement rows`);
+    } catch (error) {
+      this.logger.error('reconcileStatement', error);
+      this.error(res, 'Statement reconciliation failed');
     }
   }
 

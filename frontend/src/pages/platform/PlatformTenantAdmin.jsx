@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff, Zap, LayoutTemplate, MessagesSquare, Send } from 'lucide-react'
+import { UserCog, KeyRound, ToggleLeft, Gauge, Eye, ShieldAlert, CheckCircle, CalendarClock, ListChecks, Settings2, Download, ShieldOff, Zap, LayoutTemplate, MessagesSquare, Send, FileUp } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
 import { fmtDateTime } from '../../utils/format'
+import { csvToObjects } from '../../utils/csv'
 
 /**
  * §2 Tenant Administration — reach into a church to fix accounts, limits,
@@ -29,6 +30,8 @@ const PlatformTenantAdmin = () => {
   const [templateId, setTemplateId] = useState('')
   const [messages, setMessages] = useState([])
   const [messageDraft, setMessageDraft] = useState('')
+  const [importPreview, setImportPreview] = useState(null) // {rows, errors}
+  const [importResult, setImportResult] = useState(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
@@ -205,6 +208,42 @@ const PlatformTenantAdmin = () => {
     if (!templateId) return toast.error('Pick a template first')
     const res = await api.post(`/api/platform/tenants/${churchId}/apply-template`, { templateId: Number(templateId) })
     toast.success(res.data.message || 'Template applied')
+  }, null)
+
+  // 7.3 member CSV import — map common column names to member fields.
+  const pickMemberFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const text = await file.text()
+    const { objects } = csvToObjects(text)
+    const rows = objects.map((o) => ({
+      first_name: o.first_name || o.firstname || o.given_name || (o.name || '').split(' ')[0] || '',
+      last_name: o.last_name || o.lastname || o.surname || (o.name || '').split(' ').slice(1).join(' ') || '',
+      phone: o.phone || o.phone_number || o.mobile || '',
+      email: o.email || '',
+      gender: o.gender || o.sex || '',
+      date_of_birth: o.date_of_birth || o.dob || '',
+      marital_status: o.marital_status || '',
+      occupation: o.occupation || '',
+      address: o.address || '',
+      city: o.city || '',
+      joined_date: o.joined_date || o.joined || o.registration_date || '',
+      membership_status: o.membership_status || o.status || '',
+    })).filter((r) => r.first_name || r.last_name)
+    if (rows.length === 0) {
+      toast.error('No member rows found — the CSV needs a header row with name columns')
+      return
+    }
+    setImportResult(null)
+    setImportPreview(rows)
+  }
+
+  const runMemberImport = () => act('members-import', async () => {
+    const res = await api.post(`/api/platform/tenants/${churchId}/members/import`, { rows: importPreview })
+    setImportResult(res.data.data)
+    setImportPreview(null)
+    toast.success(res.data.message || 'Import complete')
   }, null)
 
   const sendMessage = () => act('msg', async () => {
@@ -616,6 +655,39 @@ const PlatformTenantAdmin = () => {
             <Send className="h-4 w-4" /> Send
           </button>
         </div>
+      </Card>
+
+      {/* 7.3 member CSV import */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1 flex items-center gap-2">
+          <FileUp className="h-5 w-5" /> Import Members
+        </h2>
+        <p className="text-xs text-[var(--color-textSecondary)] mb-4">
+          Upload a member CSV — header row required. Recognizes first_name/last_name (or name), phone, email, gender, dob, address, city, joined_date. Duplicates on name+phone are skipped.
+        </p>
+        <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm text-[var(--color-text)] hover:bg-[var(--color-surface)] cursor-pointer">
+          <FileUp className="h-4 w-4" /> Choose CSV file
+          <input type="file" accept=".csv,text/csv" onChange={pickMemberFile} className="hidden" />
+        </label>
+        {importPreview && (
+          <div className="mt-4">
+            <p className="text-sm text-[var(--color-text)] mb-2"><strong>{importPreview.length}</strong> rows parsed — first 3:</p>
+            <pre className="p-3 rounded bg-[var(--color-background)] text-xs text-[var(--color-textSecondary)] overflow-x-auto">{JSON.stringify(importPreview.slice(0, 3), null, 2)}</pre>
+            <div className="flex gap-2 mt-3">
+              <button onClick={runMemberImport} disabled={busy === 'members-import'} className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-[var(--color-on-solid)] text-sm disabled:opacity-50">
+                {busy === 'members-import' ? 'Importing…' : `Import ${importPreview.length} members`}
+              </button>
+              <button onClick={() => setImportPreview(null)} className="px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">Cancel</button>
+            </div>
+          </div>
+        )}
+        {importResult && (
+          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+            <div className="p-3 rounded-lg bg-[var(--color-success-light)]"><p className="text-xl font-bold text-[var(--color-success)]">{importResult.inserted}</p><p className="text-xs text-[var(--color-textSecondary)]">inserted</p></div>
+            <div className="p-3 rounded-lg bg-[var(--color-background)]"><p className="text-xl font-bold text-[var(--color-text)]">{importResult.skipped}</p><p className="text-xs text-[var(--color-textSecondary)]">duplicates</p></div>
+            <div className="p-3 rounded-lg bg-[var(--color-error-light)]"><p className="text-xl font-bold text-[var(--color-error)]">{importResult.errors?.length || 0}</p><p className="text-xs text-[var(--color-textSecondary)]">failed</p></div>
+          </div>
+        )}
       </Card>
     </div>
   )

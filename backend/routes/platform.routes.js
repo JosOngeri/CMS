@@ -69,6 +69,8 @@ router.post('/tenants/:id/apply-template', authenticatePlatformUser, requirePlat
 // 11.2: platform <-> church admin messaging thread
 router.get('/tenants/:id/messages', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.getTenantMessages);
 router.post('/tenants/:id/messages', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.sendTenantMessage);
+// 7.3: member CSV import wizard (rows normalized client-side)
+router.post('/tenants/:id/members/import', authenticatePlatformUser, requirePlatformPermission('tenant:manage'), platformTenancyController.importTenantMembers);
 router.post('/tenants/purge-demos', authenticatePlatformUser, requirePlatformPermission('data:export'), platformTenancyController.purgeDemoTenants);
 router.get('/tenants/:id', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantById);
 router.get('/tenants/:id/stats', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformController.getTenantStats);
@@ -116,6 +118,8 @@ router.post('/payments/:id/reconcile', authenticatePlatformUser, requirePlatform
 // 5.4 refund oversight + 5.5 per-tenant SMS ledger
 router.get('/payments/refunds', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getRefunds);
 router.post('/payments/refunds/:id/decision', authenticatePlatformUser, requirePlatformPermission('payments:manage'), platformOpsController.decideRefund);
+// 5.3: M-Pesa statement import + auto-matching (parsed client-side)
+router.post('/payments/reconcile-statement', authenticatePlatformUser, requirePlatformPermission('payments:manage'), platformOpsController.reconcileStatement);
 router.get('/sms-ledger', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getSmsLedger);
 
 // ── §6 Security & Compliance ────────────────────────────────────────────

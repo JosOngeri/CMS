@@ -228,7 +228,13 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   joining all churches' payments; filter by church/status/date.
 - [x] 5.2 Failed & stuck queue — pending > 24h + webhook mismatches;
   "reconcile to completed/failed" action; uses F3 audit.
-- [ ] 5.3 Reconciliation — upload/import M-Pesa statement, match to
+- [x] 5.3 Reconciliation — "Import statement" on Payments parses the
+  M-Pesa CSV client-side (utils/csv.js) and POSTs rows to
+  /payments/reconcile-statement; server matches mpesa_receipt_number/
+  mpesa_receipt/reference_number, auto-completes pending payments, and
+  returns matched/unmatched/still-pending buckets. Also fixed: the feed
+  + stuck queue selected a nonexistent transaction_reference column —
+  now COALESCEd from the real receipt columns.
   payments, flag orphans.
 - [x] 5.4 Refund oversight — GET /payments/refunds (cross-tenant list)
   + POST /payments/refunds/:id/decision approve|reject (pending-only,
@@ -278,7 +284,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
       table list, not all 100+ tables; needs a formal data-coverage review
       and signed/queued downloads for large churches.
   as zipped CSV/JSON, signed-URL download, audit-logged.
-- [ ] 7.3 Import tooling — member CSV import wizard reusing the church
+- [x] 7.3 Import tooling — shared memberImport.service (normalize,
+  validate, name+phone dedup, per-row errors); platform
+  POST /tenants/:id/members/import (audited) with CSV preview on
+  TenantAdmin; church-side POST /api/members/import for admin roles so
+  the church app reuses the same pipeline.
   import path; preview + error report.
 - [x] 7.4 Storage usage — per-tenant media/doc sizes on fleet cards +
   quota flags.

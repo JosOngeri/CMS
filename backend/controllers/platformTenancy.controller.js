@@ -13,6 +13,7 @@ const BaseController = require('./BaseController');
 const { pool } = require('../config/database');
 const { auditPlatformAction } = require('../services/platformAudit.service');
 const { startImpersonation, endImpersonation, listImpersonations } = require('../services/platformImpersonation.service');
+const { importMembers } = require('../services/memberImport.service');
 const { createLogger } = require('../helpers/controllerLogger');
 
 const IMPERSONATION_COOKIE_MAX_AGE = 60 * 60 * 1000; // cap cookie at 1h; token TTL is shorter anyway
@@ -824,6 +825,29 @@ class PlatformTenancyController extends BaseController {
       if (error.code === '42P01') return this.success(res, []);
       this.logger.error('getTenantMessages', error);
       this.error(res, 'Failed to load messages');
+    }
+  }
+
+  /**
+   * 7.3 member CSV import wizard — the frontend parses the file and posts
+   * normalized rows; the shared service dedups on name+phone per church.
+   */
+  async importTenantMembers(req, res) {
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : null;
+    if (!rows || rows.length === 0) return this.badRequest(res, 'rows[] required — parsed member records');
+    try {
+      const church = await pool.query('SELECT id, name FROM churches WHERE id = $1', [req.params.id]);
+      if (church.rows.length === 0) return this.notFound(res, 'Church not found');
+      const result = await importMembers(req.params.id, rows);
+      await auditPlatformAction(req, {
+        action: 'tenant.members_imported',
+        tenantId: req.params.id,
+        details: { inserted: result.inserted, skipped: result.skipped, failed: result.errors.length },
+      });
+      this.success(res, result, `Import complete: ${result.inserted} inserted, ${result.skipped} duplicates skipped, ${result.errors.length} failed`);
+    } catch (error) {
+      this.logger.error('importTenantMembers', error);
+      this.error(res, 'Member import failed');
     }
   }
 
