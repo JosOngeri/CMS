@@ -62,6 +62,12 @@ jobs:
 
           pm2 restart kmaincms-backend
           # Caddy serves frontend/dist-new directly — no proxy restart needed
+
+          # External uptime probe: pings /api/health every 5 min from the VPS
+          # itself and records 'api.external' rows in platform_health.
+          # Idempotent — strips any previous entry before re-adding.
+          (crontab -l 2>/dev/null | grep -v 'uptimeProbe\.js'; \
+            echo '*/5 * * * * cd /var/www/CMS && node backend/scripts/uptimeProbe.js >> /var/log/uptime-probe.log 2>&1') | crontab -
           
     - name: Verify deployment
       run: |
