@@ -226,6 +226,10 @@ app.use('/api', require('./middleware/platformIpRules'));
 // on; /api/platform/*, /api/health and CSRF stay up so ops keep working.
 app.use('/api', require('./middleware/maintenanceMode'));
 
+// Uptime & latency (4.3) — times every API call; a sliding window is
+// summarized into platform_health (service 'api.http') at most every 5m.
+app.use('/api', require('./middleware/uptimeMetrics'));
+
 // Global API baseline rate limit (100 req/min per IP in prod) — per-route
 // stricter limiters still apply on top of this for sensitive mounts.
 app.use('/api', apiLimiter);

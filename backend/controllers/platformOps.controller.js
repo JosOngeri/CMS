@@ -219,6 +219,90 @@ class PlatformOpsController extends BaseController {
     }
   }
 
+  /**
+   * GET /payments/refunds — cross-tenant refund oversight (§5.4).
+   */
+  async getRefunds(req, res) {
+    const { status } = req.query;
+    const clauses = [];
+    const params = [];
+    if (status) { params.push(status); clauses.push(`r.status = $${params.length}`); }
+    try {
+      const result = await pool.query(
+        `SELECT r.id, r.church_id, c.name AS church_name, r.payment_id,
+                r.amount, r.reason, r.status, r.created_at, r.updated_at
+         FROM refunds r
+         JOIN churches c ON c.id = r.church_id
+         ${clauses.length ? 'WHERE ' + clauses.join(' AND ') : ''}
+         ORDER BY r.created_at DESC LIMIT 200`,
+        params
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getRefunds', error);
+      this.error(res, 'Failed to fetch refunds');
+    }
+  }
+
+  /**
+   * POST /payments/refunds/:id/decision — platform approve/reject of a
+   * pending refund (§5.4). The platform actor lives in the audit trail;
+   * refunds.processed_by is a church-user FK and stays untouched.
+   */
+  async decideRefund(req, res) {
+    const { id } = req.params;
+    const { decision, note } = req.body || {};
+    if (!['approved', 'rejected'].includes(decision)) {
+      return this.badRequest(res, "decision must be 'approved' or 'rejected'");
+    }
+    try {
+      const result = await pool.query(
+        `UPDATE refunds SET status = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1 AND status = 'pending'
+         RETURNING id, church_id, payment_id, amount, status`,
+        [id, decision]
+      );
+      if (result.rows.length === 0) return this.notFound(res, 'Refund not found or already decided');
+      await auditPlatformAction(req, {
+        action: 'payments.refund_decided',
+        tenantId: result.rows[0].church_id,
+        resourceType: 'refund',
+        resourceId: id,
+        details: { decision, note: note || null, payment_id: result.rows[0].payment_id, amount: result.rows[0].amount }
+      });
+      this.success(res, result.rows[0], `Refund ${decision}`);
+    } catch (error) {
+      this.logger.error('decideRefund', error);
+      this.error(res, 'Failed to decide refund');
+    }
+  }
+
+  /**
+   * GET /sms-ledger — per-tenant SMS spend view (§5.5): send counts by
+   * status over the last 30 days, last activity and remaining credits.
+   * sms_logs has no church_id — the sender's user row provides the scope.
+   */
+  async getSmsLedger(req, res) {
+    try {
+      const result = await pool.query(
+        `SELECT c.id, c.name, c.sms_credits,
+                COUNT(s.id) FILTER (WHERE s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS sent_30d,
+                COUNT(s.id) FILTER (WHERE s.status IN ('failed','error') AND s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS failed_30d,
+                COUNT(s.id) AS total_sent,
+                MAX(s.sent_at) AS last_sent_at
+         FROM churches c
+         LEFT JOIN users u ON u.church_id = c.id
+         LEFT JOIN sms_logs s ON s.sender_id = u.id
+         GROUP BY c.id, c.name, c.sms_credits
+         ORDER BY sent_30d DESC, c.name`
+      );
+      this.success(res, result.rows);
+    } catch (error) {
+      this.logger.error('getSmsLedger', error);
+      this.error(res, 'Failed to compute SMS ledger');
+    }
+  }
+
   // ── §6 Security & Compliance ──────────────────────────────────────────
 
   /**

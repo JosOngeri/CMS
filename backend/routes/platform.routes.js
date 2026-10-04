@@ -99,6 +99,10 @@ router.patch('/alert-rules/:id', authenticatePlatformUser, requirePlatformPermis
 router.get('/payments', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getPaymentFeed);
 router.get('/payments/stuck', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getStuckPayments);
 router.post('/payments/:id/reconcile', authenticatePlatformUser, requirePlatformPermission('payments:manage'), platformOpsController.reconcilePayment);
+// 5.4 refund oversight + 5.5 per-tenant SMS ledger
+router.get('/payments/refunds', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getRefunds);
+router.post('/payments/refunds/:id/decision', authenticatePlatformUser, requirePlatformPermission('payments:manage'), platformOpsController.decideRefund);
+router.get('/sms-ledger', authenticatePlatformUser, requirePlatformPermission('payments:read'), platformOpsController.getSmsLedger);
 
 // ── §6 Security & Compliance ────────────────────────────────────────────
 router.get('/security', authenticatePlatformUser, requirePlatformPermission('security:read'), platformOpsController.getSecurityCenter);

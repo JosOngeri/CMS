@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { CreditCard, AlertOctagon, CheckCircle, XCircle } from 'lucide-react'
+import { CreditCard, AlertOctagon, CheckCircle, XCircle, Undo2, MessageSquareText } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
@@ -22,18 +22,24 @@ const PlatformPayments = () => {
   const [tab, setTab] = useState('feed')
   const [payments, setPayments] = useState([])
   const [stuck, setStuck] = useState([])
+  const [refunds, setRefunds] = useState([])
+  const [smsLedger, setSmsLedger] = useState([])
   const [filter, setFilter] = useState({ status: '' })
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [feedRes, stuckRes] = await Promise.all([
+      const [feedRes, stuckRes, refundsRes, smsRes] = await Promise.all([
         api.get('/api/platform/payments', { params: { limit: 100, ...(filter.status && { status: filter.status }) } }),
         api.get('/api/platform/payments/stuck'),
+        api.get('/api/platform/payments/refunds'),
+        api.get('/api/platform/sms-ledger'),
       ])
       setPayments(feedRes.data.data?.payments || [])
       setStuck(stuckRes.data.data || [])
+      setRefunds(refundsRes.data.data || [])
+      setSmsLedger(smsRes.data.data || [])
     } catch {
       toast.error('Failed to load payments')
     } finally {
@@ -56,6 +62,21 @@ const PlatformPayments = () => {
     }
   }
 
+  const decideRefund = async (id, decision) => {
+    const note = window.prompt(`Reason for ${decision} (audit-logged):`)
+    if (note === null) return
+    setBusy(id)
+    try {
+      await api.post(`/api/platform/payments/refunds/${id}/decision`, { decision, note: note.trim() })
+      toast.success(`Refund ${decision}`)
+      await load()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Decision failed')
+    } finally {
+      setBusy('')
+    }
+  }
+
   if (loading) return <FullPageLoading message="Loading payments..." />
 
   const tabCls = (t) => `px-4 py-2 rounded-lg text-sm font-medium ${tab === t ? 'bg-[var(--color-primary)] text-[var(--color-on-solid)]' : 'text-[var(--color-text)] hover:bg-[var(--color-surface)]'}`
@@ -70,6 +91,8 @@ const PlatformPayments = () => {
         <div className="flex gap-2">
           <button onClick={() => setTab('feed')} className={tabCls('feed')}><CreditCard className="h-4 w-4 inline mr-1" />Feed</button>
           <button onClick={() => setTab('stuck')} className={tabCls('stuck')}><AlertOctagon className="h-4 w-4 inline mr-1" />Stuck ({stuck.length})</button>
+          <button onClick={() => setTab('refunds')} className={tabCls('refunds')}><Undo2 className="h-4 w-4 inline mr-1" />Refunds ({refunds.filter((r) => r.status === 'pending').length})</button>
+          <button onClick={() => setTab('sms')} className={tabCls('sms')}><MessageSquareText className="h-4 w-4 inline mr-1" />SMS ledger</button>
         </div>
       </div>
 
@@ -142,6 +165,81 @@ const PlatformPayments = () => {
                   </tr>
                 ))}
                 {stuck.length === 0 && <tr><td colSpan="5" className="py-6 text-center text-[var(--color-textSecondary)]">No stuck payments — the queue is clean.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {tab === 'refunds' && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">Refund requests</h2>
+          <p className="text-sm text-[var(--color-textSecondary)] mb-4">Cross-tenant refund oversight — approve or reject pending requests.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[var(--color-textSecondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-3 font-medium">Church</th>
+                  <th className="pb-3 font-medium">Amount</th>
+                  <th className="pb-3 font-medium">Reason</th>
+                  <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">Requested</th>
+                  <th className="pb-3 font-medium">Decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                {refunds.map((r) => (
+                  <tr key={r.id} className="border-b border-[var(--color-border)] last:border-0">
+                    <td className="py-3 text-[var(--color-text)]">{r.church_name}</td>
+                    <td className="py-3 text-[var(--color-text)] font-medium">{Number(r.amount).toLocaleString()}</td>
+                    <td className="py-3 text-[var(--color-textSecondary)] max-w-xs truncate" title={r.reason}>{r.reason || '—'}</td>
+                    <td className="py-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.status === 'approved' ? 'bg-[var(--color-success-light)] text-[var(--color-success)]' : r.status === 'rejected' ? 'bg-[var(--color-error-light)] text-[var(--color-error)]' : 'bg-[var(--color-warning-light)] text-[var(--color-warning)]'}`}>{r.status}</span></td>
+                    <td className="py-3 text-[var(--color-textSecondary)]">{fmtDateTime(r.created_at)}</td>
+                    <td className="py-3">
+                      {r.status === 'pending' && (
+                        <div className="flex gap-2">
+                          <button onClick={() => decideRefund(r.id, 'approved')} disabled={busy === r.id} className="text-xs text-[var(--color-success)] hover:underline disabled:opacity-50">approve</button>
+                          <button onClick={() => decideRefund(r.id, 'rejected')} disabled={busy === r.id} className="text-xs text-[var(--color-error)] hover:underline disabled:opacity-50">reject</button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {refunds.length === 0 && <tr><td colSpan="6" className="py-6 text-center text-[var(--color-textSecondary)]">No refund requests.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {tab === 'sms' && (
+        <Card className="p-6">
+          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">SMS spend ledger</h2>
+          <p className="text-sm text-[var(--color-textSecondary)] mb-4">Per-tenant send volume (last 30 days) and remaining credit quota.</p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-[var(--color-textSecondary)] border-b border-[var(--color-border)]">
+                  <th className="pb-3 font-medium">Church</th>
+                  <th className="pb-3 font-medium text-right">Sent (30d)</th>
+                  <th className="pb-3 font-medium text-right">Failed (30d)</th>
+                  <th className="pb-3 font-medium text-right">Total sent</th>
+                  <th className="pb-3 font-medium text-right">Credits left</th>
+                  <th className="pb-3 font-medium">Last send</th>
+                </tr>
+              </thead>
+              <tbody>
+                {smsLedger.map((t) => (
+                  <tr key={t.id} className="border-b border-[var(--color-border)] last:border-0">
+                    <td className="py-3 text-[var(--color-text)]">{t.name}</td>
+                    <td className="py-3 text-right text-[var(--color-text)]">{Number(t.sent_30d).toLocaleString()}</td>
+                    <td className="py-3 text-right text-[var(--color-textSecondary)]">{Number(t.failed_30d).toLocaleString()}</td>
+                    <td className="py-3 text-right text-[var(--color-textSecondary)]">{Number(t.total_sent).toLocaleString()}</td>
+                    <td className="py-3 text-right font-medium text-[var(--color-text)]">{t.sms_credits == null ? '—' : Number(t.sms_credits).toLocaleString()}</td>
+                    <td className="py-3 text-[var(--color-textSecondary)]">{t.last_sent_at ? fmtDateTime(t.last_sent_at) : 'never'}</td>
+                  </tr>
+                ))}
+                {smsLedger.length === 0 && <tr><td colSpan="6" className="py-6 text-center text-[var(--color-textSecondary)]">No SMS activity.</td></tr>}
               </tbody>
             </table>
           </div>

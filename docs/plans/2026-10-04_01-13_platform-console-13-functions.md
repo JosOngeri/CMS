@@ -194,7 +194,11 @@ mutates, backend tests for the new endpoints, eslint + build clean.
 - [x] 4.2 Fleet dashboard — per-tenant status cards: users, active
   sessions, errors last 24h, last payment, SMS credit; new
   `/api/platform/fleet` endpoint.
-- [ ] 4.3 Uptime & latency — request timing middleware writing
+- [x] 4.3 Uptime & latency — uptimeMetrics middleware times every /api
+  call; sliding window (500 samples) summarized into platform_health
+  ('api.http': avg response_time, error_rate, last_check) at most every
+  5 min; fire-and-forget, never blocks a request. PARTIAL: app-side
+  self-report, not an external probe.
   aggregates; chart per endpoint.
 - [x] 4.4 Integration health — GET /platform/integrations derives
   red/amber/green/unconfigured from real signals (payments/mpesa_receipt,
@@ -216,9 +220,15 @@ mutates, backend tests for the new endpoints, eslint + build clean.
   "reconcile to completed/failed" action; uses F3 audit.
 - [ ] 5.3 Reconciliation — upload/import M-Pesa statement, match to
   payments, flag orphans.
-- [ ] 5.4 Refund oversight — refund requests list, approve/reject with
+- [x] 5.4 Refund oversight — GET /payments/refunds (cross-tenant list)
+  + POST /payments/refunds/:id/decision approve|reject (pending-only,
+  audited; refunds.processed_by is a church-user FK so the platform actor
+  lives in the audit trail); Refunds tab on the Payments page.
   reason; writes through to the church ledger.
-- [ ] 5.5 SMS cost ledger — per-tenant SMS spend table (exists
+- [x] 5.5 SMS cost ledger — GET /sms-ledger per-tenant send volume
+  (30d sent/failed, total, last send, sms_credits left); sms_logs has no
+  church_id so scope comes via sender user; SMS ledger tab on Payments.
+  PARTIAL: message counts, not monetary cost — no per-message price.
   partially?); expose per-tenant cost on fleet cards.
 
 ## 6. Security & Compliance (`/platform/security`)
