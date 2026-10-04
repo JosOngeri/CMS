@@ -21,6 +21,7 @@ const {
 } = require('../helpers/security');
 const { pool } = require('../config/database');
 const { logAction } = require('../helpers/auditLog');
+const churchSettings = require('../helpers/churchSettings');
 const emailService = require('../utils/emailService');
 
 class AuthController extends BaseController {
@@ -89,8 +90,21 @@ class AuthController extends BaseController {
       // Get user identity to check roles and MFA status
       const identity = await IdentityService.getIdentity(user.id);
 
+      // Church-configured policies (settings table — platform manageable)
+      const [sessionMinutes, require2fa, features, passwordMinLength] = await Promise.all([
+        churchSettings.getInt(user.church_id, 'session_timeout', 60),
+        churchSettings.getBool(user.church_id, 'require_2fa', false),
+        churchSettings.getFeatures(user.church_id),
+        churchSettings.getInt(user.church_id, 'password_min_length', 8),
+      ]);
+
       // Check if user has admin role and MFA is enabled
       const hasAdminRole = IdentityService.hasAnyRole(identity, ADMIN_ROLES);
+
+      // security/require_2fa: when the church mandates 2FA for admins and
+      // this admin hasn't enrolled yet, tell the SPA to force the MFA
+      // setup flow before granting dashboard access.
+      const mfaSetupRequired = require2fa && hasAdminRole && !identity.mfaEnabled;
 
       if (hasAdminRole && identity.mfaEnabled) {
         // MFA token is required for admin users with MFA enabled
@@ -108,7 +122,7 @@ class AuthController extends BaseController {
         identity.mfaVerified = true;
       }
 
-      const accessToken = generateAccessToken(user.id, identity.roles, identity.mfaVerified);
+      const accessToken = generateAccessToken(user.id, identity.roles, identity.mfaVerified, null, sessionMinutes);
       // MFA state rides in the signed refresh token so /refresh can reissue
       // it without trusting client input.
       const refreshToken = generateRefreshToken(user.id, { mfaVerified: identity.mfaVerified });
@@ -138,7 +152,11 @@ class AuthController extends BaseController {
           // manual refresh re-fetches /auth/profile.
           permissions: identity.permissions,
           mfaEnabled: identity.mfaEnabled,
-          mfaVerified: identity.mfaVerified
+          mfaVerified: identity.mfaVerified,
+          mfaSetupRequired,
+          // Resolved features/enable_* map — Sidebar hides disabled modules
+          features,
+          passwordPolicy: { minLength: passwordMinLength }
         },
       }, 'Login successful');
     } catch (error) {
@@ -209,8 +227,10 @@ class AuthController extends BaseController {
         }
       }
 
-      // Validate password strength
-      const passwordValidation = validatePasswordStrength(password);
+      // Validate password strength — min length from the church's
+      // security/password_min_length setting (platform manageable)
+      const minLen = await churchSettings.getInt(churchId, 'password_min_length', 8);
+      const passwordValidation = validatePasswordStrength(password, minLen);
       if (!passwordValidation.isValid) {
         return ResponseHandler.error(res, passwordValidation.message, 400);
       }
@@ -285,7 +305,8 @@ class AuthController extends BaseController {
 
       // Generate new access token with MFA verified flag
       const verifiedIdentity = IdentityService.setMFAVerified(identity);
-      const newAccessToken = generateAccessToken(userId, identity.roles, true);
+      const mfaSessionMin = await churchSettings.getInt(identity.churchId || identity.church_id, 'session_timeout', 60);
+      const newAccessToken = generateAccessToken(userId, identity.roles, true, null, mfaSessionMin);
 
       res.cookie('jwt', newAccessToken, {
         httpOnly: true,
@@ -331,8 +352,12 @@ class AuthController extends BaseController {
       const roles = await AuthRepository.getUserRoles(user_id);
 
       // Generate new tokens — MFA claim propagates to the new access token
-      // and the rotated refresh token.
-      const newAccessToken = generateAccessToken(user_id, roles, mfaVerified);
+      // and the rotated refresh token. Session length honors the church's
+      // security/session_timeout setting.
+      const refreshChurchId = tokenData.church_id
+        || (await pool.query('SELECT church_id FROM users WHERE id = $1', [user_id])).rows[0]?.church_id;
+      const refreshSessionMin = await churchSettings.getInt(refreshChurchId, 'session_timeout', 60);
+      const newAccessToken = generateAccessToken(user_id, roles, mfaVerified, null, refreshSessionMin);
       const newRefreshToken = generateRefreshToken(user_id, { mfaVerified });
 
       // Mark old token as used
@@ -390,11 +415,15 @@ class AuthController extends BaseController {
         return res.status(404).json({ success: false, error: 'User not found' });
       }
 
+      // Resolved church feature flags — the SPA hides disabled modules
+      // (features/enable_* in the settings catalog, platform manageable).
+      const features = await churchSettings.getFeatures(req.user.church_id);
+
       res.json({
         success: true,
         // impersonation is set by auth middleware when the session is a
         // platform support session — the SPA shows the banner off this flag
-        data: { ...profile, impersonation: req.impersonation || null },
+        data: { ...profile, features, impersonation: req.impersonation || null },
       });
     } catch (error) {
       this.logger.error('getProfile', error);
@@ -497,7 +526,10 @@ class AuthController extends BaseController {
 
       // PUT /auth/password mounts no route-level validation — enforce the
       // strength policy here so this path can't accept weak passwords.
-      const strengthCheck = validatePasswordStrength(newPassword);
+      const strengthCheck = validatePasswordStrength(
+        newPassword,
+        await churchSettings.getInt(user.church_id, 'password_min_length', 8)
+      );
       if (!strengthCheck.isValid) {
         return res.status(400).json({ success: false, error: strengthCheck.message });
       }
@@ -602,16 +634,22 @@ class AuthController extends BaseController {
       if (!newPassword) {
         return res.status(400).json({ success: false, error: 'New password is required' });
       }
-      const strength = validatePasswordStrength(newPassword);
-      if (!strength.isValid) {
-        return res.status(400).json({ success: false, error: strength.message });
-      }
-
       // Check if token is valid
       const tokenData = await AuthRepository.getPasswordResetToken(token);
 
       if (!tokenData) {
         return res.status(400).json({ success: false, error: 'Invalid or expired reset token' });
+      }
+
+      // Reset token carries the user — resolve their church's policy.
+      const resetChurchId = tokenData.church_id
+        || (await pool.query('SELECT church_id FROM users WHERE id = $1', [tokenData.user_id])).rows[0]?.church_id;
+      const strength = validatePasswordStrength(
+        newPassword,
+        await churchSettings.getInt(resetChurchId, 'password_min_length', 8)
+      );
+      if (!strength.isValid) {
+        return res.status(400).json({ success: false, error: strength.message });
       }
 
       const { user_id } = tokenData;

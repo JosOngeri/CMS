@@ -1,4 +1,4 @@
-| 6.2 || DONE || 5.2 || DONE || 5.1 || DONE || 3.3 || DONE || 3.2 || DONE || 3.1 || DONE || 2.6 || DONE || 2.5 || DONE || 2.4 || DONE || 2.3 || DONE || 2.2 || DONE || 2.1 || DONE || 1.3 || DONE || 1.2 || DONE || 1.1 || DONE || 0.2 || DONE || 0.1 || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE || DONE |# 2026-10-04 18:47 EAT — Church Settings Configurable by Platform Admin
+# 2026-10-04 18:47 EAT — Church Settings Configurable by Platform Admin
 
 Goal: every setting a church admin edits at `/{church}/dashboard/admin/settings`
 (1) actually does something, and (2) is viewable/overridable by the platform
@@ -60,15 +60,15 @@ Wire each manifest entry's `enforced_by`. One row per wiring:
 
 | # | Key(s) | Consumer to wire | Status |
 |---|---|---|---|
-| 4.1 | `features/enable_*` (4 keys) | module gating — `contexts/AuthContext.jsx` nav/menu + backend route guard where relevant | OPEN |
-| 4.2 | `security/session_timeout` | JWT TTL for church-user tokens — `controllers/auth.controller.js` | OPEN |
-| 4.3 | `security/password_min_length` | password change/reset validators — shared rule helper | OPEN |
-| 4.4 | `security/require_2fa` | login flow flag — `controllers/auth.controller.js` | OPEN |
-| 4.5 | `members/member_id_prefix`, `member_auto_id` | member ID generation — `services/MemberService.js` | OPEN |
-| 4.6 | `service/*_time`, `pastor_name` | public service times + dashboard — verify `/api/settings/public` consumers display them | OPEN |
-| 4.7 | `notifications/email_notifications`, `sms_notifications` | dispatch gate — `repositories/NotificationsRepository.js` | OPEN |
-| 4.8 | `sms/*`, `payment/mpesa_*` | global-scope provider config — move to env-backed/platform-level read; not per-church | OPEN |
-| 4.9 | `appearance/*`, `seo/*`, `social/*`, `contact/*`, `general/*` | `enforced_by: 'public-site'` — verify end-to-end via `/api/settings/public` | OPEN |
+| 4.1 | `features/enable_*` (4 keys) | module gating — `contexts/AuthContext.jsx` nav/menu + backend route guard where relevant | DONE |
+| 4.2 | `security/session_timeout` | JWT TTL for church-user tokens — `controllers/auth.controller.js` | DONE |
+| 4.3 | `security/password_min_length` | password change/reset validators — shared rule helper | DONE |
+| 4.4 | `security/require_2fa` | login flow flag — `controllers/auth.controller.js` | DONE |
+| 4.5 | `members/member_id_prefix`, `member_auto_id` | member ID generation — `services/MemberService.js` | DONE |
+| 4.6 | `service/*_time`, `pastor_name` | public service times + dashboard — verify `/api/settings/public` consumers display them | DONE |
+| 4.7 | `notifications/email_notifications`, `sms_notifications` | dispatch gate — `repositories/NotificationsRepository.js` | DONE |
+| 4.8 | `sms/*`, `payment/mpesa_*` | global-scope provider config — move to env-backed/platform-level read; not per-church | N/A — creds stay env-backed (decision: global provider) |
+| 4.9 | `appearance/*`, `seo/*`, `social/*`, `contact/*`, `general/*` | `enforced_by: 'public-site'` — verify end-to-end via `/api/settings/public` | DONE |
 
 ## 5. Church-admin side
 

@@ -111,8 +111,8 @@ function Sidebar({ isOpen, setIsOpen }) {
         {
           title: 'Church Life',
           items: [
-            { path: '/dashboard/announcements', icon: Megaphone, label: 'Announcements' },
-            { path: '/dashboard/events', icon: Calendar, label: 'Events' },
+            { path: '/dashboard/announcements', icon: Megaphone, label: 'Announcements', feature: 'enable_announcements' },
+            { path: '/dashboard/events', icon: Calendar, label: 'Events', feature: 'enable_events' },
             { path: '/dashboard/my-departments', icon: Building2, label: 'My Departments' },
             { path: '/dashboard/gallery', icon: ImageIcon, label: 'Gallery' },
             { path: '/dashboard/documents', icon: FileText, label: 'Documents' },
@@ -180,7 +180,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           title: 'Treasury',
           items: [
             {
-              path: '/dashboard/treasury', icon: Landmark, label: 'Treasury',
+              path: '/dashboard/treasury', icon: Landmark, label: 'Treasury', feature: 'enable_treasury',
               children: [
                 { path: '/dashboard/treasury/accounts', label: 'Chart of Accounts' },
                 { path: '/dashboard/treasury/funds', label: 'Funds' },
@@ -241,10 +241,16 @@ function Sidebar({ isOpen, setIsOpen }) {
     },
   ];
 
+  // Church feature flags (features/enable_* in the settings catalog —
+  // platform manageable) ride in on the profile/login payload.
+  const features = user?.features || {};
+  const featureOn = (flag) => features[flag] !== false; // default on when unset
+
   // Filter out items the user cannot reach. Super Admin sees everything.
   // Recursive: a hidden parent drops its whole subtree, a child-less
   // path-less group drops itself.
   const itemAllowed = (item) => {
+    if (item.feature && !featureOn(item.feature)) return false;
     if (!isSuperAdmin() && item.roles && !isAny(item.roles)) return false;
     return item.path ? canAccessModule(item.path) : true;
   };

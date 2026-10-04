@@ -82,6 +82,20 @@ class HybridSMS {
    */
   async sendSMS(payload) {
     const { recipients, message, churchId, provider: preferredProvider } = payload;
+
+    // Settings gates: sms/sms_enabled is the platform-level kill switch;
+    // notifications/sms_notifications is the church's own toggle. Both live
+    // in the settings catalog and are managed from the platform console.
+    const churchSettings = require('../helpers/churchSettings');
+    const [smsEnabled, churchSmsNotifications] = await Promise.all([
+      churchSettings.getBool(null, 'sms_enabled', true),
+      churchId ? churchSettings.getBool(churchId, 'sms_notifications', true) : Promise.resolve(true),
+    ]);
+    if (!smsEnabled || !churchSmsNotifications) {
+      logger.info(`SMS suppressed by settings (sms_enabled=${smsEnabled}, sms_notifications=${churchSmsNotifications}) for church ${churchId}`);
+      return { success: false, suppressed: true, reason: 'sms disabled by settings', gateway: 'none' };
+    }
+
     const recipientCount = recipients.length;
 
     // Determine routing strategy

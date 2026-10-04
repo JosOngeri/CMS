@@ -95,8 +95,18 @@ class EmailService {
     return `<p style="color: ${p.text_secondary}; line-height: 1.6;">${text}</p>`;
   }
 
-  // Generic sender used by tests and future templates
-  async sendEmail({ to, subject, html }) {
+  // Generic sender used by tests and future templates. When churchId is
+  // passed, the church's notifications/email_notifications setting gates
+  // the send (platform-manageable via the settings catalog).
+  async sendEmail({ to, subject, html, churchId = null }) {
+    if (churchId) {
+      const churchSettings = require('../helpers/churchSettings');
+      const on = await churchSettings.getBool(churchId, 'email_notifications', true);
+      if (!on) {
+        logger.info('sendEmail', `Email suppressed by settings for church ${churchId}`);
+        return { success: false, suppressed: true, reason: 'email notifications disabled' };
+      }
+    }
     const transporter = this.initialize();
     const info = await transporter.sendMail({ from: this.from, to, subject, html });
     logger.info('sendEmail', 'Email sent:', info.messageId);

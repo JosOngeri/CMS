@@ -25,16 +25,18 @@ const comparePassword = async (password, hash) => {
 const TOKEN_ISSUER = 'msabato';
 const TOKEN_AUDIENCE = 'church';
 
-// Generate access token (short-lived: 1h for security)
-const generateAccessToken = (userId, roles, mfaVerified = false, scope = null) => {
+// Generate access token. sessionMinutes (security/session_timeout setting)
+// overrides the env default when a church configures its own session length.
+const generateAccessToken = (userId, roles, mfaVerified = false, scope = null, sessionMinutes = null) => {
   const payload = { userId, roles, mfaVerified, type: 'access' };
   if (scope) {
     payload.scope = Array.isArray(scope) ? scope : [scope];
   }
+  const expiresIn = sessionMinutes ? `${sessionMinutes}m` : (process.env.JWT_EXPIRES_IN || '1h');
   return jwt.sign(
     payload,
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '1h', issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE }
+    { expiresIn, issuer: TOKEN_ISSUER, audience: TOKEN_AUDIENCE }
   );
 };
 
@@ -64,13 +66,13 @@ const generateRandomToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
 
-// Password strength validation
-const validatePasswordStrength = (password) => {
+// Password strength validation. minLength comes from the church's
+// security/password_min_length setting (default 8).
+const validatePasswordStrength = (password, minLength = 8) => {
   const errors = [];
-  
-  // Minimum length for public registration
-  if (password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
   }
   
   if (!/[A-Z]/.test(password)) {

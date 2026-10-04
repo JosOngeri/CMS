@@ -4,10 +4,27 @@
  *        INSERT sets church_id, UPDATE/DELETE scope WHERE by it when provided.
  */
 const BaseRepository = require('./BaseRepository');
+const churchSettings = require('../helpers/churchSettings');
 
 class MembersRepository extends BaseRepository {
   constructor() {
     super('members');
+  }
+
+  /**
+   * Generates the next membership_number for a church from its settings:
+   * members/member_id_prefix + a zero-padded sequence (count + 1).
+   * members/member_auto_id=false leaves the column null.
+   */
+  async _nextMembershipNumber(churchId) {
+    const autoId = await churchSettings.getBool(churchId, 'member_auto_id', true);
+    if (!autoId) return null;
+    const prefix = (await churchSettings.getSetting(churchId, 'member_id_prefix', 'MBR')) || 'MBR';
+    const result = await this.pool.query(
+      `SELECT COUNT(*)::int + 1 AS seq FROM members WHERE church_id = $1`,
+      [churchId]
+    );
+    return `${prefix}-${String(result.rows[0].seq).padStart(4, '0')}`;
   }
 
   async getAll(filters = {}, churchId = null) {
@@ -152,9 +169,10 @@ class MembersRepository extends BaseRepository {
     let query = `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`;
     if (churchId) {
-      query = `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes, church_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`;
-      params.push(churchId);
+      const membershipNumber = await this._nextMembershipNumber(churchId);
+      query = `INSERT INTO members (first_name, last_name, date_of_birth, gender, marital_status, occupation, address, city, phone, email, baptism_date, membership_status, joined_date, notes, church_id, membership_number)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`;
+      params.push(churchId, membershipNumber);
     }
 
     const result = await this.pool.query(`${query} RETURNING *`, params);

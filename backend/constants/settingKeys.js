@@ -44,42 +44,42 @@ const KEYS = [
   { category: 'contact', key: 'church_website', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Church Website', validation: { pattern: '^https?://.+$' } },
 
   // ── feature-flags ──────────────────────────────────────────────────
-  { category: 'feature-flags', key: 'FEATURE_SETTINGS_USE_ALTERNATIVE', type: 'boolean', scope: 'global', enforcedBy: 'none', label: 'Settings Alternative UI', default: 'false' },
+  { category: 'feature-flags', key: 'FEATURE_SETTINGS_USE_ALTERNATIVE', type: 'boolean', scope: 'global', enforcedBy: 'featureFlags config (planned)', label: 'Settings Alternative UI', default: 'false' },
 
   // ── features ───────────────────────────────────────────────────────
-  { category: 'features', key: 'enable_announcements', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Enable Announcements', default: 'true' },
-  { category: 'features', key: 'enable_events', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Enable Events', default: 'true' },
-  { category: 'features', key: 'enable_live_stream', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Enable Live Stream', default: 'false' },
-  { category: 'features', key: 'enable_treasury', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Enable Treasury', default: 'true' },
+  { category: 'features', key: 'enable_announcements', type: 'boolean', scope: 'both', enforcedBy: 'sidebar-nav', label: 'Enable Announcements', default: 'true' },
+  { category: 'features', key: 'enable_events', type: 'boolean', scope: 'both', enforcedBy: 'sidebar-nav', label: 'Enable Events', default: 'true' },
+  { category: 'features', key: 'enable_live_stream', type: 'boolean', scope: 'both', enforcedBy: 'public-site', label: 'Enable Live Stream', default: 'false' },
+  { category: 'features', key: 'enable_treasury', type: 'boolean', scope: 'both', enforcedBy: 'sidebar-nav', label: 'Enable Treasury', default: 'true' },
 
   // ── general ────────────────────────────────────────────────────────
   { category: 'general', key: 'address', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Address' },
   { category: 'general', key: 'contact_email', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Contact Email' },
   { category: 'general', key: 'contact_phone', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Contact Phone' },
-  { category: 'general', key: 'maintenance_mode', type: 'boolean', scope: 'global', enforcedBy: 'none', label: 'Maintenance Mode', default: 'false' },
+  { category: 'general', key: 'maintenance_mode', type: 'boolean', scope: 'global', enforcedBy: 'middleware (planned)', label: 'Maintenance Mode', default: 'false' },
   { category: 'general', key: 'site_description', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Site Description', validation: { maxLength: 500, minLength: 10 } },
   { category: 'general', key: 'site_favicon', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Site Favicon URL' },
   { category: 'general', key: 'site_logo', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Site Logo URL' },
   { category: 'general', key: 'site_name', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Site Name', validation: { maxLength: 100, minLength: 2 } },
 
   // ── members ────────────────────────────────────────────────────────
-  { category: 'members', key: 'member_auto_id', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Auto-generate Member IDs', default: 'true' },
-  { category: 'members', key: 'member_id_prefix', type: 'string', scope: 'both', enforcedBy: 'none', label: 'Member ID Prefix' },
+  { category: 'members', key: 'member_auto_id', type: 'boolean', scope: 'both', enforcedBy: 'MembersRepository.createMember', label: 'Auto-generate Member IDs', default: 'true' },
+  { category: 'members', key: 'member_id_prefix', type: 'string', scope: 'both', enforcedBy: 'MembersRepository.createMember', label: 'Member ID Prefix' },
 
   // ── notifications ──────────────────────────────────────────────────
-  { category: 'notifications', key: 'email_notifications', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Email Notifications', default: 'true' },
-  { category: 'notifications', key: 'sms_notifications', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'SMS Notifications', default: 'false' },
+  { category: 'notifications', key: 'email_notifications', type: 'boolean', scope: 'both', enforcedBy: 'emailService.sendEmail', label: 'Email Notifications', default: 'true' },
+  { category: 'notifications', key: 'sms_notifications', type: 'boolean', scope: 'both', enforcedBy: 'hybridSMS.sendSMS', label: 'SMS Notifications', default: 'false' },
 
   // ── payment ────────────────────────────────────────────────────────
-  { category: 'payment', key: 'default_tithe_amount', type: 'number', scope: 'both', enforcedBy: 'none', label: 'Default Tithe Amount', validation: { max: 100000, min: 1 } },
+  { category: 'payment', key: 'default_tithe_amount', type: 'number', scope: 'both', enforcedBy: 'payments UI', label: 'Default Tithe Amount', validation: { max: 100000, min: 1 } },
   { category: 'payment', key: 'mpesa_environment', type: 'string', scope: 'global', enforcedBy: 'none', label: 'M-Pesa Environment', validation: { enum: ['sandbox', 'production'] } },
   { category: 'payment', key: 'mpesa_passkey', type: 'string', scope: 'global', secret: true, enforcedBy: 'none', label: 'M-Pesa Passkey' },
   { category: 'payment', key: 'mpesa_shortcode', type: 'string', scope: 'global', enforcedBy: 'none', label: 'M-Pesa Shortcode', validation: { pattern: '^[0-9]+$' } },
 
   // ── security ───────────────────────────────────────────────────────
-  { category: 'security', key: 'password_min_length', type: 'number', scope: 'both', enforcedBy: 'none', label: 'Minimum Password Length', validation: { min: 6, max: 128 } },
-  { category: 'security', key: 'require_2fa', type: 'boolean', scope: 'both', enforcedBy: 'none', label: 'Require 2FA', default: 'false' },
-  { category: 'security', key: 'session_timeout', type: 'number', scope: 'both', enforcedBy: 'none', label: 'Session Timeout (minutes)', validation: { min: 5, max: 10080 } },
+  { category: 'security', key: 'password_min_length', type: 'number', scope: 'both', enforcedBy: 'security.validatePasswordStrength', label: 'Minimum Password Length', validation: { min: 6, max: 128 } },
+  { category: 'security', key: 'require_2fa', type: 'boolean', scope: 'both', enforcedBy: 'auth.controller (login)', label: 'Require 2FA', default: 'false' },
+  { category: 'security', key: 'session_timeout', type: 'number', scope: 'both', enforcedBy: 'auth.controller (JWT TTL)', label: 'Session Timeout (minutes)', validation: { min: 5, max: 10080 } },
 
   // ── seo ────────────────────────────────────────────────────────────
   { category: 'seo', key: 'meta_description', type: 'string', scope: 'both', enforcedBy: 'public-site', label: 'Meta Description' },
@@ -93,7 +93,7 @@ const KEYS = [
 
   // ── sms ────────────────────────────────────────────────────────────
   { category: 'sms', key: 'sms_api_key', type: 'string', scope: 'global', secret: true, enforcedBy: 'none', label: 'SMS API Key' },
-  { category: 'sms', key: 'sms_enabled', type: 'boolean', scope: 'global', enforcedBy: 'none', label: 'SMS Enabled', default: 'true' },
+  { category: 'sms', key: 'sms_enabled', type: 'boolean', scope: 'global', enforcedBy: 'hybridSMS.sendSMS', label: 'SMS Enabled', default: 'true' },
   { category: 'sms', key: 'sms_provider', type: 'string', scope: 'global', enforcedBy: 'none', label: 'SMS Provider' },
   { category: 'sms', key: 'sms_sender_id', type: 'string', scope: 'global', enforcedBy: 'none', label: 'SMS Sender ID' },
 

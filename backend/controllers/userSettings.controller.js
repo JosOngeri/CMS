@@ -1,6 +1,7 @@
 const UserSettingsRepository = require('../repositories/UserSettingsRepository');
 const AuthRepository = require('../repositories/AuthRepository');
 const { hashPassword, comparePassword, validatePasswordStrength } = require('../helpers/security');
+const churchSettings = require('../helpers/churchSettings');
 const BaseController = require('./BaseController');
 const { createLogger } = require('../helpers/controllerLogger');
 
@@ -87,7 +88,10 @@ class UserSettingsController extends BaseController {
       return this.badRequest(res, 'Current password and new password are required');
     }
 
-    const strengthCheck = validatePasswordStrength(new_password);
+    const strengthCheck = validatePasswordStrength(
+      new_password,
+      await churchSettings.getInt(req.user.church_id, 'password_min_length', 8)
+    );
     if (!strengthCheck.isValid) {
       return this.badRequest(res, strengthCheck.message);
     }
