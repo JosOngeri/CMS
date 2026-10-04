@@ -639,9 +639,14 @@ class PlatformOpsController extends BaseController {
            ORDER BY created_at DESC LIMIT 10`
         ).catch(() => ({ rows: [] })),
         // Latest uptimeProbe row — 'api.external' means the cron is firing;
-        // a stale probe (>15 min old) is itself a warning sign.
+        // a stale probe (>15 min old) is itself a warning sign. The age is
+        // computed against CURRENT_TIMESTAMP inside the query because
+        // last_check is naive-local while app-side Date is UTC — comparing
+        // across the boundary reports every fresh row as 2h stale.
         pool.query(
-          `SELECT status, response_time, last_check FROM platform_health
+          `SELECT status, response_time, last_check,
+                  EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP - last_check)) / 60 AS age_minutes
+             FROM platform_health
             WHERE service_name = 'api.external' ORDER BY last_check DESC LIMIT 1`
         ).catch(() => ({ rows: [] })),
       ]);
@@ -662,8 +667,7 @@ class PlatformOpsController extends BaseController {
           ...(() => {
             const probe = externalProbe.rows[0];
             if (!probe) return [{ name: 'External probe', status: 'unknown' }];
-            const staleMs = Date.now() - new Date(probe.last_check).getTime();
-            const probeStatus = staleMs > 15 * 60 * 1000 ? 'degraded'
+            const probeStatus = Number(probe.age_minutes) > 15 ? 'degraded'
               : probe.status === 'healthy' ? 'operational' : 'major_outage';
             return [{ name: 'External probe', status: probeStatus }];
           })(),
