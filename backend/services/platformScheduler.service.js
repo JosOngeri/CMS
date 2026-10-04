@@ -21,6 +21,36 @@ const TICK_MS = 60 * 1000;
 const TASKS = {
   alert_engine: { intervalMs: 5 * 60 * 1000, run: () => alertEngine.evaluate() },
   dunning: { intervalMs: 6 * 60 * 60 * 1000, run: () => dunning.run() },
+  // 13.5 follow-up: flag integrations whose credentials are past their
+  // recorded rotation due-date — one alert per overdue secret, re-firing
+  // daily until someone records a fresh rotation.
+  credential_rotation: {
+    intervalMs: 24 * 60 * 60 * 1000,
+    run: async () => {
+      const { rows } = await pool.query(
+        `SELECT secret_name, next_due_at FROM platform_credential_rotations
+          WHERE next_due_at IS NOT NULL AND next_due_at < CURRENT_TIMESTAMP`
+      );
+      let fired = 0;
+      for (const r of rows) {
+        const exists = await pool.query(
+          `SELECT 1 FROM platform_alerts
+            WHERE service_affected = $1 AND status = 'active'
+              AND alert_type = 'credential_overdue'`,
+          [`credentials:${r.secret_name}`]
+        );
+        if (exists.rows.length > 0) continue;
+        await pool.query(
+          `INSERT INTO platform_alerts (alert_type, severity, message, service_affected, status)
+           VALUES ('credential_overdue', 'high', $1, $2, 'active')`,
+          [`Credential "${r.secret_name}" is past its rotation due date (${new Date(r.next_due_at).toISOString().slice(0, 10)}) — rotate and record it on the Security page`,
+          `credentials:${r.secret_name}`]
+        );
+        fired += 1;
+      }
+      return { overdue: rows.length, alertsFired: fired };
+    },
+  },
   backups: {
     intervalMs: 60 * 60 * 1000, // checks hourly; runs only if stale >23h
     run: async () => {

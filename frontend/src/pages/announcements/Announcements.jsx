@@ -21,6 +21,7 @@ import GmailMessageList from '../../components/common/GmailMessageList'
 import Breadcrumb from '../../components/common/Breadcrumb'
 import PermissionButton from '../../components/common/PermissionButton'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
+import PlatformMessagesCard from '../../components/announcements/PlatformMessagesCard'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
 import { PERMISSIONS } from '../../constants/permissions'
 
@@ -181,6 +182,9 @@ const Announcements = () => {
         <h1 className="page-title">Church Announcements</h1>
         <p className="page-subtitle">Stay updated with the latest church news</p>
       </div>
+
+      {/* Direct thread with the SaaS platform team (admin roles only) */}
+      <PlatformMessagesCard />
 
       {/* View announcement modal — read-only for everyone */}
       {viewingAnnouncement && (

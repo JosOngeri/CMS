@@ -287,19 +287,34 @@ class PlatformOpsController extends BaseController {
    */
   async getSmsLedger(req, res) {
     try {
-      const result = await pool.query(
-        `SELECT c.id, c.name, c.sms_credits,
-                COUNT(s.id) FILTER (WHERE s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS sent_30d,
-                COUNT(s.id) FILTER (WHERE s.status IN ('failed','error') AND s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS failed_30d,
-                COUNT(s.id) AS total_sent,
-                MAX(s.sent_at) AS last_sent_at
-         FROM churches c
-         LEFT JOIN users u ON u.church_id = c.id
-         LEFT JOIN sms_logs s ON s.sender_id = u.id
-         GROUP BY c.id, c.name, c.sms_credits
-         ORDER BY sent_30d DESC, c.name`
-      );
-      this.success(res, result.rows);
+      // Per-message price comes from platform_settings.sms_pricing
+      // ({cost_per_message, currency}) — message counts always show even
+      // when no price is configured.
+      const [result, pricing] = await Promise.all([
+        pool.query(
+          `SELECT c.id, c.name, c.sms_credits,
+                  COUNT(s.id) FILTER (WHERE s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS sent_30d,
+                  COUNT(s.id) FILTER (WHERE s.status IN ('failed','error') AND s.sent_at > CURRENT_TIMESTAMP - INTERVAL '30 days') AS failed_30d,
+                  COUNT(s.id) AS total_sent,
+                  MAX(s.sent_at) AS last_sent_at
+           FROM churches c
+           LEFT JOIN users u ON u.church_id = c.id
+           LEFT JOIN sms_logs s ON s.sender_id = u.id
+           GROUP BY c.id, c.name, c.sms_credits
+           ORDER BY sent_30d DESC, c.name`
+        ),
+        pool.query(`SELECT value FROM platform_settings WHERE key = 'sms_pricing'`).catch(() => ({ rows: [] })),
+      ]);
+      const rate = Number(pricing.rows[0]?.value?.cost_per_message) || null;
+      const currency = pricing.rows[0]?.value?.currency || 'KES';
+      this.success(res, {
+        pricing: rate ? { costPerMessage: rate, currency } : null,
+        rows: result.rows.map((t) => ({
+          ...t,
+          cost_30d: rate ? Number((Number(t.sent_30d) * rate).toFixed(2)) : null,
+          cost_total: rate ? Number((Number(t.total_sent) * rate).toFixed(2)) : null,
+        })),
+      });
     } catch (error) {
       this.logger.error('getSmsLedger', error);
       this.error(res, 'Failed to compute SMS ledger');

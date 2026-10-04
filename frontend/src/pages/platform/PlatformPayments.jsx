@@ -25,6 +25,7 @@ const PlatformPayments = () => {
   const [stuck, setStuck] = useState([])
   const [refunds, setRefunds] = useState([])
   const [smsLedger, setSmsLedger] = useState([])
+  const [smsPricing, setSmsPricing] = useState(null)
   const [filter, setFilter] = useState({ status: '' })
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState('')
@@ -40,7 +41,8 @@ const PlatformPayments = () => {
       setPayments(feedRes.data.data?.payments || [])
       setStuck(stuckRes.data.data || [])
       setRefunds(refundsRes.data.data || [])
-      setSmsLedger(smsRes.data.data || [])
+      setSmsLedger(smsRes.data.data?.rows || smsRes.data.data || [])
+      setSmsPricing(smsRes.data.data?.pricing || null)
     } catch {
       toast.error('Failed to load payments')
     } finally {
@@ -91,6 +93,20 @@ const PlatformPayments = () => {
       toast.error(error.response?.data?.error || 'Statement reconciliation failed')
     } finally {
       setBusy('')
+    }
+  }
+
+  const setSmsPrice = async () => {
+    const input = window.prompt('Cost per SMS message (KES):', smsPricing?.costPerMessage || '0.80')
+    if (input === null) return
+    const rate = Number(input)
+    if (!rate || rate <= 0 || rate > 100) return toast.error('Enter a price between 0 and 100')
+    try {
+      await api.put('/api/platform/settings', { sms_pricing: { cost_per_message: rate, currency: 'KES' } })
+      toast.success(`SMS price set to KES ${rate}/message`)
+      await load()
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to save price')
     }
   }
 
@@ -271,8 +287,16 @@ const PlatformPayments = () => {
 
       {tab === 'sms' && (
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-1">SMS spend ledger</h2>
-          <p className="text-sm text-[var(--color-textSecondary)] mb-4">Per-tenant send volume (last 30 days) and remaining credit quota.</p>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">SMS spend ledger</h2>
+            <button onClick={setSmsPrice} className="text-xs text-[var(--color-primary)] hover:underline">
+              {smsPricing ? `KES ${smsPricing.costPerMessage}/msg — edit` : 'Set per-message price'}
+            </button>
+          </div>
+          <p className="text-sm text-[var(--color-textSecondary)] mb-4">
+            Per-tenant send volume (last 30 days) and remaining credit quota.
+            {smsPricing ? ' Costs are estimated at the configured per-message rate.' : ' Set a per-message price to see spend estimates.'}
+          </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -281,6 +305,7 @@ const PlatformPayments = () => {
                   <th className="pb-3 font-medium text-right">Sent (30d)</th>
                   <th className="pb-3 font-medium text-right">Failed (30d)</th>
                   <th className="pb-3 font-medium text-right">Total sent</th>
+                  {smsPricing && <th className="pb-3 font-medium text-right">Est. spend (30d)</th>}
                   <th className="pb-3 font-medium text-right">Credits left</th>
                   <th className="pb-3 font-medium">Last send</th>
                 </tr>
@@ -292,6 +317,7 @@ const PlatformPayments = () => {
                     <td className="py-3 text-right text-[var(--color-text)]">{Number(t.sent_30d).toLocaleString()}</td>
                     <td className="py-3 text-right text-[var(--color-textSecondary)]">{Number(t.failed_30d).toLocaleString()}</td>
                     <td className="py-3 text-right text-[var(--color-textSecondary)]">{Number(t.total_sent).toLocaleString()}</td>
+                    {smsPricing && <td className="py-3 text-right font-medium text-[var(--color-text)]">KES {Number(t.cost_30d || 0).toLocaleString()}</td>}
                     <td className="py-3 text-right font-medium text-[var(--color-text)]">{t.sms_credits == null ? '—' : Number(t.sms_credits).toLocaleString()}</td>
                     <td className="py-3 text-[var(--color-textSecondary)]">{t.last_sent_at ? fmtDateTime(t.last_sent_at) : 'never'}</td>
                   </tr>
