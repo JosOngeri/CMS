@@ -108,10 +108,39 @@ class ApprovalsController extends BaseController {
    * @param {Object} res - Express response object
    * @returns {Promise<void>}
    */
+  /**
+   * Users in this church who can approve requests — feeds the
+   * "whose approval is needed" picker on every request form.
+   */
+  async getApprovers(req, res) {
+    try {
+      const { listApprovers } = require('../helpers/approvalResolver');
+      const approvers = await listApprovers(req.user.church_id, req.user.id);
+      return ResponseHandler.success(res, { approvers });
+    } catch (error) {
+      this.logger.error('getApprovers', error);
+      return ResponseHandler.error(res, 'Failed to load approvers');
+    }
+  }
+
   async createApproval(req, res) {
     try {
-      const { title, description, request_type, request_data, priority } = req.body;
+      const { title, description, request_type, request_data, priority,
+              approver_id, approver_role } = req.body;
       const churchId = req.user.church_id;
+
+      // Every request must name whose approval is needed — a specific user
+      // or an approver role we resolve inside this church.
+      if (!approver_id && !approver_role) {
+        return ResponseHandler.error(res, 'Select whose approval is needed (approver_id or approver_role)', 400);
+      }
+
+      const { resolveApprover } = require('../helpers/approvalResolver');
+      const target = await resolveApprover(churchId, {
+        approverId: approver_id || null,
+        approverRole: approver_role || null,
+        excludeUserId: req.user.id,
+      });
 
       const approval = await ApprovalsRepository.create({
         title,
@@ -119,13 +148,24 @@ class ApprovalsController extends BaseController {
         request_type,
         request_data,
         requester_id: req.user.id,
+        approver_id: target.id,
         priority
       }, churchId);
+
+      // related_entity_id is uuid while approval ids are ints — the request
+      // number goes in the body instead.
+      await sendNotification(pool, {
+        recipientId: target.id,
+        type: 'approval_request',
+        title: 'Approval needed',
+        body: `${req.user.first_name} ${req.user.last_name} requested your approval: ${title} (#${approval.id})`,
+        link: '/dashboard/approvals',
+      }).catch(e => this.logger.error('approvalNotify', e));
 
       return ResponseHandler.success(res, { approval }, 'Approval created successfully', 201);
     } catch (error) {
       this.logger.error('createApproval', error);
-      return ResponseHandler.error(res, 'Failed to create approval');
+      return ResponseHandler.error(res, error.statusCode ? error.message : 'Failed to create approval', error.statusCode || 500);
     }
   }
 
@@ -448,47 +488,21 @@ class ApprovalsController extends BaseController {
       const { comment } = req.body;
       const churchId = req.user.church_id;
 
-      // Resolve the escalation target. Priority: explicit user id, explicit
-      // role, then the church's configured approvals.escalate_role
-      // (churches.settings jsonb), defaulting to 'First Elder'.
-      let targetId = delegateTo || null;
-      let roleToResolve = delegateRole;
-      if (!targetId && !roleToResolve) {
-        const s = await pool.query(
-          `SELECT settings->'approvals'->>'escalate_role' AS r FROM churches WHERE id = $1`,
-          [churchId]
-        );
-        roleToResolve = s.rows[0]?.r || 'First Elder';
+      // Resolve the escalation target — explicit user, explicit role, then
+      // the church's configured approvals.escalate_role (default First Elder).
+      // Shared resolver keeps this identical to request-creation targeting.
+      const { resolveApprover } = require('../helpers/approvalResolver');
+      let target;
+      try {
+        target = await resolveApprover(churchId, {
+          approverId: delegateTo || null,
+          approverRole: delegateRole || null,
+          excludeUserId: req.user.id,
+        });
+      } catch (e) {
+        return ResponseHandler.error(res, e.message, e.statusCode || 400);
       }
-      if (!targetId && roleToResolve) {
-        const t = await pool.query(
-          `SELECT u.id FROM users u
-           WHERE u.church_id = $1 AND u.is_active = true AND u.deleted_at IS NULL
-             AND (u.role = $2 OR EXISTS (
-               SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
-               WHERE ur.user_id = u.id AND r.name = $2))
-           ORDER BY u.created_at LIMIT 1`,
-          [churchId, roleToResolve]
-        );
-        targetId = t.rows[0]?.id || null;
-        if (!targetId) {
-          return ResponseHandler.error(res, `No active "${roleToResolve}" found in this church`, 404);
-        }
-      }
-      if (!targetId) {
-        return ResponseHandler.error(res, 'delegateTo (user id) or delegateRole is required', 400);
-      }
-      if (targetId === req.user.id) {
-        return ResponseHandler.error(res, 'Cannot delegate a request to yourself', 400);
-      }
-      const targetUser = await pool.query(
-        `SELECT id, first_name, last_name FROM users
-         WHERE id = $1 AND church_id = $2 AND is_active = true AND deleted_at IS NULL`,
-        [targetId, churchId]
-      );
-      if (!targetUser.rows[0]) {
-        return ResponseHandler.error(res, 'Delegation target not found in this church', 404);
-      }
+      const targetId = target.id;
 
       // Get old approval for audit log
       const oldApproval = await ApprovalsRepository.getWithDetails(id, churchId);

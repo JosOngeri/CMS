@@ -38,7 +38,8 @@ const DepartmentHandover = () => {
   const [departments, setDepartments] = useState([]);
   const [subsByDept, setSubsByDept] = useState({});
   const [checklistDrafts, setChecklistDrafts] = useState({});
-  const [spendDrafts, setSpendDrafts] = useState({}); // subId -> {amount, description}
+  const [spendDrafts, setSpendDrafts] = useState({}); // subId -> {amount, description, approver_id}
+  const [approvers, setApprovers] = useState([]);
 
   const isManager = (user?.roles || []).some((r) =>
     ['Super Admin', 'Pastor', 'First Elder'].includes(r)
@@ -67,6 +68,12 @@ const DepartmentHandover = () => {
         (subs[s.department_id] = subs[s.department_id] || []).push(s);
       });
       setSubsByDept(subs);
+
+      // Approver candidates for the spend-request picker (defaults to the
+      // department head server-side when left unchosen).
+      api.get('/approvals/approvers')
+        .then((res) => setApprovers(res.data?.data?.approvers || []))
+        .catch(() => setApprovers([]));
     } catch (e) {
       console.error(e);
       toast.error('Failed to load handovers');
@@ -98,9 +105,13 @@ const DepartmentHandover = () => {
       return;
     }
     try {
-      await api.post(`/departments/${deptId}/subcommittees/${subId}/spend`, d);
-      toast.success('Spend request sent to the department head for approval');
-      setSpendDrafts((p) => ({ ...p, [subId]: { amount: '', description: '' } }));
+      await api.post(`/departments/${deptId}/subcommittees/${subId}/spend`, {
+        amount: d.amount,
+        description: d.description,
+        ...(d.approver_id ? { approver_id: d.approver_id } : {}),
+      });
+      toast.success('Spend request sent for approval');
+      setSpendDrafts((p) => ({ ...p, [subId]: { amount: '', description: '', approver_id: '' } }));
     } catch (e) {
       toast.error(e.response?.data?.error || 'Failed to submit spend request');
     }
@@ -247,7 +258,7 @@ const DepartmentHandover = () => {
             <p className="text-sm font-semibold text-[var(--color-text)] mb-3">{dept.name}</p>
             <div className="space-y-4">
               {subsByDept[dept.id].map((s) => {
-                const spend = spendDrafts[s.id] || { amount: '', description: '' };
+                const spend = spendDrafts[s.id] || { amount: '', description: '', approver_id: '' };
                 const isSubLead = s.lead_user_id === user?.id;
                 return (
                   <div key={s.id} className="rounded-lg border border-[var(--color-border)] p-4 space-y-3">
@@ -285,6 +296,17 @@ const DepartmentHandover = () => {
                         onChange={(e) => setSpendDrafts((p) => ({ ...p, [s.id]: { ...spend, description: e.target.value } }))}
                         className="w-full sm:flex-1 sm:min-w-[140px] px-2 py-1.5 border border-[var(--color-border)] rounded text-sm min-h-[44px]"
                       />
+                      <select
+                        aria-label={`Approver for ${s.name} spend request`}
+                        value={spend.approver_id || ''}
+                        onChange={(e) => setSpendDrafts((p) => ({ ...p, [s.id]: { ...spend, approver_id: e.target.value } }))}
+                        className="w-full sm:w-48 px-2 py-1.5 border border-[var(--color-border)] rounded text-sm min-h-[44px] bg-[var(--color-background)] text-[var(--color-text)]"
+                      >
+                        <option value="">Department head (default)</option>
+                        {approvers.map((a) => (
+                          <option key={a.id} value={a.id}>{a.name}</option>
+                        ))}
+                      </select>
                       <button
                         onClick={() => submitSpend(dept.id, s.id)}
                         className="w-full sm:w-auto flex items-center justify-center gap-1 px-3 py-1.5 text-sm bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded hover:opacity-90 min-h-[44px]"
@@ -294,7 +316,7 @@ const DepartmentHandover = () => {
                     </div>
                     {(isSubLead || isManager) && (
                       <p className="text-xs text-[var(--color-textSecondary)]">
-                        Spend posts to the subcommittee budget only after the department head approves.
+                        Spend posts to the subcommittee budget only after the selected approver approves.
                       </p>
                     )}
                   </div>

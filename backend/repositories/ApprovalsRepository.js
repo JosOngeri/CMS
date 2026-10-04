@@ -64,11 +64,11 @@ class ApprovalsRepository extends BaseRepository {
     const departmentId = data.department_id || request_data?.department_id || null;
 
     const query = `
-      INSERT INTO ${this.tableName} (title, description, request_type, entity_type, request_data, requester_id, priority, status, church_id, department_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9)
+      INSERT INTO ${this.tableName} (title, description, request_type, entity_type, request_data, requester_id, approver_id, priority, status, church_id, department_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9, $10)
       RETURNING *
     `;
-    const params = [title, description, request_type, entityType, JSON.stringify(request_data || {}), requester_id, priority, churchId, departmentId];
+    const params = [title, description, request_type, entityType, JSON.stringify(request_data || {}), requester_id, data.approver_id || null, priority, churchId, departmentId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];

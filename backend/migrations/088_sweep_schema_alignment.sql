@@ -415,4 +415,14 @@ ALTER TABLE sms_logs ALTER COLUMN recipient_phone DROP NOT NULL;
 
 ALTER TABLE audit_log ALTER COLUMN record_id TYPE text USING record_id::text;
 
+-- ============================================================
+-- SECTION 15: department_budgets.approval_request_id was uuid
+-- while approval_requests.id is a serial integer — the link
+-- could never be written ("invalid input syntax for type uuid").
+-- Zero live values; convert to integer to match the FK target.
+-- ============================================================
+
+ALTER TABLE department_budgets
+  ALTER COLUMN approval_request_id TYPE integer USING NULL;
+
 COMMIT;

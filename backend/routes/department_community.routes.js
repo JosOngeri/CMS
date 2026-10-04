@@ -329,12 +329,26 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
     if (!(await canManageSubcommittee(req.user, sub.rows[0]))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const { amount, description } = req.body;
+    const { amount, description, approver_id, approver_role } = req.body;
     const amt = parseFloat(amount);
     if (!amt || amt <= 0) return res.status(400).json({ success: false, error: 'A positive amount is required' });
 
-    // Route to the parent department head (fall back to null approver = any manager)
-    const approver = dept.head_id || null;
+    // Whose approval is needed: explicit pick, else the parent department
+    // head, else the church's default approver role.
+    const { resolveApprover } = require('../helpers/approvalResolver');
+    const approverId = approver_id
+      || (!approver_role && dept.head_id && dept.head_id !== req.user.id ? dept.head_id : null);
+    let approverUser;
+    try {
+      approverUser = await resolveApprover(dept.church_id, {
+        approverId,
+        approverRole: approver_role || null,
+        excludeUserId: req.user.id,
+      });
+    } catch (e) {
+      return res.status(e.statusCode || 400).json({ success: false, error: e.message });
+    }
+    const approver = approverUser.id;
     const r = await departmentCommunityRepository.query(
       `INSERT INTO approval_requests
          (title, description, request_type, request_data, entity_type, entity_id,
@@ -359,9 +373,8 @@ router.post('/:id/subcommittees/:sid/spend', authenticateToken, async (req, res)
         recipientId: approver,
         type: 'approval_request',
         title: `Spend request: ${sub.rows[0].name}`,
-        body: `A KES ${amt.toLocaleString()} spend request from the ${sub.rows[0].name} subcommittee needs your approval.`,
+        body: `A KES ${amt.toLocaleString()} spend request from the ${sub.rows[0].name} subcommittee needs your approval (#${r.rows[0].id}).`,
         link: '/dashboard/approvals',
-        relatedEntityType: 'approval_request', relatedEntityId: r.rows[0].id,
       });
     }
     await logDeptActivity(dept.id, req.user.id, 'subcommittee_spend_requested',

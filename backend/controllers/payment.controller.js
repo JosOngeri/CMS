@@ -11,6 +11,8 @@ const BaseController = require('./BaseController');
 const PaymentRepository = require('../repositories/PaymentRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 const { sendPaymentCompletionSMS, sendPaymentFailureSMS, sendRefundStatusSMS } = require('../helpers/paymentSMSIntegration');
+const { sendNotification } = require('../helpers/notify');
+const { pool } = require('../config/database');
 
 /**
  * Payment Controller
@@ -535,7 +537,14 @@ class PaymentController extends BaseController {
         churchId
       );
 
-      // Create approval request for refund
+      // Create approval request for refund — the requester names whose
+      // approval is needed (explicit pick, or the church default approver).
+      const { resolveApprover } = require('../helpers/approvalResolver');
+      const approver = await resolveApprover(churchId, {
+        approverId: req.body.approver_id || null,
+        approverRole: req.body.approver_role || null,
+        excludeUserId: req.user.id,
+      });
       const approvalId = await PaymentRepository.createApprovalRequest(
         'refund',
         'payments',
@@ -543,8 +552,16 @@ class PaymentController extends BaseController {
         `Refund for payment ${paymentId}: ${reason}`,
         req.user.id,
         { refund_id: refund.id, payment_id: paymentId },
-        churchId
+        churchId,
+        approver.id
       );
+      await sendNotification(pool, {
+        recipientId: approver.id,
+        type: 'approval_request',
+        title: 'Refund approval needed',
+        body: `${req.user.first_name || 'A user'} requested a refund of KES ${Number(amount || payment.amount).toLocaleString()} (#${approvalId}) for your approval.`,
+        link: '/dashboard/approvals',
+      }).catch(e => this.logger.error('refundApproverNotify', e));
 
       res.json({
         success: true,
@@ -556,9 +573,9 @@ class PaymentController extends BaseController {
       });
     } catch (error) {
       this.logger.error('refundPayment', error);
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
         success: false,
-        error: 'Refund request failed',
+        error: error.statusCode ? error.message : 'Refund request failed',
       });
     }
   }

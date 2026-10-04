@@ -322,14 +322,14 @@ class PaymentRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId) {
+  async createApprovalRequest(requestType, module, amount, description, userId, metadata, churchId, approverId = null) {
     this._requireChurchId(churchId);
     const query = `
-      INSERT INTO approval_requests (request_type, module, amount, description, requester_id, status, metadata, church_id)
-      VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7)
+      INSERT INTO approval_requests (request_type, module, amount, description, requester_id, approver_id, status, metadata, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
       RETURNING id
     `;
-    const result = await this.pool.query(query, [requestType, module, amount, description, userId, JSON.stringify(metadata), churchId]);
+    const result = await this.pool.query(query, [requestType, module, amount, description, userId, approverId, JSON.stringify(metadata), churchId]);
     return result.rows[0].id;
   }
 

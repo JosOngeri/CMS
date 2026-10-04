@@ -129,9 +129,28 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
     if (!(await canManageDepartment(req.user, dept.id))) {
       return res.status(403).json({ success: false, error: 'Not authorized' });
     }
-    const { purpose, target_amount, collection_deadline, obligation_type, subcommittee_id } = req.body;
+    const { purpose, target_amount, collection_deadline, obligation_type, subcommittee_id,
+            approver_id, approver_role } = req.body;
     if (!target_amount || target_amount <= 0) {
       return res.status(400).json({ success: false, error: 'target_amount is required' });
+    }
+
+    // Every request names whose approval is needed. Explicit approver_id or
+    // approver_role wins; otherwise the department head is the approver —
+    // unless the requester IS the head (self-approval is impossible), in
+    // which case it resolves to the church's default approver role.
+    const { resolveApprover } = require('../helpers/approvalResolver');
+    const approverId = approver_id
+      || (!approver_role && dept.head_id && dept.head_id !== req.user.id ? dept.head_id : null);
+    let approver;
+    try {
+      approver = await resolveApprover(dept.church_id, {
+        approverId,
+        approverRole: approver_role || null,
+        excludeUserId: req.user.id,
+      });
+    } catch (e) {
+      return res.status(e.statusCode || 400).json({ success: false, error: e.message });
     }
 
     const budget = await departmentFinanceRepository.query(
@@ -147,14 +166,24 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
 
     const approval = await departmentFinanceRepository.query(
       `INSERT INTO approval_requests
-         (title, description, request_type, request_data, requester_id,
+         (title, description, request_type, entity_type, entity_id, request_data, requester_id, approver_id,
           department_id, module, amount, status, church_id)
-       VALUES ($1,$2,'department_budget',$3,$4,$5,'departments',$6,'pending',$7) RETURNING *`,
+       VALUES ($1,$2,'department_budget','department',$9,$3,$4,$5,$6,'departments',$7,'pending',$8) RETURNING *`,
       [`Department budget: ${dept.name}`,
        purpose || `Budget of KES ${target_amount} for ${dept.name}`,
        JSON.stringify({ budget_id: budget.rows[0].id, department_id: dept.id }),
-       req.user.id, dept.id, target_amount, dept.church_id]
+       req.user.id, approver?.id || null, dept.id, target_amount, dept.church_id, dept.id]
     );
+
+    if (approver?.id) {
+      await sendNotification(pool, {
+        recipientId: approver.id,
+        type: 'approval_request',
+        title: 'Budget approval needed',
+        body: `${dept.name}: KES ${Number(target_amount).toLocaleString()} budget request #${approval.rows[0].id} needs your approval.`,
+        link: '/dashboard/approvals',
+      }).catch(e => logger.error('budgetApproverNotify', e));
+    }
     await departmentFinanceRepository.query(
       'UPDATE department_budgets SET approval_request_id = $2 WHERE id = $1',
       [budget.rows[0].id, approval.rows[0].id]
@@ -163,9 +192,8 @@ router.post('/:id/budgets', authenticateToken, async (req, res) => {
     await notifyDepartmentAdmins(pool, dept.id, {
       type: 'approval_request',
       title: 'Budget awaiting approval',
-      body: `${dept.name}: KES ${Number(target_amount).toLocaleString()} budget requested.`,
+      body: `${dept.name}: KES ${Number(target_amount).toLocaleString()} budget requested (#${approval.rows[0].id}).`,
       link: '/dashboard/approvals',
-      relatedEntityType: 'approval_request', relatedEntityId: approval.rows[0].id,
     });
     await logDeptActivity(dept.id, req.user.id, 'budget_proposed',
       `Proposed KES ${target_amount} budget: ${purpose || ''}`);

@@ -236,6 +236,13 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
               ].join(' • '),
               style: TextStyle(fontSize: 12, color: AppTheme.textTertiary),
             ),
+            if (isPending && approval['approver_id'] != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Awaiting ${approval['approver_name'] ?? 'designated approver'}',
+                style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              ),
+            ],
             if (isPending) ...[
               const SizedBox(height: 12),
               Row(

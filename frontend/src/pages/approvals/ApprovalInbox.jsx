@@ -14,7 +14,14 @@ import { usePasswordConfirmation } from '../../hooks/usePasswordConfirmation';
 import PasswordConfirmationModal from '../../components/common/PasswordConfirmationModal';
 import Breadcrumb from '../../components/common/Breadcrumb';
 import TabNavigation from '../../components/common/TabNavigation';
-import { CheckCircle, Clock, XCircle, FileText, Activity, Trash2, Forward } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, FileText, Activity, Trash2, Forward, Plus, X } from 'lucide-react';
+
+const REQUEST_TYPES = [
+  { value: 'general', label: 'General request' },
+  { value: 'expense', label: 'Expense' },
+  { value: 'document', label: 'Document' },
+  { value: 'other', label: 'Other' },
+];
 
 const STATUS_STYLES = {
   pending: { chip: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]', icon: Clock },
@@ -48,6 +55,10 @@ const ApprovalInbox = () => {
   const [error, setError] = useState(null);
   const [actioningId, setActioningId] = useState(null);
   const [comments, setComments] = useState({});
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [approvers, setApprovers] = useState([]);
+  const [newRequest, setNewRequest] = useState({ title: '', description: '', request_type: 'general', priority: 'normal', approver_id: '' });
+  const [submitting, setSubmitting] = useState(false);
   const {
     showPasswordModal,
     password,
@@ -97,7 +108,35 @@ const ApprovalInbox = () => {
     fetchData(activeTab);
   }, [activeTab, fetchData]);
 
+  // Load approver candidates once — the request form requires picking whose
+  // approval is needed.
+  useEffect(() => {
+    api.get('/approvals/approvers')
+      .then((res) => setApprovers(res.data?.data?.approvers || []))
+      .catch(() => setApprovers([]));
+  }, [api]);
+
   const refresh = () => fetchData(activeTab);
+
+  const handleCreateRequest = async (e) => {
+    e.preventDefault();
+    if (!newRequest.approver_id) {
+      toast.error('Select whose approval is needed');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await api.post('/approvals', newRequest);
+      toast.success('Approval request submitted');
+      setShowNewForm(false);
+      setNewRequest({ title: '', description: '', request_type: 'general', priority: 'normal', approver_id: '' });
+      await refresh();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to submit request');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleApprove = async (approvalId) => {
     setActioningId(approvalId);
@@ -218,6 +257,12 @@ const ApprovalInbox = () => {
           </p>
         )}
 
+        {isPending && approval.approver_id && (
+          <p className="text-xs text-[var(--color-textSecondary)]">
+            Awaiting approval from <span className="font-medium text-[var(--color-text)]">{approval.approver_name || 'designated approver'}</span>
+          </p>
+        )}
+
         {!isPending && (
           <p className="text-xs text-[var(--color-textSecondary)]">
             {approval.status === 'approved' ? 'Approved' : 'Rejected'} by {approval.approver_name || 'Unknown'}
@@ -320,7 +365,104 @@ const ApprovalInbox = () => {
           <h1 className="text-2xl font-bold text-[var(--color-text)]">Approval Inbox</h1>
           <p className="text-sm text-[var(--color-textSecondary)]">Manage approval workflows and requests</p>
         </div>
+        <button
+          onClick={() => setShowNewForm(true)}
+          className="px-4 py-2 text-sm rounded bg-[var(--color-primary)] text-[var(--color-on-solid)] inline-flex items-center gap-2"
+        >
+          <Plus size={16} /> New Request
+        </button>
       </div>
+
+      {showNewForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handleCreateRequest}
+            className="w-full max-w-md bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-[var(--color-text)]">New approval request</h2>
+              <button type="button" onClick={() => setShowNewForm(false)} className="text-[var(--color-textSecondary)]">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--color-textSecondary)] mb-1">Title *</label>
+              <input
+                required
+                type="text"
+                value={newRequest.title}
+                onChange={(e) => setNewRequest((p) => ({ ...p, title: e.target.value }))}
+                className="w-full text-sm px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--color-textSecondary)] mb-1">Description</label>
+              <textarea
+                rows={3}
+                value={newRequest.description}
+                onChange={(e) => setNewRequest((p) => ({ ...p, description: e.target.value }))}
+                className="w-full text-sm px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs text-[var(--color-textSecondary)] mb-1">Type</label>
+                <select
+                  value={newRequest.request_type}
+                  onChange={(e) => setNewRequest((p) => ({ ...p, request_type: e.target.value }))}
+                  className="w-full text-sm px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+                >
+                  {REQUEST_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[var(--color-textSecondary)] mb-1">Priority</label>
+                <select
+                  value={newRequest.priority}
+                  onChange={(e) => setNewRequest((p) => ({ ...p, priority: e.target.value }))}
+                  className="w-full text-sm px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+                >
+                  <option value="low">Low</option>
+                  <option value="normal">Normal</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-[var(--color-textSecondary)] mb-1">Whose approval is needed? *</label>
+              <select
+                required
+                value={newRequest.approver_id}
+                onChange={(e) => setNewRequest((p) => ({ ...p, approver_id: e.target.value }))}
+                className="w-full text-sm px-3 py-2 rounded border border-[var(--color-border)] bg-[var(--color-background)] text-[var(--color-text)] focus:outline-none focus:border-[var(--color-primary)]"
+              >
+                <option value="">Select an approver…</option>
+                {approvers.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}{a.approver_roles?.length ? ` (${a.approver_roles.join(', ')})` : ''}
+                  </option>
+                ))}
+              </select>
+              {approvers.length === 0 && (
+                <p className="text-xs text-[var(--color-warning)] mt-1">No approvers found in this church.</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full px-4 py-2 text-sm rounded bg-[var(--color-primary)] text-[var(--color-on-solid)] disabled:opacity-50"
+            >
+              {submitting ? 'Submitting…' : 'Submit request'}
+            </button>
+          </form>
+        </div>
+      )}
 
       <TabNavigation
         tabs={approvalTabs}

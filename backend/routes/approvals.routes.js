@@ -2,8 +2,11 @@
  * @audit Approval routes — all authenticated; approve/reject/delegate/delete
  *        gated to APPROVER_ROLES (migration 038 holders + Department Head,
  *        whose scope is limited to budgets of departments they head).
- * @known Static routes (/workflows, /analytics, /pending-count, /execute) must
- *        stay above /:id or they are shadowed.
+ * @known Static routes (/workflows, /analytics, /pending-count, /approvers,
+ *        /execute) must stay above /:id or they are shadowed.
+ *        Requests created via POST / must name an approver (approver_id or
+ *        approver_role); scopeApprovalAction enforces the assignment so only
+ *        the designated approver (or Pastor/SA override) can act.
  */
 const express = require('express');
 const router = express.Router();
@@ -33,6 +36,10 @@ router.get('/analytics', requireRole(APPROVAL_READ_ROLES), approvalsController.g
 // Pending count
 router.get('/pending-count', requireRole(APPROVAL_READ_ROLES), approvalsController.getPendingCount);
 
+// Approver candidates — the "whose approval is needed" picker on request
+// forms. Lists active approver-role holders in this church.
+router.get('/approvers', requireRole(APPROVAL_READ_ROLES), approvalsController.getApprovers);
+
 // Workflow execution
 router.post('/execute', requireRole(['Super Admin', 'Pastor', 'Department Head', 'Treasurer']), approvalsController.executeWorkflow);
 
@@ -47,22 +54,41 @@ const APPROVER_ROLES = ['Super Admin', 'Pastor', 'First Elder', 'Treasurer', 'De
 // their departments, since escalating an out-of-scope item is the intended
 // path. Unrestricted roles skip the scope check entirely.
 const DEPT_HEAD_TYPES = ['department_budget', 'department_spend', 'budget'];
+// Leadership roles may act on any assigned request even when it names a
+// different approver — everyone else must be the designated approver.
+const ASSIGNMENT_OVERRIDE_ROLES = ['Super Admin', 'Pastor'];
 function scopeApprovalAction(mode = 'act') {
   return async (req, res, next) => {
     try {
       const roles = req.user.roles || [];
+      const ApprovalsRepository = require('../repositories/ApprovalsRepository');
+      const db = require('../config/database');
+      const pool = db.pool || db;
+
+      // A request with a designated approver belongs to that person: they may
+      // act regardless of the type-scoping rules below; anyone else needs an
+      // override role. Unassigned requests fall through to the legacy checks.
+      const approval = await ApprovalsRepository.getById(req.params.id, req.user.church_id);
+      if (!approval) {
+        return res.status(404).json({ success: false, error: 'Approval not found' });
+      }
+      if (approval.approver_id && approval.status === 'pending') {
+        const isAssignee = approval.approver_id === req.user.id;
+        const canOverride = roles.some(r => ASSIGNMENT_OVERRIDE_ROLES.includes(r));
+        if (isAssignee) return next();
+        if (!canOverride) {
+          return res.status(403).json({
+            success: false,
+            error: 'This request is assigned to a specific approver',
+          });
+        }
+      }
+
       if (roles.some(r => ['Super Admin', 'Pastor', 'First Elder', 'Treasurer'].includes(r))) {
         return next();
       }
       if (!roles.includes('Department Head')) {
         return res.status(403).json({ success: false, error: 'Insufficient role permissions' });
-      }
-      const ApprovalsRepository = require('../repositories/ApprovalsRepository');
-      const db = require('../config/database');
-      const pool = db.pool || db;
-      const approval = await ApprovalsRepository.getById(req.params.id, req.user.church_id);
-      if (!approval) {
-        return res.status(404).json({ success: false, error: 'Approval not found' });
       }
       const deptId = approval.department_id || approval.request_data?.department_id;
       if (!deptId) {
