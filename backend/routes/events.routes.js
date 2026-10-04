@@ -142,8 +142,11 @@ router.get('/:id', authenticateToken, async (req, res) => {
 });
 
 // Create event
-router.post('/', 
+router.post('/',
   authenticateToken,
+  // mirrors frontend PERMISSIONS.EVENTS_CREATE (Super Admin, Pastor via
+  // EVENTS_MANAGE, Department Head) — members could previously create events.
+  requireRole(['Super Admin', 'Pastor', 'Department Head']),
   upload.single('poster'),
   [
     body('title').trim().notEmpty().withMessage('Event title is required'),

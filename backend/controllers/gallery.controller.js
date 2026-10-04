@@ -169,7 +169,10 @@ class GalleryController extends BaseController {
     try {
       const { id } = req.params;
 
-      await GalleryRepository.deleteAlbum(id, req.user.church_id);
+      const deleted = await GalleryRepository.deleteAlbum(id, req.user.church_id);
+      if (!deleted) {
+        return this.error(res, 'Album not found', 404);
+      }
 
       this.success(res, { message: 'Album deleted successfully' });
     } catch (error) {
@@ -308,7 +311,10 @@ class GalleryController extends BaseController {
     try {
       const { id } = req.params;
 
-      await GalleryRepository.deletePhoto(id, req.user.church_id);
+      const deleted = await GalleryRepository.deletePhoto(id, req.user.church_id);
+      if (!deleted) {
+        return this.error(res, 'Photo not found', 404);
+      }
 
       this.success(res, { message: 'Photo deleted successfully' });
     } catch (error) {

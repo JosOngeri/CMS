@@ -86,7 +86,7 @@ class ApprovalsController extends BaseController {
       const approval = await ApprovalsRepository.getWithDetails(id, churchId);
 
       if (!approval) {
-        return ResponseHandler.notFound(res, 'Approval not found');
+        return ResponseHandler.error(res, 'Approval not found', 404);
       }
 
       return ResponseHandler.success(res, { approval });
@@ -152,7 +152,7 @@ class ApprovalsController extends BaseController {
       const approval = await ApprovalsRepository.updateStatus(id, 'approved', req.user.id, comment, churchId);
 
       if (!approval) {
-        return ResponseHandler.notFound(res, 'Approval not found');
+        return ResponseHandler.error(res, 'Approval not found', 404);
       }
 
       // Log audit event
@@ -185,7 +185,7 @@ class ApprovalsController extends BaseController {
       return ResponseHandler.success(res, { approval }, 'Request approved successfully');
     } catch (error) {
       this.logger.error('approveRequest', error);
-      return ResponseHandler.error(res, 'Failed to approve request');
+      return ResponseHandler.error(res, error.statusCode ? error.message : 'Failed to approve request', error.statusCode || 500);
     }
   }
 
@@ -212,7 +212,7 @@ class ApprovalsController extends BaseController {
       const approval = await ApprovalsRepository.updateStatus(id, 'rejected', req.user.id, comment, churchId);
 
       if (!approval) {
-        return ResponseHandler.notFound(res, 'Approval not found');
+        return ResponseHandler.error(res, 'Approval not found', 404);
       }
 
       // Log audit event
@@ -242,7 +242,7 @@ class ApprovalsController extends BaseController {
       return ResponseHandler.success(res, { approval }, 'Request rejected successfully');
     } catch (error) {
       this.logger.error('rejectRequest', error);
-      return ResponseHandler.error(res, 'Failed to reject request');
+      return ResponseHandler.error(res, error.statusCode ? error.message : 'Failed to reject request', error.statusCode || 500);
     }
   }
 
@@ -264,7 +264,7 @@ class ApprovalsController extends BaseController {
       const deleted = await ApprovalsRepository.deleteById(id, churchId);
 
       if (!deleted) {
-        return ResponseHandler.notFound(res, 'Pending approval request not found — only pending requests can be deleted');
+        return ResponseHandler.error(res, 'Pending approval request not found — only pending requests can be deleted', 404);
       }
 
       await auditService.log(
@@ -452,7 +452,7 @@ class ApprovalsController extends BaseController {
       const approval = await ApprovalsRepository.updateStatus(id, 'delegated', req.user.id, comment, churchId);
 
       if (!approval) {
-        return ResponseHandler.notFound(res, 'Approval not found');
+        return ResponseHandler.error(res, 'Approval not found', 404);
       }
 
       // Log audit event
@@ -471,7 +471,7 @@ class ApprovalsController extends BaseController {
       return ResponseHandler.success(res, { approval }, 'Request delegated successfully');
     } catch (error) {
       this.logger.error('delegateRequest', error);
-      return ResponseHandler.error(res, 'Failed to delegate request');
+      return ResponseHandler.error(res, error.statusCode ? error.message : 'Failed to delegate request', error.statusCode || 500);
     }
   }
 

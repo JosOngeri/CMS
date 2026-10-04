@@ -74,12 +74,16 @@ class ApprovalsRepository extends BaseRepository {
     // Fetch the request to check requester_id
     const request = await this.getById(approvalId, churchId);
     if (!request) {
-      throw new Error('Approval request not found');
+      const err = new Error('Approval request not found');
+      err.statusCode = 404;
+      throw err;
     }
 
     // Prevent self-approval
     if (approverId === request.requester_id) {
-      throw new Error('Cannot approve your own request');
+      const err = new Error('Cannot approve your own request');
+      err.statusCode = 400;
+      throw err;
     }
 
     const timestampColumn = status === 'approved' ? 'approved_at' : 'rejected_at';

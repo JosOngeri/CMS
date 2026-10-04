@@ -206,7 +206,8 @@ class ContentRepository extends BaseRepository {
 
   async deleteContentItem(id, churchId) {
     if (!churchId) throw new Error('ContentRepository.deleteContentItem: churchId required');
-    await this.pool.query('DELETE FROM content_items WHERE id = $1 AND church_id = $2', [id, churchId]);
+    const result = await this.pool.query('DELETE FROM content_items WHERE id = $1 AND church_id = $2', [id, churchId]);
+    return result.rowCount > 0;
   }
 
   async publishContentItem(id, churchId) {

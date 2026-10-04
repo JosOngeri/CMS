@@ -79,8 +79,8 @@ router.delete('/bank-reconciliations/:id', treasuryController.deleteReconciliati
 // Additional routes for frontend compatibility
 router.get('/vendors', vendorsController.getAllVendors);
 router.post('/vendors', requireRole(['Super Admin', 'Pastor', 'Treasurer']), vendorsController.createVendor);
-router.put('/vendors/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), treasuryController.updateVendor);
-router.delete('/vendors/:id', requireRole(['Super Admin', 'Pastor']), treasuryController.deleteVendor);
+router.put('/vendors/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), vendorsController.updateVendor);
+router.delete('/vendors/:id', requireRole(['Super Admin', 'Pastor']), vendorsController.deleteVendor);
 
 router.get('/analytics', treasuryController.getAnalytics);
 

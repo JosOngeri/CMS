@@ -204,7 +204,8 @@ class GalleryRepository extends BaseRepository {
 
   async deleteAlbum(id, churchId) {
     if (!churchId) throw new Error('GalleryRepository.deleteAlbum: churchId required');
-    await this.pool.query('DELETE FROM gallery_albums WHERE id = $1 AND church_id = $2', [id, churchId]);
+    const result = await this.pool.query('DELETE FROM gallery_albums WHERE id = $1 AND church_id = $2', [id, churchId]);
+    return result.rowCount > 0;
   }
 
   async uploadPhoto(albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId, churchId) {
@@ -290,7 +291,8 @@ class GalleryRepository extends BaseRepository {
 
   async deletePhoto(id, churchId) {
     if (!churchId) throw new Error('deletePhoto: churchId is required');
-    await this.pool.query('DELETE FROM gallery_photos WHERE id = $1 AND church_id = $2', [id, churchId]);
+    const result = await this.pool.query('DELETE FROM gallery_photos WHERE id = $1 AND church_id = $2', [id, churchId]);
+    return result.rowCount > 0;
   }
 
   async addTagToPhoto(photoId, tagId, churchId) {

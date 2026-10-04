@@ -187,7 +187,10 @@ class DocumentsController extends BaseController {
   async deleteDocument(req, res) {
     try {
       const churchId = req.user.church_id;
-      await DocumentsRepository.softDelete(req.params.id, churchId);
+      const deleted = await DocumentsRepository.softDelete(req.params.id, churchId);
+      if (!deleted) {
+        return this.error(res, 'Document not found', 404);
+      }
 
       this.success(res, { message: 'Document deleted successfully' });
     } catch (error) {

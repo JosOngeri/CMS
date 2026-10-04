@@ -68,8 +68,10 @@ class VendorsRepository extends BaseRepository {
   }
 
   async getVendorTransactionCount(id, churchId) {
+    // Vendor linkage lives on expenses.vendor_id — the transactions table has
+    // no vendor column, so count expense rows to guard deletion.
     const result = await this.pool.query(
-      'SELECT COUNT(*) as count FROM transactions WHERE vendor_id = $1 AND church_id = $2',
+      'SELECT COUNT(*) as count FROM expenses WHERE vendor_id = $1 AND church_id = $2',
       [id, churchId]
     );
     return parseInt(result.rows[0].count);

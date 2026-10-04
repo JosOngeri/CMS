@@ -226,7 +226,10 @@ class ContentController extends BaseController {
     try {
       const { id } = req.params;
 
-      await ContentRepository.deleteContentItem(id, req.user.church_id);
+      const deleted = await ContentRepository.deleteContentItem(id, req.user.church_id);
+      if (!deleted) {
+        return this.error(res, 'Content not found', 404);
+      }
 
       this.success(res, { message: 'Content deleted successfully' });
     } catch (error) {

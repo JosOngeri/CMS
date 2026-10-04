@@ -566,10 +566,11 @@ class TreasuryRepository extends BaseRepository {
 
   async deleteProject(id, churchId) {
     if (!churchId) throw new Error('deleteProject: churchId is required');
-    await this.pool.query(
+    const result = await this.pool.query(
       `DELETE FROM projects WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
     );
+    return result.rowCount > 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -606,10 +607,11 @@ class TreasuryRepository extends BaseRepository {
 
   async deletePledge(id, churchId) {
     if (!churchId) throw new Error('deletePledge: churchId is required');
-    await this.pool.query(
+    const result = await this.pool.query(
       `DELETE FROM pledges WHERE id = $1${churchId ? ' AND church_id = $2' : ''}`,
       churchId ? [id, churchId] : [id]
     );
+    return result.rowCount > 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -1057,10 +1059,11 @@ class TreasuryRepository extends BaseRepository {
 
   async deleteFixedAsset(id, churchId) {
     if (!churchId) throw new Error('deleteFixedAsset: churchId is required');
-    await this.pool.query(
+    const result = await this.pool.query(
       'DELETE FROM fixed_assets WHERE id = $1 AND church_id = $2',
       [id, churchId]
     );
+    return result.rowCount > 0;
   }
 
   // ---------------------------------------------------------------------------

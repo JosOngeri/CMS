@@ -764,6 +764,9 @@ class TreasuryController extends BaseController {
     try {
       const { id } = req.params;
       const project = await TreasuryRepository.updateProject(id, req.body, req.user.church_id);
+      if (!project) {
+        return res.status(404).json({ success: false, error: 'Project not found' });
+      }
       res.json({ success: true, project });
     } catch (error) {
       this.logger.error('updateProject', error);
@@ -781,7 +784,10 @@ class TreasuryController extends BaseController {
    */
   async deleteProject(req, res) {
     try {
-      await TreasuryRepository.deleteProject(req.params.id, req.user.church_id);
+      const deleted = await TreasuryRepository.deleteProject(req.params.id, req.user.church_id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Project not found' });
+      }
       res.json({ success: true, message: 'Project deleted' });
     } catch (error) {
       this.logger.error('deleteProject', error);
@@ -843,6 +849,9 @@ class TreasuryController extends BaseController {
       const { id } = req.params;
       const { amount, pledgeType, startDate, endDate, frequency, status } = req.body;
       const pledge = await TreasuryRepository.updatePledge(id, { amount, pledgeType, startDate, endDate, frequency, status }, req.user.church_id);
+      if (!pledge) {
+        return res.status(404).json({ success: false, error: 'Pledge not found' });
+      }
       res.json({ success: true, pledge });
     } catch (error) {
       this.logger.error('updatePledge', error);
@@ -860,7 +869,10 @@ class TreasuryController extends BaseController {
    */
   async deletePledge(req, res) {
     try {
-      await TreasuryRepository.deletePledge(req.params.id, req.user.church_id);
+      const deleted = await TreasuryRepository.deletePledge(req.params.id, req.user.church_id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Pledge not found' });
+      }
       res.json({ success: true, message: 'Pledge deleted' });
     } catch (error) {
       this.logger.error('deletePledge', error);
@@ -1501,6 +1513,9 @@ class TreasuryController extends BaseController {
         currentValue,
         status
       }, req.user.church_id);
+      if (!asset) {
+        return res.status(404).json({ success: false, error: 'Fixed asset not found' });
+      }
       res.json({ success: true, asset });
     } catch (error) {
       this.logger.error('updateFixedAsset', error);
@@ -1518,7 +1533,10 @@ class TreasuryController extends BaseController {
    */
   async deleteFixedAsset(req, res) {
     try {
-      await TreasuryRepository.deleteFixedAsset(req.params.id, req.user.church_id);
+      const deleted = await TreasuryRepository.deleteFixedAsset(req.params.id, req.user.church_id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, error: 'Fixed asset not found' });
+      }
       res.json({ success: true, message: 'Fixed asset deleted' });
     } catch (error) {
       this.logger.error('deleteFixedAsset', error);

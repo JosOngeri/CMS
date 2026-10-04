@@ -32,6 +32,10 @@ class ResponseHandler {
     return this.error(res, message, 403);
   }
 
+  static notFound(res, message = 'Resource not found') {
+    return this.error(res, message, 404);
+  }
+
   static unauthorized(res, message = 'Authentication Required') {
     return this.error(res, message, 401);
   }
