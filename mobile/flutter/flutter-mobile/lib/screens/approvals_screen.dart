@@ -92,6 +92,33 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
     }
   }
 
+  /// Escalate keeps the request pending but hands responsibility to the
+  /// church's First Elder — mirrors the web inbox's Escalate action.
+  Future<void> _handleEscalate(Map<String, dynamic> approval) async {
+    final id = approval['id']?.toString();
+    if (id == null || _apiService == null) return;
+
+    setState(() => _processing.add(id));
+    final result = await _apiService!.delegateRequest(id, delegateRole: 'First Elder');
+
+    if (!mounted) return;
+    setState(() => _processing.remove(id));
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request escalated to First Elder')),
+      );
+      _loadApprovals();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Failed to escalate'),
+          backgroundColor: AppTheme.errorColor,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,6 +244,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> {
                     onPressed: busy ? null : () => _handleAction(approval, false),
                     icon: const Icon(Icons.close, color: AppTheme.errorColor),
                     label: const Text('Reject', style: TextStyle(color: AppTheme.errorColor)),
+                  ),
+                  TextButton.icon(
+                    onPressed: busy ? null : () => _handleEscalate(approval),
+                    icon: const Icon(Icons.forward, color: AppTheme.textSecondary),
+                    label: const Text('Escalate', style: TextStyle(color: AppTheme.textSecondary)),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(

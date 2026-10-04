@@ -884,6 +884,26 @@ class ApiService {
     }
   }
 
+  /// Escalate/delegate an approval request to another approver (e.g. the
+  /// First Elder). Pass [delegateRole] when the backend should resolve the
+  /// target user, or [delegateTo] for a specific user id.
+  Future<Map<String, dynamic>> delegateRequest(String approvalId,
+      {String? delegateRole, String? delegateTo, String? comment}) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.put('/approvals/$approvalId/delegate', data: {
+        if (delegateRole != null) 'delegate_role': delegateRole,
+        if (delegateTo != null) 'delegateTo': delegateTo,
+        if (comment != null && comment.isNotEmpty) 'comment': comment,
+      });
+      return {'success': response.statusCode == 200 && response.data['success'] == true};
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
   /// Document library (Sabbath School quarterlies, bulletins, policies).
   Future<Map<String, dynamic>> getDocuments() async {
     try {

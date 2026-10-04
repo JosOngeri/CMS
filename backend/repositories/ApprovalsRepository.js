@@ -103,6 +103,39 @@ class ApprovalsRepository extends BaseRepository {
     return result.rows[0];
   }
 
+  /**
+   * Escalate/delegate a pending request to another approver. Unlike
+   * updateStatus('delegated') — which wrongly stamped rejected_at and left
+   * nobody able to act — this keeps status 'pending' so the target sees it in
+   * the shared inbox, records the new responsible approver, and stamps the
+   * hand-off in metadata for audit.
+   */
+  async assignApprover(approvalId, targetUserId, delegatedById, comments = null, churchId) {
+    const request = await this.getById(approvalId, churchId);
+    if (!request) {
+      const err = new Error('Approval request not found');
+      err.statusCode = 404;
+      throw err;
+    }
+    if (request.status !== 'pending') {
+      const err = new Error('Only pending requests can be delegated');
+      err.statusCode = 400;
+      throw err;
+    }
+    const result = await this.pool.query(
+      `UPDATE ${this.tableName}
+       SET approver_id = $2,
+           comments = COALESCE($3, comments),
+           metadata = COALESCE(metadata, '{}'::jsonb) || jsonb_build_object(
+             'delegated_from', $4::text, 'delegated_at', NOW()::text),
+           updated_at = NOW()
+       WHERE id = $1 AND church_id = $5 AND status = 'pending'
+       RETURNING *`,
+      [approvalId, targetUserId, comments, delegatedById, churchId]
+    );
+    return result.rows[0];
+  }
+
   async bulkUpdateStatus(approvalIds, status, approverId, comments = null, churchId = null) {
     if (!Array.isArray(approvalIds) || approvalIds.length === 0) {
       throw new Error('approvalIds must be a non-empty array');

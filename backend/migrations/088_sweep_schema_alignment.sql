@@ -343,4 +343,30 @@ BEGIN
   END IF;
 END $$;
 
+
+-- ============================================================
+-- SECTION 13: Department Head scoped approve permission
+-- Product decision: a Department Head may approve budget-type
+-- requests for departments they head, and may escalate anything
+-- else to First Elder/Pastor. The DB grant is flat
+-- approvals.approve; the per-request scope lives in
+-- routes/approvals.routes.js (scopeApprovalAction).
+-- Some environments applied 038 partially (permissions catalog
+-- rows missing) so the approvals rows are re-asserted first.
+-- ============================================================
+
+INSERT INTO permissions (name, description, category) VALUES
+  ('approvals.view',    'View approval inbox',       'approvals'),
+  ('approvals.approve', 'Approve/reject requests',   'approvals')
+ON CONFLICT (name) DO NOTHING;
+
+-- Approvers: mirrors migration 038 (Pastor, First Elder, Treasurer)
+-- plus Department Head, scoped in code to own-department budgets.
+INSERT INTO role_permissions (role_id, permission_id)
+SELECT r.id, p.id FROM roles r, permissions p
+WHERE r.name IN ('Super Admin', 'Pastor', 'First Elder', 'Treasurer',
+                 'Department Head')
+  AND p.name = 'approvals.approve'
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
 COMMIT;

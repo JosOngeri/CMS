@@ -442,18 +442,66 @@ class ApprovalsController extends BaseController {
   async delegateRequest(req, res) {
     try {
       const { id } = req.params;
-      const { delegateTo, comment } = req.body;
+      // Accept both spellings — web/Flutter send snake_case, some callers camelCase.
+      const delegateTo = req.body.delegateTo || req.body.delegate_to;
+      const delegateRole = req.body.delegateRole || req.body.delegate_role;
+      const { comment } = req.body;
       const churchId = req.user.church_id;
+
+      // Resolve the escalation target: an explicit user id, or the first
+      // active user holding the named role in this church (e.g. "Escalate to
+      // First Elder" without a user picker).
+      let targetId = delegateTo || null;
+      if (!targetId && delegateRole) {
+        const t = await pool.query(
+          `SELECT u.id FROM users u
+           WHERE u.church_id = $1 AND u.is_active = true AND u.deleted_at IS NULL
+             AND (u.role = $2 OR EXISTS (
+               SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
+               WHERE ur.user_id = u.id AND r.name = $2))
+           ORDER BY u.created_at LIMIT 1`,
+          [churchId, delegateRole]
+        );
+        targetId = t.rows[0]?.id || null;
+        if (!targetId) {
+          return ResponseHandler.error(res, `No active "${delegateRole}" found in this church`, 404);
+        }
+      }
+      if (!targetId) {
+        return ResponseHandler.error(res, 'delegateTo (user id) or delegateRole is required', 400);
+      }
+      if (targetId === req.user.id) {
+        return ResponseHandler.error(res, 'Cannot delegate a request to yourself', 400);
+      }
+      const targetUser = await pool.query(
+        `SELECT id, first_name, last_name FROM users
+         WHERE id = $1 AND church_id = $2 AND is_active = true AND deleted_at IS NULL`,
+        [targetId, churchId]
+      );
+      if (!targetUser.rows[0]) {
+        return ResponseHandler.error(res, 'Delegation target not found in this church', 404);
+      }
 
       // Get old approval for audit log
       const oldApproval = await ApprovalsRepository.getWithDetails(id, churchId);
 
-      // For now, we'll keep this simple and just update the status to delegated
-      const approval = await ApprovalsRepository.updateStatus(id, 'delegated', req.user.id, comment, churchId);
+      // assignApprover keeps the request 'pending' so the target can still
+      // act on it — status 'delegated' would remove it from every queue.
+      const approval = await ApprovalsRepository.assignApprover(id, targetId, req.user.id, comment, churchId);
 
       if (!approval) {
         return ResponseHandler.error(res, 'Approval not found', 404);
       }
+
+      // related_entity_id is uuid while approval ids are ints — the request
+      // number goes in the body instead.
+      await sendNotification(pool, {
+        recipientId: targetId,
+        type: 'approval_delegated',
+        title: 'Approval escalated to you',
+        body: `${req.user.first_name || 'A leader'} ${req.user.last_name || ''} escalated "${oldApproval?.title || `request #${id}`}" to you for approval.`,
+        link: '/dashboard/approvals',
+      });
 
       // Log audit event
       await auditService.log(
