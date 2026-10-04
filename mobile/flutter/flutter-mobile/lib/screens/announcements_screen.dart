@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../app/theme.dart';
+import 'platform_messages_screen.dart';
 
 class AnnouncementsScreen extends ConsumerStatefulWidget {
   const AnnouncementsScreen({super.key});
@@ -18,6 +19,8 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
   bool _isLoading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
+  // null = still checking / hidden (non-admin roles get 403 and never see it)
+  int? _platformUnread;
 
   @override
   void initState() {
@@ -25,6 +28,23 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
     _initApiService();
     _loadAnnouncements();
     _loadReadAnnouncements();
+    _loadPlatformUnread();
+  }
+
+  /// Mirror of the web PlatformMessagesCard: only admin roles can see the
+  /// church <-> platform thread; a 403/401 hides the banner entirely.
+  Future<void> _loadPlatformUnread() async {
+    final api = await ApiService.getInstance();
+    try {
+      final res = await api.dio.get('/platform-messages/unread-count');
+      if (!mounted) return;
+      setState(() {
+        _platformUnread = (res.data['data']?['n'] as num?)?.toInt() ?? 0;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _platformUnread = null);
+    }
   }
 
   Future<void> _initApiService() async {
@@ -212,9 +232,13 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                       onRefresh: _refreshAnnouncements,
                       child: ListView.builder(
                         padding: const EdgeInsets.all(16),
-                        itemCount: _announcements!.length,
+                        itemCount: _announcements!.length + (_platformUnread != null ? 1 : 0),
                         itemBuilder: (context, index) {
-                          final announcement = _announcements![index];
+                          if (_platformUnread != null && index == 0) {
+                            return _buildPlatformBanner();
+                          }
+                          final announcement = _announcements![
+                              index - (_platformUnread != null ? 1 : 0)];
                           final isRead = _readAnnouncements.contains(announcement['id']?.toString());
                           
                           return Card(
@@ -259,6 +283,53 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                         },
                       ),
                     ),
+    );
+  }
+
+  Widget _buildPlatformBanner() {
+    final unread = _platformUnread ?? 0;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: AppTheme.primaryColor,
+          child: const Icon(Icons.support_agent, color: Colors.white),
+        ),
+        title: const Text(
+          'Platform Support',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          unread > 0 ? '$unread unread message${unread == 1 ? '' : 's'}'
+                     : 'Direct line to the Msabato team',
+          style: const TextStyle(fontSize: 12),
+        ),
+        trailing: unread > 0
+            ? Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.errorColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$unread',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            : const Icon(Icons.chevron_right),
+        onTap: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const PlatformMessagesScreen(),
+            ),
+          );
+          _loadPlatformUnread();
+        },
+      ),
     );
   }
 

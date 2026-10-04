@@ -514,6 +514,42 @@ class ApiService {
     }
   }
 
+  // Platform <-> church message thread (mirrors the web
+  // PlatformMessagesCard; admin roles only — 403 means hide the feature).
+  Future<Map<String, dynamic>> getPlatformMessages() async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.get('/platform-messages');
+      return {
+        'success': true,
+        'data': response.data['data'] ?? [],
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'forbidden': e.response?.statusCode == 403 || e.response?.statusCode == 401,
+        'error': getErrorMessage(e),
+      };
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
+  Future<Map<String, dynamic>> sendPlatformMessage(String body) async {
+    try {
+      final service = await getInstance();
+      final response = await service._dio.post('/platform-messages', data: {'body': body});
+      return {
+        'success': true,
+        'data': response.data['data'],
+      };
+    } on DioException catch (e) {
+      return {'success': false, 'error': getErrorMessage(e)};
+    } catch (e) {
+      return {'success': false, 'error': 'Network error: ${e.toString()}'};
+    }
+  }
+
   // Profile methods
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profileData) async {
     try {

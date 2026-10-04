@@ -37,8 +37,9 @@ const flush = async () => {
   try {
     await pool.query(
       `INSERT INTO platform_health (service_name, status, response_time, error_rate, last_check, metadata, created_at, updated_at)
-       VALUES ('api.http', 'operational', $1, $2, CURRENT_TIMESTAMP, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-      [summary.avgMs, summary.errorRate, JSON.stringify({ samples: summary.samples, window: '5m' })]
+       VALUES ('api.http', $1, $2, $3, CURRENT_TIMESTAMP, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+      [summary.errorRate > 10 ? 'degraded' : 'healthy', summary.avgMs, summary.errorRate,
+       JSON.stringify({ samples: summary.samples, window: '5m' })]
     );
   } catch {
     /* observability must never break the request path */

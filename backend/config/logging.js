@@ -55,12 +55,17 @@ const logger = pino({
   })
 });
 
-// 4.7: outside development, mirror warn+ entries into platform_app_logs so
-// the console log explorer can query them (stdout still gets everything).
+// 4.7: outside development, mirror entries into platform_app_logs so the
+// console log explorer can query them (stdout still gets everything).
+// APP_LOG_DB_LEVEL sets the minimum captured level (default 'warn').
 if (!isDevelopment && process.env.DISABLE_DB_LOG_STREAM !== 'true') {
   const { appLogDbStream } = require('./appLogDbStream');
-  const dbLogger = pino({ level: 'warn', redact: loggerOpts.redact }, appLogDbStream);
-  for (const method of ['warn', 'error', 'fatal']) {
+  const rank = { info: 30, warn: 40, error: 50, fatal: 60 };
+  const dbLevel = (process.env.APP_LOG_DB_LEVEL || 'warn').toLowerCase();
+  const minRank = rank[dbLevel] || 40;
+  const dbLogger = pino({ level: dbLevel, redact: loggerOpts.redact }, appLogDbStream);
+  for (const method of ['info', 'warn', 'error', 'fatal']) {
+    if (rank[method] < minRank) continue;
     const original = logger[method].bind(logger);
     logger[method] = (...args) => {
       original(...args);

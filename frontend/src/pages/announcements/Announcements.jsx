@@ -12,14 +12,12 @@
  * - PermissionButton.jsx                  → shows Compose only to writers
  */
 
-import { useState, useEffect } from 'react'
-import { Megaphone, X } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { X } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import { FullPageLoading } from '../../components/common/Loading'
 import GmailMessageList from '../../components/common/GmailMessageList'
 import Breadcrumb from '../../components/common/Breadcrumb'
-import PermissionButton from '../../components/common/PermissionButton'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import PlatformMessagesCard from '../../components/announcements/PlatformMessagesCard'
 import { SUCCESS_MESSAGES } from '../../constants/validation'
@@ -60,11 +58,7 @@ const Announcements = () => {
     { id: 'low', label: 'Low' },
   ]
 
-  useEffect(() => {
-    fetchAnnouncements()
-  }, [])
-
-  const fetchAnnouncements = async () => {
+  const fetchAnnouncements = useCallback(async () => {
     try {
       setLoading(true)
       const response = await api.get('/announcements')
@@ -75,7 +69,11 @@ const Announcements = () => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [api, toast])
+
+  useEffect(() => {
+    fetchAnnouncements()
+  }, [fetchAnnouncements])
 
   const handleSubmit = async (e) => {
     e.preventDefault()

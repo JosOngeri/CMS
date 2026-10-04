@@ -49,8 +49,13 @@ const importMembers = async (churchId, rawRows) => {
            SELECT $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14
             WHERE NOT EXISTS (
               SELECT 1 FROM members
-               WHERE church_id = $1 AND first_name = $2 AND last_name = $3
-                 AND COALESCE(phone,'') = COALESCE($4,''))`,
+               WHERE church_id = $1
+                 AND (
+                   -- same person re-imported as-is
+                   (first_name = $2 AND last_name = $3 AND COALESCE(phone,'') = COALESCE($4,''))
+                   -- or same person with a name correction but the same email
+                   OR (COALESCE($5,'') <> '' AND COALESCE(email,'') = $5)
+                 ))`,
           [
             churchId, r.first_name, r.last_name, r.phone || null, r.email || null,
             r.gender || null, r.date_of_birth || null, r.marital_status || null,

@@ -53,9 +53,10 @@ describe('DashboardRepository.getFinancialStats (B19/L728)', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns camelCase keys consumed by the Flutter dashboard', async () => {
+    // One combined totals query — a leftover once-mock here leaks into the
+    // next describe (clearAllMocks does not drain the once queue).
     pool.query
-      .mockResolvedValueOnce({ rows: [{ total_balance: '1200.5', monthly_income: '300', monthly_expenses: '100' }] })
-      .mockResolvedValueOnce({ rows: [{ pending_payments: '4' }] });
+      .mockResolvedValueOnce({ rows: [{ total_balance: '1200.5', monthly_income: '300', monthly_expenses: '100', pending_payments: '4' }] });
 
     const stats = await DashboardRepository.getFinancialStats('church-1');
     expect(stats).toEqual({
