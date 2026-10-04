@@ -85,6 +85,21 @@ CREATE INDEX IF NOT EXISTS idx_user_sessions_user   ON user_sessions(user_id, ch
 CREATE INDEX IF NOT EXISTS idx_user_sessions_expiry ON user_sessions(expires_at);
 
 -- 3. SMS providers: SMSProviderRepository reads/writes/sorts on priority.
+--    Prod never had this table — create it (credentials table, legitimately
+--    starts empty; no seed rows make sense for api_key columns).
+CREATE TABLE IF NOT EXISTS sms_providers (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name       VARCHAR(120) NOT NULL,
+  api_key    VARCHAR(255),
+  api_url    VARCHAR(255),
+  sender_id  VARCHAR(32),
+  balance    NUMERIC(12,2),
+  currency   VARCHAR(8) DEFAULT 'KES',
+  is_active  BOOLEAN NOT NULL DEFAULT true,
+  church_id  UUID REFERENCES churches(id) ON DELETE CASCADE,
+  priority   INT NOT NULL DEFAULT 10,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
 ALTER TABLE sms_providers
   ADD COLUMN IF NOT EXISTS priority INT NOT NULL DEFAULT 10;
 
@@ -376,5 +391,21 @@ WHERE r.name IN ('Super Admin', 'Pastor', 'First Elder', 'Treasurer',
                  'Department Head')
   AND p.name = 'approvals.approve'
 ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+
+-- ============================================================
+-- SECTION 14: write-path column alignment (write sweep)
+-- sms_logs.recipient_phone is per-recipient, but batch log rows
+-- (recipient_count > 1) have no single phone — they could not
+-- insert at all, breaking POST /sms/send.
+-- audit_log.record_id was uuid, so writes for int-keyed tables
+-- (approval_requests uses serial ids) failed with
+-- "invalid input syntax for type uuid" and silently dropped
+-- audit rows. TEXT stores both uuid and int ids verbatim.
+-- ============================================================
+
+ALTER TABLE sms_logs ALTER COLUMN recipient_phone DROP NOT NULL;
+
+ALTER TABLE audit_log ALTER COLUMN record_id TYPE text USING record_id::text;
 
 COMMIT;
