@@ -25,8 +25,11 @@ class PaymentRepository extends BaseRepository {
     // user_id/initiated_by both get the payer's user id — "My Payments" matches
     // on user_id, and member_id alone is not enough (it points at members(id),
     // which members don't know).
+    // `description` maps to the payments.notes column — the table has no
+    // description column, so keep the field name at the boundary and write
+    // it into notes.
     let query = `
-      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, user_id, initiated_by)
+      INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, notes, payment_method, status, transaction_id, obligation_id, user_id, initiated_by)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10)
       RETURNING *
     `;
@@ -34,7 +37,7 @@ class PaymentRepository extends BaseRepository {
 
     if (churchId) {
       query = `
-        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, description, payment_method, status, transaction_id, obligation_id, user_id, initiated_by, church_id)
+        INSERT INTO ${this.tableName} (amount, phone_number, category, member_id, notes, payment_method, status, transaction_id, obligation_id, user_id, initiated_by, church_id)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $10, $11)
         RETURNING *
       `;

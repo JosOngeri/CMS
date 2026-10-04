@@ -414,6 +414,10 @@ class AuthController extends BaseController {
         if (req.body[key] !== undefined) updates[key] = req.body[key];
       }
 
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ success: false, error: 'No profile fields provided to update' });
+      }
+
       const result = await UserRepository.updateProfile(userId, updates);
 
       if (!result) {

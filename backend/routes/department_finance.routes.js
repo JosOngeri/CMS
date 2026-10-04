@@ -21,6 +21,20 @@ const aiContentService = require('../services/aiContentService');
 
 const logger = createLogger('department_finance');
 
+// Reject malformed UUID params before they reach the queries — without this
+// a non-UUID :id/:bid/:oid/:pid/:rid crashes pg with a 500. Every id column
+// in this router's tables is uuid.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// NOTE: router.param does not accept an array of names — register per name.
+for (const paramName of ['id', 'bid', 'oid', 'pid', 'rid']) {
+  router.param(paramName, (req, res, next, value) => {
+    if (!UUID_RE.test(value)) {
+      return res.status(400).json({ success: false, error: `Invalid ${paramName} format` });
+    }
+    next();
+  });
+}
+
 /** Dept head / assistant / manager check (same rules as community routes). */
 async function canManageDepartment(user, departmentId) {
   const roles = user.roles || [];
