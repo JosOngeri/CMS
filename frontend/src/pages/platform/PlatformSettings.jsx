@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import Card from '../../components/common/Card'
 import { FullPageLoading } from '../../components/common/Loading'
+import GlobalSettingsCatalog from '../../components/platform/GlobalSettingsCatalog'
 
 const PlatformSettings = () => {
   const { api } = useAuth()
@@ -121,6 +122,8 @@ const PlatformSettings = () => {
           </div>
         )}
       </form>
+
+      <GlobalSettingsCatalog canEdit={canEdit} />
     </div>
   )
 }

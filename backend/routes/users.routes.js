@@ -4,6 +4,7 @@ const { authenticateToken, requireRole, invalidateUserCache } = require('../midd
 const { validate, validationRules } = require('../middleware/validation');
 const { body, validationResult } = require('express-validator');
 const userRepository = require('../repositories/UserRepository');
+const { pool } = require('../config/database');
 const { createLogger } = require('../helpers/controllerLogger');
 
 const logger = createLogger('users.routes');
@@ -176,6 +177,23 @@ router.post('/:id/roles',
 
       const id = req.userId;
       const { role_id } = req.body;
+      const actorRoles = req.user.roles || [];
+      const isSuperAdmin = actorRoles.includes('Super Admin');
+
+      // Super Admin is the church's single top admin — only an existing
+      // Super Admin may add another one. First Elder/Pastor may manage
+      // every other role, but never this one.
+      const roleRow = await pool.query('SELECT name FROM roles WHERE id = $1', [role_id]);
+      if (!roleRow.rows[0]) {
+        return res.status(404).json({ error: 'Role not found' });
+      }
+      if (roleRow.rows[0].name === 'Super Admin' && !isSuperAdmin) {
+        return res.status(403).json({ error: 'Only a Super Admin can grant the Super Admin role' });
+      }
+      // Non-SA actors may not change their own role set (self-elevation).
+      if (id === req.user.id && !isSuperAdmin) {
+        return res.status(403).json({ error: 'You cannot modify your own roles' });
+      }
 
       const result = await userRepository.assignRole(id, role_id, req.user.church_id);
 
@@ -205,6 +223,19 @@ router.delete('/:id/roles/:roleId',
     try {
       const id = req.userId;
       const { roleId } = req.params;
+      const actorRoles = req.user.roles || [];
+      const isSuperAdmin = actorRoles.includes('Super Admin');
+
+      // Mirror of the assign rules: only a Super Admin may strip the top
+      // admin role (otherwise a First Elder could demote the only admin),
+      // and non-SA actors may not edit their own role set.
+      const roleRow = await pool.query('SELECT name FROM roles WHERE id = $1', [roleId]);
+      if (roleRow.rows[0]?.name === 'Super Admin' && !isSuperAdmin) {
+        return res.status(403).json({ error: 'Only a Super Admin can remove the Super Admin role' });
+      }
+      if (id === req.user.id && !isSuperAdmin) {
+        return res.status(403).json({ error: 'You cannot modify your own roles' });
+      }
 
       const result = await userRepository.removeRole(id, roleId, req.user.church_id);
 

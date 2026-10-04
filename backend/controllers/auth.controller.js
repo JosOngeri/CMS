@@ -220,10 +220,15 @@ class AuthController extends BaseController {
       // Normalize phone field names (frontend sends phone_number)
       const phoneNumber = phone || req.body.phone_number;
 
-      // Only admins can assign non-Member roles; public registration always becomes Member
+      // Only admins can assign non-Member roles; public registration always
+      // becomes Member. Super Admin may only be granted by an existing one —
+      // a First Elder admin-registering a user cannot mint a second top admin.
       let roleNames = ['Member'];
       if (req.user && IdentityService.hasAnyRole(req.user, ADMIN_ROLES)) {
         roleNames = roles.length > 0 ? roles : ['Member'];
+        if (!IdentityService.hasAnyRole(req.user, ['Super Admin'])) {
+          roleNames = roleNames.filter(r => r !== 'Super Admin');
+        }
       }
 
       const newUser = await UserRepository.create({

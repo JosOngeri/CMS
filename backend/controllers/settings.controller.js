@@ -2,6 +2,8 @@ const BaseController = require('./BaseController');
 const SettingsRepository = require('../repositories/SettingsRepository');
 const SettingsService = require('../services/SettingsService');
 const { createLogger } = require('../helpers/controllerLogger');
+const { KEYS: SETTING_KEYS } = require('../constants/settingKeys');
+const SETTING_KEY_SET = new Set(SETTING_KEYS.map((k) => k.key));
 
 /**
  * Settings Controller
@@ -172,6 +174,12 @@ class SettingsController extends BaseController {
           const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
           if (!setting) {
+            // Only manifest keys may be created — arbitrary keys were the
+            // source of stray junk rows (e.g. 'key'/'value' literals).
+            if (!SETTING_KEY_SET.has(key)) {
+              errors.push({ key, error: 'Unknown setting key' });
+              continue;
+            }
             // Create setting if it doesn't exist
             const newSetting = await SettingsRepository.createSettingSimple(
               key,

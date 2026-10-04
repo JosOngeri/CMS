@@ -39,6 +39,10 @@ router.get('/audit-logs/export', authenticatePlatformUser, requirePlatformPermis
 
 router.get('/settings', authenticatePlatformUser, requirePlatformPermission('platform:read'), platformController.getSettings);
 router.put('/settings', authenticatePlatformUser, requirePlatformPermission('settings:manage'), platformController.updateSettings);
+// Global defaults + platform-managed keys of the church-facing `settings`
+// table (provider creds, SaaS switches). Secrets masked on read.
+router.get('/settings/catalog', authenticatePlatformUser, requirePlatformPermission('settings:read'), platformTenancyController.getSettingsCatalog);
+router.put('/settings/catalog', authenticatePlatformUser, requirePlatformPermission('settings:manage'), platformTenancyController.updateSettingsCatalog);
 
 // Platform staff accounts — gated by staff:manage, which today only the
 // owner wildcard grants (see constants/platformPermissions.js).
@@ -205,5 +209,11 @@ router.put('/maintenance', authenticatePlatformUser, requirePlatformPermission('
 
 // ── §2.5 Config override ────────────────────────────────────────────────
 router.put('/tenants/:id/settings', authenticatePlatformUser, requirePlatformPermission('tenant:administer'), platformTenancyController.updateTenantSettings);
+// Church settings catalog — resolved per-church view of the `settings`
+// table: effective value, override vs inherited, masked secrets.
+// :key is the setting name (e.g. site_name), DELETE reverts to global.
+router.get('/tenants/:id/settings/catalog', authenticatePlatformUser, requirePlatformPermission('tenant:read'), platformTenancyController.getTenantSettingsCatalog);
+router.put('/tenants/:id/settings/catalog', authenticatePlatformUser, requirePlatformPermission('tenant:administer'), platformTenancyController.updateTenantSettingsCatalog);
+router.delete('/tenants/:id/settings/catalog/:key', authenticatePlatformUser, requirePlatformPermission('tenant:administer'), platformTenancyController.deleteTenantSetting);
 
 module.exports = router;

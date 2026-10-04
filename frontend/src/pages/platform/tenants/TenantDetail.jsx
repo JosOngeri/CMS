@@ -9,6 +9,7 @@ import { useToast } from '../../../contexts/ToastContext'
 import Card from '../../../components/common/Card'
 import StatsCard from '../../../components/common/StatsCard'
 import { FullPageLoading } from '../../../components/common/Loading'
+import TenantSettingsEditor from '../../../components/platform/TenantSettingsEditor'
 
 const TenantDetail = () => {
   const { api } = useAuth()
@@ -281,6 +282,9 @@ const TenantDetail = () => {
           <div className="flex justify-end gap-3"><button onClick={() => { setPendingAction(null); setActionReason('') }} className="rounded-lg border border-[var(--color-border)] px-4 py-2">Cancel</button><button onClick={performAction} className="rounded-lg bg-[var(--color-error)] px-4 py-2 text-[var(--color-on-solid)]">Confirm</button></div>
         </div>
       </div>}
+
+      {/* Church settings catalog — effective values + overrides */}
+      <TenantSettingsEditor tenantId={id} />
 
       {/* Recent Activity */}
       <Card className="p-6">
