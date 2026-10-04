@@ -616,36 +616,37 @@ const PaymentManagement = () => {
                   {canManagePayments && (
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        {/* Max 3 actions per row: confirm (pending) or reconcile
-                            (failed), fail (pending), view → quickview modal.
-                            Edit and Archive live inside the quickview footer. */}
+                        {/* Max 3 actions per row, sized for rapid clicking
+                            through long queues: confirm (pending) or
+                            reconcile (failed), fail (pending), view. Edit
+                            and Archive live inside the quickview footer. */}
                         {(payment.status === 'pending' || payment.status === 'failed') && (
                           <button
                             onClick={() => handleStatusUpdate(payment, 'completed')}
                             title={payment.status === 'failed' ? 'Reconcile — confirm payment received' : 'Confirm payment received'}
-                            aria-label={payment.status === 'failed' ? 'Reconcile payment' : 'Confirm payment received'}
-                            className="text-[var(--color-success)] hover:opacity-80"
+                            className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg text-sm font-medium bg-[var(--color-success-light)] text-[var(--color-success)] hover:opacity-80"
                           >
-                            <CheckCircle className="w-4 h-4" />
+                            <CheckCircle className="w-5 h-5" />
+                            {payment.status === 'failed' ? 'Reconcile' : 'Confirm'}
                           </button>
                         )}
                         {payment.status === 'pending' && (
                           <button
                             onClick={() => handleStatusUpdate(payment, 'failed')}
                             title="Mark payment failed"
-                            aria-label="Mark payment failed"
-                            className="text-[var(--color-error)] hover:opacity-80"
+                            className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg text-sm font-medium bg-[var(--color-error-light)] text-[var(--color-error)] hover:opacity-80"
                           >
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="w-5 h-5" />
+                            Fail
                           </button>
                         )}
                         <button
                           onClick={() => setSelectedPayment(payment)}
                           title="View payment breakdown"
-                          aria-label="View payment breakdown"
-                          className="text-[var(--color-primary)] hover:opacity-80"
+                          className="flex items-center gap-1.5 px-3 py-2 min-h-[40px] rounded-lg text-sm font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)] hover:opacity-80"
                         >
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-5 h-5" />
+                          View
                         </button>
                       </div>
                     </td>
@@ -673,17 +674,17 @@ const PaymentManagement = () => {
               actions={canManagePayments ? (
                 <>
                   {(payment.status === 'pending' || payment.status === 'failed') && (
-                    <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'completed'); }} className="flex items-center gap-1 text-sm text-[var(--color-success)] font-medium min-h-[44px] px-2">
-                      <CheckCircle className="w-4 h-4" /><span>{payment.status === 'failed' ? 'Reconcile' : 'Confirm'}</span>
+                    <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'completed'); }} className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-[var(--color-success-light)] text-[var(--color-success)]">
+                      <CheckCircle className="w-5 h-5" /><span>{payment.status === 'failed' ? 'Reconcile' : 'Confirm'}</span>
                     </button>
                   )}
                   {payment.status === 'pending' && (
-                    <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'failed'); }} className="flex items-center gap-1 text-sm text-[var(--color-error)] font-medium min-h-[44px] px-2">
-                      <XCircle className="w-4 h-4" /><span>Fail</span>
+                    <button onClick={(e) => { e.stopPropagation(); handleStatusUpdate(payment, 'failed'); }} className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-[var(--color-error-light)] text-[var(--color-error)]">
+                      <XCircle className="w-5 h-5" /><span>Fail</span>
                     </button>
                   )}
-                  <button onClick={(e) => { e.stopPropagation(); setSelectedPayment(payment); }} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
-                    <Eye className="w-4 h-4" /><span>View</span>
+                  <button onClick={(e) => { e.stopPropagation(); setSelectedPayment(payment); }} className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-lg text-sm font-medium bg-[var(--color-primary-light)] text-[var(--color-primary)]">
+                    <Eye className="w-5 h-5" /><span>View</span>
                   </button>
                 </>
               ) : null}
@@ -799,15 +800,15 @@ const PaymentManagement = () => {
                 <div className="flex gap-3 pt-2">
                   <button
                     onClick={() => handleStatusUpdate(selectedPayment, 'completed')}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
                   >
-                    <CheckCircle className="w-4 h-4" /> Confirm received
+                    <CheckCircle className="w-5 h-5" /> Confirm received
                   </button>
                   <button
                     onClick={() => handleStatusUpdate(selectedPayment, 'failed')}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-error)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] rounded-lg bg-[var(--color-error)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
                   >
-                    <XCircle className="w-4 h-4" /> Mark failed
+                    <XCircle className="w-5 h-5" /> Mark failed
                   </button>
                 </div>
               )}
@@ -817,9 +818,9 @@ const PaymentManagement = () => {
               {canManagePayments && selectedPayment.status === 'failed' && (
                 <button
                   onClick={() => handleStatusUpdate(selectedPayment, 'completed')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] rounded-lg bg-[var(--color-success)] text-[var(--color-on-solid)] font-medium hover:opacity-90"
                 >
-                  <CheckCircle className="w-4 h-4" /> Reconcile — confirm received
+                  <CheckCircle className="w-5 h-5" /> Reconcile — confirm received
                 </button>
               )}
 
