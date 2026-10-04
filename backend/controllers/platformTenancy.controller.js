@@ -39,10 +39,13 @@ class PlatformTenancyController extends BaseController {
     const { id } = req.params;
     try {
       const result = await pool.query(
-        `SELECT id, email, username, first_name, last_name, role,
+        `SELECT id, email, username, first_name, last_name,
+                COALESCE(to_jsonb(u)->>'role',
+                         (SELECT r.name FROM user_roles ur JOIN roles r ON r.id = ur.role_id
+                          WHERE ur.user_id = u.id LIMIT 1)) AS role,
                 is_active, mfa_enabled, last_login,
                 failed_login_attempts, locked_until, created_at
-         FROM users
+         FROM users u
          WHERE church_id = $1 AND deleted_at IS NULL
          ORDER BY created_at ASC`,
         [id]
