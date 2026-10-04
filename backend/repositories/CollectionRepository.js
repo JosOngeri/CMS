@@ -6,25 +6,25 @@ class CollectionRepository extends BaseRepository {
   }
 
   // Personal Collections
-  async getPersonalCollectionsByUserId(userId) {
+  async getPersonalCollectionsByUserId(userId, churchId = null) {
     const query = `
       SELECT id, amount, purpose, fund, date, created_at
       FROM personal_collections
-      WHERE user_id = $1
+      WHERE user_id = $1${churchId ? ' AND church_id = $2' : ''}
       ORDER BY date DESC
     `;
-    const result = await this.pool.query(query, [userId]);
+    const result = await this.pool.query(query, churchId ? [userId, churchId] : [userId]);
     return result.rows;
   }
 
   async createPersonalCollection(collectionData) {
-    const { user_id, amount, purpose, fund, date } = collectionData;
+    const { user_id, amount, purpose, fund, date, church_id } = collectionData;
     const query = `
-      INSERT INTO personal_collections (user_id, amount, purpose, fund, date)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO personal_collections (user_id, amount, purpose, fund, date, church_id)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [user_id, amount, purpose, fund, date]);
+    const result = await this.pool.query(query, [user_id, amount, purpose, fund, date, church_id]);
     return result.rows[0];
   }
 
@@ -55,7 +55,7 @@ class CollectionRepository extends BaseRepository {
     const query = `
       SELECT ec.*,
              e.title as event_title,
-             e.start_date as event_date,
+             e.event_date,
              CONCAT(u.first_name, ' ', u.last_name) as created_by_name
       FROM event_collections ec
       JOIN events e ON ec.event_id = e.id

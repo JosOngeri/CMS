@@ -25,7 +25,7 @@ class CollectionController extends BaseController {
     try {
       const userId = req.user.id;
 
-      const collections = await CollectionRepository.getPersonalCollectionsByUserId(userId);
+      const collections = await CollectionRepository.getPersonalCollectionsByUserId(userId, req.user.church_id);
 
       return ResponseHandler.success(res, { collections });
     } catch (error) {
@@ -76,7 +76,8 @@ class CollectionController extends BaseController {
         amount,
         purpose,
         fund,
-        date
+        date,
+        church_id: req.user.church_id
       });
 
       return ResponseHandler.success(res, { collection }, 'Collection added successfully', 201);
@@ -100,7 +101,7 @@ class CollectionController extends BaseController {
       const userId = req.user.id;
       const format = req.query.format || 'txt';
 
-      const collections = await CollectionRepository.getPersonalCollectionsByUserId(userId);
+      const collections = await CollectionRepository.getPersonalCollectionsByUserId(userId, req.user.church_id);
 
       // Use ReportService for statement generation
       const userInfo = {

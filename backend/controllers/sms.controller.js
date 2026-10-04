@@ -133,7 +133,14 @@ class SMSController extends BaseController {
       const { name, template_id, scheduled_date, target_audience } = req.body;
       const churchId = req.user.church_id;
 
-      const campaign = await SMSRepository.createCampaign(name, template_id, scheduled_date, target_audience, req.user.id, churchId);
+      const campaign = await SMSRepository.createCampaign({
+        name,
+        template_id,
+        church_id: churchId,
+        scheduled_for: scheduled_date,
+        target_audience,
+        created_by: req.user.id
+      });
       this.success(res, { campaign });
     } catch (error) {
       this.logger.error('createCampaign', error);

@@ -9,7 +9,7 @@ class SMSContactsController extends BaseController {
   constructor() {
     super();
     this.logger = createLogger('SMSContactsController');
-    this.db = require('../config/database');
+    this.db = require('../config/database').pool;
   }
 
   /**

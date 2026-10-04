@@ -99,13 +99,13 @@ class SmsRepository extends BaseRepository {
   }
 
   async createCampaign(campaignData) {
-    const { name, template_id, church_id, scheduled_for, created_by } = campaignData;
+    const { name, template_id, church_id, scheduled_for, target_audience, created_by } = campaignData;
     const query = `
-      INSERT INTO sms_campaigns (name, template_id, church_id, scheduled_for, created_by)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO sms_campaigns (name, template_id, church_id, scheduled_for, target_audience, created_by)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [name, template_id, church_id, scheduled_for, created_by]);
+    const result = await this.pool.query(query, [name, template_id, church_id, scheduled_for, JSON.stringify(target_audience || {}), created_by]);
     return result.rows[0];
   }
 
@@ -156,8 +156,8 @@ class SmsRepository extends BaseRepository {
 
   async createSMSLog(sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id) {
     const query = `
-      INSERT INTO sms_logs (sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO sms_logs (sent_by, sender_id, user_id, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id)
+      VALUES ($1, $1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
     const result = await this.pool.query(query, [sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id]);
@@ -207,20 +207,50 @@ class SmsRepository extends BaseRepository {
     return this.getCampaigns(churchId);
   }
 
-  async getAnalyticsWithTopRecipients(churchId, limit = 10) {
-    const query = `
-      SELECT
-        phone_number,
-        COUNT(*) as message_count,
-        COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_count
-      FROM sms_logs
-      WHERE church_id = $1
-      GROUP BY phone_number
-      ORDER BY message_count DESC
-      LIMIT $2
-    `;
-    const result = await this.pool.query(query, [churchId, limit]);
-    return result.rows;
+  async getAnalyticsWithTopRecipients(months, churchId) {
+    const since = `NOW() - INTERVAL '${months} months'`;
+    const [statsRes, trendsRes, topRes] = await Promise.all([
+      this.pool.query(
+        `SELECT
+           COUNT(*) as total_sent,
+           ROUND(COUNT(*) FILTER (WHERE status = 'delivered') * 100.0 / NULLIF(COUNT(*), 0), 2) as delivery_rate,
+           ROUND(COUNT(*) FILTER (WHERE enable_reply = true) * 100.0 / NULLIF(COUNT(*), 0), 2) as response_rate,
+           0 as total_cost
+         FROM sms_logs
+         WHERE church_id = $1 AND created_at >= ${since}`,
+        [churchId]
+      ),
+      this.pool.query(
+        `SELECT
+           TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') as month,
+           COUNT(*) as sent,
+           COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+           COUNT(*) FILTER (WHERE status = 'failed') as failed
+         FROM sms_logs
+         WHERE church_id = $1 AND created_at >= ${since}
+         GROUP BY DATE_TRUNC('month', created_at)
+         ORDER BY month`,
+        [churchId]
+      ),
+      this.pool.query(
+        `SELECT
+           COALESCE(phone_number, recipient_phone) as phone_number,
+           COUNT(*) as message_count,
+           COUNT(*) FILTER (WHERE status = 'delivered') as delivered_count
+         FROM sms_logs
+         WHERE church_id = $1 AND created_at >= ${since}
+           AND COALESCE(phone_number, recipient_phone) IS NOT NULL
+         GROUP BY COALESCE(phone_number, recipient_phone)
+         ORDER BY message_count DESC
+         LIMIT 10`,
+        [churchId]
+      )
+    ]);
+    return {
+      stats: statsRes.rows[0] || {},
+      trends: trendsRes.rows,
+      topRecipients: topRes.rows
+    };
   }
 
   async getRateLimitStatus(churchId) {

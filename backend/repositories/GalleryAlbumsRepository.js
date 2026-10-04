@@ -119,14 +119,16 @@ class GalleryAlbumsRepository extends BaseRepository {
       SELECT
         (SELECT COUNT(*) FROM album_photos WHERE album_id = $1) as photo_count,
         (SELECT COUNT(*) FROM gallery_albums WHERE parent_id = $1) as sub_album_count,
-        (SELECT SUM(file_size) FROM album_photos ap
-         LEFT JOIN photos p ON ap.photo_id = p.id
+        (SELECT SUM(gp.file_size) FROM album_photos ap
+         LEFT JOIN gallery_photos gp ON ap.photo_id = gp.id
          WHERE ap.album_id = $1) as total_size
     `;
     const params = [albumId];
 
+    // SELECT without FROM supports WHERE — the row only materializes when the
+    // album belongs to the caller's church (tenant guard, not a column filter).
     if (churchId) {
-      query += ` AND church_id = $2`;
+      query += ` WHERE EXISTS (SELECT 1 FROM gallery_albums WHERE id = $1 AND church_id = $2)`;
       params.push(churchId);
     }
 

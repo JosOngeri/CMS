@@ -174,11 +174,13 @@ class GalleryRepository extends BaseRepository {
   }
 
   async createAlbum(title, description, coverPhotoId, userId, churchId, churchSlug, isPublic = true) {
+    // is_private and is_public mirror each other: the advanced album API
+    // reads/writes is_public while this legacy path still speaks is_private.
     const result = await this.pool.query(
-      `INSERT INTO gallery_albums (title, description, cover_photo_id, created_by, church_id, church_slug, is_private)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO gallery_albums (title, description, cover_photo_id, created_by, church_id, church_slug, is_private, is_public)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [title, description, coverPhotoId, userId, churchId, churchSlug, !isPublic]
+      [title, description, coverPhotoId, userId, churchId, churchSlug, !isPublic, isPublic]
     );
     return result.rows[0];
   }
@@ -191,10 +193,11 @@ class GalleryRepository extends BaseRepository {
            description = COALESCE($2, description),
            cover_photo_id = COALESCE($3, cover_photo_id),
            is_private = COALESCE($4, is_private),
+           is_public = CASE WHEN $4 IS NULL THEN is_public ELSE NOT $4 END,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $5 AND church_id = $6
        RETURNING *`,
-      [title, description, coverPhotoId, isPublic !== undefined ? !isPublic : undefined, id, churchId]
+      [title, description, coverPhotoId, isPublic !== undefined ? !isPublic : null, id, churchId]
     );
     return result.rows[0];
   }

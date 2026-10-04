@@ -405,16 +405,16 @@ class AnalyticsRepository extends BaseRepository {
     const query = `
       SELECT
         e.title as event_name,
-        e.start_date,
+        e.event_date,
         COUNT(DISTINCT ea.member_id) as registered_attendees,
         COUNT(DISTINCT ea.member_id) FILTER (WHERE ea.attended = true) as actual_attendees,
         (COUNT(DISTINCT ea.member_id) FILTER (WHERE ea.attended = true)::FLOAT / NULLIF(COUNT(DISTINCT ea.member_id), 0)) * 100 as attendance_rate
       FROM events e
       LEFT JOIN event_attendance ea ON e.id = ea.event_id
-      WHERE e.start_date >= CURRENT_DATE - INTERVAL '1 month' * $1
+      WHERE e.event_date >= CURRENT_DATE - INTERVAL '1 month' * $1
       AND e.church_id = $2
-      GROUP BY e.id, e.title, e.start_date
-      ORDER BY e.start_date DESC
+      GROUP BY e.id, e.title, e.event_date
+      ORDER BY e.event_date DESC
     `;
     const result = await this.pool.query(query, [months, churchId]);
     return result.rows;
@@ -424,15 +424,15 @@ class AnalyticsRepository extends BaseRepository {
     this._requireChurchId(churchId);
     const query = `
       SELECT
-        DATE_TRUNC('week', e.start_date) as week,
+        DATE_TRUNC('week', e.event_date) as week,
         COUNT(DISTINCT e.id) as events_count,
         COUNT(DISTINCT ea.member_id) as total_attendees,
         AVG(COUNT(DISTINCT ea.member_id)) OVER () as average_attendance_per_event
       FROM events e
       LEFT JOIN event_attendance ea ON e.id = ea.event_id
-      WHERE e.start_date >= CURRENT_DATE - INTERVAL '1 month' * $1
+      WHERE e.event_date >= CURRENT_DATE - INTERVAL '1 month' * $1
       AND e.church_id = $2
-      GROUP BY DATE_TRUNC('week', e.start_date)
+      GROUP BY DATE_TRUNC('week', e.event_date)
       ORDER BY week DESC
     `;
     const result = await this.pool.query(query, [months, churchId]);

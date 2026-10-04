@@ -9,7 +9,7 @@ class SMSGroupsController extends BaseController {
   constructor() {
     super();
     this.logger = createLogger('SMSGroupsController');
-    this.db = require('../config/database');
+    this.db = require('../config/database').pool;
   }
 
   /**
