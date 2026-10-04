@@ -91,7 +91,7 @@ const PaymentHistory = () => {
 
   const downloadReceipt = async (payment) => {
     try {
-      const response = await api.get(`/payments/${payment.id}/receipt`, { responseType: 'blob' })
+      const response = await api.get(`/payments/${payment.id}/receipt`, { params: { format: 'pdf' }, responseType: 'blob' })
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const a = document.createElement('a')
       a.href = url

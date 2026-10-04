@@ -198,6 +198,26 @@ const PaymentManagement = () => {
     }
   }
 
+  const downloadReceipt = async (payment) => {
+    try {
+      const response = await api.get(`/payments/${payment.id}/receipt`, {
+        params: { format: 'pdf' },
+        responseType: 'blob'
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `receipt_${String(payment.id).slice(0, 8)}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('Receipt downloaded')
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Could not download the receipt')
+    }
+  }
+
   const filteredPayments = payments.filter(payment => {
     const matchesSearch = payment.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          payment.member_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -823,6 +843,13 @@ const PaymentManagement = () => {
                   <CheckCircle className="w-5 h-5" /> Reconcile — confirm received
                 </button>
               )}
+
+              <button
+                onClick={() => downloadReceipt(selectedPayment)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] rounded-lg border border-[var(--color-primary)] text-[var(--color-primary)] font-medium hover:bg-[var(--color-primary-light)]"
+              >
+                <Download className="w-5 h-5" /> Download receipt (PDF)
+              </button>
 
               {canManagePayments && (
                 <div className="flex gap-3 pt-1">

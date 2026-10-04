@@ -39,6 +39,7 @@ const MyPayments = () => {
     try {
       toast.info('Downloading receipt...');
       const response = await api.get(`/payments/${paymentId}/receipt`, {
+        params: { format: 'pdf' },
         responseType: 'blob'
       });
       
