@@ -807,6 +807,9 @@ class ContentController extends BaseController {
   async importContent(req, res) {
     try {
       const { items } = req.body;
+      if (!Array.isArray(items) || items.length === 0) {
+        return this.error(res, 'items must be a non-empty array', 400);
+      }
       const userId = req.user.id;
 
       const imported = [];

@@ -11,7 +11,7 @@ class PaletteRepository extends BaseRepository {
     const params = churchId ? [churchId] : [];
     const query = `
       SELECT cp.*,
-        json_object_agg(cpc.color_key, cpc.color_value) as colors
+        json_object_agg(cpc.color_key, cpc.color_value) FILTER (WHERE cpc.color_key IS NOT NULL) as colors
        FROM color_palettes cp
        LEFT JOIN color_palette_colors cpc ON cp.id = cpc.palette_id
        WHERE ${churchId ? 'cp.church_id = $1' : 'cp.church_id IS NULL'}
@@ -28,7 +28,7 @@ class PaletteRepository extends BaseRepository {
     const params = churchId ? [paletteId, churchId] : [paletteId];
     const query = `
       SELECT cp.*,
-        json_object_agg(cpc.color_key, cpc.color_value) as colors
+        json_object_agg(cpc.color_key, cpc.color_value) FILTER (WHERE cpc.color_key IS NOT NULL) as colors
        FROM color_palettes cp
        LEFT JOIN color_palette_colors cpc ON cp.id = cpc.palette_id
        WHERE cp.id = $1

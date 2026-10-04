@@ -186,11 +186,14 @@ class TelegramAuthController extends BaseController {
       }
 
       if (method.type === 'bot') {
-        const Telegram = require('telegram');
-        const bot = new Telegram(method.config.botToken);
-
+        // Bot API over HTTPS — the `telegram` package is MTProto, not a bot client.
         try {
-          await bot.getMe();
+          const apiRes = await fetch(
+            `https://api.telegram.org/bot${method.config.botToken}/getMe`,
+            { signal: AbortSignal.timeout(10000) }
+          );
+          const apiData = await apiRes.json();
+          if (!apiData.ok) throw new Error(apiData.description || 'Bot API rejected the token');
           this.success(res, {
             success: true,
             message: 'Bot API connection successful'
@@ -252,6 +255,9 @@ class TelegramAuthController extends BaseController {
   async startVerification(req, res) {
     try {
       const { phoneNumber, methodId } = req.body;
+      if (!phoneNumber) {
+        return this.badRequest(res, 'phoneNumber is required');
+      }
 
       let method;
       
@@ -292,6 +298,14 @@ class TelegramAuthController extends BaseController {
       // app via auth.sendCode — we never see or return it. The previous code
       // generated a local random number, returned it in the response, and
       // logged it — "verification" that verified nothing.
+      if (!method.config.apiId || !method.config.apiHash) {
+        return res.status(503).json({
+          success: false,
+          error: 'Telegram MTProto credentials are not configured',
+          code: 'TELEGRAM_NOT_CONFIGURED'
+        });
+      }
+
       const { TelegramClient } = require('telegram');
       const { StringSession } = require('telegram/sessions');
 

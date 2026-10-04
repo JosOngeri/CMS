@@ -74,4 +74,17 @@ if (!isDevelopment && process.env.DISABLE_DB_LOG_STREAM !== 'true') {
   }
 }
 
+// Routes that catch-and-500 with a static message usually log the real error
+// first — find Error arguments and tag client-input failures so
+// standardResponse can downgrade the response to a truthful 4xx.
+const { markRequestError } = require('../helpers/pgClientError');
+const originalError = logger.error.bind(logger);
+logger.error = (...args) => {
+  for (const arg of args) {
+    if (arg instanceof Error) { markRequestError(arg); break; }
+    if (arg && typeof arg === 'object' && arg.err instanceof Error) { markRequestError(arg.err); break; }
+  }
+  return originalError(...args);
+};
+
 module.exports = logger;

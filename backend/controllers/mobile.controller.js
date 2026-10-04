@@ -265,6 +265,9 @@ class MobileController extends BaseController {
   async uploadContactChanges(req, res) {
     try {
       const { changes } = req.body;
+      if (!Array.isArray(changes)) {
+        return this.error(res, 'changes must be an array', 400);
+      }
       const churchId = req.user.church_id;
       const userId = req.user.id;
 
@@ -331,6 +334,9 @@ class MobileController extends BaseController {
   async uploadTemplateAnalytics(req, res) {
     try {
       const { analytics } = req.body;
+      if (!Array.isArray(analytics)) {
+        return this.error(res, 'analytics must be an array', 400);
+      }
       const churchId = req.user.church_id;
 
       const result = await MobileRepository.processTemplateAnalytics(analytics, churchId);
@@ -368,6 +374,9 @@ class MobileController extends BaseController {
   async uploadSmsLogs(req, res) {
     try {
       const { logs } = req.body;
+      if (!Array.isArray(logs)) {
+        return this.error(res, 'logs must be an array', 400);
+      }
       const churchId = req.user.church_id;
       const userId = req.user.id;
 

@@ -79,9 +79,12 @@ const sendSuccess = (res, data, message = 'Success', statusCode = 200) => {
 };
 
 const sendError = (res, error, statusCode = 500) => {
+  // Controllers pass both Error objects and plain message strings —
+  // 'Group name is required'.message is undefined, which used to hide
+  // every validation message behind a generic "An error occurred".
   const response = {
     success: false,
-    error: error.message || 'An error occurred'
+    error: (typeof error === 'string' ? error : error?.message) || 'An error occurred'
   };
   
   if (error.details) {

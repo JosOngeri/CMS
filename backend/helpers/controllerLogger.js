@@ -3,6 +3,8 @@
  * Provides consistent logging across all controllers
  */
 
+const { markRequestError } = require('./pgClientError');
+
 // Keys whose values must never reach logs — applied to the data payload of every level
 const SENSITIVE_KEY = /pass(word)?|token|secret|otp|code|pin|jwt|auth|cookie|mpesa|session/i;
 
@@ -36,6 +38,9 @@ const logger = {
    * @param {Object} data - Additional data to log
    */
   error(controller, action, error, data = {}) {
+    // Runs inside the request's async context — tag thrown "bad input"
+    // errors so standardResponse can downgrade the generic 500.
+    markRequestError(error);
     console.error(`[${controller}] ERROR in ${action}:`, {
       message: error.message,
       stack: error.stack,

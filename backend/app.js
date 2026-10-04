@@ -199,6 +199,11 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Request-scoped marker for client-input PG errors — must precede every
+// middleware/route that queries so standardResponse can downgrade the
+// generic-500-on-bad-input pattern to a truthful 4xx.
+app.use(require('./helpers/pgClientError').pgClientErrorContext);
+
 // Tenant Isolation (Phase 6)
 app.use(tenantResolver);
 // churchContext disabled for single-tenant deployment (RLS session vars not configured)

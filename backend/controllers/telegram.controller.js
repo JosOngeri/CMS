@@ -387,13 +387,19 @@ class TelegramController extends BaseController {
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (botToken) {
         try {
-          const Telegram = require('telegram');
-          const bot = new Telegram(botToken);
-
-          await bot.sendMessage(phoneNumber || key, {
-            text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
-            parse_mode: 'HTML'
+          // Bot API over HTTPS — the `telegram` package is MTProto, not a bot client.
+          const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: phoneNumber || key,
+              text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
+              parse_mode: 'HTML'
+            }),
+            signal: AbortSignal.timeout(10000)
           });
+          const tgData = await tgRes.json();
+          if (!tgData.ok) throw new Error(tgData.description || 'Telegram Bot API rejected the message');
 
           this.logger.info('startAuth', { phoneNumber: phoneNumber || key, codeSent: true });
         } catch (telegramError) {
@@ -445,13 +451,19 @@ class TelegramController extends BaseController {
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (botToken) {
         try {
-          const Telegram = require('telegram');
-          const bot = new Telegram(botToken);
-
-          await bot.sendMessage(phoneNumber || key, {
-            text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
-            parse_mode: 'HTML'
+          // Bot API over HTTPS — the `telegram` package is MTProto, not a bot client.
+          const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: phoneNumber || key,
+              text: `Your Msabato CMS verification code is: ${verificationCode}\n\nThis code will expire in 5 minutes.`,
+              parse_mode: 'HTML'
+            }),
+            signal: AbortSignal.timeout(10000)
           });
+          const tgData = await tgRes.json();
+          if (!tgData.ok) throw new Error(tgData.description || 'Telegram Bot API rejected the message');
 
           this.logger.info('startAuthFallback', { phoneNumber: phoneNumber || key, codeSent: true });
         } catch (telegramError) {

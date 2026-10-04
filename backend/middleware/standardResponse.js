@@ -1,4 +1,5 @@
 const ResponseHandler = require('../utils/ResponseHandler');
+const { pgClientErrorStatus } = require('../helpers/pgClientError');
 
 /**
  * Ensures every JSON API response uses the standard envelope:
@@ -11,7 +12,12 @@ const standardResponse = (req, res, next) => {
   const originalJson = res.json.bind(res);
 
   res.json = (body) => {
-    const { statusCode, body: normalizedBody } = ResponseHandler.normalize(body, res.statusCode);
+    let { statusCode, body: normalizedBody } = ResponseHandler.normalize(body, res.statusCode);
+    // A query in this request rejected with a client-input SQLSTATE — the
+    // controller's generic 500 is really a bad-request/conflict response.
+    if (statusCode >= 500) {
+      statusCode = pgClientErrorStatus() || statusCode;
+    }
     res.status(statusCode);
     return originalJson(normalizedBody);
   };

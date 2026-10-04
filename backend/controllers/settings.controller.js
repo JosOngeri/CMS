@@ -501,6 +501,9 @@ class SettingsController extends BaseController {
   async setMaintenanceMode(req, res) {
     try {
       const { enabled, message } = req.body;
+      if (enabled === undefined || enabled === null) {
+        return this.error(res, 'enabled is required', 400);
+      }
       const userId = req.user.id;
 
       await SettingsRepository.setMaintenanceSetting('maintenance_mode', enabled.toString(), userId);

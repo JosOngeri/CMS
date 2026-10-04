@@ -100,7 +100,7 @@ const run = async () => {
         const body = (await res.text()).slice(0, 300).replace(/\n/g, ' ');
         // External-provider endpoints may legitimately answer 503 when their
         // credentials aren't configured in this environment — skip, not fail.
-        if (res.status === 503 && body.includes('"code":"MPESA_')) {
+        if (res.status === 503 && body.includes('_NOT_CONFIGURED')) {
           skipped++;
           console.log('SKIP', res.status, p, '(external provider not configured)');
         } else {

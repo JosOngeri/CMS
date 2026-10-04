@@ -7,6 +7,7 @@
  */
 const { Pool } = require('pg');
 const logger = require('./logging');
+const { PG_CLIENT_CODES, markPgClientError } = require('../helpers/pgClientError');
 
 const dbHost = process.env.PGHOST || process.env.DB_HOST || 'localhost';
 const isLocalhost = dbHost === 'localhost' || dbHost === '127.0.0.1';
@@ -29,6 +30,39 @@ const pool = new Pool({
 pool.on('error', (err) => {
   logger.error('Database pool idle client error, pool will auto-recover:', err.message);
 });
+
+// Tag rejected queries whose SQLSTATE means "bad input" — the request-scoped
+// marker lets middleware/standardResponse downgrade the generic 500 to a
+// 4xx even when the controller swallowed the error into a static message.
+const markIfClientError = (err) => {
+  if (err && PG_CLIENT_CODES.has(err.code)) markPgClientError(err);
+  throw err;
+};
+
+const wrapQuery = (queryFn) => (...args) => {
+  const result = queryFn(...args);
+  return result && typeof result.catch === 'function' ? result.catch(markIfClientError) : result;
+};
+
+const wrapClient = (client) => {
+  if (client && !client.__pgClientErrorWrapped) {
+    client.__pgClientErrorWrapped = true;
+    client.query = wrapQuery(client.query.bind(client));
+  }
+  return client;
+};
+
+pool.query = wrapQuery(pool.query.bind(pool));
+const originalConnect = pool.connect.bind(pool);
+pool.connect = (...args) => {
+  // connect(callback) returns undefined — the client arrives via the callback.
+  if (typeof args[args.length - 1] === 'function') {
+    const cb = args.pop();
+    return originalConnect(...args, (err, client, release) =>
+      cb(err, err ? client : wrapClient(client), release));
+  }
+  return originalConnect(...args).then(wrapClient);
+};
 
 // Query helper with logging
 async function queryWithLogging(text, params) {

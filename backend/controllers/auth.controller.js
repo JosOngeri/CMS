@@ -679,6 +679,9 @@ class AuthController extends BaseController {
   async verifyEmail(req, res) {
     try {
       const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ success: false, error: 'Verification token is required' });
+      }
 
       // Check if token is valid (using password_reset_tokens table for simplicity)
       const tokenData = await AuthRepository.getPasswordResetToken(token);

@@ -76,6 +76,16 @@ class ResponseHandler {
     const isError = statusCode >= 400 || body?.success === false || Boolean(body?.error);
     const timestamp = new Date().toISOString();
 
+    // Handlers that send validation messages through a 500 path
+    // (res.status(500).json / error(res, 'Group name is required')) get a
+    // truthful 4xx — the message itself proves the request was bad.
+    if (isError && statusCode >= 500) {
+      const text = String(payload.error || payload.message || '');
+      if (/^invalid |: invalid |not found|is required|must be|not a valid|non-empty|illegal arguments|does not exist|does not belong|no file uploaded/i.test(text)) {
+        statusCode = /not found|does not exist/i.test(text) ? 404 : 400;
+      }
+    }
+
     if (isError) {
       const message = payload.message || payload.error || 'Request failed';
       const response = {

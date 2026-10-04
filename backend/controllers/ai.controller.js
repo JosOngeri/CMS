@@ -14,6 +14,17 @@ class AIController {
     this.logger = createLogger('AIController');
   }
 
+  // Gemini outages/misconfiguration are provider problems (503), not crashes.
+  aiError(res, error, fallback) {
+    if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
+      return ResponseHandler.error(res, error.message, 429);
+    }
+    if (error.message.includes('AI service is disabled') || error.message.includes('API key not valid')) {
+      return res.status(503).json({ success: false, error: 'AI provider is not configured', code: 'AI_NOT_CONFIGURED' });
+    }
+    return ResponseHandler.error(res, fallback);
+  }
+
   async condenseAnnouncement(req, res) {
     const { content } = req.body;
     const churchId = req.user?.church_id;
@@ -36,10 +47,7 @@ class AIController {
       return ResponseHandler.success(res, result.data, 'Content condensed successfully');
     } catch (error) {
       this.logger.error('condenseAnnouncement', error);
-      if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
-        return ResponseHandler.error(res, error.message, 429);
-      }
-      return ResponseHandler.error(res, 'AI processing failed');
+      return this.aiError(res, error, 'AI processing failed');
     }
   }
 
@@ -70,10 +78,7 @@ class AIController {
       return ResponseHandler.success(res, result.data, 'Announcement generated successfully');
     } catch (error) {
       this.logger.error('generateAnnouncement', error);
-      if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
-        return ResponseHandler.error(res, error.message, 429);
-      }
-      return ResponseHandler.error(res, 'Failed to generate announcement');
+      return this.aiError(res, error, 'Failed to generate announcement');
     }
   }
 
@@ -104,10 +109,7 @@ class AIController {
       return ResponseHandler.success(res, result.data, 'Document generated successfully');
     } catch (error) {
       this.logger.error('generateDocument', error);
-      if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
-        return ResponseHandler.error(res, error.message, 429);
-      }
-      return ResponseHandler.error(res, 'Failed to generate document');
+      return this.aiError(res, error, 'Failed to generate document');
     }
   }
 
@@ -138,10 +140,7 @@ class AIController {
       return ResponseHandler.success(res, result.data, 'Communication generated successfully');
     } catch (error) {
       this.logger.error('generateMemberCommunication', error);
-      if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
-        return ResponseHandler.error(res, error.message, 429);
-      }
-      return ResponseHandler.error(res, 'Failed to generate communication');
+      return this.aiError(res, error, 'Failed to generate communication');
     }
   }
 
@@ -171,10 +170,7 @@ class AIController {
       return ResponseHandler.success(res, result.data, 'Suggestions generated successfully');
     } catch (error) {
       this.logger.error('generateSuggestions', error);
-      if (error.message.includes('Rate limit') || error.message.includes('exceeded')) {
-        return ResponseHandler.error(res, error.message, 429);
-      }
-      return ResponseHandler.error(res, 'Failed to generate suggestions');
+      return this.aiError(res, error, 'Failed to generate suggestions');
     }
   }
 

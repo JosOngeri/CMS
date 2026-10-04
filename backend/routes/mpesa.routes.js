@@ -55,7 +55,7 @@ router.post('/callback', async (req, res) => {
     // a real Daraja callback from a forged payment confirmation.
     if (!process.env.MPESA_CALLBACK_SECRET) {
       logger.error('M-Pesa callback rejected: MPESA_CALLBACK_SECRET is not configured');
-      return res.status(503).json({ success: false, error: 'Callback endpoint is not configured' });
+      return res.status(503).json({ success: false, error: 'Callback endpoint is not configured', code: 'MPESA_NOT_CONFIGURED' });
     }
 
     if (!signature || !MpesaService.validateSignature(signature, payload)) {
