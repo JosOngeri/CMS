@@ -114,6 +114,9 @@ class GalleryController extends BaseController {
   async createAlbum(req, res) {
     try {
       const { title, description, coverPhotoId, is_public } = req.body;
+      if (!title) {
+        return this.error(res, 'title is required', 400);
+      }
       const userId = req.user.id;
       const churchId = req.user.church_id;
       const churchSlug = req.user.church_slug;

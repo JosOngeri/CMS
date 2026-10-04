@@ -211,7 +211,8 @@ class TreasuryRepository extends BaseRepository {
         data.amount,
         data.description,
         data.referenceNumber,
-        data.transactionDate,
+        // transaction_date is NOT NULL — callers that omit it record today.
+        data.transactionDate || new Date().toISOString(),
         data.recordedBy,
         data.paymentMethod,
         churchId

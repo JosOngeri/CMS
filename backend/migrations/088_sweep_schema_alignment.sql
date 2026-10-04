@@ -156,6 +156,13 @@ CREATE INDEX IF NOT EXISTS idx_sms_logs_church   ON sms_logs(church_id);
 CREATE INDEX IF NOT EXISTS idx_sms_logs_campaign ON sms_logs(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_sms_logs_sent_by  ON sms_logs(sent_by);
 
+
+-- Pre-existing columns may predate the DEFAULTs assumed in section 5
+-- (ADD COLUMN IF NOT EXISTS leaves a NULL-default column untouched).
+ALTER TABLE sms_logs ALTER COLUMN enable_reply SET DEFAULT false;
+ALTER TABLE sms_logs ALTER COLUMN track_links SET DEFAULT false;
+ALTER TABLE sms_logs ALTER COLUMN source SET DEFAULT 'web';
+
 -- 6. sms_campaigns: SMSRepository.createCampaign/getCampaigns target it.
 CREATE TABLE IF NOT EXISTS sms_campaigns (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -101,6 +101,9 @@ function scopeApprovalAction(mode = 'act') {
 
 // Approvals CRUD (parameterised routes last)
 router.get('/', requireRole(APPROVAL_READ_ROLES), approvalsController.getApprovals);
+// Anyone who can see the inbox may submit a request — status starts pending
+// and requester_id/church_id are taken from the token, never the body.
+router.post('/', requireRole(APPROVAL_READ_ROLES), approvalsController.createApproval);
 router.get('/:id', requireRole(APPROVAL_READ_ROLES), approvalsController.getApprovalById);
 router.put('/:id/approve', requireRole(APPROVER_ROLES), scopeApprovalAction('act'), approvalsController.approveRequest);
 router.put('/:id/reject', requireRole(APPROVER_ROLES), scopeApprovalAction('act'), approvalsController.rejectRequest);

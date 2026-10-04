@@ -160,7 +160,10 @@ class SmsRepository extends BaseRepository {
       VALUES ($1, $1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id]);
+    const result = await this.pool.query(query, [
+      sent_by, recipient_count, message, status, schedule_date, schedule_time,
+      template_id, enable_reply ?? false, track_links ?? false, church_id,
+    ]);
     return result.rows[0];
   }
 
@@ -186,13 +189,15 @@ class SmsRepository extends BaseRepository {
   }
 
   async createTemplate(templateData) {
-    const { name, content, church_id, created_by } = templateData;
+    // template_type is NOT NULL in the live schema; callers that don't
+    // categorise get 'general'.
+    const { name, content, template_type = 'general', church_id, created_by } = templateData;
     const query = `
-      INSERT INTO sms_templates (name, content, church_id, created_by)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO sms_templates (name, content, template_type, church_id, created_by)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const result = await this.pool.query(query, [name, content, church_id, created_by]);
+    const result = await this.pool.query(query, [name, content, template_type, church_id, created_by]);
     return result.rows[0];
   }
 

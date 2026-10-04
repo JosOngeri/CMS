@@ -234,7 +234,7 @@ class SMSController extends BaseController {
       // Process each batch
       const batchResults = [];
       for (const batch of batches) {
-        const logId = await SMSRepository.createSMSLog(
+        const log = await SMSRepository.createSMSLog(
           req.user.id,
           batch.length,
           message,
@@ -248,7 +248,7 @@ class SMSController extends BaseController {
         );
 
         batchResults.push({
-          batchId: logId,
+          batchId: log.id,
           recipientCount: batch.length
         });
       }
@@ -326,7 +326,10 @@ class SMSController extends BaseController {
       const { name, content, category, mergeFields } = req.body;
       const churchId = req.user.church_id;
 
-      const template = await SMSRepository.createTemplate(name, content, category, mergeFields, req.user.id, churchId);
+      // Repository takes an object; 'category' maps to template_type.
+      const template = await SMSRepository.createTemplate({
+        name, content, template_type: category, church_id: churchId, created_by: req.user.id,
+      });
 
       this.success(res, { template });
     } catch (error) {

@@ -448,11 +448,19 @@ class ApprovalsController extends BaseController {
       const { comment } = req.body;
       const churchId = req.user.church_id;
 
-      // Resolve the escalation target: an explicit user id, or the first
-      // active user holding the named role in this church (e.g. "Escalate to
-      // First Elder" without a user picker).
+      // Resolve the escalation target. Priority: explicit user id, explicit
+      // role, then the church's configured approvals.escalate_role
+      // (churches.settings jsonb), defaulting to 'First Elder'.
       let targetId = delegateTo || null;
-      if (!targetId && delegateRole) {
+      let roleToResolve = delegateRole;
+      if (!targetId && !roleToResolve) {
+        const s = await pool.query(
+          `SELECT settings->'approvals'->>'escalate_role' AS r FROM churches WHERE id = $1`,
+          [churchId]
+        );
+        roleToResolve = s.rows[0]?.r || 'First Elder';
+      }
+      if (!targetId && roleToResolve) {
         const t = await pool.query(
           `SELECT u.id FROM users u
            WHERE u.church_id = $1 AND u.is_active = true AND u.deleted_at IS NULL
@@ -460,11 +468,11 @@ class ApprovalsController extends BaseController {
                SELECT 1 FROM user_roles ur JOIN roles r ON r.id = ur.role_id
                WHERE ur.user_id = u.id AND r.name = $2))
            ORDER BY u.created_at LIMIT 1`,
-          [churchId, delegateRole]
+          [churchId, roleToResolve]
         );
         targetId = t.rows[0]?.id || null;
         if (!targetId) {
-          return ResponseHandler.error(res, `No active "${delegateRole}" found in this church`, 404);
+          return ResponseHandler.error(res, `No active "${roleToResolve}" found in this church`, 404);
         }
       }
       if (!targetId) {

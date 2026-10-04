@@ -32,6 +32,22 @@ class ResponseHandler {
     return this.error(res, message, 403);
   }
 
+  // Several controllers call this for express-validator-style errors —
+  // without it the validation path threw TypeError and surfaced as 500.
+  static validationError(res, errors = [], message = 'Validation failed') {
+    const detail = Array.isArray(errors) && errors.length
+      ? errors.map(e => e.message || e.msg || String(e)).join('; ')
+      : message;
+    return res.status(400).json({
+      success: false,
+      message,
+      data: null,
+      error: detail,
+      errors: Array.isArray(errors) ? errors : [errors],
+      timestamp: new Date().toISOString()
+    });
+  }
+
   static notFound(res, message = 'Resource not found') {
     return this.error(res, message, 404);
   }

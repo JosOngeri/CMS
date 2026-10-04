@@ -58,13 +58,17 @@ class ApprovalsRepository extends BaseRepository {
 
   async create(data, churchId) {
     const { title, description, request_type, request_data, requester_id, priority } = data;
+    // entity_type is NOT NULL — default to request_type; department_id
+    // travels inside request_data for module-created requests.
+    const entityType = data.entity_type || request_type || 'general';
+    const departmentId = data.department_id || request_data?.department_id || null;
 
     const query = `
-      INSERT INTO ${this.tableName} (title, description, request_type, request_data, requester_id, priority, status, church_id)
-      VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)
+      INSERT INTO ${this.tableName} (title, description, request_type, entity_type, request_data, requester_id, priority, status, church_id, department_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9)
       RETURNING *
     `;
-    const params = [title, description, request_type, JSON.stringify(request_data || {}), requester_id, priority, churchId];
+    const params = [title, description, request_type, entityType, JSON.stringify(request_data || {}), requester_id, priority, churchId, departmentId];
 
     const result = await this.pool.query(query, params);
     return result.rows[0];

@@ -294,7 +294,9 @@ class CollectionController extends BaseController {
         return ResponseHandler.notFound(res, 'Collection not found');
       }
 
-      if (collectionCheck.status !== 'active') {
+      // 'open' and 'active' both accept contributions (mixed vocabulary in
+      // existing rows); 'closed'/'completed'/'cancelled' do not.
+      if (!['active', 'open'].includes(collectionCheck.status)) {
         return ResponseHandler.error(res, 'Collection is not active', 400);
       }
 

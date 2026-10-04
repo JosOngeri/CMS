@@ -57,6 +57,14 @@ class RecurringPaymentsController extends BaseController {
         start_date, end_date, payment_method, auto_charge, notes
       } = req.body;
 
+      // Required fields — without them the scheduler throws a 500.
+      if (!amount || !start_date) {
+        return ResponseHandler.validationError(res, [{
+          field: 'general',
+          message: 'amount and start_date are required'
+        }]);
+      }
+
       // Validate frequency
       if (!SchedulingService.isValidFrequency(frequency)) {
         return ResponseHandler.validationError(res, [{
