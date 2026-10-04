@@ -2,8 +2,16 @@ const BaseController = require('./BaseController');
 const SettingsRepository = require('../repositories/SettingsRepository');
 const SettingsService = require('../services/SettingsService');
 const { createLogger } = require('../helpers/controllerLogger');
-const { KEYS: SETTING_KEYS } = require('../constants/settingKeys');
+const { KEYS: SETTING_KEYS, byKey: SETTING_DEFS, SECRET_KEYS, GLOBAL_ONLY_KEYS } = require('../constants/settingKeys');
 const SETTING_KEY_SET = new Set(SETTING_KEYS.map((k) => k.key));
+
+// Secret values (mpesa_passkey, sms_api_key) are write-only: every read
+// path replaces them with a mask, and '***'/'' submitted back means
+// "leave unchanged" rather than overwriting with the mask itself.
+const maskSecret = (row) => {
+  if (!row || !SECRET_KEYS.has(row.key)) return row;
+  return { ...row, value: row.value ? '***' : '', default_value: '' };
+};
 
 /**
  * Settings Controller
@@ -24,7 +32,10 @@ class SettingsController extends BaseController {
   async getAllSettings(req, res) {
     try {
       const churchId = req.user.church_id;
-      const settings = await SettingsRepository.getAll(churchId);
+      const grouped = await SettingsRepository.getAll(churchId);
+      const settings = Object.fromEntries(
+        Object.entries(grouped).map(([cat, rows]) => [cat, rows.map(maskSecret)])
+      );
 
       this.success(res, { settings });
     } catch (error) {
@@ -72,7 +83,7 @@ class SettingsController extends BaseController {
         return this.notFound(res, 'Setting not found');
       }
 
-      this.success(res, { setting });
+      this.success(res, { setting: maskSecret(setting) });
     } catch (error) {
       this.logger.error('getSettingByKey', error);
       this.error(res, 'Failed to fetch setting');
@@ -98,6 +109,13 @@ class SettingsController extends BaseController {
   async createSetting(req, res) {
     try {
       const { key, value, value_type, category, label, description, is_public, is_editable, validation_rules } = req.body;
+
+      if (!SETTING_KEY_SET.has(key)) {
+        return this.badRequest(res, 'Unknown setting key');
+      }
+      if (GLOBAL_ONLY_KEYS.has(key)) {
+        return this.forbidden(res, 'This setting is platform-managed and cannot be set per church');
+      }
 
       const setting = await SettingsRepository.createSetting({
         key, value, value_type, category, label, description, is_public, is_editable, validation_rules
@@ -127,6 +145,11 @@ class SettingsController extends BaseController {
       const { key } = req.params;
       const { value, label, description, is_public, is_editable, validation_rules } = req.body;
 
+      // Platform-managed keys may not be overridden by a church.
+      if (GLOBAL_ONLY_KEYS.has(key)) {
+        return this.forbidden(res, 'This setting is platform-managed and cannot be changed per church');
+      }
+
       const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
       if (!setting) {
@@ -137,8 +160,13 @@ class SettingsController extends BaseController {
         return this.forbidden(res, 'This setting cannot be edited');
       }
 
+      // '***'/empty on a secret key means "unchanged" — never persist the
+      // mask itself. (Global-only secrets already 403 above.)
+      const valueToWrite = SECRET_KEYS.has(key) && (value === '***' || value === '' || value == null)
+        ? undefined : value;
+
       const updatedSetting = await SettingsRepository.updateSetting(key, {
-        value, label, description, is_public, is_editable, validation_rules
+        value: valueToWrite, label, description, is_public, is_editable, validation_rules
       }, req.user.church_id);
 
       this.success(res, { setting: updatedSetting });
@@ -170,6 +198,15 @@ class SettingsController extends BaseController {
       for (const settingData of settings) {
         try {
           const { key, value } = settingData;
+
+          if (GLOBAL_ONLY_KEYS.has(key)) {
+            errors.push({ key, error: 'Platform-managed setting — cannot be changed per church' });
+            continue;
+          }
+          // '***'/empty on a secret means "unchanged", not a new value.
+          if (SECRET_KEYS.has(key) && (value === '***' || value === '' || value == null)) {
+            continue;
+          }
 
           const setting = await SettingsRepository.getSettingByKeySimple(key, req.user.church_id);
 
@@ -262,7 +299,8 @@ class SettingsController extends BaseController {
     try {
       const { category } = req.query;
 
-      const settings = await SettingsRepository.exportSettings(category, req.user.church_id);
+      const rows = await SettingsRepository.exportSettings(category, req.user.church_id);
+      const settings = rows.map(maskSecret);
       const exportData = SettingsService.formatExportData(settings);
 
       this.success(res, { data: exportData });
@@ -296,6 +334,15 @@ class SettingsController extends BaseController {
       for (const settingData of valid) {
         try {
           const { key, value, value_type, category, label, description, is_public, is_editable, validation_rules } = settingData;
+
+          if (!SETTING_KEY_SET.has(key)) {
+            errors.push({ key, error: 'Unknown setting key' });
+            continue;
+          }
+          if (GLOBAL_ONLY_KEYS.has(key)) {
+            errors.push({ key, error: 'Platform-managed setting — cannot be imported per church' });
+            continue;
+          }
 
           const result = await SettingsRepository.importSetting({
             key, value, value_type, category, label, description, is_public, is_editable, validation_rules
