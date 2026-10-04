@@ -13,6 +13,9 @@ router.post('/upload', uploadLimiter, upload.array('files', 10), DocumentsContro
 // Get documents
 router.get('/', DocumentsController.getDocuments.bind(DocumentsController));
 
+// Create a document record (metadata-only; file upload is POST /upload)
+router.post('/', requireRole(['Super Admin', 'Pastor', 'Department Head']), DocumentsController.createDocument.bind(DocumentsController));
+
 // Advanced search and filtering
 router.get('/search', DocumentsController.advancedSearch.bind(DocumentsController));
 router.get('/search/filters', DocumentsController.getSearchFilters.bind(DocumentsController));

@@ -18,10 +18,18 @@ const DocumentationManager = () => {
     fetchDocuments();
   }, []);
 
+  // The documents table uses name/description; this editor works in
+  // title/content terms, so normalize on the way in and out.
+  const normalize = (doc) => ({
+    ...doc,
+    title: doc.title || doc.name || '',
+    content: doc.content ?? doc.description ?? ''
+  });
+
   const fetchDocuments = async () => {
     try {
       const response = await api.get('/documents');
-      setDocuments(response.data.documents || response.data.data || []);
+      setDocuments((response.data.documents || response.data.data || []).map(normalize));
     } catch (error) {
       console.error('Failed to fetch documents:', error);
       setDocuments([]); // Set empty array on error
@@ -32,11 +40,12 @@ const DocumentationManager = () => {
 
   const handleSave = async (doc) => {
     try {
+      const payload = { name: doc.title, description: doc.content, category: doc.category };
       if (doc.id) {
-        await api.put(`/documents/${doc.id}`, doc);
+        await api.put(`/documents/${doc.id}`, payload);
         toast.success('Document updated');
       } else {
-        await api.post('/documents', doc);
+        await api.post('/documents', payload);
         toast.success('Document created');
       }
       fetchDocuments();

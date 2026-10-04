@@ -511,11 +511,24 @@ class TreasuryRepository extends BaseRepository {
     return result.rows;
   }
 
-  async createProject(data, churchId) {
+  // projects schema: project_code (NN), project_name (NN), target_amount,
+  // assigned_to, fund_id — the old write used dead columns (name/budget).
+  // Accepts both the Projects.jsx form fields and the legacy {name,budget} set.
+  async createProject(data, churchId, createdBy = null) {
     if (!churchId) throw new Error('createProject: churchId is required');
+    const projectName = data.project_name || data.name;
+    if (!projectName) throw new Error('createProject: project_name is required');
+    const projectCode = data.project_code || `PRJ-${Date.now().toString(36).toUpperCase()}`;
     const result = await this.pool.query(
-      'INSERT INTO projects (name, description, budget, start_date, end_date, status, church_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [data.name, data.description, data.budget, data.startDate, data.endDate, data.status || 'active', churchId]
+      `INSERT INTO projects (project_code, project_name, description, start_date, end_date, target_amount, fund_id, assigned_to, status, created_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [
+        projectCode, projectName, data.description || null,
+        data.start_date || data.startDate || null, data.end_date || data.endDate || null,
+        data.budgeted_amount || data.target_amount || data.budget || null,
+        data.fund_id || null, data.managed_by || data.assigned_to || null,
+        data.status || 'active', createdBy, churchId
+      ]
     );
     return result.rows[0];
   }
@@ -523,9 +536,30 @@ class TreasuryRepository extends BaseRepository {
   async updateProject(id, data, churchId) {
     if (!churchId) throw new Error('updateProject: churchId is required');
     const result = await this.pool.query(
-      `UPDATE projects SET name = $1, description = $2, budget = $3, start_date = $4, end_date = $5, status = $6 WHERE id = $7${churchId ? ' AND church_id = $8' : ''} RETURNING *`,
-      churchId ? [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id, churchId]
-               : [data.name, data.description, data.budget, data.startDate, data.endDate, data.status, id]
+      `UPDATE projects SET
+         project_name = COALESCE($1, project_name),
+         project_code = COALESCE($2, project_code),
+         description = COALESCE($3, description),
+         start_date = COALESCE($4, start_date),
+         end_date = COALESCE($5, end_date),
+         target_amount = COALESCE($6, target_amount),
+         fund_id = COALESCE($7, fund_id),
+         assigned_to = COALESCE($8, assigned_to),
+         status = COALESCE($9, status),
+         updated_at = CURRENT_TIMESTAMP
+       WHERE id = $10 AND church_id = $11 RETURNING *`,
+      [
+        data.project_name || data.name || null,
+        data.project_code || null,
+        data.description ?? null,
+        data.start_date || data.startDate || null,
+        data.end_date || data.endDate || null,
+        data.budgeted_amount || data.target_amount || data.budget || null,
+        data.fund_id || null,
+        data.managed_by || data.assigned_to || null,
+        data.status || null,
+        id, churchId
+      ]
     );
     return result.rows[0];
   }

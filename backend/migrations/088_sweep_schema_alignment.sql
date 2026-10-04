@@ -251,4 +251,70 @@ INSERT INTO user_preferences (user_id)
 SELECT u.id FROM users u
 WHERE NOT EXISTS (SELECT 1 FROM user_preferences p WHERE p.user_id = u.id);
 
+-- 11. Department remittance workflow (collector -> treasurer handover batches)
+--     and member_contacts (member detail page LATERAL join).
+CREATE TABLE IF NOT EXISTS remittances (
+  id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  church_id      UUID NOT NULL,
+  department_id  UUID NOT NULL,
+  collector_id   UUID NOT NULL,
+  treasurer_id   UUID,
+  amount         NUMERIC(12,2) NOT NULL,
+  item_count     INT NOT NULL DEFAULT 0,
+  method         VARCHAR(20) NOT NULL DEFAULT 'cash',
+  reference      VARCHAR(100),
+  notes          TEXT,
+  status         VARCHAR(20) NOT NULL DEFAULT 'pending',
+  dispute_reason TEXT,
+  confirmed_at   TIMESTAMPTZ,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_remittances_dept   ON remittances(department_id, status);
+CREATE INDEX IF NOT EXISTS idx_remittances_church ON remittances(church_id);
+
+CREATE TABLE IF NOT EXISTS remittance_items (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  remittance_id     UUID NOT NULL REFERENCES remittances(id) ON DELETE CASCADE,
+  reconciliation_id UUID NOT NULL,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_remittance_item UNIQUE (reconciliation_id)
+);
+CREATE INDEX IF NOT EXISTS idx_remittance_items_rem ON remittance_items(remittance_id);
+
+ALTER TABLE mpesa_reconciliations
+  ADD COLUMN IF NOT EXISTS remittance_id UUID;
+CREATE INDEX IF NOT EXISTS idx_mpesa_recon_remittance ON mpesa_reconciliations(remittance_id);
+
+-- Member contacts: the member detail view joins this for the phone/email list.
+CREATE TABLE IF NOT EXISTS member_contacts (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  member_id     UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
+  contact_type  VARCHAR(20) NOT NULL,
+  contact_value VARCHAR(200) NOT NULL,
+  is_primary    BOOLEAN NOT NULL DEFAULT false,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_member_contacts_member ON member_contacts(member_id);
+
+-- Seed real contact rows from members.phone/email (idempotent).
+INSERT INTO member_contacts (member_id, contact_type, contact_value, is_primary)
+SELECT m.id, 'phone', m.phone, true
+FROM members m
+WHERE m.phone IS NOT NULL AND m.phone <> ''
+  AND NOT EXISTS (
+    SELECT 1 FROM member_contacts c
+    WHERE c.member_id = m.id AND c.contact_type = 'phone'
+  );
+
+INSERT INTO member_contacts (member_id, contact_type, contact_value, is_primary)
+SELECT m.id, 'email', m.email,
+       (m.phone IS NULL OR m.phone = '')
+FROM members m
+WHERE m.email IS NOT NULL AND m.email <> ''
+  AND NOT EXISTS (
+    SELECT 1 FROM member_contacts c
+    WHERE c.member_id = m.id AND c.contact_type = 'email'
+  );
+
 COMMIT;

@@ -11,7 +11,7 @@
  *
  * FILES IT TALKS TO
  * -----------------
- * - backend /api/department/my-departments              → departments I serve
+ * - backend /departments/my-departments              → departments I serve
  * - backend /api/departments/{id}/remittances/pending-funds → money not yet handed over
  * - backend /api/departments/{id}/remittances           → my handover history
  * - components/common/Card.jsx
@@ -49,7 +49,7 @@ const CollectorDashboard = () => {
       setLoading(true)
 
       // Find every department this user is a member/collector of.
-      const deptRes = await api.get('/api/department/my-departments')
+      const deptRes = await api.get('/departments/my-departments')
       const deptList = Array.isArray(deptRes.data?.data) ? deptRes.data.data : deptRes.data?.data?.departments || []
       setDepartments(deptList)
 

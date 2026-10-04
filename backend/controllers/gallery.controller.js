@@ -222,6 +222,50 @@ class GalleryController extends BaseController {
   }
 
   /**
+   * Create a photo record without a file upload (metadata-only — the file
+   * already lives on Telegram/external storage). Called by
+   * GalleryContext.createPhoto -> POST /gallery/photos.
+   * @param {Object} req - Express request object
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>}
+   */
+  async createPhoto(req, res) {
+    try {
+      const photo = await GalleryRepository.createPhoto(
+        { ...req.body, uploaded_by: req.user.id },
+        req.user.church_id
+      );
+      this.created(res, { data: photo });
+    } catch (error) {
+      this.logger.error('createPhoto', error);
+      this.error(res, 'Failed to create photo');
+    }
+  }
+
+  /**
+   * Create a photo tag — idempotent per church+name (returns the existing tag
+   * when already present).
+   * @param {Object} req - Express request object
+   * @param {Object} req.body - Request body
+   * @param {string} req.body.name - Tag name
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>}
+   */
+  async createTag(req, res) {
+    try {
+      const { name } = req.body;
+      if (!name || !String(name).trim()) {
+        return this.error(res, 'Tag name is required', 400);
+      }
+      const tag = await GalleryRepository.createTag(String(name).trim(), req.user.church_id);
+      this.success(res, { data: tag }, 'Tag created', 201);
+    } catch (error) {
+      this.logger.error('createTag', error);
+      this.error(res, 'Failed to create tag');
+    }
+  }
+
+  /**
    * Update a photo
    * @param {Object} req - Express request object
    * @param {Object} req.params - Route parameters

@@ -119,6 +119,40 @@ class DocumentsController extends BaseController {
   }
 
   /**
+   * Create a document record (metadata-only — file uploads go through /upload).
+   * DocumentationManager posts {title, content, category}; the table uses
+   * name/description, so both field spellings are accepted.
+   * @param {Object} req - Express request object
+   * @param {Object} req.body - Document fields (name|title, description|content, category, tags, file_url)
+   * @param {Object} res - Express response object
+   * @returns {Promise<void>}
+   */
+  async createDocument(req, res) {
+    try {
+      const { title, name, content, description, category, tags, file_url, file_path, size } = req.body;
+      const docName = name || title;
+      if (!docName) {
+        return this.error(res, 'Document name/title is required', 400);
+      }
+      const document = await DocumentsRepository.createDocument({
+        name: docName,
+        description: description ?? content ?? null,
+        category: category || 'general',
+        tags,
+        file_url: file_url || null,
+        file_path: file_path || null,
+        size: size || 0,
+        uploaded_by: req.user.id,
+        church_id: req.user.church_id
+      });
+      this.success(res, { document }, 'Document created', 201);
+    } catch (error) {
+      this.logger.error('createDocument', error);
+      this.error(res, 'Failed to create document');
+    }
+  }
+
+  /**
    * Download a document
    * @param {Object} req - Express request object
    * @param {Object} req.params - Route parameters
@@ -177,7 +211,7 @@ class DocumentsController extends BaseController {
    */
   async updateDocument(req, res) {
     try {
-      const { name, category, tags, description } = req.body;
+      const { name, title, category, tags, description, content } = req.body;
       const churchId = req.user.church_id;
       const userId = req.user.id;
 
@@ -202,10 +236,10 @@ class DocumentsController extends BaseController {
       }
 
       const document = await DocumentsRepository.updateDocument(req.params.id, {
-        name,
+        name: name || title,
         category,
         tags: tags ? tags.split(',').map(t => t.trim()) : [],
-        description
+        description: description ?? content
       }, churchId);
 
       this.success(res, { document });

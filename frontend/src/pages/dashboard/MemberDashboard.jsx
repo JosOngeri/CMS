@@ -67,7 +67,7 @@ const MemberDashboard = () => {
         : Promise.resolve({ obligations: [] }),
       safeGet('/api/announcements?limit=3', { announcements: [] }),
       safeGet('/api/events?limit=20', { events: [] }),
-      safeGet('/api/department/my-departments', { departments: [] }),
+      safeGet('/departments/my-departments', { departments: [] }),
       safeGet('/api/dashboard/personal-activity?limit=8', []),
     ])
     setStats(st)

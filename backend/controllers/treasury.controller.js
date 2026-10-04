@@ -743,8 +743,7 @@ class TreasuryController extends BaseController {
    */
   async createProject(req, res) {
     try {
-      const { name, description, budget, startDate, endDate, status } = req.body;
-      const project = await TreasuryRepository.createProject({ name, description, budget, startDate, endDate, status }, req.user.church_id);
+      const project = await TreasuryRepository.createProject(req.body, req.user.church_id, req.user.id);
       res.status(201).json({ success: true, project });
     } catch (error) {
       this.logger.error('createProject', error);
@@ -764,8 +763,7 @@ class TreasuryController extends BaseController {
   async updateProject(req, res) {
     try {
       const { id } = req.params;
-      const { name, description, budget, startDate, endDate, status } = req.body;
-      const project = await TreasuryRepository.updateProject(id, { name, description, budget, startDate, endDate, status }, req.user.church_id);
+      const project = await TreasuryRepository.updateProject(id, req.body, req.user.church_id);
       res.json({ success: true, project });
     } catch (error) {
       this.logger.error('updateProject', error);

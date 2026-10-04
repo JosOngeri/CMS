@@ -165,13 +165,13 @@ class DocumentsRepository extends BaseRepository {
   }
 
   async createDocument(data) {
-    const { name, file_path, size, category, tags, description, uploaded_by, church_id } = data;
+    const { name, file_path, file_url, size, category, tags, description, uploaded_by, church_id } = data;
 
     const result = await this.pool.query(
-      `INSERT INTO documents (name, file_path, size, category, tags, description, uploaded_by, church_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO documents (name, file_path, file_url, size, category, tags, description, uploaded_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
-      [name, file_path, size, category, this._normalizeTags(tags), description, uploaded_by, church_id]
+      [name, file_path, file_url || null, size, category, this._normalizeTags(tags), description, uploaded_by, church_id]
     );
     const document = result.rows[0];
     if (document) {

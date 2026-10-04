@@ -35,6 +35,7 @@ router.delete('/albums/:id', requireRole(['Super Admin', 'Pastor']), galleryCont
 
 // Photos routes
 router.post('/upload', galleryController.galleryUpload.array('photos', 10), galleryController.uploadPhotos.bind(galleryController));
+router.post('/photos', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.createPhoto);
 router.put('/photos/batch', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.batchUpdatePhotos.bind(galleryController));
 router.post('/albums/:albumId/photos', authenticateToken, galleryController.uploadPhoto);
 router.put('/photos/:id', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.updatePhoto);
@@ -47,6 +48,7 @@ router.post('/sync', requireRole(['Super Admin', 'Pastor', 'Department Head']), 
 
 // Tags routes
 router.get('/tags', galleryController.getTags);
+router.post('/tags', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.createTag);
 router.post('/photos/tags', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.addTagToPhoto);
 router.delete('/photos/:photoId/tags/:tagId', requireRole(['Super Admin', 'Pastor', 'Department Head']), galleryController.removeTagFromPhoto);
 

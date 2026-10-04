@@ -216,7 +216,61 @@ class GalleryRepository extends BaseRepository {
        RETURNING *`,
       [albumId, title, description, fileUrl, thumbnailUrl, fileSize, fileType, width, height, telegramFileId, telegramFileUniqueId, userId, churchId]
     );
-    return result.rows[0];
+    const photo = result.rows[0];
+    // Mirror the album link into album_photos — the advanced album API counts
+    // membership through that join table, so both paths must agree.
+    if (photo) {
+      await this.pool.query(
+        `INSERT INTO album_photos (album_id, photo_id, sort_order)
+         SELECT $1, $2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM album_photos WHERE album_id = $1)
+         ON CONFLICT (album_id, photo_id) DO NOTHING`,
+        [albumId, photo.id]
+      );
+    }
+    return photo;
+  }
+
+  // Metadata-only photo record (used by GalleryContext.createPhoto — e.g. for
+  // photos whose files already live on Telegram/external storage).
+  async createPhoto(photoData, churchId) {
+    if (!churchId) throw new Error('createPhoto: churchId is required');
+    const {
+      album_id, title, description, file_url, thumbnail_url, file_size,
+      file_type, width, height, telegram_file_id, telegram_file_unique_id, uploaded_by
+    } = photoData;
+    const result = await this.pool.query(
+      `INSERT INTO gallery_photos (album_id, title, description, file_url, thumbnail_url, file_size, file_type, width, height, telegram_file_id, telegram_file_unique_id, uploaded_by, church_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING *`,
+      [album_id || null, title || null, description || null, file_url || null, thumbnail_url || null,
+       file_size || null, file_type || null, width || null, height || null,
+       telegram_file_id || null, telegram_file_unique_id || null, uploaded_by || null, churchId]
+    );
+    const photo = result.rows[0];
+    if (photo && photo.album_id) {
+      await this.pool.query(
+        `INSERT INTO album_photos (album_id, photo_id, sort_order)
+         SELECT $1, $2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM album_photos WHERE album_id = $1)
+         ON CONFLICT (album_id, photo_id) DO NOTHING`,
+        [photo.album_id, photo.id]
+      );
+    }
+    return photo;
+  }
+
+  // photo_tags is the table getTags reads — idempotent per church+name.
+  async createTag(name, churchId) {
+    if (!churchId) throw new Error('createTag: churchId is required');
+    const result = await this.pool.query(
+      `INSERT INTO photo_tags (name, church_id)
+       SELECT $1::varchar, $2::uuid
+       WHERE NOT EXISTS (SELECT 1 FROM photo_tags WHERE church_id = $2::uuid AND LOWER(name) = LOWER($1::varchar))
+       RETURNING *`,
+      [name, churchId]
+    );
+    return result.rows[0] || (await this.pool.query(
+      'SELECT * FROM photo_tags WHERE church_id = $1 AND LOWER(name) = LOWER($2)', [churchId, name]
+    )).rows[0];
   }
 
   async updatePhoto(id, title, description, isFeatured, orderIndex, churchId) {
@@ -245,7 +299,7 @@ class GalleryRepository extends BaseRepository {
       `INSERT INTO photo_tag_assignments (photo_id, tag_id)
        SELECT $1, $2
        WHERE EXISTS (SELECT 1 FROM gallery_photos WHERE id = $1 AND church_id = $3)
-         AND EXISTS (SELECT 1 FROM gallery_tags WHERE id = $2 AND church_id = $3)
+         AND EXISTS (SELECT 1 FROM photo_tags WHERE id = $2 AND church_id = $3)
        ON CONFLICT DO NOTHING`,
       [photoId, tagId, churchId]
     );
