@@ -17,7 +17,7 @@ class PaymentsRepository extends BaseRepository {
       SELECT p.*, m.first_name || ' ' || m.last_name as member_name
       FROM ${this.tableName} p
       LEFT JOIN members m ON p.member_id = m.id
-      WHERE 1=1
+      WHERE p.archived_at IS NULL
     `;
     const params = [];
 
@@ -34,7 +34,7 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getByStatus(status, churchId = null) {
-    let query = `SELECT * FROM ${this.tableName} WHERE status = $1`;
+    let query = `SELECT * FROM ${this.tableName} WHERE status = $1 AND archived_at IS NULL`;
     const params = [status];
 
     if (churchId) {
@@ -49,7 +49,7 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getByMember(memberId, churchId = null) {
-    let query = `SELECT * FROM ${this.tableName} WHERE member_id = $1`;
+    let query = `SELECT * FROM ${this.tableName} WHERE member_id = $1 AND archived_at IS NULL`;
     const params = [memberId];
 
     if (churchId) {
@@ -64,7 +64,7 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getByType(type, churchId = null) {
-    let query = `SELECT * FROM ${this.tableName} WHERE payment_type = $1`;
+    let query = `SELECT * FROM ${this.tableName} WHERE payment_type = $1 AND archived_at IS NULL`;
     const params = [type];
 
     if (churchId) {
@@ -87,7 +87,7 @@ class PaymentsRepository extends BaseRepository {
         COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
         COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_count
       FROM ${this.tableName}
-      WHERE 1=1
+      WHERE archived_at IS NULL
     `;
     const params = [];
 
@@ -128,7 +128,7 @@ class PaymentsRepository extends BaseRepository {
   }
 
   async getPaymentsWithFilters(filters) {
-    const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0, churchId } = filters;
+    const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0, churchId, archivedOnly = false } = filters;
 
     let query = `
       SELECT p.*,
@@ -187,6 +187,10 @@ class PaymentsRepository extends BaseRepository {
       query += ` AND p.payment_date <= $${paramCount}`;
       params.push(endDate);
     }
+
+    // Archived payments are excluded from the working list; the archive page
+    // passes archivedOnly to show exactly the hidden set.
+    query += archivedOnly ? ` AND p.archived_at IS NOT NULL` : ` AND p.archived_at IS NULL`;
 
     query += ` ORDER BY p.payment_date DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
     params.push(limit, offset);
@@ -275,6 +279,30 @@ class PaymentsRepository extends BaseRepository {
       await PaymentRepository.recalcObligation(payment.obligation_id).catch(() => {});
     }
     return payment;
+  }
+
+  // Soft-delete: sets archived_at/archived_by instead of removing the row, so
+  // payment history is never lost. Records which user archived it.
+  async archivePayment(id, userId, churchId) {
+    const result = await this.pool.query(
+      `UPDATE payments
+       SET archived_at = CURRENT_TIMESTAMP, archived_by = $2
+       WHERE id = $1 AND church_id = $3 AND archived_at IS NULL
+       RETURNING *`,
+      [id, userId, churchId]
+    );
+    return result.rows[0];
+  }
+
+  async restorePayment(id, churchId) {
+    const result = await this.pool.query(
+      `UPDATE payments
+       SET archived_at = NULL, archived_by = NULL
+       WHERE id = $1 AND church_id = $2 AND archived_at IS NOT NULL
+       RETURNING *`,
+      [id, churchId]
+    );
+    return result.rows[0];
   }
 
   async getPledgesWithFilters(filters) {
@@ -397,6 +425,7 @@ class PaymentsRepository extends BaseRepository {
         OR p.member_id IN (SELECT m.id FROM members m WHERE m.user_id = $1)
         OR p.obligation_id IN (SELECT mo.id FROM member_obligations mo WHERE mo.user_id = $1)
       )
+      AND p.archived_at IS NULL
     `;
     const params = [userId];
     let paramCount = 1;

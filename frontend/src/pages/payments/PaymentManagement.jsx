@@ -2,18 +2,21 @@
  * WHAT THIS FILE DOES
  * -------------------
  * Admin payment records page — list, search, filter, create, edit and
- * delete manual payment entries (cash/check/bank) for church members.
- * Restricted to leadership roles (canManagePayments gate below).
+ * archive manual payment entries (cash/check/bank) for church members.
+ * Payments are soft-deleted (archive) — never hard-deleted; archived rows
+ * live on the PaymentArchive page and can be restored. Restricted to
+ * leadership roles (canManagePayments gate below).
  *
  * FILES IT TALKS TO
  * -----------------
- * - backend /payments (GET/POST/PUT/DELETE) → payment records
+ * - backend /payments (GET/POST/PUT archive/restore) → payment records
+ * - PaymentArchive.jsx → archived-payment view
  * - contexts/AuthContext.jsx → api client (cookie + CSRF)
  */
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Trash2, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt, X } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { DollarSign, CreditCard, TrendingUp, Users, Calendar, Search, Filter, Plus, Edit, Archive, Download, Eye, CheckCircle, XCircle, Clock, AlertCircle, Receipt, X } from 'lucide-react'
 import MobileCard, { CardField } from '../../components/common/MobileCard'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import { useAuth } from '../../contexts/AuthContext'
@@ -47,7 +50,7 @@ const PaymentManagement = () => {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingPayment, setEditingPayment] = useState(null)
   const [selectedPayment, setSelectedPayment] = useState(null)
-  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [archiveTarget, setArchiveTarget] = useState(null)
   const [formData, setFormData] = useState(EMPTY_FORM())
 
   // Keep in sync with the backend route guards (requireRole lists Treasurer).
@@ -157,19 +160,22 @@ const PaymentManagement = () => {
     setShowCreateForm(true)
   }
 
-  const handleDelete = (paymentId) => setDeleteTarget(paymentId)
+  // Archive replaces delete: the row is hidden from this working list but the
+  // record survives on the Payment Archive page, where it can be restored.
+  const handleArchive = (paymentId) => setArchiveTarget(paymentId)
 
-  const confirmDelete = async () => {
-    const paymentId = deleteTarget
-    setDeleteTarget(null)
+  const confirmArchive = async () => {
+    const paymentId = archiveTarget
+    setArchiveTarget(null)
 
     try {
-      await api.delete(`/payments/${paymentId}`)
+      await api.put(`/payments/${paymentId}/archive`)
       setPayments(payments.filter(p => p.id !== paymentId))
-      toast.success('Payment deleted')
+      if (selectedPayment?.id === paymentId) setSelectedPayment(null)
+      toast.success('Payment archived — restore it from Payment Archive')
     } catch (error) {
-      console.error('Error deleting payment:', error)
-      toast.error('Failed to delete payment')
+      console.error('Error archiving payment:', error)
+      toast.error(error.response?.data?.error || 'Failed to archive payment')
     }
   }
 
@@ -283,13 +289,22 @@ const PaymentManagement = () => {
           <p className="page-subtitle">Manage church payments and financial records</p>
         </div>
         {canManagePayments && (
-          <button
-            onClick={() => setShowCreateForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Record Payment
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/dashboard/payments/archive"
+              className="flex items-center gap-2 px-4 py-2 border border-[var(--color-border)] text-[var(--color-textSecondary)] rounded-lg hover:text-[var(--color-text)] transition-colors"
+            >
+              <Archive className="w-4 h-4" />
+              Archive
+            </Link>
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:bg-[var(--color-primary)] transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Record Payment
+            </button>
+          </div>
         )}
       </div>
 
@@ -632,10 +647,12 @@ const PaymentManagement = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(payment.id)}
-                          className="text-[var(--color-error)] hover:opacity-80 hover:text-[var(--color-error)]"
+                          onClick={() => handleArchive(payment.id)}
+                          title="Archive payment"
+                          aria-label="Archive payment"
+                          className="text-[var(--color-warning)] hover:opacity-80"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Archive className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -675,8 +692,8 @@ const PaymentManagement = () => {
                   <button onClick={(e) => { e.stopPropagation(); handleEdit(payment); }} className="flex items-center gap-1 text-sm text-[var(--color-primary)] font-medium min-h-[44px] px-2">
                     <Edit className="w-4 h-4" /><span>Edit</span>
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(payment.id); }} className="flex items-center gap-1 text-sm text-[var(--color-error)] font-medium min-h-[44px] px-2">
-                    <Trash2 className="w-4 h-4" /><span>Delete</span>
+                  <button onClick={(e) => { e.stopPropagation(); handleArchive(payment.id); }} className="flex items-center gap-1 text-sm text-[var(--color-warning)] font-medium min-h-[44px] px-2">
+                    <Archive className="w-4 h-4" /><span>Archive</span>
                   </button>
                 </>
               ) : null}
@@ -791,12 +808,12 @@ const PaymentManagement = () => {
       )}
 
       <ConfirmDialog
-        show={deleteTarget !== null}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={confirmDelete}
-        title="Delete Payment"
-        message="Are you sure you want to delete this payment record? This action cannot be undone."
-        confirmLabel="Delete"
+        show={archiveTarget !== null}
+        onClose={() => setArchiveTarget(null)}
+        onConfirm={confirmArchive}
+        title="Archive Payment"
+        message="Archive this payment? It will be hidden from this list but kept on the Payment Archive page, where it can be restored."
+        confirmLabel="Archive"
       />
     </div>
   )

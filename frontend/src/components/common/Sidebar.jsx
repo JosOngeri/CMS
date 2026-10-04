@@ -38,6 +38,7 @@ import {
   HandCoins,
   CheckSquare,
   Landmark,
+  Archive,
   Church,
   ChevronRight,
   ChevronLeft,
@@ -204,6 +205,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           title: 'Payments',
           items: [
             { path: '/dashboard/payments/management', icon: DollarSign, label: 'Payment Management' },
+            { path: '/dashboard/payments/archive', icon: Archive, label: 'Payment Archive' },
             { path: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
           ],
         },

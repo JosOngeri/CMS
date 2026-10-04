@@ -54,7 +54,7 @@ class PaymentsController extends BaseController {
    */
   async getPayments(req, res) {
     try {
-      const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0 } = req.query;
+      const { memberId, paymentMethodId, paymentType, status, startDate, endDate, limit = 50, offset = 0, archived } = req.query;
       const churchId = req.user.church_id;
 
       const payments = await PaymentsRepository.getPaymentsWithFilters({
@@ -66,7 +66,9 @@ class PaymentsController extends BaseController {
         endDate,
         limit,
         offset,
-        churchId
+        churchId,
+        // ?archived=true → the archive page's view of soft-deleted rows
+        archivedOnly: archived === 'true'
       });
 
       res.json({ success: true, data: payments });
@@ -287,6 +289,66 @@ class PaymentsController extends BaseController {
     } catch (error) {
       this.logger.error('updatePaymentStatus', error);
       res.status(500).json({ success: false, error: 'Failed to update payment status' });
+    }
+  }
+
+  /**
+   * Archive (soft-delete) a payment — hides it from the working list while
+   * keeping the full record. Financial rows are never hard-deleted.
+   */
+  async archivePayment(req, res) {
+    try {
+      const { id } = req.params;
+      const churchId = req.user.church_id;
+      const userId = req.user.id;
+
+      const oldPayment = await PaymentsRepository.getPaymentById(id, churchId);
+      if (!oldPayment) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
+      if (oldPayment.archived_at) {
+        return res.status(400).json({ success: false, error: 'Payment is already archived' });
+      }
+
+      const payment = await PaymentsRepository.archivePayment(id, userId, churchId);
+
+      await auditService.log(
+        churchId, userId, 'ARCHIVE', 'payments', id,
+        oldPayment, payment, req.ip, req.get('user-agent')
+      );
+
+      res.json({ success: true, message: 'Payment archived', data: payment });
+    } catch (error) {
+      this.logger.error('archivePayment', error);
+      res.status(500).json({ success: false, error: 'Failed to archive payment' });
+    }
+  }
+
+  async restorePayment(req, res) {
+    try {
+      const { id } = req.params;
+      const churchId = req.user.church_id;
+      const userId = req.user.id;
+
+      const oldPayment = await PaymentsRepository.getPaymentById(id, churchId);
+      if (!oldPayment) {
+        return res.status(404).json({ success: false, error: 'Payment not found' });
+      }
+      if (!oldPayment.archived_at) {
+        return res.status(400).json({ success: false, error: 'Payment is not archived' });
+      }
+
+      const payment = await PaymentsRepository.restorePayment(id, churchId);
+
+      await auditService.log(
+        churchId, userId, 'RESTORE', 'payments', id,
+        oldPayment, payment, req.ip, req.get('user-agent')
+      );
+
+      res.json({ success: true, message: 'Payment restored', data: payment });
+    } catch (error) {
+      this.logger.error('restorePayment', error);
+      res.status(500).json({ success: false, error: 'Failed to restore payment' });
     }
   }
 

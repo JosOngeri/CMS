@@ -3,6 +3,7 @@
 | File | Purpose |
 |---|---|
 | `MyPayments.jsx` | WHAT THIS FILE DOES |
+| `PaymentArchive.jsx` | WHAT THIS FILE DOES |
 | `PaymentHistory.jsx` | WHAT THIS FILE DOES |
 | `PaymentManagement.jsx` | WHAT THIS FILE DOES |
 | `Payments.jsx` | WHAT THIS FILE DOES |

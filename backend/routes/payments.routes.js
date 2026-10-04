@@ -50,8 +50,18 @@ router.put('/payments/:id/status', requireRole(['Super Admin', 'Pastor', 'Treasu
 router.put('/status/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePaymentStatus); // Alias for frontend compatibility
 router.put('/payments/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePayment);
 router.put('/:id', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.updatePayment); // Flat alias
-router.delete('/payments/:id', requireRole(['Super Admin', 'Pastor']), paymentsController.deletePayment);
-router.delete('/:id', requireRole(['Super Admin', 'Pastor']), paymentsController.deletePayment); // Flat alias
+
+// Archive (soft-delete) instead of delete — payment history is never lost.
+// Archived rows are hidden from the working list and viewable on the
+// Payment Archive page, from where they can be restored.
+router.put('/payments/:id/archive', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.archivePayment);
+router.put('/:id/archive', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.archivePayment); // Flat alias
+router.put('/payments/:id/restore', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.restorePayment);
+router.put('/:id/restore', requireRole(['Super Admin', 'Pastor', 'Treasurer']), paymentsController.restorePayment); // Flat alias
+
+// Hard delete kept for platform-level cleanup only — not exposed in the UI.
+router.delete('/payments/:id', requireRole(['Super Admin']), paymentsController.deletePayment);
+router.delete('/:id', requireRole(['Super Admin']), paymentsController.deletePayment); // Flat alias
 
 // Pledges
 router.get('/pledges', paymentsController.getPledges);

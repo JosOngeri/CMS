@@ -99,6 +99,7 @@ const MFASetup                = lazy(() => import('../pages/auth/MFASetup'));
 const Sessions                = lazy(() => import('../pages/auth/Sessions'));
 const UserManagement          = lazy(() => import('../pages/users/UserManagement'));
 const PaymentManagement       = lazy(() => import('../pages/payments/PaymentManagement'));
+const PaymentArchive          = lazy(() => import('../pages/payments/PaymentArchive'));
 const MemberDirectory         = lazy(() => import('../pages/members/MemberDirectory'));
 const SMS                     = lazy(() => import('../sms/SMS'));
 const SMSDashboard            = lazy(() => import('../modules/sms/pages/Dashboard'));
@@ -165,6 +166,7 @@ export const dashboardRoutes = [
   { path: 'obligations',             element: <W C={MyObligations} /> },
   { path: 'payments/history',        element: <W C={PaymentHistory} /> },
   { path: 'payments/management',     element: <W C={PaymentManagement} roles={FINANCE_ROLES} /> },
+  { path: 'payments/archive',        element: <W C={PaymentArchive} roles={FINANCE_ROLES} /> },
   { path: 'collections',             element: <W C={MyCollections} /> },
 
   // Treasury detail pages

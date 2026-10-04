@@ -23,7 +23,7 @@ class DashboardRepository extends BaseRepository {
          -- Completed payments = the same rows Payment Management lists.
          SELECT SUM(amount) AS total_income
          FROM payments
-         WHERE status = 'completed' AND church_id = $1
+         WHERE status = 'completed' AND archived_at IS NULL AND church_id = $1
        ),
        announcement_stats AS (
          SELECT COUNT(*) AS recent_announcements_count
@@ -111,7 +111,7 @@ class DashboardRepository extends BaseRepository {
       SELECT p.*, m.first_name, m.last_name
       FROM payments p
       LEFT JOIN members m ON p.member_id = m.id AND m.church_id = p.church_id
-      WHERE p.status = 'completed' AND p.church_id = $1
+      WHERE p.status = 'completed' AND p.archived_at IS NULL AND p.church_id = $1
       ORDER BY p.payment_date DESC LIMIT $2
     `;
     const params = [churchId, limit];
@@ -200,7 +200,7 @@ class DashboardRepository extends BaseRepository {
     const query = `
       SELECT COALESCE(SUM(amount), 0) as total
       FROM payments
-      WHERE member_id = $1 AND status = 'completed' AND church_id = $2
+      WHERE member_id = $1 AND status = 'completed' AND archived_at IS NULL AND church_id = $2
     `;
     const params = [userId, churchId];
 
@@ -237,6 +237,7 @@ class DashboardRepository extends BaseRepository {
       FROM payments p
       WHERE p.member_id = $1
         AND p.created_at >= CURRENT_DATE - INTERVAL '30 days'
+        AND p.archived_at IS NULL
         AND p.church_id = $2
     `;
     const params = [userId, churchId];
@@ -262,6 +263,7 @@ class DashboardRepository extends BaseRepository {
            WHERE p.member_id = $1
              AND p.created_at >= CURRENT_DATE - INTERVAL '30 days'
              AND p.status = 'completed'
+             AND p.archived_at IS NULL
              AND p.church_id = $2) +
           (SELECT COUNT(DISTINCT a.id)
            FROM announcements a
@@ -288,7 +290,7 @@ class DashboardRepository extends BaseRepository {
         CONCAT('Processed on ', p.payment_date) as description,
         p.created_at as timestamp
       FROM payments p
-      WHERE p.member_id = $1 AND p.status = 'completed'
+      WHERE p.member_id = $1 AND p.status = 'completed' AND p.archived_at IS NULL
       
       UNION ALL
       
@@ -337,6 +339,7 @@ class DashboardRepository extends BaseRepository {
           p.created_at as timestamp
         FROM payments p
         WHERE p.member_id = $1 AND p.status = 'completed' AND p.church_id = $2
+          AND p.archived_at IS NULL
         
         UNION ALL
         
@@ -611,18 +614,18 @@ class DashboardRepository extends BaseRepository {
     const totalsQuery = `
       SELECT
         (SELECT COALESCE(SUM(amount), 0) FROM payments
-         WHERE status = 'completed' ${churchFilter})
+         WHERE status = 'completed' AND archived_at IS NULL ${churchFilter})
         -
         (SELECT COALESCE(SUM(amount), 0) FROM expenses
          WHERE status = 'paid' ${churchFilter}) AS total_balance,
         (SELECT COALESCE(SUM(amount), 0) FROM payments
-         WHERE status = 'completed'
+         WHERE status = 'completed' AND archived_at IS NULL
            AND created_at >= DATE_TRUNC('month', CURRENT_DATE) ${churchFilter}) AS monthly_income,
         (SELECT COALESCE(SUM(amount), 0) FROM expenses
          WHERE expense_date >= DATE_TRUNC('month', CURRENT_DATE)
            AND status <> 'rejected' ${churchFilter}) AS monthly_expenses,
         (SELECT COUNT(*) FROM payments
-         WHERE status = 'pending' ${churchFilter}) AS pending_payments
+         WHERE status = 'pending' AND archived_at IS NULL ${churchFilter}) AS pending_payments
     `;
 
     const result = await this.pool.query(totalsQuery, params);
@@ -712,7 +715,7 @@ class DashboardRepository extends BaseRepository {
              p.amount, p.created_at AS time
       FROM payments p
       LEFT JOIN members m ON p.member_id = m.id
-      WHERE p.status = 'completed' ${paymentsChurch}
+      WHERE p.status = 'completed' AND p.archived_at IS NULL ${paymentsChurch}
     `;
 
     const expensesQuery = `
@@ -966,6 +969,7 @@ class DashboardRepository extends BaseRepository {
          FROM payments
          WHERE status = 'pending'
            AND created_at < NOW() - INTERVAL '24 hours'
+           AND archived_at IS NULL
            AND church_id = $1
          ORDER BY created_at ASC LIMIT 5`,
         [churchId]
@@ -975,7 +979,7 @@ class DashboardRepository extends BaseRepository {
         `SELECT
            COUNT(*) FILTER (WHERE status = 'failed' AND created_at > NOW() - INTERVAL '24 hours') AS failed_24h,
            COUNT(*) FILTER (WHERE status = 'pending' AND created_at < NOW() - INTERVAL '24 hours') AS stuck
-         FROM payments WHERE church_id = $1`,
+         FROM payments WHERE church_id = $1 AND archived_at IS NULL`,
         [churchId]
       ).then((r) => ({
         failed24h: parseInt(r.rows[0]?.failed_24h) || 0,
