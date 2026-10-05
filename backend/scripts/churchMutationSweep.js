@@ -103,6 +103,9 @@ const run = async () => {
         if (res.status === 503 && body.includes('_NOT_CONFIGURED')) {
           skipped++;
           console.log('SKIP', res.status, r.method, r.path, '(external provider not configured)');
+        } else if (res.status === 502 && body.includes('_UPSTREAM_')) {
+          skipped++;
+          console.log('SKIP', res.status, r.method, r.path, '(external provider unavailable)');
         } else {
           failures.push(`${res.status} ${r.method} ${r.path} -> ${body}`);
           console.log('FAIL', res.status, r.method, r.path);

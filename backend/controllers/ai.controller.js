@@ -22,6 +22,11 @@ class AIController {
     if (error.message.includes('AI service is disabled') || error.message.includes('API key not valid')) {
       return res.status(503).json({ success: false, error: 'AI provider is not configured', code: 'AI_NOT_CONFIGURED' });
     }
+    // Upstream Gemini failures (503 high demand, 5xx) are provider faults,
+    // not ours — surface as bad gateway instead of a generic 500.
+    if (/\[(5\d\d)\s/.test(error.message)) {
+      return res.status(502).json({ success: false, error: 'AI provider unavailable', code: 'AI_UPSTREAM_5XX' });
+    }
     return ResponseHandler.error(res, fallback);
   }
 
@@ -29,6 +34,10 @@ class AIController {
     const { content } = req.body;
     const churchId = req.user?.church_id;
     const userId = req.user?.id;
+
+    if (!content || typeof content !== 'string' || !content.trim()) {
+      return ResponseHandler.error(res, 'content is required', 400);
+    }
 
     try {
       const result = await this.aiContentService.condenseForSMS({
