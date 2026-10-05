@@ -16,6 +16,10 @@ on:
           - mutation
           - get
           - both
+  # Weekly prod baseline — Sundays 03:00 UTC (low-traffic window).
+  # Mutation sweep is residue-free since NO_PROBE + the validation guards.
+  schedule:
+    - cron: '0 3 * * 0'
 
 jobs:
   sweep:
@@ -31,11 +35,14 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             cd /var/www/CMS/backend
+            # Scheduled runs have no input — default to both sweeps.
+            SWEEP="${{ inputs.sweep }}"
+            SWEEP=${SWEEP:-both}
             # Retry once after 15s to absorb a transient pm2 restart window.
             run_sweep() { node "scripts/$1" || { sleep 15 && node "scripts/$1"; }; }
-            if [ "${{ inputs.sweep }}" = "get" ] || [ "${{ inputs.sweep }}" = "both" ]; then
+            if [ "$SWEEP" = "get" ] || [ "$SWEEP" = "both" ]; then
               run_sweep churchSmokeSweep.js
             fi
-            if [ "${{ inputs.sweep }}" = "mutation" ] || [ "${{ inputs.sweep }}" = "both" ]; then
+            if [ "$SWEEP" = "mutation" ] || [ "$SWEEP" = "both" ]; then
               run_sweep churchMutationSweep.js
             fi
