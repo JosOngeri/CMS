@@ -141,6 +141,10 @@ class TreasuryController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
+      if (!transactionType || amount == null) {
+        return this.error(res, 'transactionType and amount are required', 400);
+      }
+
       const transaction = await TreasuryRepository.createTransaction({
         transactionType,
         categoryId,

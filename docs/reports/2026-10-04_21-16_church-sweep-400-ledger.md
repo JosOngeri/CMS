@@ -61,3 +61,33 @@ results or a mapped 404/502 — any *new* crash still fails the sweep.
 - Centralized error-contract fixes: `sendError` string handling, AsyncLocalStorage PG client-error correlation (`pgClientError.js` + `pool.query`/`connect` wrappers + `standardResponse` downgrade), palette `json_object_agg` FILTER, Telegram Bot-API constructor fixes, `getDelta` scope map, input guards on iterable body fields.
 - First workflow run "failed" — diagnosed as a **concurrent-deploy race**: a second push's `pm2 restart` SIGINT'd the app mid-sweep (PM2 log 00:54:36). The follow-on deploy's sweep passed 400/400 on prod.
 - Fix: `concurrency: deploy-vps` serializes runs + one-retry wrapper on the sweep step (`118e056`). Final run `37241966046`: platform 64/64 + church 400/400 green.
+
+## Postscript 2 — manual sweep workflow, jest unification, prod mutation baseline (2026-10-05)
+
+| Item | Commit | Result |
+|---|---|---|
+| Tenant-flag rollout | `24637da` | 12 flags in `constants/tenantFlags.js`; `requireTenantFlag` on all flagged mounts; instant invalidation on flag writes; nav gating web+Flutter |
+| Jest unification | `d654ae2` | Root `jest.config.js` wraps `tests/jest.config.js`; divergent package.json block removed; uuid mock returns real UUIDs. 14 parse-failed suites → **341 tests pass** |
+| ai/condense contract | `59a0c5e` | `content` guard → 400; Gemini upstream 5xx → marked `502 AI_UPSTREAM_5XX`; sweep skips `_UPSTREAM_` like `_NOT_CONFIGURED` |
+| Stale tests | `f34be82` | hybridSMS churchSettings mock; e2e 400-suppressed + 403 contract updates. 53/53 pass |
+| Prod mutation sweep | run `37278727347` | **420/420, no 5xx** after ai fix |
+
+### Prod mutation sweep side-effects — found and remediated
+
+Running `workflow_dispatch` sweep on prod wrote real junk (2 runs × `{}` bodies that slipped validation):
+
+- `POST /api/settings/reset` → **deleted all 16 church-scoped settings overrides** for Kiserian. `settings_audit_log` was empty (no recovery data) — restored by copying an identical-seed church's 16 rows (verified SAME across all tenants).
+- Junk rows inserted (all-null fields): 3 members, 3 transactions, 3 color_palettes, 3 mobile_devices, 3 backup_logs — **deleted by id, verified clean**.
+- `POST /api/auth/mfa/*`, `auth/logout`, `DELETE /auth/sessions`, `forgot-password`, `mark-all-read` etc. touched the sweep user's own account — accounted for, no lasting damage (mfa_enabled was already false).
+
+### Remediation shipped
+
+- `churchMutationSweep.js`: **NO_PROBE denylist** (21 routes that mutate regardless of body) + doc warning that prod runs leave residue.
+- Validation guards → 400: `POST /members` (names), `POST /treasury/transactions` (type+amount), `POST /palettes` (name), `POST /mobile/devices/register` (deviceId+platform).
+- `sms_notifications` manifest default `'false'→'true'`: no prod church had an explicit row, so hybridSMS suppressed **every** send system-wide while `sms_enabled` (platform kill switch) and the seeded `notifications.sms_enabled='true'` both intended ON.
+
+### Lessons
+
+1. The mutation sweep's JUNK-OK list is a **write-manifest** — every 2xx there is a candidate real write on prod.
+2. `settings/reset` for a church = `DELETE FROM settings WHERE church_id=?` — destructive endpoints deserve the NO_PROBE list, and ideally an `audit` entry so deletions are recoverable.
+3. Manifest defaults matter: a `'false'` default on a scope='both' key silently disables the feature for every tenant that never toggled it.

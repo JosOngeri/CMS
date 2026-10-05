@@ -102,6 +102,10 @@ class PaletteController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
+      if (!name || !String(name).trim()) {
+        return this.error(res, 'name is required', 400);
+      }
+
       // Check if palette name already exists in this church
       const existing = await PaletteRepository.findByName(name, churchId);
 

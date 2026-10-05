@@ -93,6 +93,9 @@ class MembersController extends BaseController {
    */
   async createMember(req, res) {
     try {
+      if (!req.body.first_name || !req.body.last_name) {
+        return this.error(res, 'first_name and last_name are required', 400);
+      }
       const {
         first_name,
         last_name,

@@ -16,8 +16,14 @@
  *        can never hit a real row. Only :churchId gets a real value so
  *        tenant-scoped handlers still resolve their context.
  *
+ *        NO_PROBE routes below mutate state regardless of the body —
+ *        settings resets, MFA toggles, session wipes, mark-all-read —
+ *        so they are skipped outright. Running this against production
+ *        WILL still write junk rows into any create endpoint that lacks
+ *        input validation; treat 2xx findings as cleanup targets.
+ *
  * @usage  node backend/scripts/churchMutationSweep.js [port]
- *         Dev/local only — run against a disposable database.
+ *         Prefer a disposable database; prod runs leave residue.
  */
 require('dotenv').config();
 const crypto = require('crypto');
@@ -27,6 +33,32 @@ const app = require('../app');
 
 const PORT = process.argv[2] || process.env.PORT || 5000;
 const METHODS = ['post', 'put', 'patch', 'delete'];
+
+// Mutates real state even with an empty body — never probe these.
+const NO_PROBE = new Set([
+  'POST /api/settings/reset',
+  'POST /api/settings/backup/create',
+  'PUT /api/settings/',
+  'PUT /api/settings/bulk',
+  'PUT /api/security/settings',
+  'PUT /api/telegram/settings',
+  'POST /api/auth/mfa/enable',
+  'POST /api/auth/mfa/disable',
+  'POST /api/auth/logout',
+  'POST /api/auth/forgot-password',
+  'POST /api/auth/reset-password',
+  'POST /api/auth/change-password',
+  'DELETE /api/auth/sessions',
+  'POST /api/notifications/mark-all-read',
+  'POST /api/notifications/read-all',
+  'POST /api/notifications/bulk',
+  'POST /api/mobile/sync',
+  'POST /api/mobile/sync/reset',
+  'POST /api/mobile/auth/refresh',
+  'POST /api/mobile/auth/logout',
+  'POST /api/telegram/auth/start',
+  'POST /api/telegram/auth/start-fallback'
+]);
 
 // Express 4: walk the router stack, decoding mount regexps to path prefixes.
 const mountPrefix = (regexp) => {
@@ -82,9 +114,14 @@ const run = async () => {
   const headers = { authorization: `Bearer ${token}`, 'content-type': 'application/json' };
 
   const seen = new Set();
+  const noProbe = [];
   const routes = collectMutationRoutes(app._router.stack)
     .filter((r) => r.path.startsWith('/api') && !r.path.startsWith('/api/platform'))
     .filter((r) => { const k = `${r.method} ${r.path}`; if (seen.has(k)) return false; seen.add(k); return true; })
+    .filter((r) => {
+      if (NO_PROBE.has(`${r.method.toUpperCase()} ${r.path}`)) { noProbe.push(r); return false; }
+      return true;
+    })
     .sort((a, b) => (a.path + a.method).localeCompare(b.path + b.method));
   console.log(`Sweeping ${routes.length} church mutation routes on :${PORT}`);
 
@@ -122,6 +159,10 @@ const run = async () => {
   }
 
   await pool.end();
+  if (noProbe.length) {
+    console.log(`\nNO-PROBE (state-mutating, skipped): ${noProbe.length}`);
+    noProbe.forEach((r) => console.log(`  ${r.method.toUpperCase()} ${r.path}`));
+  }
   if (limited) console.log(`RATE-LIMITED (uncounted): ${limited} routes hit 429`);
   if (skipped) console.log(`SKIPPED (uncounted): ${skipped} routes need unconfigured external providers`);
   if (acceptedJunk.length) {

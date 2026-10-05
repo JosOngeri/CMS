@@ -656,6 +656,10 @@ class MobileController extends BaseController {
       const userId = req.user.id;
       const churchId = req.user.church_id;
 
+      if (!deviceId || !platform) {
+        return this.error(res, 'deviceId and platform are required', 400);
+      }
+
       const device = await MobileRepository.registerMobileDevice({
         deviceId,
         deviceName,

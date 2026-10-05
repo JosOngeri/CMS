@@ -68,7 +68,7 @@ const KEYS = [
 
   // ── notifications ──────────────────────────────────────────────────
   { category: 'notifications', key: 'email_notifications', type: 'boolean', scope: 'both', enforcedBy: 'emailService.sendEmail', label: 'Email Notifications', default: 'true' },
-  { category: 'notifications', key: 'sms_notifications', type: 'boolean', scope: 'both', enforcedBy: 'hybridSMS.sendSMS', label: 'SMS Notifications', default: 'false' },
+  { category: 'notifications', key: 'sms_notifications', type: 'boolean', scope: 'both', enforcedBy: 'hybridSMS.sendSMS', label: 'SMS Notifications', default: 'true' },
 
   // ── payment ────────────────────────────────────────────────────────
   { category: 'payment', key: 'default_tithe_amount', type: 'number', scope: 'both', enforcedBy: 'payments UI', label: 'Default Tithe Amount', validation: { max: 100000, min: 1 } },
