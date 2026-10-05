@@ -1,0 +1,41 @@
+name: Manual Smoke Sweep
+
+# Manual, on-demand sweep of the production API. The mutation sweep fires
+# empty bodies + placeholder ids at every registered POST/PUT/PATCH/DELETE —
+# it expects 400/404/403 and fails only on real 5xx crashes. Run it before
+# major releases or after suspicious deploys.
+on:
+  workflow_dispatch:
+    inputs:
+      sweep:
+        description: 'Which sweep to run'
+        required: true
+        default: 'mutation'
+        type: choice
+        options:
+          - mutation
+          - get
+          - both
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Endpoint smoke sweep
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd /var/www/CMS/backend
+            # Retry once after 15s to absorb a transient pm2 restart window.
+            run_sweep() { node "scripts/$1" || { sleep 15 && node "scripts/$1"; }; }
+            if [ "${{ inputs.sweep }}" = "get" ] || [ "${{ inputs.sweep }}" = "both" ]; then
+              run_sweep churchSmokeSweep.js
+            fi
+            if [ "${{ inputs.sweep }}" = "mutation" ] || [ "${{ inputs.sweep }}" = "both" ]; then
+              run_sweep churchMutationSweep.js
+            fi
