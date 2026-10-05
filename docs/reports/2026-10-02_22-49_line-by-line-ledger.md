@@ -1884,3 +1884,31 @@ support, config (sections 1,2,4,5,6,7,8,9,11,12,13 of the plan).
 - `npm test`: **331 passed, 0 failed** (6 new IP-rule tests included).
 - eslint: 0 errors on all touched frontend files.
 - `vite build`: clean.
+
+---
+
+## Settings phase 4 wiring verification — 2026-10-04
+
+### A. `notifications/sms_notifications` flip verification
+
+| Date/time | File | Change | Status | Verification |
+|---|---|---|---|---|
+| 2026-10-04 EAST | `backend/helpers/churchSettings.js`, `backend/services/hybridSMS.js`, `backend/utils/emailService.js` | `notifications/sms_notifications` override now gates SMS dispatch alongside global `sms/sms_enabled`; `notifications/email_notifications` gates email when a churchId is supplied | FIXED | Unit tests pass (`backend/tests/unit/platformSettings.test.js` 7/7); code-path inspection confirms `sendSMS` returns early with "SMS disabled at platform/church level" when either flag is false; live DB verified `sms_notifications` resolves per-church via `churchSettings.resolveSetting` |
+
+Notes:
+- Global kill-switch remains `sms/sms_enabled` (platform-managed/global-only).
+- Church-level toggle lives at `notifications/sms_notifications` and is overridable per tenant.
+- Email gate is checked in `emailService.sendEmail(churchId, ...)` — callers that do not pass `churchId` bypass the toggle by design (e.g. password-reset flows that resolve the church internally).
+
+### B. Scheduled platform endpoint smoke sweep
+
+| Date/time | File | Change | Status | Verification |
+|---|---|---|---|---|
+| 2026-10-04 EAST | `backend/scripts/platformSmokeSweep.js`, `.github/workflows/deploy-vps.yml` | Post-deploy sweep of all `/api/platform/*` endpoints, rate-limit-aware, runs on the VPS after `Verify deployment` | FIXED | Run `37220331378` completed successfully — all 19 job steps including `Platform endpoint smoke sweep` returned success. Earlier run `37219951972` failed the sweep step with `Run Command Timeout: context deadline exceeded` after 10 min of `LIMITED` responses; subsequent run completed within the same timeout after the rate-limit-aware sweep logic landed. |
+
+Run details:
+- `37219951972`: deploy + health-check succeeded; sweep timed out at 10 min while endpoints were returning `429 LIMITED`.
+- `37220331378`: full workflow succeeded including sweep — confirms the VPS backend is reachable and all swept platform endpoints respond.
+
+Remaining follow-up (not a ledger blocker):
+- Reduce sweep duration further by skipping heavy read-only endpoints or running non-mutating checks in parallel.
