@@ -349,27 +349,36 @@ class _TenantFlagsState extends ConsumerState<_TenantFlags> {
                   fontWeight: FontWeight.w600,
                   color: scheme.onSurfaceVariant)),
         ),
-        ..._flags!.map((f) {
-          final flag = f as Map<String, dynamic>;
-          return SizedBox(
-            height: 32,
-            child: Row(
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          childAspectRatio: 4.6,
+          mainAxisSpacing: 2,
+          crossAxisSpacing: 8,
+          children: _flags!.map((f) {
+            final flag = f as Map<String, dynamic>;
+            return Row(
               children: [
                 Expanded(
                   child: Text(
                     flag['flag'].toString().replaceAll('_', ' '),
-                    style: const TextStyle(fontSize: 13),
+                    style: const TextStyle(fontSize: 12),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Switch(
-                  value: flag['enabled'] == true,
-                  onChanged: (v) => _toggle(flag, v),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                Transform.scale(
+                  scale: 0.72,
+                  child: Switch(
+                    value: flag['enabled'] == true,
+                    onChanged: (v) => _toggle(flag, v),
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ],
-            ),
-          );
-        }),
+            );
+          }).toList(),
+        ),
       ],
     );
   }
