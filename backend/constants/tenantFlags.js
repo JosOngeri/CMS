@@ -6,7 +6,8 @@
  */
 const TENANT_FLAGS = [
   'sms', 'telegram', 'treasury', 'gallery', 'documents', 'departments',
-  'approvals', 'mobile_app', 'members', 'payments', 'events', 'announcements'
+  'approvals', 'mobile_app', 'members', 'payments', 'events', 'announcements',
+  'live_stream'
 ];
 
 module.exports = { TENANT_FLAGS };

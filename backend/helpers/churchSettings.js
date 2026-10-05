@@ -32,6 +32,12 @@ async function getSetting(churchId, key, fallback = null) {
       const def = byKey.get(key);
       value = def && def.default !== undefined ? def.default : fallback;
     }
+    // Platform tenant_feature_flags override church enable_* settings —
+    // an off flag reads as 'false' everywhere the church consults the key.
+    if (churchId && key.startsWith('enable_') && TENANT_FLAGS.includes(key.slice(7))) {
+      const flagMap = await getTenantFlagMap(churchId);
+      if (flagMap[key] === false) value = 'false';
+    }
     cache.set(cacheKey, { value, at: Date.now() });
     return value;
   } catch (e) {
@@ -94,7 +100,7 @@ async function getFeatures(churchId) {
     ...flagMap,
     enable_announcements: announcements && flagMap.enable_announcements !== false,
     enable_events: events && flagMap.enable_events !== false,
-    enable_live_stream: liveStream,
+    enable_live_stream: liveStream && flagMap.enable_live_stream !== false,
     enable_treasury: treasury && flagMap.enable_treasury !== false,
   };
 }

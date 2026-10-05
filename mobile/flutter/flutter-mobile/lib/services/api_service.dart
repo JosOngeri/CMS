@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../app/router.dart';
+import '../screens/module_disabled_screen.dart';
 import 'config.dart';
 
 // B8: auth/refresh tokens live in platform secure storage (same options as
@@ -121,6 +124,20 @@ class ApiService {
             handler.next(options);
           },
           onError: (error, handler) async {
+            // Platform switched this module off for the church — route to
+            // the friendly notice screen instead of a bare error toast.
+            final data = error.response?.data;
+            if (error.response?.statusCode == 403 &&
+                data is Map &&
+                data['code'] == 'MODULE_DISABLED') {
+              rootNavigatorKey.currentState?.push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ModuleDisabledScreen(message: data['error']?.toString()),
+                ),
+              );
+            }
+
             // Handle 401 Unauthorized
             if (error.response?.statusCode == 401) {
               await _secureStorage.delete(key: 'auth_token');

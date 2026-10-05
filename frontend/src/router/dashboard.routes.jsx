@@ -77,6 +77,7 @@ function SafeRoute({ children }) {
 
 // Lazy-loaded pages.
 const Dashboard               = lazy(() => import('../pages/dashboard/Dashboard'));
+const ModuleDisabledPage      = lazy(() => import('../pages/ModuleDisabledPage'));
 const Payments                = lazy(() => import('../pages/payments/Payments'));
 const PaymentHistory          = lazy(() => import('../pages/payments/PaymentHistory'));
 const MyPayments              = lazy(() => import('../pages/payments/MyPayments'));
@@ -218,6 +219,7 @@ export const dashboardRoutes = [
   { path: 'telegram/auth',  element: <W C={TelegramAuth} /> },
   { path: 'telegram/church', element: <W C={TelegramChurchSettings} roles={ADMIN_ROLES} /> },
   { path: 'gallery',        element: <W C={GalleryManagement} /> },
+  { path: 'module-disabled', element: <ModuleDisabledPage /> },
 
   // Other Modules
   { path: 'events',         element: <W C={Events} /> },

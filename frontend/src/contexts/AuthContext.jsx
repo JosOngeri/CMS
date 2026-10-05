@@ -125,8 +125,13 @@ export const AuthProvider = ({ children }) => {
         }
 
         const status = error.response?.status;
-        // 401/403 means the session is gone. Clear state and let ProtectedRoute redirect.
-        if (status === 401 || status === 403) {
+        const code = error.response?.data?.code;
+        // MODULE_DISABLED is a platform feature flag, not an auth failure —
+        // keep the session and send the user to the friendly notice page.
+        if (status === 403 && code === 'MODULE_DISABLED') {
+          window.dispatchEvent(new CustomEvent('msabato:module-disabled'));
+        } else if (status === 401 || status === 403) {
+          // 401/403 means the session is gone. Clear state and let ProtectedRoute redirect.
           setUser(null);
           requestCache.clear();
         }

@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Suspense, useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation, useParams, useNavigate } from 'react-router-dom';
 import ErrorBoundary from '../components/ErrorBoundary';
 import ProtectedRoute from '../components/ProtectedRoute';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -41,11 +41,31 @@ const ChurchSlugGuard = ({ children }) => {
  * Loaded after the user logs in and navigates to /dashboard/*.
  * It brings in auth, members, and gallery providers and uses the consolidated dashboard routes.
  */
+/**
+ * Listens for MODULE_DISABLED 403s raised by the AuthContext axios
+ * interceptor and routes to the friendly notice page instead of
+ * stranding the user on a broken screen.
+ */
+const ModuleDisabledRedirect = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  useEffect(() => {
+    const onDisabled = () => {
+      const slug = user?.church_slug;
+      navigate(slug ? `/${slug}/dashboard/module-disabled` : '/dashboard/module-disabled');
+    };
+    window.addEventListener('msabato:module-disabled', onDisabled);
+    return () => window.removeEventListener('msabato:module-disabled', onDisabled);
+  }, [navigate, user?.church_slug]);
+  return null;
+};
+
 function DashboardShell() {
   return (
     <ErrorBoundary>
       <AuthProvider>
         <ProtectedRoute>
+          <ModuleDisabledRedirect />
           <MembersProvider>
             <GalleryProvider>
               <ChurchSlugGuard>
