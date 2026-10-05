@@ -23,6 +23,15 @@ jest.mock('../../config/logging', () => ({
   error: jest.fn()
 }));
 
+// Settings gates (sms_enabled / sms_notifications) are out of scope for
+// routing tests — pretend both toggles are on.
+jest.mock('../../helpers/churchSettings', () => ({
+  getBool: jest.fn(() => Promise.resolve(true)),
+  getSetting: jest.fn(() => Promise.resolve(null)),
+  getInt: jest.fn((c, k, f) => Promise.resolve(f)),
+  clearChurchCache: jest.fn()
+}));
+
 const apiHub = require('../../services/apiHub');
 const { pool } = require('../../config/database');
 const hybridSMS = require('../../services/hybridSMS');
