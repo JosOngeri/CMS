@@ -73,7 +73,7 @@ router.use('/auth', authLimiter, authRoutes);
 router.use('/churches', generalLimiter, churchRoutes);
 router.use('/users', generalLimiter, clampQueryPagination(), usersRoutes);
 router.use('/user-settings', generalLimiter, userSettingsRoutes);
-router.use('/announcements', generalLimiter, clampQueryPagination(), announcementsRoutes);
+router.use('/announcements', generalLimiter, clampQueryPagination(), requireTenantFlag('announcements'), announcementsRoutes);
 // 11.2: church-side end of the platform <-> church admin thread
 router.use('/platform-messages', generalLimiter, require('./platformMessages.routes'));
 // Canonical mount: every department endpoint lives under /api/departments.
@@ -91,15 +91,15 @@ router.use('/department', generalLimiter, (req, res) => {
 router.use('/department-features', generalLimiter, requireTenantFlag('departments'), departmentFeaturesRoutes);
 router.use('/department-categories', generalLimiter, requireTenantFlag('departments'), departmentCategoriesRoutes);
 router.use('/apk', generalLimiter, require('./apk.routes'));
-router.use('/payments', strictLimiter, paymentsRoutes);
+router.use('/payments', strictLimiter, requireTenantFlag('payments'), paymentsRoutes);
 // Legacy singular mount keeps old clients working while every handler is
 // served from payments.routes.js.
 router.use('/payment', strictLimiter, (req, res) => {
   const suffix = req.originalUrl.slice(req.baseUrl.length);
   res.redirect(308, `${req.baseUrl.replace(/\/payment$/, '/payments')}${suffix}`);
 });
-router.use('/members', generalLimiter, clampQueryPagination(), membersRoutes);
-router.use('/events', generalLimiter, clampQueryPagination(), eventsRoutes);
+router.use('/members', generalLimiter, clampQueryPagination(), requireTenantFlag('members'), membersRoutes);
+router.use('/events', generalLimiter, clampQueryPagination(), requireTenantFlag('events'), eventsRoutes);
 router.use('/sms', strictLimiter, requireTenantFlag('sms'), smsRoutes);
 router.use('/dashboard', generalLimiter, dashboardRoutes);
 // Specific /treasury sub-mounts first — they must not depend on the parent
@@ -124,7 +124,7 @@ router.use('/field-permissions', generalLimiter, fieldPermissionsRoutes);
 router.use('/audit-logs', strictLimiter, clampQueryPagination(), auditLogsRoutes);
 router.use('/logs', strictLimiter, require('./logs.routes'));
 router.use('/security', strictLimiter, securityRoutes);
-router.use('/collections', generalLimiter, collectionsRoutes);
+router.use('/collections', generalLimiter, requireTenantFlag('payments'), collectionsRoutes);
 router.use('/reports', generalLimiter, reportsRoutes);
 router.use('/documents', uploadLimiter, clampQueryPagination(), requireTenantFlag('documents'), documentsRoutes);
 router.use('/telegram', generalLimiter, requireTenantFlag('telegram'), telegramRoutes);
@@ -132,9 +132,9 @@ router.use('/telegramAuth', generalLimiter, requireTenantFlag('telegram'), teleg
 router.use('/telegram-church', generalLimiter, requireTenantFlag('telegram'), telegramChurchRoutes);
 router.use('/content', generalLimiter, clampQueryPagination(), contentRoutes);
 // router.use('/sda-content', generalLimiter, require('./sdaContent.routes'));
-router.use('/reconciliation', strictLimiter, reconciliationRoutes);
-router.use('/mpesa', generalLimiter, clampQueryPagination(), mpesaRoutes);
-router.use('/manual-payments', strictLimiter, manualPaymentRoutes);
+router.use('/reconciliation', strictLimiter, requireTenantFlag('payments'), reconciliationRoutes);
+router.use('/mpesa', generalLimiter, clampQueryPagination(), requireTenantFlag('payments'), mpesaRoutes);
+router.use('/manual-payments', strictLimiter, requireTenantFlag('payments'), manualPaymentRoutes);
 router.use('/gateway', generalLimiter, gatewayRoutes);
 router.use('/sms-hub', generalLimiter, requireTenantFlag('sms'), smsHubRoutes);
 router.use('/document-approval', strictLimiter, requireTenantFlag('documents'), documentApprovalRoutes);

@@ -18,12 +18,13 @@ const { createLogger } = require('../helpers/controllerLogger');
 const settingsRepo = require('../repositories/SettingsRepository');
 const churchSettings = require('../helpers/churchSettings');
 const { KEYS: SETTING_KEYS, SECRET_KEYS, GLOBAL_ONLY_KEYS, validateValue } = require('../constants/settingKeys');
+const { invalidateChurchFlags } = require('../middleware/tenantFeatureFlag');
+const { TENANT_FLAGS } = require('../constants/tenantFlags');
 
 const IMPERSONATION_COOKIE_MAX_AGE = 60 * 60 * 1000; // cap cookie at 1h; token TTL is shorter anyway
 
-// The tenant feature flags a church can have toggled — keep in sync with
-// what the church app checks via useFeatureFlag/module checks.
-const TENANT_FLAGS = ['sms', 'telegram', 'treasury', 'gallery', 'documents', 'departments', 'approvals', 'mobile_app'];
+// TENANT_FLAGS lives in constants/tenantFlags.js — shared with the
+// enforcement middleware's route map and the church-facing features map.
 
 const QUOTA_FIELDS = ['member_cap', 'storage_cap_mb', 'sms_credits', 'admin_seats'];
 
@@ -233,6 +234,8 @@ class PlatformTenancyController extends BaseController {
          DO UPDATE SET enabled = $3, updated_by = $4, updated_at = CURRENT_TIMESTAMP`,
         [id, flag, enabled, req.platformUser.id]
       );
+      invalidateChurchFlags(id);
+      churchSettings.clearChurchCache(id); // /auth/profile features reflect it now
       await auditPlatformAction(req, {
         action: 'tenant.flag_updated',
         tenantId: id,

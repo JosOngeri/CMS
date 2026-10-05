@@ -8,6 +8,8 @@
  */
 const settingsRepo = require('../repositories/SettingsRepository');
 const { byKey } = require('../constants/settingKeys');
+const { TENANT_FLAGS } = require('../constants/tenantFlags');
+const { pool } = require('../config/database');
 const { createLogger } = require('./controllerLogger');
 
 const logger = createLogger('churchSettings');
@@ -48,19 +50,52 @@ async function getInt(churchId, key, fallback) {
   return Number.isFinite(v) ? v : fallback;
 }
 
-/** Map of features/enable_* → bool for one church (nav/module gating). */
+/**
+ * tenant_feature_flags → { enable_<flag>: bool } for one church, cached in the
+ * same per-church bucket as settings so clearChurchCache() drops both.
+ */
+async function getTenantFlagMap(churchId) {
+  if (!churchId) return {};
+  const cacheKey = `${churchId}|__tenant_flags`;
+  const hit = cache.get(cacheKey);
+  if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
+  try {
+    const { rows } = await pool.query(
+      'SELECT flag, enabled FROM tenant_feature_flags WHERE church_id = $1',
+      [churchId]
+    );
+    const stored = Object.fromEntries(rows.map((r) => [r.flag, r.enabled]));
+    const value = Object.fromEntries(
+      TENANT_FLAGS.map((f) => [`enable_${f}`, stored[f] !== false])
+    );
+    cache.set(cacheKey, { value, at: Date.now() });
+    return value;
+  } catch (e) {
+    logger.error('getTenantFlagMap', `read failed for ${churchId}`, e.message);
+    return {};
+  }
+}
+
+/**
+ * Map of enable_* → bool for one church (nav/module gating). Every
+ * tenant_feature_flags row surfaces as enable_<flag>; where a settings key
+ * covers the same module the platform flag ANDs with the church setting —
+ * either side can switch the module off.
+ */
 async function getFeatures(churchId) {
-  const [announcements, events, liveStream, treasury] = await Promise.all([
+  const [announcements, events, liveStream, treasury, flagMap] = await Promise.all([
     getBool(churchId, 'enable_announcements', true),
     getBool(churchId, 'enable_events', true),
     getBool(churchId, 'enable_live_stream', false),
     getBool(churchId, 'enable_treasury', true),
+    getTenantFlagMap(churchId),
   ]);
   return {
-    enable_announcements: announcements,
-    enable_events: events,
+    ...flagMap,
+    enable_announcements: announcements && flagMap.enable_announcements !== false,
+    enable_events: events && flagMap.enable_events !== false,
     enable_live_stream: liveStream,
-    enable_treasury: treasury,
+    enable_treasury: treasury && flagMap.enable_treasury !== false,
   };
 }
 

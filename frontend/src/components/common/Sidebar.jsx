@@ -100,12 +100,12 @@ function Sidebar({ isOpen, setIsOpen }) {
           items: [
             { path: '/dashboard/obligations', icon: HandCoins, label: 'My Obligations' },
             {
-              path: '/dashboard/payments/my', icon: DollarSign, label: 'My Payments',
+              path: '/dashboard/payments/my', icon: DollarSign, label: 'My Payments', feature: 'enable_payments',
               children: [
                 { path: '/dashboard/payments/history', label: 'Payment History' },
               ],
             },
-            { path: '/dashboard/collections', icon: Heart, label: 'Collections' },
+            { path: '/dashboard/collections', icon: Heart, label: 'Collections', feature: 'enable_payments' },
           ],
         },
         {
@@ -113,16 +113,16 @@ function Sidebar({ isOpen, setIsOpen }) {
           items: [
             { path: '/dashboard/announcements', icon: Megaphone, label: 'Announcements', feature: 'enable_announcements' },
             { path: '/dashboard/events', icon: Calendar, label: 'Events', feature: 'enable_events' },
-            { path: '/dashboard/my-departments', icon: Building2, label: 'My Departments' },
-            { path: '/dashboard/gallery', icon: ImageIcon, label: 'Gallery' },
-            { path: '/dashboard/documents', icon: FileText, label: 'Documents' },
+            { path: '/dashboard/my-departments', icon: Building2, label: 'My Departments', feature: 'enable_departments' },
+            { path: '/dashboard/gallery', icon: ImageIcon, label: 'Gallery', feature: 'enable_gallery' },
+            { path: '/dashboard/documents', icon: FileText, label: 'Documents', feature: 'enable_documents' },
             { path: '/dashboard/notifications', icon: Bell, label: 'Messages' },
           ],
         },
       ],
     },
     {
-      key: 'departments', label: 'Departments', icon: Building2, roles: LEADERSHIP_ROLES,
+      key: 'departments', label: 'Departments', icon: Building2, roles: LEADERSHIP_ROLES, feature: 'enable_departments',
       sections: [
         {
           title: null,
@@ -140,8 +140,8 @@ function Sidebar({ isOpen, setIsOpen }) {
         },
       ],
     },
-    { key: 'people', label: 'People', icon: Users, path: '/dashboard/members' },
-    { key: 'approvals', label: 'Approvals', icon: CheckSquare, path: '/dashboard/approvals' },
+    { key: 'people', label: 'People', icon: Users, path: '/dashboard/members', feature: 'enable_members' },
+    { key: 'approvals', label: 'Approvals', icon: CheckSquare, path: '/dashboard/approvals', feature: 'enable_approvals' },
     {
       key: 'comms', label: 'Communications', icon: MessageSquare, roles: LEADERSHIP_ROLES,
       sections: [
@@ -149,7 +149,7 @@ function Sidebar({ isOpen, setIsOpen }) {
           title: 'Messaging',
           items: [
             {
-              path: '/dashboard/sms', icon: MessageSquare, label: 'SMS',
+              path: '/dashboard/sms', icon: MessageSquare, label: 'SMS', feature: 'enable_sms',
               children: [
                 { path: '/dashboard/sms/dashboard', label: 'SMS Dashboard' },
                 { path: '/dashboard/sms/contacts', label: 'Contacts' },
@@ -157,7 +157,7 @@ function Sidebar({ isOpen, setIsOpen }) {
               ],
             },
             {
-              path: '/dashboard/telegram', icon: MessageSquare, label: 'Telegram',
+              path: '/dashboard/telegram', icon: MessageSquare, label: 'Telegram', feature: 'enable_telegram',
               children: [
                 { path: '/dashboard/telegram/church', label: 'Church Channel' },
                 { path: '/dashboard/telegram/auth', label: 'Telegram Auth' },
@@ -204,8 +204,8 @@ function Sidebar({ isOpen, setIsOpen }) {
         {
           title: 'Payments',
           items: [
-            { path: '/dashboard/payments/management', icon: DollarSign, label: 'Payment Management' },
-            { path: '/dashboard/payments/archive', icon: Archive, label: 'Payment Archive' },
+            { path: '/dashboard/payments/management', icon: DollarSign, label: 'Payment Management', feature: 'enable_payments' },
+            { path: '/dashboard/payments/archive', icon: Archive, label: 'Payment Archive', feature: 'enable_payments' },
             { path: '/dashboard/reports', icon: BarChart3, label: 'Reports' },
           ],
         },
@@ -241,8 +241,8 @@ function Sidebar({ isOpen, setIsOpen }) {
     },
   ];
 
-  // Church feature flags (features/enable_* in the settings catalog —
-  // platform manageable) ride in on the profile/login payload.
+  // Church feature flags (settings enable_* AND platform tenant_feature_flags,
+  // merged in /auth/profile → user.features) ride in on the profile payload.
   const features = user?.features || {};
   const featureOn = (flag) => features[flag] !== false; // default on when unset
 
@@ -263,6 +263,7 @@ function Sidebar({ isOpen, setIsOpen }) {
 
   const visibleEntries = entries
     .map((entry) => {
+      if (entry.feature && !featureOn(entry.feature)) return null;
       if (!isSuperAdmin() && entry.roles && !isAny(entry.roles)) return null;
       if (entry.path) return canAccessModule(entry.path) ? entry : null;
       const sections = entry.sections
