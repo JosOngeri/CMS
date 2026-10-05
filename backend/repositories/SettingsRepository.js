@@ -5,6 +5,22 @@ class SettingsRepository extends BaseRepository {
     super('settings');
   }
 
+  /**
+   * Append one row to settings_audit_log. Never throws — an audit write
+   * must not break the mutation it records.
+   */
+  async _audit({ key, oldValue = null, newValue = null, churchId = null, changedBy = null, action = 'update' }) {
+    try {
+      await this.pool.query(
+        `INSERT INTO settings_audit_log (setting_key, old_value, new_value, church_id, changed_by, action)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [key, oldValue, newValue, churchId, changedBy, action]
+      );
+    } catch (e) {
+      console.warn('[SettingsRepository] audit write failed:', e.message);
+    }
+  }
+
   // Reads merge global defaults (church_id IS NULL) with the caller's own
   // church overrides; the church-scoped row wins when both exist.
   // Writes with a churchId never touch global rows or other churches' rows —
@@ -93,7 +109,7 @@ class SettingsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async upsert(key, value, churchId = null) {
+  async upsert(key, value, churchId = null, changedBy = null) {
     if (churchId) {
       const own = await this._getOwnRow(key, churchId);
       if (own) {
@@ -102,28 +118,46 @@ class SettingsRepository extends BaseRepository {
            WHERE key = $2 AND church_id = $3 RETURNING *`,
           [value, key, churchId]
         );
+        await this._audit({ key, oldValue: own.value, newValue: value, churchId, changedBy });
         return result.rows[0];
       }
       const global = await this._getGlobalRow(key);
-      if (global) return this._cloneToChurchRow(global, churchId, { value });
+      if (global) {
+        const row = await this._cloneToChurchRow(global, churchId, { value });
+        await this._audit({ key, oldValue: global.value, newValue: value, churchId, changedBy });
+        return row;
+      }
       const result = await this.pool.query(
         `INSERT INTO ${this.tableName} (key, value, value_type, category, label, is_public, is_editable, church_id)
          VALUES ($1, $2, 'string', 'system', $1, false, true, $3)
          RETURNING *`,
         [key, value, churchId]
       );
+      await this._audit({ key, newValue: value, churchId, changedBy, action: 'create' });
       return result.rows[0];
     }
 
+    const before = await this._getGlobalRow(key);
     const result = await this.pool.query(
       `UPDATE ${this.tableName} SET value = $1, updated_at = CURRENT_TIMESTAMP
        WHERE key = $2 AND church_id IS NULL RETURNING *`,
       [value, key]
     );
+    if (result.rows[0]) {
+      await this._audit({ key, oldValue: before && before.value, newValue: value, changedBy });
+    }
     return result.rows[0];
   }
 
-  async deleteByKey(key, churchId = null) {
+  async deleteByKey(key, churchId = null, changedBy = null) {
+    // Snapshot first so the audit trail preserves the removed values —
+    // without churchId this delete spans every tenant's row for the key.
+    const snapQuery = churchId
+      ? `SELECT key, value, church_id FROM ${this.tableName} WHERE key = $1 AND church_id = $2`
+      : `SELECT key, value, church_id FROM ${this.tableName} WHERE key = $1`;
+    const snapParams = churchId ? [key, churchId] : [key];
+    const { rows: doomed } = await this.pool.query(snapQuery, snapParams);
+
     let query = `DELETE FROM ${this.tableName} WHERE key = $1`;
     const params = [key];
 
@@ -133,6 +167,9 @@ class SettingsRepository extends BaseRepository {
     }
 
     const result = await this.pool.query(query, params);
+    for (const row of doomed) {
+      await this._audit({ key, oldValue: row.value, churchId: row.church_id, changedBy, action: 'delete' });
+    }
     return result.rowCount;
   }
 
@@ -235,7 +272,7 @@ class SettingsRepository extends BaseRepository {
     }
   }
 
-  async createSetting(data, churchId = null) {
+  async createSetting(data, churchId = null, changedBy = null) {
     const { key, value, value_type, category, label, description, is_public, is_editable, validation_rules } = data;
     const result = await this.pool.query(
       `INSERT INTO settings (key, value, value_type, category, label, description, is_public, is_editable, validation_rules, church_id)
@@ -243,6 +280,7 @@ class SettingsRepository extends BaseRepository {
        RETURNING *`,
       [key, value, value_type, category, label, description, is_public, is_editable, validation_rules, churchId]
     );
+    await this._audit({ key, newValue: value, churchId, changedBy, action: 'create' });
     return result.rows[0];
   }
 
@@ -260,7 +298,7 @@ class SettingsRepository extends BaseRepository {
     return result.rows[0];
   }
 
-  async updateSetting(key, data, churchId = null) {
+  async updateSetting(key, data, churchId = null, changedBy = null) {
     const { value, label, description, is_public, is_editable, validation_rules } = data;
     const setClause = `SET value = COALESCE($1, value),
            label = COALESCE($2, label),
@@ -277,6 +315,7 @@ class SettingsRepository extends BaseRepository {
           `UPDATE settings ${setClause} WHERE key = $7 AND church_id = $8 RETURNING *`,
           [value, label, description, is_public, is_editable, validation_rules, key, churchId]
         );
+        await this._audit({ key, oldValue: own.value, newValue: result.rows[0] && result.rows[0].value, churchId, changedBy });
         return result.rows[0];
       }
       // Only a global default exists — clone it into a church override.
@@ -286,17 +325,23 @@ class SettingsRepository extends BaseRepository {
       for (const [k, v] of Object.entries({ value, label, description, is_public, is_editable, validation_rules })) {
         if (v !== undefined && v !== null) overrides[k] = v;
       }
-      return this._cloneToChurchRow(global, churchId, overrides);
+      const row = await this._cloneToChurchRow(global, churchId, overrides);
+      await this._audit({ key, oldValue: global.value, newValue: row && row.value, churchId, changedBy });
+      return row;
     }
 
+    const before = await this._getGlobalRow(key);
     const result = await this.pool.query(
       `UPDATE settings ${setClause} WHERE key = $7 AND church_id IS NULL RETURNING *`,
       [value, label, description, is_public, is_editable, validation_rules, key]
     );
+    if (result.rows[0]) {
+      await this._audit({ key, oldValue: before && before.value, newValue: result.rows[0].value, changedBy });
+    }
     return result.rows[0];
   }
 
-  async updateSettingValue(key, value, churchId = null) {
+  async updateSettingValue(key, value, churchId = null, changedBy = null) {
     if (churchId) {
       const own = await this._getOwnRow(key, churchId);
       if (own) {
@@ -304,31 +349,46 @@ class SettingsRepository extends BaseRepository {
           'UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2 AND church_id = $3 RETURNING *',
           [value, key, churchId]
         );
+        await this._audit({ key, oldValue: own.value, newValue: value, churchId, changedBy });
         return result.rows[0];
       }
       const global = await this._getGlobalRow(key);
       if (!global) return null;
-      return this._cloneToChurchRow(global, churchId, { value });
+      const row = await this._cloneToChurchRow(global, churchId, { value });
+      await this._audit({ key, oldValue: global.value, newValue: value, churchId, changedBy });
+      return row;
     }
 
+    const before = await this._getGlobalRow(key);
     const result = await this.pool.query(
       'UPDATE settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2 AND church_id IS NULL RETURNING *',
       [value, key]
     );
+    if (result.rows[0]) {
+      await this._audit({ key, oldValue: before && before.value, newValue: value, changedBy });
+    }
     return result.rows[0];
   }
 
-  async createSettingSimple(key, value, label, churchId = null) {
+  async createSettingSimple(key, value, label, churchId = null, changedBy = null) {
     const result = await this.pool.query(
       `INSERT INTO settings (key, value, value_type, category, label, is_public, is_editable, church_id)
        VALUES ($1, $2, 'string', 'appearance', $3, true, true, $4)
        RETURNING *`,
       [key, value, label, churchId]
     );
+    await this._audit({ key, newValue: value, churchId, changedBy, action: 'create' });
     return result.rows[0];
   }
 
-  async deleteSettingByKey(key, churchId = null) {
+  async deleteSettingByKey(key, churchId = null, changedBy = null) {
+    // Snapshot first so the audit row preserves the removed value.
+    const scope = churchId ? 'church_id = $2' : 'church_id IS NULL';
+    const existing = (await this.pool.query(
+      `SELECT * FROM settings WHERE key = $1 AND ${scope}`,
+      churchId ? [key, churchId] : [key]
+    )).rows[0];
+
     let query = 'DELETE FROM settings WHERE key = $1';
     const params = [key];
 
@@ -340,6 +400,9 @@ class SettingsRepository extends BaseRepository {
     }
 
     const result = await this.pool.query(query, params);
+    if (result.rowCount && existing) {
+      await this._audit({ key, oldValue: existing.value, churchId, changedBy, action: 'delete' });
+    }
     return result.rowCount;
   }
 
@@ -369,7 +432,7 @@ class SettingsRepository extends BaseRepository {
     });
   }
 
-  async importSetting(data, churchId = null) {
+  async importSetting(data, churchId = null, changedBy = null) {
     const { key, value, value_type, category, label, description, is_public, is_editable, validation_rules } = data;
 
     if (churchId) {
@@ -388,6 +451,7 @@ class SettingsRepository extends BaseRepository {
            RETURNING *`,
           [value, label, description, is_public, is_editable, validation_rules, key, churchId]
         );
+        await this._audit({ key, oldValue: own.value, newValue: value, churchId, changedBy });
         return result.rows[0];
       }
       // Import always creates the caller's own church-scoped row.
@@ -397,6 +461,7 @@ class SettingsRepository extends BaseRepository {
          RETURNING *`,
         [key, value, value_type, category, label, description, is_public, is_editable, validation_rules, churchId]
       );
+      await this._audit({ key, newValue: value, churchId, changedBy, action: 'create' });
       return result.rows[0];
     }
 
@@ -415,6 +480,7 @@ class SettingsRepository extends BaseRepository {
          RETURNING *`,
         [value, label, description, is_public, is_editable, validation_rules, key]
       );
+      await this._audit({ key, oldValue: global.value, newValue: value, changedBy });
       return result.rows[0];
     }
     const result = await this.pool.query(
@@ -423,31 +489,68 @@ class SettingsRepository extends BaseRepository {
        RETURNING *`,
       [key, value, value_type, category, label, description, is_public, is_editable, validation_rules]
     );
+    await this._audit({ key, newValue: value, changedBy, action: 'create' });
     return result.rows[0];
   }
 
-  async resetToDefaults(category, churchId = null) {
+  async resetToDefaults(category, churchId = null, changedBy = null) {
     // For a church, "reset" removes its override rows so keys fall back to
     // the global defaults. Without a churchId it resets the global rows.
-    if (churchId) {
-      let query = 'DELETE FROM settings WHERE church_id = $1';
-      const params = [churchId];
-      if (category) {
-        query += ' AND category = $2';
-        params.push(category);
-      }
-      const result = await this.pool.query(query, params);
-      return result.rowCount;
-    }
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    let query = 'UPDATE settings SET value = default_value, updated_at = CURRENT_TIMESTAMP WHERE default_value IS NOT NULL AND church_id IS NULL';
-    const params = [];
-    if (category) {
-      query += ' AND category = $1';
-      params.push(category);
+      // Snapshot the rows about to be removed/rewritten — the audit trail
+      // is the only way to recover a bulk reset.
+      let snapQuery = 'SELECT key, value FROM settings WHERE ';
+      const snapParams = [];
+      if (churchId) {
+        snapQuery += 'church_id = $1';
+        snapParams.push(churchId);
+        if (category) { snapQuery += ' AND category = $2'; snapParams.push(category); }
+      } else {
+        snapQuery += 'church_id IS NULL';
+        if (category) { snapQuery += ' AND category = $1'; snapParams.push(category); }
+      }
+      const { rows: snapshot } = await client.query(snapQuery, snapParams);
+
+      let rowCount;
+      if (churchId) {
+        let query = 'DELETE FROM settings WHERE church_id = $1';
+        const params = [churchId];
+        if (category) {
+          query += ' AND category = $2';
+          params.push(category);
+        }
+        const result = await client.query(query, params);
+        rowCount = result.rowCount;
+      } else {
+        let query = 'UPDATE settings SET value = default_value, updated_at = CURRENT_TIMESTAMP WHERE default_value IS NOT NULL AND church_id IS NULL';
+        const params = [];
+        if (category) {
+          query += ' AND category = $1';
+          params.push(category);
+        }
+        const result = await client.query(query, params);
+        rowCount = result.rowCount;
+      }
+
+      for (const row of snapshot) {
+        await client.query(
+          `INSERT INTO settings_audit_log (setting_key, old_value, new_value, church_id, changed_by, action)
+           VALUES ($1, $2, NULL, $3, $4, 'reset')`,
+          [row.key, row.value, churchId, changedBy]
+        );
+      }
+
+      await client.query('COMMIT');
+      return rowCount;
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
     }
-    const result = await this.pool.query(query, params);
-    return result.rowCount;
   }
 
   async getSettingsHistory(key, limit) {
@@ -548,6 +651,7 @@ class SettingsRepository extends BaseRepository {
   }
 
   async setMaintenanceSetting(key, value, userId) {
+    const before = await this._getGlobalRow(key);
     await this.pool.query(
       `INSERT INTO settings (key, value, value_type, category, label)
        VALUES ($1, $2, 'boolean', 'system', $1)
@@ -555,9 +659,14 @@ class SettingsRepository extends BaseRepository {
        DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
       [key, value]
     );
+    await this._audit({
+      key, oldValue: before && before.value, newValue: value, changedBy: userId,
+      action: before ? 'update' : 'create'
+    });
   }
 
   async setMaintenanceMessage(message, userId) {
+    const before = await this._getGlobalRow('maintenance_message');
     await this.pool.query(
       `INSERT INTO settings (key, value, value_type, category, label)
        VALUES ('maintenance_message', $1, 'string', 'system', 'maintenance_message')
@@ -565,6 +674,10 @@ class SettingsRepository extends BaseRepository {
        DO UPDATE SET value = $1, updated_at = CURRENT_TIMESTAMP`,
       [message]
     );
+    await this._audit({
+      key: 'maintenance_message', oldValue: before && before.value, newValue: message,
+      changedBy: userId, action: before ? 'update' : 'create'
+    });
   }
 
   async getMaintenanceModeSettings() {

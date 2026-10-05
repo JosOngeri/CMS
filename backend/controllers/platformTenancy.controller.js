@@ -508,7 +508,7 @@ class PlatformTenancyController extends BaseController {
       if (!church.rows[0]) return this.notFound(res, 'Church not found');
 
       for (const [key, value] of entries) {
-        await settingsRepo.upsert(key, String(value ?? ''), id);
+        await settingsRepo.upsert(key, String(value ?? ''), id, req.platformUser.id);
       }
       // Bust the 60s resolved-settings cache so church-side readers
       // (login, SMS gates, feature flags) see the new values now.
@@ -533,7 +533,7 @@ class PlatformTenancyController extends BaseController {
   async deleteTenantSetting(req, res) {
     const { id, key } = req.params;
     try {
-      const deleted = await settingsRepo.deleteByKey(key, id);
+      const deleted = await settingsRepo.deleteByKey(key, id, req.platformUser.id);
       churchSettings.clearChurchCache(id);
       await auditPlatformAction(req, {
         action: 'tenant.settings_override_removed',
@@ -594,7 +594,7 @@ class PlatformTenancyController extends BaseController {
       for (const [key, value] of entries) {
         // Secret fields submit the mask or empty to mean "unchanged".
         if (SECRET_KEYS.has(key) && (value === '***' || value === '' || value == null)) continue;
-        await settingsRepo.upsert(key, String(value ?? ''), null);
+        await settingsRepo.upsert(key, String(value ?? ''), null, req.platformUser.id);
       }
       // Global rows are every church's fallback — clear the whole cache.
       churchSettings.clearChurchCache();

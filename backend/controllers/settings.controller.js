@@ -120,7 +120,7 @@ class SettingsController extends BaseController {
 
       const setting = await SettingsRepository.createSetting({
         key, value, value_type, category, label, description, is_public, is_editable, validation_rules
-      });
+      }, null, req.user.id);
 
       this.created(res, { setting });
     } catch (error) {
@@ -168,7 +168,7 @@ class SettingsController extends BaseController {
 
       const updatedSetting = await SettingsRepository.updateSetting(key, {
         value: valueToWrite, label, description, is_public, is_editable, validation_rules
-      }, req.user.church_id);
+      }, req.user.church_id, req.user.id);
       churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { setting: updatedSetting });
@@ -224,7 +224,8 @@ class SettingsController extends BaseController {
               key,
               value,
               key.replace('_', ' ').toUpperCase(),
-              req.user.church_id
+              req.user.church_id,
+              req.user.id
             );
             updated.push(newSetting);
             continue;
@@ -235,7 +236,7 @@ class SettingsController extends BaseController {
             continue;
           }
 
-          const result = await SettingsRepository.updateSettingValue(key, value, req.user.church_id);
+          const result = await SettingsRepository.updateSettingValue(key, value, req.user.church_id, req.user.id);
           updated.push(result);
         } catch (error) {
           errors.push({ key: settingData.key, error: error.message });
@@ -281,7 +282,7 @@ class SettingsController extends BaseController {
         return this.forbidden(res, 'This setting cannot be deleted');
       }
 
-      await SettingsRepository.deleteSettingByKey(key, req.user.church_id);
+      await SettingsRepository.deleteSettingByKey(key, req.user.church_id, req.user.id);
       churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { message: 'Setting deleted successfully' });
@@ -381,7 +382,7 @@ class SettingsController extends BaseController {
     try {
       const { category } = req.query;
 
-      const rowCount = await SettingsRepository.resetToDefaults(category, req.user.church_id);
+      const rowCount = await SettingsRepository.resetToDefaults(category, req.user.church_id, req.user.id);
       if (rowCount) churchSettings.clearChurchCache(req.user.church_id);
 
       this.success(res, { message: `Reset ${rowCount} settings to defaults` });
