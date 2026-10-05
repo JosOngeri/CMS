@@ -139,13 +139,23 @@ class _PlatformOpsScreenState extends ConsumerState<PlatformOpsScreen> {
         children: [
           // Maintenance mode
           Card(
-            color: maintOn ? AppTheme.errorLight : null,
+            color: maintOn ? Theme.of(context).colorScheme.errorContainer : null,
             child: SwitchListTile(
-              title: const Text('Maintenance mode',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(maintOn
-                  ? 'ON — tenant API calls return 503\n${_maintenance?['message'] ?? ''}'
-                  : 'Off — tenants have normal access'),
+              title: Text('Maintenance mode',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: maintOn
+                          ? Theme.of(context).colorScheme.onErrorContainer
+                          : null)),
+              subtitle: Text(
+                maintOn
+                    ? 'ON — tenant API calls return 503\n${_maintenance?['message'] ?? ''}'
+                    : 'Off — tenants have normal access',
+                style: maintOn
+                    ? TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer)
+                    : null,
+              ),
               value: maintOn,
               onChanged: _toggleMaintenance,
               activeColor: AppTheme.errorColor,
