@@ -181,6 +181,13 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
                   Text(a['name']?.toString() ?? '',
                       style: const TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 6),
+                  Text('Modules in use (${used.length} of ${modules.length})',
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color:
+                              Theme.of(context).colorScheme.onSurfaceVariant)),
+                  const SizedBox(height: 4),
                   Wrap(
                     spacing: 6,
                     runSpacing: 4,
@@ -210,12 +217,6 @@ class _PlatformAnalyticsScreenState extends ConsumerState<PlatformAnalyticsScree
                       );
                     }).toList(),
                   ),
-                  if (used.isEmpty)
-                    Text('No modules in use',
-                        style: TextStyle(
-                            fontSize: 11,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant)),
                   const SizedBox(height: 8),
                   const Divider(height: 1),
                   _TenantFlags(churchId: a['id']?.toString() ?? ''),
