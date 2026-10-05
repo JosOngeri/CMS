@@ -426,7 +426,14 @@ class GalleryController extends BaseController {
       const { comment } = req.body;
       const userId = req.user.id;
 
+      if (!comment || !String(comment).trim()) {
+        return this.error(res, 'comment is required', 400);
+      }
+
       const newComment = await GalleryRepository.addComment(photoId, userId, comment, req.user.church_id);
+      if (!newComment) {
+        return this.error(res, 'Photo not found', 404);
+      }
 
       this.created(res, { message: 'Comment added successfully', data: newComment });
     } catch (error) {
