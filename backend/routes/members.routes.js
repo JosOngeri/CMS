@@ -22,6 +22,13 @@ router.post('/import', requireRole(['Super Admin', 'Pastor', 'First Elder']), as
   }
 });
 
+// Inbound SMS keyword interest — posted by the JOSms gateway device.
+// Register before /:id so 'interest'/'interests' are not read as member ids.
+// The gateway's SMS-scoped JWT already carries church_id; no role gate needed
+// for the device write path, reads stay restricted to leadership.
+router.post('/interest', membersController.recordInterest);
+router.get('/interests', requireRole(['Super Admin', 'Pastor', 'First Elder']), membersController.listInterests);
+
 // Get all members with pagination and search
 router.get('/', membersController.getAllMembers);
 

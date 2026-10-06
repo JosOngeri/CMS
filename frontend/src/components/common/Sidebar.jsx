@@ -152,6 +152,8 @@ function Sidebar({ isOpen, setIsOpen }) {
               path: '/dashboard/sms', icon: MessageSquare, label: 'SMS', feature: 'enable_sms',
               children: [
                 { path: '/dashboard/sms/dashboard', label: 'SMS Dashboard' },
+                { path: '/dashboard/sms/send', label: 'Send SMS' },
+                { path: '/dashboard/sms/outbox', label: 'Outbox' },
                 { path: '/dashboard/sms/contacts', label: 'Contacts' },
                 { path: '/dashboard/sms/groups', label: 'Groups' },
               ],

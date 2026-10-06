@@ -106,6 +106,8 @@ const SMS                     = lazy(() => import('../sms/SMS'));
 const SMSDashboard            = lazy(() => import('../modules/sms/pages/Dashboard'));
 const SMSContacts             = lazy(() => import('../modules/sms/pages/Contacts'));
 const SMSGroups               = lazy(() => import('../modules/sms/pages/Groups'));
+const SMSSend                 = lazy(() => import('../modules/sms/pages/Send'));
+const SMSOutbox               = lazy(() => import('../modules/sms/pages/Outbox'));
 const Announcements           = lazy(() => import('../pages/announcements/Announcements'));
 const Events                  = lazy(() => import('../pages/events/Events'));
 const ApprovalInbox           = lazy(() => import('../pages/approvals/ApprovalInbox'));
@@ -212,6 +214,8 @@ export const dashboardRoutes = [
   { path: 'sms/dashboard',  element: <W C={SMSDashboard} roles={LEADERSHIP_ROLES} /> },
   { path: 'sms/contacts',   element: <W C={SMSContacts} roles={LEADERSHIP_ROLES} /> },
   { path: 'sms/groups',     element: <W C={SMSGroups} roles={LEADERSHIP_ROLES} /> },
+  { path: 'sms/send',       element: <W C={SMSSend} roles={LEADERSHIP_ROLES} /> },
+  { path: 'sms/outbox',     element: <W C={SMSOutbox} roles={LEADERSHIP_ROLES} /> },
   { path: 'announcements',  element: <W C={Announcements} /> },
   { path: 'documents',      element: <W C={Documents} /> },
   { path: 'notifications',  element: <W C={NotificationDashboard} /> },

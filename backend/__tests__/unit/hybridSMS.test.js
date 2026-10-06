@@ -203,6 +203,34 @@ describe('Hybrid SMS Service', () => {
       ).rejects.toThrow('SMS provider not found');
     });
 
+    it('never sends through another church\'s provider', async () => {
+      // Church A's provider row must not serve Church B's traffic.
+      hybridSMS.registerProvider({ ...provider('ChurchACo', 1), church_id: 'church-a' });
+      hybridSMS.registerProvider({ ...provider('Shared', 2), church_id: null });
+      apiHub.callAPI.mockResolvedValue({ success: true });
+
+      // Church B cannot name Church A's provider — fails loudly.
+      await expect(
+        hybridSMS.sendViaBulkProvider(
+          { recipients: ['1'], message: 'x', churchId: 'church-b' },
+          'ChurchACo'
+        )
+      ).rejects.toThrow('SMS provider not found');
+
+      // Church B with no preference uses the shared provider.
+      const result = await hybridSMS.sendViaBulkProvider(
+        { recipients: ['1'], message: 'x', churchId: 'church-b' }
+      );
+      expect(result.gateway).toBe('Shared');
+
+      // Church A can use its own provider by name.
+      const r2 = await hybridSMS.sendViaBulkProvider(
+        { recipients: ['1'], message: 'x', churchId: 'church-a' },
+        'ChurchACo'
+      );
+      expect(r2.gateway).toBe('ChurchACo');
+    });
+
     it('persists an updated balance returned by the provider', async () => {
       hybridSMS.registerProvider(provider('BulkCo', 7));
       apiHub.callAPI.mockResolvedValue({ success: true, balance: 42 });

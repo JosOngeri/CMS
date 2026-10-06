@@ -16,6 +16,8 @@ const SMSDashboard = () => {
     deliveryRate: 0
   });
   const [recentActivity, setRecentActivity] = useState([]);
+  const [gateway, setGateway] = useState(null);
+  const [queuedCount, setQueuedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,6 +51,24 @@ const SMSDashboard = () => {
     };
 
     fetchAll();
+
+    // Gateway presence + queue depth — refreshed on a 30s cadence so the
+    // banner reflects reality without a manual reload.
+    const fetchGateway = async () => {
+      try {
+        const [gw, q] = await Promise.all([
+          api.get('/sms/gateway-status'),
+          api.get('/sms/deliveries?status=queued&limit=1').catch(() => null),
+        ]);
+        setGateway(gw.data?.data || null);
+        setQueuedCount(Number(q?.data?.data?.total) || 0);
+      } catch (e) {
+        setGateway({ online: false, devices: [] });
+      }
+    };
+    fetchGateway();
+    const interval = setInterval(fetchGateway, 30000);
+    return () => clearInterval(interval);
   }, [api]);
 
   if (loading) {
@@ -59,6 +79,71 @@ const SMSDashboard = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">SMS Dashboard</h1>
       {error && <p className="mb-4 text-sm text-[var(--color-error)]">{error}</p>}
+
+      {/* Delivery readiness banner — the honest signal about whether SMS can
+          actually leave this church right now. */}
+      {gateway !== null && (
+        <div className={`mb-6 p-4 rounded-lg border ${gateway.online
+          ? 'bg-[var(--color-success-light)] border-[var(--color-success)]'
+          : 'bg-[var(--color-warning-light)] border-[var(--color-warning)]'}`}>
+          {gateway.online ? (
+            <p className="text-sm">
+              <span className="font-semibold">SMS delivery ready</span> — JOSms
+              gateway online
+              {gateway.devices?.filter(d => d.is_online)[0]?.label
+                ? ` (${gateway.devices.filter(d => d.is_online)[0].label})`
+                : ''}.
+            </p>
+          ) : (
+            <p className="text-sm">
+              <span className="font-semibold">No SMS gateway connected.</span>{' '}
+              Open the JOSms app on the church phone and sign in, or configure a
+              bulk provider. New sends will fail honestly rather than fake-queue.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Gateway card — live socket presence + last durable heartbeat. */}
+      {gateway !== null && (
+        <div className="bg-[var(--color-surface)] rounded-lg shadow p-6 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <span className={`inline-block w-3 h-3 rounded-full ${gateway.online ? 'bg-[var(--color-success)]' : 'bg-[var(--color-error)]'}`} />
+                Gateway {gateway.online ? 'Online' : 'Offline'}
+              </h2>
+              <p className="text-sm text-[var(--color-textSecondary)] mt-1">
+                {gateway.liveCount} live socket(s){queuedCount > 0 ? ` · ${queuedCount} queued delivery(ies)` : ''}
+              </p>
+            </div>
+            <Link
+              to="/dashboard/sms/send"
+              className="px-4 py-2 bg-[var(--color-primary)] text-[var(--color-on-solid)] rounded-lg hover:opacity-90 text-sm"
+            >
+              Send SMS
+            </Link>
+          </div>
+          {gateway.devices?.length > 0 && (
+            <div className="mt-4 divide-y divide-[var(--color-border)]">
+              {gateway.devices.map(d => (
+                <div key={d.device_id} className="py-2 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                  <span className={`inline-block w-2 h-2 rounded-full ${d.is_online ? 'bg-[var(--color-success)]' : 'bg-[var(--color-textSecondary)]'}`} />
+                  <span className="font-medium">{d.label || d.device_id}</span>
+                  {d.app_version && <span className="text-[var(--color-textSecondary)]">v{d.app_version}</span>}
+                  {typeof d.battery === 'number' && <span className="text-[var(--color-textSecondary)]">battery {d.battery}%</span>}
+                  {typeof d.signal === 'number' && <span className="text-[var(--color-textSecondary)]">signal {d.signal}</span>}
+                  <span className="text-[var(--color-textSecondary)]">
+                    {d.last_heartbeat_at
+                      ? `heartbeat ${new Date(d.last_heartbeat_at).toLocaleString()}`
+                      : d.last_seen_at ? `last seen ${new Date(d.last_seen_at).toLocaleString()}` : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-[var(--color-surface)] rounded-lg shadow p-6">

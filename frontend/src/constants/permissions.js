@@ -236,6 +236,8 @@ export const MODULE_PERMISSIONS = {
   '/dashboard/sms/dashboard': [PERMISSIONS.SMS_VIEW],
   '/dashboard/sms/contacts': [PERMISSIONS.SMS_VIEW],
   '/dashboard/sms/groups': [PERMISSIONS.SMS_VIEW],
+  '/dashboard/sms/send': [PERMISSIONS.SMS_VIEW],
+  '/dashboard/sms/outbox': [PERMISSIONS.SMS_VIEW],
   '/dashboard/telegram': [PERMISSIONS.TELEGRAM_VIEW],
   '/dashboard/telegram/auth': [PERMISSIONS.TELEGRAM_VIEW],
   '/dashboard/telegram/church': [PERMISSIONS.TELEGRAM_VIEW],

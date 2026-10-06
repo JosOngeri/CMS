@@ -106,7 +106,7 @@ class HybridSMS {
     if (recipientCount < smallBatchThreshold) {
       // Small batch: JOSms relay first; bulk failover when no phone is connected.
       const josmsResult = await this.sendViaJOSms(payload);
-      if (josmsResult.status === 'offline' && this.providers.size > 0) {
+      if (josmsResult.status === 'offline' && this._providersForChurch(churchId).length > 0) {
         logger.info(`JOSms offline for church ${churchId} — failing over to bulk provider`);
         return this.sendViaBulkProvider(payload, preferredProvider);
       }
@@ -197,14 +197,28 @@ class HybridSMS {
   }
 
   /**
+   * Providers usable by a church: its own church-scoped rows plus shared
+   * platform providers (church_id NULL). Sorted by priority so failover
+   * order is deterministic.
+   */
+  _providersForChurch(churchId) {
+    return Array.from(this.providers.values())
+      .filter(p => p && (p.church_id == null || !churchId || p.church_id === churchId))
+      .sort((a, b) => (a.priority ?? 10) - (b.priority ?? 10));
+  }
+
+  /**
    * Send SMS via bulk provider with failover
    * @param {object} payload - SMS payload
    * @param {string} preferredProvider - Preferred provider name
    * @returns {Promise<object>} Send result
    */
   async sendViaBulkProvider(payload, preferredProvider = null) {
-    const providerName = preferredProvider || this.defaultProvider;
-    const provider = this.providers.get(providerName);
+    const candidates = this._providersForChurch(payload.churchId);
+    const provider = preferredProvider
+      ? candidates.find(p => p.name === preferredProvider)
+      : (candidates.find(p => p.name === this.defaultProvider) || candidates[0]);
+    const providerName = provider?.name || preferredProvider || this.defaultProvider;
 
     if (!provider) {
       throw new Error(`SMS provider not found: ${providerName}`);
@@ -241,8 +255,8 @@ class HybridSMS {
     } catch (error) {
       logger.error(`Failed to send via ${providerName}:`, error);
 
-      // Provider fallback: try next available provider
-      const providerNames = Array.from(this.providers.keys());
+      // Provider fallback: try the next church-usable provider
+      const providerNames = candidates.map(p => p.name);
       const currentIndex = providerNames.indexOf(providerName);
 
       if (currentIndex < providerNames.length - 1) {

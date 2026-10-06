@@ -9,6 +9,7 @@ const BaseController = require('./BaseController');
 const MembersRepository = require('../repositories/MembersRepository');
 const { createLogger } = require('../helpers/controllerLogger');
 const auditService = require('../services/auditService');
+const { pool } = require('../config/database');
 
 /**
  * Members Controller
@@ -159,6 +160,69 @@ class MembersController extends BaseController {
     } catch (error) {
       this.logger.error('createMember', error);
       this.error(res, 'Failed to create member');
+    }
+  }
+
+  /**
+   * Record an inbound SMS keyword interest from a JOSms gateway phone.
+   * POST /api/members/interest — SMS-scoped JWT from the relay device.
+   * Body: { phone, keyword?, message?, deviceId? }
+   * Church comes from the authenticated token, never from the body.
+   */
+  async recordInterest(req, res) {
+    try {
+      const churchId = req.user.church_id;
+      const { phone, keyword, message, deviceId } = req.body || {};
+      if (!phone || typeof phone !== 'string') {
+        return this.error(res, 'phone is required', 400);
+      }
+      const result = await pool.query(
+        `INSERT INTO member_interests (church_id, phone, keyword, message, device_id)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT DO NOTHING
+         RETURNING id`,
+        [churchId, phone.slice(0, 32), (keyword || '').slice(0, 80) || null,
+         (message || '').slice(0, 2000) || null, (deviceId || '').slice(0, 120) || null]
+      );
+      await auditService.log(
+        churchId, req.user.id, 'CREATE', 'member_interests',
+        result.rows[0]?.id || null, null,
+        { phone, keyword },
+        req.ip, req.get('user-agent')
+      );
+      this.created(res, { interestId: result.rows[0]?.id });
+    } catch (error) {
+      this.logger.error('recordInterest', error);
+      this.error(res, 'Failed to record interest');
+    }
+  }
+
+  /** GET /api/members/interests — church-scoped list for follow-up. */
+  async listInterests(req, res) {
+    try {
+      const churchId = req.user.church_id;
+      const { page, limit, offset } = this.buildPagination(req.query);
+      const status = req.query.status;
+      const conditions = ['church_id = $1'];
+      const params = [churchId];
+      if (status) { params.push(status); conditions.push(`status = $${params.length}`); }
+      const where = conditions.join(' AND ');
+      const [rows, count] = await Promise.all([
+        pool.query(
+          `SELECT id, phone, keyword, message, device_id, status, created_at
+           FROM member_interests WHERE ${where}
+           ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+          [...params, limit, offset]
+        ),
+        pool.query(`SELECT COUNT(*) AS total FROM member_interests WHERE ${where}`, params),
+      ]);
+      this.success(res, {
+        interests: rows.rows,
+        pagination: this.buildPaginationMeta(Number(count.rows[0].total), page, limit)
+      });
+    } catch (error) {
+      this.logger.error('listInterests', error);
+      this.error(res, 'Failed to list interests');
     }
   }
 
