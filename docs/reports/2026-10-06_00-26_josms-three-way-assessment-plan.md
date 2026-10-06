@@ -1,6 +1,34 @@
 # JOSms Three-Way Assessment & Integration Plan
 **Date:** 2026-10-06 · **Scope:** KMainCMS (backend + web console), JOSms Android, JOSms webapp
-**Status:** Assessment — no code changed by this document
+**Status:** Phases 1–5 implemented and deployed; device-level pilot + contract tests pending
+
+---
+
+## Implementation evidence (added 2026-10-06)
+
+| Commit | Scope | Verification |
+|---|---|---|
+| `af07cb1` | Phase 1 backend: `gatewayRegistry`, `smsGateway.controller`, `095_sms_gateway_ledger.sql`, presence gate in `sendViaJOSms`, `sendSMS` dispatch fix, route reorder (`/sms/auth` before `/sms`), provider callbacks, `callback_secret` generation | 73 unit tests pass; `hybridSMS.test.js` 13/13 incl. offline + failover |
+| `cc64fc2` | Phase 3–5 backend + Phase 4 webapp: `096_member_interests.sql`, `/api/members/interest`, tenant-scoped provider selection (`_providersForChurch`), `register-sms-provider.js`, `Send.jsx`, `Outbox.jsx`, Dashboard gateway card + banner, routes/sidebar/permissions | 74 unit tests pass (new cross-tenant provider test); `vite build` clean; live `curl` checks below |
+
+**Live endpoint checks after `cc64fc2` deploy:**
+- `GET /api/health` → 200
+- `POST /api/sms/auth/login` → 400 (route reachable — was previously shadowed by the `/sms` auth wall)
+- `GET /api/sms/gateway-status` → 401 (mounted, auth enforced)
+- `POST /api/members/interest` → 401 (mounted, auth enforced)
+- `POST /api/sms/provider-callbacks/BlessedTexts/<bad>/delivery` → 404 (routed, secret rejected)
+
+**Android (`JOSms 1`, `com.church.sms` v5.0.0):**
+- Missing source reconstructed: 6 entity/DAO pairs, `CmsApiService` (mapped to real CMS auth envelope), `CmsAuthService`/`CmsAuthViewModel`, sync services/workers, biometric + monitoring, 12 Compose screens, `SmsReceiver`/`SmsStatusReceiver`; `churchId` corrected `Int`→`String` (UUID), auth paths aligned to `/api/sms/auth/*`.
+- `io.socket:socket.io-client:2.1.0` added; `GatewayRelayWorker` (long-running WorkManager + foreground) connects with the SMS JWT, emits `register_relay`, persists `process_bulk` payloads into `sms_logs` keyed by `batchId` (replay dedup), acks `accepted`, hands off to `SmsService`, and posts per-recipient states to `/api/sms/delivery-report` every 30s; REST + socket heartbeat every 5 min.
+- `GatewayKeepAliveWorker` re-enqueues the relay if the OS reaps it; `CmsAuthViewModel` starts the relay + periodic sync on login and stops it on logout; `ChurchSmsApplication` re-arms both on cold start when a token exists.
+- `CmsSyncSettingsScreen` now captures the CMS base URL at login (`cms_base_url` in encrypted storage) — server is configurable, not hardcoded.
+- `SmsReceiver` forwards matched keywords to `POST /api/members/interest`.
+- `assembleDebug` BUILD SUCCESSFUL; `app-debug.apk` installed on SM-S901U1 via `adb install -r` (Room data preserved).
+
+**Remaining for the pilot:** run `register-sms-provider.js` on the VPS with the BlessedTexts key to mint the callback URLs; sign in on the phone against `https://cms.josongeri.co.ke` and complete the socket + one-message pilot; scheduled-message sweep cadence and contract tests for the three new routes are still open.
+
+---
 
 ---
 
@@ -124,21 +152,22 @@ The 2 minute 27 second walkthrough at `plans/blessed text walk through.mp4` was 
 **Acceptance:** all four routes load after login and after a direct browser refresh; contacts/groups API calls are tenant-scoped; the UI reports gateway/provider readiness truthfully; no send is attempted when no delivery path exists.
 
 ### Phase 1 — CMS truthfulness and durable jobs (small, high value)
-- [ ] `sendViaJOSms`: check `io.sockets.adapter.rooms.get('relay:'+churchId)` — if empty, return `{success:false, gateway:'JOSms', status:'offline'}` (or fail over to bulk) instead of fake-queuing.
-- [ ] `GET /api/sms/gateway-status` — reports relay presence + last-seen for the webapp.
-- [ ] Pick one router: keep `hybridSMS` (settings-gated, provider-table-driven), retire `SmsHub`'s hardcoded BlessedTexts path or fold it into a provider row.
-- [ ] Deliverability ledger: `sms_deliveries` rows written when `process_bulk` emits (status `queued`), updated on app ack.
+- [x] `sendViaJOSms`: presence check via `gatewayRegistry.isOnline(churchId)` — empty room returns `{status:'offline'}` and fails over to a church-usable bulk provider instead of fake-queuing.
+- [x] `GET /api/sms/gateway-status` — live sockets + durable `sms_gateway_devices` (label, battery, signal, last heartbeat/seen).
+- [x] One router: `hybridSMS` is canonical; `SmsHub` delegates to it (hardcoded BlessedTexts path retired).
+- [x] Deliverability ledger: `sms_deliveries` (migration 095) written as `queued` before `process_bulk` emits; `UNIQUE(batch_id, recipient)` makes replays idempotent; `POST /api/sms/delivery-report` upserts states and rolls the `sms_logs` row to `delivered`/`partial`/`failed`.
+- [x] Also landed: `/api/sms/gateway-heartbeat`, `/api/sms/deliveries` (paged outbox), `/api/sms/provider-callbacks/:provider/:token/delivery|topup`, `callback_secret` auto-generated per provider, `/sms` route reorder so `/sms/auth/login` is reachable, `/api/sms/send` now actually dispatches batches (was silent pending-only) + due-scheduled sweeper.
 
 ### Phase 2 — Make the recorded Android app reproducible, then turn it into the gateway
-- [ ] Adopt `2 JOSms AndroidApp/JOSms 1` as the canonical build target because it matches the installed recording (application ID `com.church.sms`, version `5.0.0`, minimum Android 8/API 26). Do not rename or archive other variants until their unique code is inventoried.
-- [ ] Run a clean build first and resolve missing `CmsAuthService`/`CmsAuthViewModel` sources or imports. Record the JDK, Android SDK, Gradle and Kotlin versions needed to reproduce the APK.
-- [ ] Compare `JOSms 1` against `versions/v0.4.0-current`, `versions/v0.4.0-full`, and the `JOSms/app` integration fragment. Merge only tested capabilities into `JOSms 1`, preserving the recorded Dashboard/Contacts/Send/Templates/Logs/Settings navigation and Room data.
-- [ ] Add a versioned Room migration for any merged entities; the recorded phone has 1,172 contacts, so upgrades must preserve local contacts, logs, templates, campaigns and settings rather than using destructive migration.
-- [ ] Keep the existing Retrofit/OkHttp setup and add a compatible Socket.IO client dependency; configure the production CMS base URL through `BuildConfig`, not as a scattered hardcoded string.
-- [ ] Add `GatewayRelayService` as a foreground service: connect with CMS JWT → `register_relay` → on `process_bulk` → persist first, then enqueue into existing `RetryQueueService`/`SmsService`.
-- [ ] Delivery ack back: `POST /api/sms/delivery-report` (new route) or reuse the push channel — report per-recipient accepted/sent/failed/delivered state plus batch ID and idempotency key.
-- [ ] Persist the queue so a killed app or network outage does not lose in-flight batches; deduplicate a replayed batch before sending.
-- [ ] Add runtime flows for `SEND_SMS`, notification/foreground-service permission where required, battery-optimization guidance, and a visible logged-in gateway state.
+- [x] `JOSms 1` adopted as canonical (`com.church.sms` v5.0.0); `assembleDebug` now builds clean after reconstructing the missing entity/DAO/auth/sync/screen sources and is installed on the gateway phone.
+- [x] Clean build reproduced: JDK 17, Android SDK 34, Gradle wrapper 9.4.1, AGP 9.2.1 (`gradle-wrapper.properties` corrected from 8.5).
+- [ ] Variant inventory/diff still open — only the `JOSms/app` auth/sync fragments were merged; `v0.4.0-current`/`full` not yet inventoried.
+- [x] Non-destructive Room migrations only — `api_sync_status` added as v11 migration; 1,172 contacts preserved (APK installed with `-r`, DB intact).
+- [x] `io.socket:socket.io-client:2.1.0` added; CMS base URL is now **user-configurable at login** (`cms_base_url` in EncryptedSharedPreferences), not hardcoded.
+- [x] `GatewayRelayWorker` (long-running WorkManager coroutine with foreground info — Android 12+ safe, auto-restarts after process death): JWT socket → `register_relay` → `process_bulk` → persist `sms_logs` rows → ack `accepted` → hand to `SmsService`.
+- [x] Delivery ack: `POST /api/sms/delivery-report` with `{batchId, deviceId, reports[{recipient,status,error}]}` on a 30s pump until terminal state.
+- [x] Persisted queue + dedup: `sms_logs.batchId` is the dedup key — a replayed `process_bulk` reports current states without resending.
+- [x] Visible gateway state: persistent foreground notification ("JOSms Gateway connected / batch relayed"), auth screen shows signed-in user + church name.
 
 #### Build, install, and activate the gateway phone
 1. Install Android Studio and Android SDK 34; open `2 JOSms AndroidApp/JOSms 1` and use its Gradle wrapper.
@@ -160,18 +189,17 @@ The 2 minute 27 second walkthrough at `plans/blessed text walk through.mp4` was 
 **Acceptance:** Gradle tests pass; debug APK installs; device authenticates into only its own church relay room; one controlled message is sent once; restart/offline/reconnect does not duplicate it; status appears in the live webapp.
 
 ### Phase 3 — Sync + heartbeat
-- [ ] `ContactSyncService` ↔ `/api/sms/sync/snapshot|updates` via WorkManager (already written — wire into app startup + periodic work).
-- [ ] `TemplateSyncService` same pattern.
-- [ ] Heartbeat worker: battery, signal, `lastSeen` → `POST /api/sms/gateway-heartbeat` (new).
-- [ ] `SmsReceiver` → inbound keyword events → `POST /api/members/interest` (JOIN CHOIR etc.).
+- [x] `ContactSyncService` + `TemplateSyncService` wired: `SyncManager.startPeriodicSync()` (contacts 15min, templates 1h) fires on login and on app start when a token exists.
+- [x] Heartbeat: relay worker posts battery/app-version/label to `POST /api/sms/gateway-heartbeat` every 5 min **and** emits `gateway_heartbeat` on the socket; `member_interests` table (096) + endpoints landed.
+- [x] `SmsReceiver` → matched keyword → local subscription **and** `POST /api/members/interest` (best-effort, offline-safe).
 
 ### Phase 4 — Webapp delivery operations
 
 **MVP — required for the first real JOSms send**
-- [ ] Dashboard readiness banner and Gateway card: online/offline, device, battery, signal, last heartbeat, queued count, and selected delivery route.
-- [ ] Unified Send screen: single contact, group, pasted numbers, message/template, segment count, schedule option, sender/provider, cost estimate, and confirmation summary.
-- [ ] Queue/Outbox and delivery-detail view backed by durable jobs and `sms_deliveries`, with honest accepted/queued/sent/delivered/failed states.
-- [ ] Scheduled Messages and Contacts/Groups views with tenant-scoped search, pagination and safe actions.
+- [x] Dashboard readiness banner + Gateway card: online/offline dot, live socket count, per-device label/battery/signal/last heartbeat, queued-delivery count; 30s poll (`Send.jsx` shows the same banner).
+- [x] Unified Send screen (`/dashboard/sms/send`): contacts multi-select + groups + pasted numbers with KE-aware E.164 normalization, dedup, template fill, char/segment counter, optional schedule, gateway-aware confirm dialog, per-batch result display.
+- [x] Outbox (`/dashboard/sms/outbox`): `sms_deliveries` ledger, status filter, batch drill-down, pagination, 15s auto-refresh, honest queued/accepted/sent/delivered/failed chips.
+- [ ] Scheduled Messages list view and Contacts/Groups pagination polish still open (Contacts has search/filter; group member paging pending).
 
 **Second release — operational depth from the walkthrough**
 - [ ] Spreadsheet-personalized sends with downloadable template, column mapping, preview, validation, deduplication and size limits.
@@ -183,8 +211,9 @@ The 2 minute 27 second walkthrough at `plans/blessed text walk through.mp4` was 
 - [ ] Reuse CMS users and profile/security pages rather than recreating Blessed Texts System Users or Profile modules.
 
 ### Phase 5 — Bulk fallback and production readiness
-- [ ] Register a real provider row (Twilio/BlessedTexts creds in `sms_providers` + `sms_enabled` secrets).
-- [ ] Failover policy: relay offline + recipients <400 → bulk provider; ≥400 → bulk always.
+- [ ] Register the BlessedTexts row on the VPS: `cd /var/www/CMS/backend && SMS_API_KEY=… CHURCH_SLUG=kiserian-main node scripts/register-sms-provider.js` — encrypts the key, prints the delivery + topup callback URLs (`/api/sms/provider-callbacks/BlessedTexts/<secret>/delivery|/topup`) to give the provider.
+- [x] Failover policy live: <400 → relay if online else church-usable bulk; ≥400 → bulk always; neither available → honest `offline`/error, never fake-queued.
+- [x] Tenant-scoped providers: church-owned rows serve only their church; NULL `church_id` rows are shared platform fallback (unit-tested).
 
 ## 5. Verification and rollout gates
 - **Live webapp:** authenticated leadership user can load and directly refresh all SMS routes on `cms.josongeri.co.ke`; feature and permission gates behave correctly; browser console and API calls are clean.
