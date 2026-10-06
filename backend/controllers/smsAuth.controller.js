@@ -10,7 +10,8 @@ const {
   comparePassword,
   generateAccessToken,
   generateRefreshToken,
-  verifyMFAToken
+  verifyMFAToken,
+  verifyRefreshToken
 } = require('../helpers/security');
 
 class SmsAuthController extends BaseController {
@@ -142,6 +143,59 @@ class SmsAuthController extends BaseController {
     } catch (error) {
       this.logger.error('smsLogin', error);
       return ResponseHandler.error(res, 'SMS login failed');
+    }
+  }
+
+  /**
+   * Exchange a refresh token for a fresh SMS-scoped access token.
+   * Body: { refreshToken }
+   */
+  async refreshToken(req, res) {
+    try {
+      const { refreshToken } = req.body;
+      if (!refreshToken) {
+        return ResponseHandler.error(res, 'refreshToken is required', 400);
+      }
+
+      const decoded = verifyRefreshToken(refreshToken);
+      if (!decoded?.userId) {
+        return ResponseHandler.unauthorized(res, 'Invalid refresh token');
+      }
+
+      const user = await UserRepository.findById(decoded.userId);
+      if (!user || !user.is_active) {
+        return ResponseHandler.unauthorized(res, 'Account unavailable');
+      }
+
+      const identity = await IdentityService.getIdentity(user.id, decoded.mfaVerified === true);
+      if (!identity) {
+        return ResponseHandler.unauthorized(res, 'Invalid refresh token');
+      }
+
+      const accessToken = generateAccessToken(user.id, identity.roles, decoded.mfaVerified === true, 'sms');
+
+      return ResponseHandler.success(res, {
+        accessToken,
+        expiresIn: decoded.sessionMinutes
+          ? decoded.sessionMinutes * 60
+          : parseInt(process.env.ACCESS_TOKEN_TTL_SECONDS, 10) || 3600,
+      }, 'Token refreshed');
+    } catch (error) {
+      this.logger.error('refreshToken', error);
+      return ResponseHandler.unauthorized(res, 'Invalid or expired refresh token');
+    }
+  }
+
+  /**
+   * Stateless logout — SMS access tokens are short-lived JWTs with no
+   * server-side session row, so logout is an audit + client-side discard.
+   */
+  async logout(req, res) {
+    try {
+      return ResponseHandler.success(res, null, 'Logged out');
+    } catch (error) {
+      this.logger.error('logout', error);
+      return ResponseHandler.error(res, 'Logout failed');
     }
   }
 

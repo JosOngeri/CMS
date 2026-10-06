@@ -66,6 +66,7 @@ const smsContactsRoutes = require('./smsContacts.routes');
 const smsGroupsRoutes = require('./smsGroups.routes');
 const smsAuthRoutes = require('./smsAuth.routes');
 const smsSyncRoutes = require('./smsSync.routes');
+const smsCallbacksRoutes = require('./smsCallbacks.routes');
 
 // Mount routes with appropriate middleware
 // Note: route modules apply their own auth (authenticateToken, identityGuard, etc.)
@@ -100,6 +101,15 @@ router.use('/payment', strictLimiter, (req, res) => {
 });
 router.use('/members', generalLimiter, clampQueryPagination(), requireTenantFlag('members'), membersRoutes);
 router.use('/events', generalLimiter, clampQueryPagination(), requireTenantFlag('events'), eventsRoutes);
+// SMS sub-mounts BEFORE the /sms router — smsRoutes applies authenticateToken
+// to everything it sees, so unauthenticated/self-auth routes must be matched
+// first or they die inside smsRoutes' auth wall with a 401:
+//   /sms/provider-callbacks — provider POSTs, secret-tokened path
+//   /sms/auth               — login (client has no token yet)
+//   /sms/sync               — sync endpoints (auth'd inside, kept explicit)
+router.use('/sms/provider-callbacks', strictLimiter, smsCallbacksRoutes);
+router.use('/sms/auth', authLimiter, requireTenantFlag('sms'), smsAuthRoutes);
+router.use('/sms/sync', generalLimiter, requireTenantFlag('sms'), smsSyncRoutes);
 router.use('/sms', strictLimiter, requireTenantFlag('sms'), smsRoutes);
 router.use('/dashboard', generalLimiter, dashboardRoutes);
 // Specific /treasury sub-mounts first — they must not depend on the parent
@@ -146,7 +156,5 @@ router.use('/mobile', generalLimiter, requireTenantFlag('mobile_app'), mobileRou
 router.use('/platform', strictLimiter, platformRoutes);
 router.use('/sms-contacts', generalLimiter, requireTenantFlag('sms'), smsContactsRoutes);
 router.use('/sms-groups', generalLimiter, requireTenantFlag('sms'), smsGroupsRoutes);
-router.use('/sms/auth', authLimiter, requireTenantFlag('sms'), smsAuthRoutes);
-router.use('/sms/sync', generalLimiter, requireTenantFlag('sms'), smsSyncRoutes);
 
 module.exports = router;

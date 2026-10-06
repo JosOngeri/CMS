@@ -1,6 +1,9 @@
 const apiHub = require('./apiHub');
 const logger = require('../config/logging');
 const smsProviderRepo = require('../repositories/SMSProviderRepository');
+const gatewayRegistry = require('./gatewayRegistry');
+const { pool } = require('../config/database');
+const crypto = require('crypto');
 
 /**
  * Hybrid SMS Service (Phase 9)
@@ -101,8 +104,13 @@ class HybridSMS {
     // Determine routing strategy
     const smallBatchThreshold = parseInt(process.env.SMS_SMALL_BATCH_THRESHOLD, 10) || 400;
     if (recipientCount < smallBatchThreshold) {
-      // Small batch: Use JOSms via WebSocket
-      return this.sendViaJOSms(payload);
+      // Small batch: JOSms relay first; bulk failover when no phone is connected.
+      const josmsResult = await this.sendViaJOSms(payload);
+      if (josmsResult.status === 'offline' && this.providers.size > 0) {
+        logger.info(`JOSms offline for church ${churchId} — failing over to bulk provider`);
+        return this.sendViaBulkProvider(payload, preferredProvider);
+      }
+      return josmsResult;
     } else {
       // Large batch: Use bulk SMS provider
       return this.sendViaBulkProvider(payload, preferredProvider);
@@ -119,20 +127,73 @@ class HybridSMS {
       throw new Error('Socket.io not initialized');
     }
 
+    // Truthfulness gate: never report queued when no relay phone is listening.
+    if (!gatewayRegistry.isOnline(payload.churchId)) {
+      logger.warn(`JOSms relay offline for church ${payload.churchId} — send refused`);
+      return {
+        success: false,
+        gateway: 'JOSms',
+        status: 'offline',
+        reason: 'No JOSms gateway device connected',
+        recipientCount: payload.recipients.length
+      };
+    }
+
+    const batchId = payload.batchId || crypto.randomUUID();
+
+    // Persist the per-recipient ledger BEFORE emitting — a crash between emit
+    // and insert would otherwise produce deliveries with no record.
+    await this._recordDeliveries(payload, batchId, 'josms', null);
+
     // Emit to church's relay namespace
     this.io.to(`relay:${payload.churchId}`).emit('process_bulk', {
       recipients: payload.recipients,
       message: payload.message,
-      batchId: payload.batchId
+      batchId
     });
 
-    logger.info(`Sent ${payload.recipients.length} messages via JOSms for church ${payload.churchId}`);
+    logger.info(`Queued ${payload.recipients.length} messages via JOSms for church ${payload.churchId} (batch ${batchId})`);
     return {
       success: true,
       gateway: 'JOSms',
       status: 'queued',
+      batchId,
       recipientCount: payload.recipients.length
     };
+  }
+
+  /**
+   * Write one sms_deliveries row per recipient. UNIQUE(batch_id, recipient)
+   * makes replays idempotent — a re-emitted batch upserts instead of doubling.
+   */
+  async _recordDeliveries(payload, batchId, gateway, deviceId) {
+    if (!payload.churchId || !Array.isArray(payload.recipients)) return;
+    const preview = (payload.message || '').slice(0, 160);
+    const idem = payload.idempotencyKey || batchId;
+    const n = payload.recipients.length;
+    const pPrev = `$${3 + n}`, pGw = `$${4 + n}`, pDev = `$${5 + n}`, pIdem = `$${6 + n}`;
+    try {
+      const values = payload.recipients.map((_, i) =>
+        `($1, $2, $${3 + i}, ${pPrev}, ${pGw}, ${pDev}, 'queued', ${pIdem})`
+      ).join(', ');
+      const params = [
+        payload.churchId, batchId,
+        ...payload.recipients,
+        preview, gateway, deviceId, idem
+      ];
+      await pool.query(
+        `INSERT INTO sms_deliveries
+           (church_id, batch_id, recipient, message_preview, gateway, device_id, status, idempotency_key)
+         VALUES ${values}
+         ON CONFLICT (batch_id, recipient) DO NOTHING`,
+        params
+      );
+    } catch (err) {
+      // Ledger write failure must not block the send — log loudly instead.
+      if (err.code !== '42P01') {
+        logger.error('sms_deliveries insert failed:', err.message);
+      }
+    }
   }
 
   /**
@@ -164,11 +225,16 @@ class HybridSMS {
         await this.updateProviderBalance(provider.id, result.balance);
       }
 
+      // Ledger the bulk send so the outbox can show per-recipient state.
+      const batchId = payload.batchId || crypto.randomUUID();
+      await this._recordDeliveries({ ...payload, batchId }, batchId, providerName, null);
+
       logger.info(`Sent ${payload.recipients.length} messages via ${providerName}`);
       return {
         success: true,
         gateway: providerName,
         status: 'sent',
+        batchId,
         recipientCount: payload.recipients.length,
         data: result
       };

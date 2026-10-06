@@ -1,6 +1,7 @@
 ﻿const express = require('express');
 const router = express.Router();
 const smsController = require('../controllers/sms.controller');
+const smsGatewayController = require('../controllers/smsGateway.controller');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 
 // All routes require authentication
@@ -48,6 +49,13 @@ router.get('/analytics', requireRole(SMS_READERS), smsController.getAnalytics);
 // Rate Limiting
 router.get('/rate-limit', requireRole(SMS_READERS), smsController.getRateLimit);
 router.get('/recent', requireRole(SMS_READERS), smsController.getRecentMessages);
+
+// JOSms gateway — device-facing writes need any authenticated identity
+// (the relay uses an SMS-scoped token); reads stay role-gated.
+router.get('/gateway-status', requireRole(SMS_READERS), smsGatewayController.getGatewayStatus);
+router.post('/gateway-heartbeat', smsGatewayController.heartbeat);
+router.post('/delivery-report', smsGatewayController.deliveryReport);
+router.get('/deliveries', requireRole(SMS_READERS), smsGatewayController.listDeliveries);
 
 // Template Advanced Features
 router.get('/templates/:id/analytics', requireRole(SMS_READERS), smsController.getTemplateAnalytics);

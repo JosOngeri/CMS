@@ -1,5 +1,6 @@
 ﻿const BaseController = require('./BaseController');
 const SMSRepository = require('../repositories/SMSRepository');
+const hybridSMS = require('../services/hybridSMS');
 const { createLogger } = require('../helpers/controllerLogger');
 
 /**
@@ -231,26 +232,48 @@ class SMSController extends BaseController {
         batches.push(filteredRecipients.slice(i, i + batchSize));
       }
 
-      // Process each batch
+      const isScheduled = !!(scheduleDate || scheduleTime);
+
+      // Process each batch — store the recipient list on the log row so a
+      // scheduled send can be dispatched later, then either schedule or
+      // dispatch immediately through the hybrid router.
       const batchResults = [];
       for (const batch of batches) {
         const log = await SMSRepository.createSMSLog(
           req.user.id,
           batch.length,
           message,
-          'pending',
+          isScheduled ? 'scheduled' : 'queued',
           scheduleDate,
           scheduleTime,
           templateId,
           enableReply,
           trackLinks,
-          churchId
+          churchId,
+          batch
         );
 
-        batchResults.push({
-          batchId: log.id,
-          recipientCount: batch.length
-        });
+        if (isScheduled) {
+          batchResults.push({ batchId: log.id, recipientCount: batch.length, status: 'scheduled' });
+          continue;
+        }
+
+        try {
+          const result = await hybridSMS.sendSMS({
+            recipients: batch,
+            message,
+            churchId,
+            batchId: String(log.id)
+          });
+          const logStatus = result.status === 'queued' ? 'queued'
+            : result.status === 'sent' ? 'sent'
+            : result.status === 'offline' ? 'offline' : 'failed';
+          await SMSRepository.updateSMSStatus(log.id, logStatus);
+          batchResults.push({ batchId: log.id, recipientCount: batch.length, status: logStatus, gateway: result.gateway });
+        } catch (dispatchErr) {
+          await SMSRepository.updateSMSStatus(log.id, 'failed').catch(() => {});
+          batchResults.push({ batchId: log.id, recipientCount: batch.length, status: 'failed', error: dispatchErr.message });
+        }
       }
 
       this.success(res, {
@@ -258,11 +281,55 @@ class SMSController extends BaseController {
         totalRecipients: filteredRecipients.length,
         optedOutCount: optedOutCount,
         batchCount: batches.length,
-        status: 'pending'
+        status: isScheduled ? 'scheduled' : 'dispatched'
       });
     } catch (error) {
       this.logger.error('sendSMS', error);
       this.error(res, 'Failed to send SMS');
+    }
+  }
+
+  /**
+   * Periodic sweeper — dispatch sms_logs whose schedule time has arrived.
+   * Called from server.js on an interval; safe to run on every node because
+   * the UPDATE ... WHERE status='scheduled' claim is atomic per row.
+   */
+  async processDueScheduledSms() {
+    try {
+      const due = await SMSRepository.getDueScheduledSms(20);
+      for (const log of due) {
+        const claimed = await SMSRepository.pool.query(
+          `UPDATE sms_logs SET status = 'queued', updated_at = NOW()
+           WHERE id = $1 AND status = 'scheduled' RETURNING id`,
+          [log.id]
+        );
+        if (claimed.rowCount === 0) continue; // another node claimed it
+
+        const recipients = Array.isArray(log.recipients) ? log.recipients : [];
+        if (recipients.length === 0) {
+          await SMSRepository.updateSMSStatus(log.id, 'failed');
+          continue;
+        }
+        try {
+          const result = await hybridSMS.sendSMS({
+            recipients,
+            message: log.message,
+            churchId: log.church_id,
+            batchId: String(log.id)
+          });
+          await SMSRepository.updateSMSStatus(
+            log.id,
+            result.status === 'offline' ? 'offline'
+              : result.success ? 'queued' : 'failed'
+          );
+        } catch (err) {
+          await SMSRepository.updateSMSStatus(log.id, 'failed').catch(() => {});
+        }
+      }
+      return due.length;
+    } catch (error) {
+      this.logger.error('processDueScheduledSms', error);
+      return 0;
     }
   }
 

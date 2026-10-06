@@ -75,6 +75,10 @@ try {
   logger.warn('Failed to initialize HybridSMS:', error.message);
 }
 
+// Gateway registry — live JOSms relay presence (truthfulness gate for sends)
+const gatewayRegistry = require('./services/gatewayRegistry');
+gatewayRegistry.setIo(io);
+
 // Initialize SMS Push Controller for Android app sync
 try {
   const smsPushController = require('./controllers/smsPush.controller');
@@ -123,11 +127,26 @@ io.on('connection', (socket) => {
   socket.join(`user:${userId}`);
   if (churchId) socket.join(`church:${churchId}`);
 
-  socket.on('register_relay', () => {
+  socket.on('register_relay', (data) => {
     // Relay room is always the authenticated user's own church — never client-supplied
     if (!churchId) return;
     socket.join(`relay:${churchId}`);
-    logger.info(`Relay registered for church: ${churchId}`);
+    socket.isRelay = true;
+    gatewayRegistry.register(churchId, socket.id, {
+      ...(data || {}),
+      userId,
+    }).catch(err => logger.error('relay register failed:', err.message));
+    logger.info(`Relay registered for church: ${churchId} device=${data?.deviceId || socket.id}`);
+    socket.emit('relay_registered', { churchId, socketId: socket.id });
+  });
+
+  // Lightweight socket heartbeat — battery/signal/last-seen without an HTTP hop.
+  socket.on('gateway_heartbeat', (data) => {
+    if (!churchId || !data?.deviceId) return;
+    gatewayRegistry.heartbeat(churchId, data.deviceId, {
+      ...data,
+      userId,
+    }).catch(err => logger.error('gateway heartbeat failed:', err.message));
   });
 
   socket.on('join_room', (data) => {
@@ -139,6 +158,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    if (socket.isRelay) {
+      gatewayRegistry.unregister(churchId, socket.id)
+        .catch(err => logger.error('relay unregister failed:', err.message));
+      logger.info(`Relay disconnected for church: ${churchId}`);
+    }
     logger.info(`Socket disconnected: ${socket.id}`);
   });
 });
@@ -170,6 +194,14 @@ if (process.env.NODE_ENV !== 'test') {
 
     // Platform scheduler — alert rules (5min), dunning (6h), backups (daily).
     require('./services/platformScheduler.service').start();
+
+    // Scheduled-SMS sweeper — dispatches sms_logs whose schedule time arrived.
+    // 60s cadence; the claim UPDATE is atomic so multi-node is safe.
+    const smsController = require('./controllers/sms.controller');
+    setInterval(() => {
+      smsController.processDueScheduledSms()
+        .catch(e => logger.error('Scheduled SMS sweep failed:', e.message));
+    }, 60 * 1000).unref();
 
     // 8.3 Record this boot as a deploy so operators can see history and
     // know which commit to roll back to. No-op if unchanged.

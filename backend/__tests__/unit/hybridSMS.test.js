@@ -32,8 +32,20 @@ jest.mock('../../helpers/churchSettings', () => ({
   clearChurchCache: jest.fn()
 }));
 
+// Gateway presence is the new truthfulness gate — tests toggle it explicitly.
+jest.mock('../../services/gatewayRegistry', () => ({
+  isOnline: jest.fn(() => false),
+  onlineCount: jest.fn(() => 0),
+  getStatus: jest.fn(() => Promise.resolve({ online: false })),
+  setIo: jest.fn(),
+  register: jest.fn(),
+  unregister: jest.fn(),
+  heartbeat: jest.fn(),
+}));
+
 const apiHub = require('../../services/apiHub');
 const { pool } = require('../../config/database');
+const gatewayRegistry = require('../../services/gatewayRegistry');
 const hybridSMS = require('../../services/hybridSMS');
 
 const provider = (name, id) => ({
@@ -77,9 +89,10 @@ describe('Hybrid SMS Service', () => {
   });
 
   describe('sendSMS routing', () => {
-    it('routes small batches to JOSms via websocket', async () => {
+    it('routes small batches to JOSms via websocket when a relay is online', async () => {
       const emit = jest.fn();
       hybridSMS.setIo({ to: jest.fn(() => ({ emit })) });
+      gatewayRegistry.isOnline.mockReturnValue(true);
 
       const result = await hybridSMS.sendSMS({
         recipients: ['254700000001'],
@@ -89,10 +102,47 @@ describe('Hybrid SMS Service', () => {
 
       expect(result.gateway).toBe('JOSms');
       expect(result.status).toBe('queued');
+      expect(result.batchId).toBeTruthy();
       expect(emit).toHaveBeenCalledWith(
         'process_bulk',
         expect.objectContaining({ recipients: ['254700000001'] })
       );
+    });
+
+    it('reports offline instead of fake-queuing when no relay is connected', async () => {
+      const emit = jest.fn();
+      hybridSMS.setIo({ to: jest.fn(() => ({ emit })) });
+      gatewayRegistry.isOnline.mockReturnValue(false);
+
+      const result = await hybridSMS.sendSMS({
+        recipients: ['254700000001'],
+        message: 'Hi',
+        churchId: 'church-1'
+      });
+
+      expect(result.gateway).toBe('JOSms');
+      expect(result.status).toBe('offline');
+      expect(result.success).toBe(false);
+      expect(emit).not.toHaveBeenCalled();
+    });
+
+    it('fails over to bulk provider when the relay is offline', async () => {
+      const emit = jest.fn();
+      hybridSMS.setIo({ to: jest.fn(() => ({ emit })) });
+      gatewayRegistry.isOnline.mockReturnValue(false);
+      hybridSMS.registerProvider(provider('BulkCo', 1));
+      hybridSMS.defaultProvider = 'BulkCo';
+      apiHub.callAPI.mockResolvedValue({ success: true });
+
+      const result = await hybridSMS.sendSMS({
+        recipients: ['254700000001'],
+        message: 'Hi',
+        churchId: 'church-1'
+      });
+
+      expect(result.gateway).toBe('BulkCo');
+      expect(result.status).toBe('sent');
+      expect(emit).not.toHaveBeenCalled();
     });
 
     it('throws for small batches when socket.io is not initialized', async () => {

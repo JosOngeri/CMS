@@ -11,7 +11,7 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { sendNotification, notifyDepartmentAdmins } = require('../helpers/notify');
-const SmsHub = require('../services/SmsHub');
+const hybridSMS = require('../services/hybridSMS');
 const { createLogger } = require('../helpers/controllerLogger');
 const departmentCommunityRepository = require('../repositories/DepartmentCommunityRepository');
 const {
@@ -619,7 +619,7 @@ router.post('/:id/communications', authenticateToken, async (req, res) => {
       const phones = members.rows.map(m => m.phone).filter(Boolean);
       if (phones.length) {
         try {
-          smsResult = await SmsHub.sendSMS({
+          smsResult = await hybridSMS.sendSMS({
             recipients: phones,
             message: `${dept.name}: ${title} — ${body}`,
             churchId: dept.church_id

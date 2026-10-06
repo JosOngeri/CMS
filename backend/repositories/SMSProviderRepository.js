@@ -1,6 +1,7 @@
 const BaseRepository = require('./BaseRepository');
 const AuditLogRepository = require('./AuditLogRepository');
 const { encrypt, decrypt } = require('../utils/secretBox');
+const crypto = require('crypto');
 
 /**
  * SMS Provider Repository (Phase 9)
@@ -38,7 +39,7 @@ class SMSProviderRepository extends BaseRepository {
     }
 
     const query = `
-      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, created_at
+      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, church_id, callback_secret, created_at
       FROM sms_providers
       WHERE ${conditions.join(' AND ')}
       ORDER BY priority ASC
@@ -55,7 +56,7 @@ class SMSProviderRepository extends BaseRepository {
    */
   async findById(id, churchId = null) {
     let query = `
-      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, created_at
+      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, church_id, callback_secret, created_at
       FROM sms_providers
       WHERE id = $1
     `;
@@ -75,7 +76,7 @@ class SMSProviderRepository extends BaseRepository {
    */
   async findByName(name) {
     const query = `
-      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, created_at
+      SELECT id, name, api_key, api_url, sender_id, balance, currency, is_active, priority, church_id, callback_secret, created_at
       FROM sms_providers
       WHERE name = $1
     `;
@@ -92,12 +93,15 @@ class SMSProviderRepository extends BaseRepository {
     const { name, api_key, api_url, sender_id, church_id, priority = 10 } = data;
 
     const query = `
-      INSERT INTO sms_providers (name, api_key, api_url, sender_id, church_id, priority, balance, currency, is_active)
-      VALUES ($1, $2, $3, $4, $5, $6, 0, 'KES', true)
+      INSERT INTO sms_providers (name, api_key, api_url, sender_id, church_id, priority, balance, currency, is_active, callback_secret)
+      VALUES ($1, $2, $3, $4, $5, $6, 0, 'KES', true, $7)
       RETURNING *
     `;
 
-    const result = await this.pool.query(query, [name, encrypt(api_key), api_url, sender_id, church_id, priority]);
+    const result = await this.pool.query(query, [
+      name, encrypt(api_key), api_url, sender_id, church_id, priority,
+      data.callback_secret || crypto.randomBytes(24).toString('hex')
+    ]);
     return this._decryptRow(result.rows[0]);
   }
 

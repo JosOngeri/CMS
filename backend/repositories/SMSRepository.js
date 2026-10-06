@@ -154,17 +154,35 @@ class SmsRepository extends BaseRepository {
     return recipients.filter(phone => !optedOutPhones.includes(phone));
   }
 
-  async createSMSLog(sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id) {
+  async createSMSLog(sent_by, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id, recipients = null) {
     const query = `
-      INSERT INTO sms_logs (sent_by, sender_id, user_id, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id)
-      VALUES ($1, $1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO sms_logs (sent_by, sender_id, user_id, recipient_count, message, status, schedule_date, schedule_time, template_id, enable_reply, track_links, church_id, recipients)
+      VALUES ($1, $1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `;
     const result = await this.pool.query(query, [
       sent_by, recipient_count, message, status, schedule_date, schedule_time,
       template_id, enable_reply ?? false, track_links ?? false, church_id,
+      recipients ? JSON.stringify(recipients) : null,
     ]);
     return result.rows[0];
+  }
+
+  /**
+   * Scheduled logs whose time has come — dispatched by the periodic sweeper.
+   * schedule_date + schedule_time columns combine into the due timestamp.
+   */
+  async getDueScheduledSms(limit = 20) {
+    const query = `
+      SELECT * FROM sms_logs
+      WHERE status = 'scheduled'
+        AND schedule_date IS NOT NULL
+        AND (schedule_date + COALESCE(schedule_time, '00:00'::time)) <= NOW()
+      ORDER BY schedule_date ASC, schedule_time ASC NULLS FIRST
+      LIMIT $1
+    `;
+    const result = await this.pool.query(query, [limit]);
+    return result.rows;
   }
 
   async updateSMSStatus(id, status, deliveryReceipt = null) {
